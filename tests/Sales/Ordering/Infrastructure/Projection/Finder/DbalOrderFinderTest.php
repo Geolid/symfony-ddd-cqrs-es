@@ -11,17 +11,24 @@ use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\Finder\Order\OrderResult;
 use Sales\Ordering\Application\OrderStatus;
 use Sales\Ordering\Domain\Order\Order;
+use Sales\Ordering\Domain\Order\ValueObject\OrderId;
+use Sales\Ordering\Domain\Order\ValueObject\OrderItem;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
+use Sales\Tests\Ordering\Support\PostalAddressResultMapper;
 use Shared\Application\ErasureStatus;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Money;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
+use Shared\Tests\Support\TestCase\RealColumnLeadsTrait;
+use Symfony\Component\Clock\Clock;
 
 /**
  * @extends AbstractIterableFinderTestCase<OrderResult>
  */
 final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
 {
+    use RealColumnLeadsTrait;
+
     #[Test]
     public function itGets(): void
     {
@@ -39,11 +46,11 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
         self::assertSame($builder['checkoutSessionId'], $result->checkoutSessionId);
         self::assertSame(
             PostalAddressMapper::toArray($builder['shippingAddress']),
-            ['recipientName' => $result->shippingAddress->recipientName, 'address' => (array) $result->shippingAddress->address],
+            PostalAddressResultMapper::toArray($result->shippingAddress),
         );
         $totalAmountInCents = array_reduce(
-            $builder['lines'],
-            static fn (Money $carry, array $line): Money => $carry->plus($line['product']->price->times($line['quantity']->value)),
+            $builder['items'],
+            static fn (Money $carry, OrderItem $item): Money => $carry->plus($item->total()),
             Money::fromCents(0),
         )->cents;
         self::assertSame($totalAmountInCents, $result->totalAmountInCents);
@@ -100,8 +107,31 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
         return array_map(static fn (Order $order): string => $order->id->toString(), $orders);
     }
 
-    protected function idOf(object $result): string
+    protected function indexOf(object $result): string
     {
         return $result->id;
+    }
+
+    /**
+     * @return array{string, string}
+     */
+    /**
+     * @return array{string, string}
+     */
+    protected function seedConflictingOrder(): array
+    {
+        $checkoutSessionIdByOrderId = [];
+        foreach ([Uuid::uuid7()->toString(), Uuid::uuid7()->toString()] as $checkoutSessionId) {
+            $checkoutSessionIdByOrderId[OrderId::forCheckoutSession($checkoutSessionId)->toString()] = $checkoutSessionId;
+        }
+        ksort($checkoutSessionIdByOrderId);
+        [$smallerId, $largerId] = array_keys($checkoutSessionIdByOrderId);
+
+        $now = Clock::get()->now();
+        $first = OrderBuilder::new()->withCheckoutSessionId($checkoutSessionIdByOrderId[$largerId])->withConfirmedAt($now)->create();
+        $second = OrderBuilder::new()->withCheckoutSessionId($checkoutSessionIdByOrderId[$smallerId])->withConfirmedAt($now->modify('+1 hour'))->create();
+        $this->store($first, $second);
+
+        return [$largerId, $smallerId];
     }
 }

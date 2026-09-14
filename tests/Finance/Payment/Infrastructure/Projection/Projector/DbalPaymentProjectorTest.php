@@ -6,7 +6,6 @@ namespace Finance\Tests\Payment\Infrastructure\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
 use Finance\Payment\Application\PaymentStatus;
-use Finance\Payment\Domain\ValueObject\PaymentId;
 use Finance\Payment\Infrastructure\Projection\Projector\DbalPaymentProjector;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;
@@ -144,7 +143,7 @@ final class DbalPaymentProjectorTest extends AbstractIntegrationTestCase
         $other = PaymentBuilder::new()->create();
         $this->store($other);
         $checkoutSessionId = Uuid::uuid7()->toString();
-        $payment = PaymentBuilder::new()->withId(PaymentId::forCheckoutSession($checkoutSessionId)->toString())->withCheckoutSessionId($checkoutSessionId)->create();
+        $payment = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionId)->create();
         $order = OrderBuilder::new()->withCheckoutSessionId($checkoutSessionId)->create();
 
         // When

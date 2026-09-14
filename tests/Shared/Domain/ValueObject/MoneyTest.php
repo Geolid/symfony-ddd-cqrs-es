@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Shared\Domain\ValueObject\Money;
+use Shared\Domain\ValueObject\Quantity;
 
 final class MoneyTest extends TestCase
 {
@@ -93,7 +94,7 @@ final class MoneyTest extends TestCase
     public function itMultipliesByQuantity(): void
     {
         // When
-        $product = Money::fromCents(83)->times(3);
+        $product = Money::fromCents(83)->times(Quantity::of(3));
 
         // Then
         self::assertSame(249, $product->cents);

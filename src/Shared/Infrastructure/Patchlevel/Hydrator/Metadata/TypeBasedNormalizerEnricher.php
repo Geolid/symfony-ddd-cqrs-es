@@ -11,19 +11,27 @@ use Shared\Infrastructure\Patchlevel\Hydrator\Normalizer\BooleanNormalizer;
 use Shared\Infrastructure\Patchlevel\Hydrator\Normalizer\IntegerNormalizer;
 use Shared\Infrastructure\Patchlevel\Hydrator\Normalizer\JsonNormalizer;
 use Shared\Infrastructure\Patchlevel\Hydrator\Normalizer\UtcDateTimeImmutableNormalizer;
+use Symfony\Component\TypeInfo\Type;
+use Symfony\Component\TypeInfo\Type\BuiltinType;
+use Symfony\Component\TypeInfo\Type\CollectionType;
+use Symfony\Component\TypeInfo\Type\NullableType;
+use Symfony\Component\TypeInfo\Type\ObjectType;
+use Symfony\Component\TypeInfo\TypeIdentifier;
+use Symfony\Component\TypeInfo\TypeResolver\TypeResolver;
 
-final class TypeBasedNormalizerEnricher implements MetadataEnricher
+final readonly class TypeBasedNormalizerEnricher implements MetadataEnricher
 {
+    private TypeResolver $typeResolver;
+
+    public function __construct()
+    {
+        $this->typeResolver = TypeResolver::create();
+    }
+
     public function enrich(ClassMetadata $classMetadata): void
     {
         foreach ($classMetadata->properties() as $property) {
-            $type = $property->reflection()->getType();
-
-            if (!$type instanceof \ReflectionNamedType) {
-                continue;
-            }
-
-            $normalizer = $this->resolveNormalizer($type);
+            $normalizer = $this->resolveNormalizer($this->typeResolver->resolve($property->reflection()));
 
             if (null !== $normalizer) {
                 $property->normalizer = $normalizer;
@@ -31,21 +39,41 @@ final class TypeBasedNormalizerEnricher implements MetadataEnricher
         }
     }
 
-    private function resolveNormalizer(\ReflectionNamedType $type): ?Normalizer
+    private function resolveNormalizer(Type $type): ?Normalizer
     {
-        $name = $type->getName();
-
-        $normalizer = match ($name) {
-            \DateTimeImmutable::class => new UtcDateTimeImmutableNormalizer(),
-            'bool' => new BooleanNormalizer(),
-            'int' => new IntegerNormalizer(),
-            default => null,
-        };
-
-        if (null !== $normalizer) {
-            return $normalizer;
+        if ($type instanceof NullableType) {
+            return $this->resolveNormalizer($type->getWrappedType());
         }
 
+        if ($type instanceof CollectionType) {
+            if (!$type->isList()) {
+                return null;
+            }
+
+            $valueType = $type->getCollectionValueType();
+
+            return $valueType instanceof ObjectType ? $this->resolveClassNormalizer($valueType->getClassName()) : null;
+        }
+
+        if ($type instanceof BuiltinType) {
+            return match ($type->getTypeIdentifier()) {
+                TypeIdentifier::BOOL => new BooleanNormalizer(),
+                TypeIdentifier::INT => new IntegerNormalizer(),
+                default => null,
+            };
+        }
+
+        if ($type instanceof ObjectType) {
+            return \DateTimeImmutable::class === $type->getClassName()
+                ? new UtcDateTimeImmutableNormalizer()
+                : $this->resolveClassNormalizer($type->getClassName());
+        }
+
+        return null;
+    }
+
+    private function resolveClassNormalizer(string $name): ?Normalizer
+    {
         if (!class_exists($name) || is_a($name, \BackedEnum::class, true)) {
             return null;
         }

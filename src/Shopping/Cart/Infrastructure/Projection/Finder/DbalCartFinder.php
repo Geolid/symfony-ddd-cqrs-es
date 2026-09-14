@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Shopping\Cart\Infrastructure\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
-use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
+use Shared\Application\Finder\SortDirection;
+use Shared\Infrastructure\Projection\Finder\AbstractIterableDbalFinder;
 use Shopping\Cart\Application\CartStatus;
 use Shopping\Cart\Application\Finder\Cart\CartFinderInterface;
 use Shopping\Cart\Application\Finder\Cart\CartResult;
@@ -14,24 +15,17 @@ use Shopping\Cart\Infrastructure\Projection\Projector\DbalCartItemProjector;
 use Shopping\Cart\Infrastructure\Projection\Projector\DbalCartProjector;
 
 /**
- * @extends AbstractDbalFinder<CartResult>
+ * @extends AbstractIterableDbalFinder<CartResult>
  */
-final class DbalCartFinder extends AbstractDbalFinder implements CartFinderInterface
+final class DbalCartFinder extends AbstractIterableDbalFinder implements CartFinderInterface
 {
     public function ofId(string $id): CartResult
     {
-        $row = $this->connection->fetchAssociative(
-            \sprintf('SELECT id, customer_id FROM %s WHERE id = :id', DbalCartProjector::TABLE),
-            ['id' => $id],
-        );
-
-        if (false === $row) {
-            throw CartResultNotFoundException::forId($id);
-        }
-
-        \assert(\is_string($row['id']) && \is_string($row['customer_id']));
-
-        return new CartResult($row['id'], $row['customer_id']);
+        return $this->filter(
+            static function (QueryBuilder $qb) use ($id): void {
+                $qb->andWhere('id = :id')->setParameter('id', $id);
+            },
+        )->one() ?? throw CartResultNotFoundException::forId($id);
     }
 
     public function byProductId(string $productId): static
@@ -51,11 +45,15 @@ final class DbalCartFinder extends AbstractDbalFinder implements CartFinderInter
         );
     }
 
-    protected function buildBaseQuery(QueryBuilder $qb): void
+    protected function configureBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'customer_id')
-            ->from(DbalCartProjector::TABLE)
-            ->orderBy('id', 'ASC');
+        $qb->select('id', 'customer_id', 'started_at')
+            ->from(DbalCartProjector::TABLE);
+    }
+
+    protected function defaultSort(): array
+    {
+        return ['started_at' => SortDirection::Ascending, 'id' => SortDirection::Ascending];
     }
 
     protected function resultClass(): string

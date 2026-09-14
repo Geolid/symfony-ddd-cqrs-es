@@ -24,11 +24,10 @@ final class DbalOrderPaymentFinder extends AbstractDbalFinder implements OrderPa
         )->one();
     }
 
-    protected function buildBaseQuery(QueryBuilder $qb): void
+    protected function configureBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('order_id', 'paid')
-            ->from(DbalOrderPaymentProjector::TABLE)
-            ->orderBy('order_id', 'ASC');
+            ->from(DbalOrderPaymentProjector::TABLE);
     }
 
     protected function resultClass(): string

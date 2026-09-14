@@ -27,7 +27,8 @@ final readonly class DbalCartProjector extends AbstractDbalProjector
             'id' => $event->id->toString(),
             'customer_id' => $event->customerId,
             'status' => CartStatus::ACTIVE->value,
-        ]);
+            'started_at' => $event->startedAt,
+        ], ['started_at' => Types::DATETIME_IMMUTABLE]);
     }
 
     #[Subscribe(CartPurchased::class)]
@@ -49,6 +50,7 @@ final readonly class DbalCartProjector extends AbstractDbalProjector
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('customer_id', Types::STRING, ['length' => 36]);
         $table->addColumn('status', Types::STRING, ['length' => 20]);
+        $table->addColumn('started_at', Types::DATETIME_IMMUTABLE);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))

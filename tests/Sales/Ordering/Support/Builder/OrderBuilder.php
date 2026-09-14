@@ -7,12 +7,13 @@ namespace Sales\Tests\Ordering\Support\Builder;
 use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Domain\Order\Order;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
+use Sales\Ordering\Domain\Order\ValueObject\OrderItem;
 use Sales\Ordering\Domain\Order\ValueObject\Product;
-use Sales\Ordering\Domain\Order\ValueObject\Quantity;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Domain\ValueObject\Quantity;
 use Support\Builder\AbstractAggregateBuilder;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;
@@ -24,7 +25,7 @@ use Symfony\Component\Clock\Clock;
  *     customerId: string,
  *     checkoutSessionId: string,
  *     shippingAddress: PostalAddress,
- *     lines: list<array{product: Product, quantity: Quantity}>,
+ *     items: list<OrderItem>,
  *     confirmedAt: \DateTimeImmutable,
  *     preparedAt: \DateTimeImmutable,
  *     cancelledAt: \DateTimeImmutable,
@@ -38,11 +39,6 @@ use Symfony\Component\Clock\Clock;
  */
 final class OrderBuilder extends AbstractAggregateBuilder
 {
-    public function withId(string $id): self
-    {
-        return $this->withAttributes(id: OrderId::fromString($id));
-    }
-
     public function withCartId(string $cartId): self
     {
         return $this->withAttributes(cartId: $cartId);
@@ -64,11 +60,11 @@ final class OrderBuilder extends AbstractAggregateBuilder
     }
 
     /**
-     * @param list<array{product: Product, quantity: Quantity}> $lines
+     * @param list<OrderItem> $items
      */
-    public function withLines(array $lines): self
+    public function withItems(array $items): self
     {
-        return $this->withAttributes(lines: $lines);
+        return $this->withAttributes(items: $items);
     }
 
     public function withConfirmedAt(\DateTimeImmutable $confirmedAt): self
@@ -135,7 +131,9 @@ final class OrderBuilder extends AbstractAggregateBuilder
         $now = Clock::get()->now();
 
         return [
-            'id' => static fn (): OrderId => OrderId::fromString(Uuid::uuid7()->toString()),
+            'id' => static fn (?self $builder): OrderId => OrderId::forCheckoutSession(
+                null !== $builder ? $builder['checkoutSessionId'] : self::sample('checkoutSessionId'),
+            ),
             'cartId' => static fn (): string => Uuid::uuid7()->toString(),
             'customerId' => static fn (): string => Uuid::uuid7()->toString(),
             'checkoutSessionId' => static fn (): string => Uuid::uuid7()->toString(),
@@ -143,11 +141,13 @@ final class OrderBuilder extends AbstractAggregateBuilder
                 SeededFaker::get()->name(),
                 Address::of(SeededFaker::get()->streetAddress(), SeededFaker::get()->postcode(), SeededFaker::get()->city(), SeededFaker::get()->countryCode()),
             ),
-            'lines' => static fn (): array => array_map(static function (): array {
-                $product = Product::of(Uuid::uuid7()->toString(), Label::fromString(SeededFaker::get()->sentence(3)), Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)));
-
-                return ['product' => $product, 'quantity' => Quantity::of(SeededFaker::get()->numberBetween(1, 5))];
-            }, range(1, SeededFaker::get()->numberBetween(1, 3))),
+            'items' => static fn (): array => array_map(
+                static fn (): OrderItem => OrderItem::of(
+                    Product::of(Uuid::uuid7()->toString(), Label::fromString(SeededFaker::get()->sentence(3)), Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000))),
+                    Quantity::of(SeededFaker::get()->numberBetween(1, 5)),
+                ),
+                range(1, SeededFaker::get()->numberBetween(1, 3)),
+            ),
             'confirmedAt' => static fn (): \DateTimeImmutable => $now,
             'preparedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
             'cancelledAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
@@ -166,7 +166,7 @@ final class OrderBuilder extends AbstractAggregateBuilder
             customerId: $this['customerId'],
             checkoutSessionId: $this['checkoutSessionId'],
             shippingAddress: $this['shippingAddress'],
-            lines: $this['lines'],
+            items: $this['items'],
             confirmedAt: $this['confirmedAt'],
         );
     }

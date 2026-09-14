@@ -47,6 +47,9 @@ final class TypeBasedNormalizerEnricherTest extends TestCase
         yield 'string' => ['string', null];
         yield 'backed enum' => ['enum', null];
         yield 'no named type' => ['union', null];
+        yield 'list of objects' => ['items', JsonNormalizer::class];
+        yield 'list of scalars' => ['scalarItems', null];
+        yield 'keyed map of objects' => ['keyedItems', null];
     }
 
     #[Test]
@@ -54,6 +57,24 @@ final class TypeBasedNormalizerEnricherTest extends TestCase
     {
         // Given
         $classMetadata = $this->classMetadataFor('object');
+
+        // When
+        new TypeBasedNormalizerEnricher()->enrich($classMetadata);
+
+        // Then
+        $normalizer = $classMetadata->properties()[0]->normalizer();
+        self::assertInstanceOf(JsonNormalizer::class, $normalizer);
+
+        $objectNormalizer = new \ReflectionObject($normalizer)->getProperty('objectNormalizer')->getValue($normalizer);
+        self::assertInstanceOf(ObjectNormalizer::class, $objectNormalizer);
+        self::assertSame(DummyNestedObject::class, $objectNormalizer->className());
+    }
+
+    #[Test]
+    public function itSetsClassNameForList(): void
+    {
+        // Given
+        $classMetadata = $this->classMetadataFor('items');
 
         // When
         new TypeBasedNormalizerEnricher()->enrich($classMetadata);

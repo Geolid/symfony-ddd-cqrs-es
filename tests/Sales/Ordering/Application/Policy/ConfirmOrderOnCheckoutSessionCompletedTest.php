@@ -10,6 +10,7 @@ use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\OrderStatus;
 use Sales\Ordering\Application\Policy\ConfirmOrderOnCheckoutSessionCompleted;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
+use Sales\Tests\Ordering\Support\PostalAddressResultMapper;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
@@ -56,7 +57,7 @@ final class ConfirmOrderOnCheckoutSessionCompletedTest extends AbstractIntegrati
         self::assertSame($checkoutSessionId, $result->checkoutSessionId);
         self::assertSame(
             $shippingAddress,
-            ['recipientName' => $result->shippingAddress->recipientName, 'address' => (array) $result->shippingAddress->address],
+            PostalAddressResultMapper::toArray($result->shippingAddress),
         );
         self::assertSame(OrderStatus::CONFIRMED, $result->status);
     }

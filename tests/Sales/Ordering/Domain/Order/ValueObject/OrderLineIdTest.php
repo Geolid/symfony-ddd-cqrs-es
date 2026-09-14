@@ -7,9 +7,9 @@ namespace Sales\Tests\Ordering\Domain\Order\ValueObject;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Sales\Ordering\Domain\Order\ValueObject\LineId;
+use Sales\Ordering\Domain\Order\ValueObject\OrderLineId;
 
-final class LineIdTest extends TestCase
+final class OrderLineIdTest extends TestCase
 {
     private const string ORDER_ID = '0199a1b2-3c4d-7e5f-8061-72839405a6b7';
 
@@ -17,7 +17,7 @@ final class LineIdTest extends TestCase
     public function itDerivesKnownId(): void
     {
         // When
-        $id = LineId::forOrder(self::ORDER_ID, 0);
+        $id = OrderLineId::forOrder(self::ORDER_ID, 0);
 
         // Then
         self::assertSame('ccd61927-4a66-548f-8ea7-5a6cebb4bfdf', $id->toString());
@@ -31,7 +31,7 @@ final class LineIdTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
 
         // When
-        LineId::fromString($value);
+        OrderLineId::fromString($value);
     }
 
     /**
@@ -47,8 +47,8 @@ final class LineIdTest extends TestCase
     public function itEquals(): void
     {
         // Given
-        $a = LineId::forOrder(self::ORDER_ID, 0);
-        $b = LineId::forOrder(self::ORDER_ID, 0);
+        $a = OrderLineId::forOrder(self::ORDER_ID, 0);
+        $b = OrderLineId::forOrder(self::ORDER_ID, 0);
 
         // When
         $equals = $a->equals($b);
@@ -61,8 +61,8 @@ final class LineIdTest extends TestCase
     public function itDiffers(): void
     {
         // Given
-        $a = LineId::forOrder(self::ORDER_ID, 0);
-        $b = LineId::forOrder(self::ORDER_ID, 1);
+        $a = OrderLineId::forOrder(self::ORDER_ID, 0);
+        $b = OrderLineId::forOrder(self::ORDER_ID, 1);
 
         // When
         $equals = $a->equals($b);

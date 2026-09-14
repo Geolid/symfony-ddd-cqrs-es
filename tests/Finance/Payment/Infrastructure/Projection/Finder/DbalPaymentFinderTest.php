@@ -9,11 +9,13 @@ use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\Finder\Payment\PaymentResult;
 use Finance\Payment\Application\PaymentStatus;
 use Finance\Payment\Domain\Payment;
+use Finance\Payment\Domain\ValueObject\PaymentId;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
+use Shared\Tests\Support\TestCase\RealColumnLeadsTrait;
 use Symfony\Component\Clock\Clock;
 
 /**
@@ -21,6 +23,8 @@ use Symfony\Component\Clock\Clock;
  */
 final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
 {
+    use RealColumnLeadsTrait;
+
     #[Test]
     public function itGetsById(): void
     {
@@ -192,8 +196,31 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
         return array_map(static fn (Payment $payment): string => $payment->id->toString(), $payments);
     }
 
-    protected function idOf(object $result): string
+    protected function indexOf(object $result): string
     {
         return $result->id;
+    }
+
+    /**
+     * @return array{string, string}
+     */
+    /**
+     * @return array{string, string}
+     */
+    protected function seedConflictingOrder(): array
+    {
+        $checkoutSessionIdByPaymentId = [];
+        foreach ([Uuid::uuid7()->toString(), Uuid::uuid7()->toString()] as $checkoutSessionId) {
+            $checkoutSessionIdByPaymentId[PaymentId::forCheckoutSession($checkoutSessionId)->toString()] = $checkoutSessionId;
+        }
+        ksort($checkoutSessionIdByPaymentId);
+        [$smallerId, $largerId] = array_keys($checkoutSessionIdByPaymentId);
+
+        $now = Clock::get()->now();
+        $first = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionIdByPaymentId[$largerId])->withRequestedAt($now)->create();
+        $second = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionIdByPaymentId[$smallerId])->withRequestedAt($now->modify('+1 hour'))->create();
+        $this->store($first, $second);
+
+        return [$largerId, $smallerId];
     }
 }

@@ -34,11 +34,10 @@ final class DbalPasswordCredentialFinder extends AbstractDbalFinder implements P
         )->one() ?? throw PasswordCredentialResultNotFoundException::forIdentity($identityId);
     }
 
-    protected function buildBaseQuery(QueryBuilder $qb): void
+    protected function configureBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'identity_id', 'login', 'password_hash', 'defined_at', 'password_changed_at', 'identity_authenticatable')
-            ->from(DbalPasswordCredentialProjector::TABLE)
-            ->orderBy('id', 'ASC');
+            ->from(DbalPasswordCredentialProjector::TABLE);
     }
 
     protected function resultClass(): string

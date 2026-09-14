@@ -10,8 +10,8 @@ use Shared\Application\Mapper\PostalAddressMapper;
 use Shopping\Checkout\Application\CheckoutSessionStatus;
 use Shopping\Checkout\Application\Command\CompleteCheckoutSession\CompleteCheckoutSession;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionFinderInterface;
+use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
 use Shopping\Checkout\Domain\Exception\CheckoutSessionNotFoundException;
-use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -39,7 +39,7 @@ final class CompleteCheckoutSessionHandlerTest extends AbstractIntegrationTestCa
             id: $checkoutSession->id->toString(),
             cartId: $checkoutSessionBuilder['cartId'],
             customerId: $checkoutSessionBuilder['customerId'],
-            items: array_map($this->toArray(...), $checkoutSessionBuilder['items']),
+            items: array_map(CheckoutItemMapper::toArray(...), $checkoutSessionBuilder['items']),
             shippingAddress: PostalAddressMapper::toArray($checkoutSessionBuilder['shippingAddress']),
             billingAddress: PostalAddressMapper::toArray($checkoutSessionBuilder['billingAddress']),
             paymentId: $checkoutSessionBuilder['paymentId'],
@@ -63,7 +63,7 @@ final class CompleteCheckoutSessionHandlerTest extends AbstractIntegrationTestCa
             id: $checkoutSession->id->toString(),
             cartId: CheckoutSessionBuilder::sample('cartId'),
             customerId: CheckoutSessionBuilder::sample('customerId'),
-            items: array_map($this->toArray(...), CheckoutSessionBuilder::sample('items')),
+            items: array_map(CheckoutItemMapper::toArray(...), CheckoutSessionBuilder::sample('items')),
             shippingAddress: PostalAddressMapper::toArray(CheckoutSessionBuilder::sample('shippingAddress')),
             billingAddress: PostalAddressMapper::toArray(CheckoutSessionBuilder::sample('billingAddress')),
             paymentId: CheckoutSessionBuilder::sample('paymentId'),
@@ -84,23 +84,10 @@ final class CompleteCheckoutSessionHandlerTest extends AbstractIntegrationTestCa
             id: Uuid::uuid7()->toString(),
             cartId: CheckoutSessionBuilder::sample('cartId'),
             customerId: CheckoutSessionBuilder::sample('customerId'),
-            items: array_map($this->toArray(...), CheckoutSessionBuilder::sample('items')),
+            items: array_map(CheckoutItemMapper::toArray(...), CheckoutSessionBuilder::sample('items')),
             shippingAddress: PostalAddressMapper::toArray(CheckoutSessionBuilder::sample('shippingAddress')),
             billingAddress: PostalAddressMapper::toArray(CheckoutSessionBuilder::sample('billingAddress')),
             paymentId: CheckoutSessionBuilder::sample('paymentId'),
         ));
-    }
-
-    /**
-     * @return array{productId: string, label: string, unitPriceInCents: int, quantity: int}
-     */
-    private function toArray(CheckoutItem $item): array
-    {
-        return [
-            'productId' => $item->productId,
-            'label' => $item->label->value,
-            'unitPriceInCents' => $item->unitPrice->cents,
-            'quantity' => $item->quantity->value,
-        ];
     }
 }

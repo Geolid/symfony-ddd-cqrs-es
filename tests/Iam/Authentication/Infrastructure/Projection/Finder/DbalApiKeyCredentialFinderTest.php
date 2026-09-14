@@ -11,13 +11,18 @@ use Iam\Authentication\Domain\ApiKeyCredential\ApiKeyCredential;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakeApiKeyHasher;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
+use Shared\Tests\Support\TestCase\RealColumnLeadsTrait;
+use Symfony\Component\Clock\Clock;
 
 /**
  * @extends AbstractIterableFinderTestCase<ApiKeyCredentialResult>
  */
 final class DbalApiKeyCredentialFinderTest extends AbstractIterableFinderTestCase
 {
+    use RealColumnLeadsTrait;
+
     #[Test]
     public function itGetsByKeyId(): void
     {
@@ -93,8 +98,28 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIterableFinderTestCas
         return array_map(static fn (ApiKeyCredential $credential): string => $credential->id->toString(), $credentials);
     }
 
-    protected function idOf(object $result): string
+    protected function indexOf(object $result): string
     {
         return $result->id;
+    }
+
+    /**
+     * @return array{string, string}
+     */
+    /**
+     * @return array{string, string}
+     */
+    protected function seedConflictingOrder(): array
+    {
+        $now = Clock::get()->now();
+        $smallerId = Uuid::uuid7($now)->toString();
+        $largerId = Uuid::uuid7($now->modify('+1 hour'))->toString();
+
+        $hasher = new FakeApiKeyHasher();
+        $first = ApiKeyCredentialBuilder::new()->withId($largerId)->withHasher($hasher)->withIssuedAt($now)->create();
+        $second = ApiKeyCredentialBuilder::new()->withId($smallerId)->withHasher($hasher)->withIssuedAt($now->modify('+1 hour'))->create();
+        $this->store($first, $second);
+
+        return [$largerId, $smallerId];
     }
 }

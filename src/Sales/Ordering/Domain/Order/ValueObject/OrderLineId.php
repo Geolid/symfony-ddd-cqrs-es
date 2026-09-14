@@ -7,7 +7,7 @@ namespace Sales\Ordering\Domain\Order\ValueObject;
 use Ramsey\Uuid\Uuid;
 use Webmozart\Assert\Assert;
 
-final readonly class LineId
+final readonly class OrderLineId
 {
     private const string ORDER_NAMESPACE = 'b3f1c2a4-6d5e-4f8a-9b0c-1d2e3f4a5b6c';
 

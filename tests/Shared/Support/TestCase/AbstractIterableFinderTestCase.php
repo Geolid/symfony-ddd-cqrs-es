@@ -18,13 +18,13 @@ abstract class AbstractIterableFinderTestCase extends AbstractIntegrationTestCas
     {
         // Given
         $finder = $this->finder();
-        $ids = $this->seed(5);
+        $indexes = $this->seed(5);
 
         // When
         $results = iterator_to_array($finder);
 
         // Then
-        self::assertSame($ids, $this->resultIds($results));
+        self::assertSame($indexes, $this->resultIndexes($results));
     }
 
     #[Test]
@@ -45,13 +45,29 @@ abstract class AbstractIterableFinderTestCase extends AbstractIntegrationTestCas
     {
         // Given
         $finder = $this->finder();
-        $this->seed(3);
+        $indexes = $this->seed(3);
 
         // When
         $count = \count($finder);
 
         // Then
-        self::assertSame(3, $count);
+        self::assertSame(\count($indexes), $count);
+    }
+
+    #[Test]
+    public function itCachesCount(): void
+    {
+        // Given
+        $finder = $this->finder();
+        $this->seed(3);
+
+        // When
+        $firstCount = \count($finder);
+        $this->seed(1);
+        $secondCount = \count($finder);
+
+        // Then
+        self::assertSame($firstCount, $secondCount);
     }
 
     #[Test]
@@ -59,13 +75,13 @@ abstract class AbstractIterableFinderTestCase extends AbstractIntegrationTestCas
     {
         // Given
         $finder = $this->finder();
-        $ids = $this->seed(3);
+        $indexes = $this->seed(3);
 
         // When
-        $indexed = $finder->indexBy($this->idOf(...));
+        $indexed = $finder->indexBy($this->indexOf(...));
 
         // Then
-        self::assertSame($ids, array_keys(iterator_to_array($indexed)));
+        self::assertSame($indexes, array_keys(iterator_to_array($indexed)));
     }
 
     /**
@@ -83,20 +99,20 @@ abstract class AbstractIterableFinderTestCase extends AbstractIntegrationTestCas
     /**
      * @param TResult $result
      */
-    abstract protected function idOf(object $result): string;
+    abstract protected function indexOf(object $result): string;
 
     /**
      * @param iterable<TResult> $results
      *
      * @return list<string>
      */
-    protected function resultIds(iterable $results): array
+    protected function resultIndexes(iterable $results): array
     {
-        $ids = [];
+        $indexes = [];
         foreach ($results as $result) {
-            $ids[] = $this->idOf($result);
+            $indexes[] = $this->indexOf($result);
         }
 
-        return $ids;
+        return $indexes;
     }
 }

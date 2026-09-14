@@ -91,7 +91,7 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
         return array_map(static fn (Erasure $erasure): string => $erasure->id->toString(), $erasures);
     }
 
-    protected function idOf(object $result): string
+    protected function indexOf(object $result): string
     {
         return $result->id;
     }

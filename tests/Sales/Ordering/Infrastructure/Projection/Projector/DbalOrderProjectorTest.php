@@ -8,6 +8,7 @@ use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\OrderStatus;
+use Sales\Ordering\Domain\Order\ValueObject\OrderItem;
 use Sales\Ordering\Infrastructure\Projection\Projector\DbalOrderProjector;
 use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
 use Shared\Application\ErasureStatus;
@@ -42,8 +43,8 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
             json_decode($row['shipping_address'], true),
         );
         $totalAmountInCents = array_reduce(
-            $builder['lines'],
-            static fn (Money $carry, array $line): Money => $carry->plus($line['product']->price->times($line['quantity']->value)),
+            $builder['items'],
+            static fn (Money $carry, OrderItem $item): Money => $carry->plus($item->total()),
             Money::fromCents(0),
         )->cents;
         self::assertSame($totalAmountInCents, (int) $row['total_amount_in_cents']);

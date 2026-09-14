@@ -9,12 +9,13 @@ use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinde
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialResult;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\Exception\ApiKeyCredentialResultNotFoundException;
 use Iam\Authentication\Infrastructure\Projection\Projector\DbalApiKeyCredentialProjector;
-use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
+use Shared\Application\Finder\SortDirection;
+use Shared\Infrastructure\Projection\Finder\AbstractIterableDbalFinder;
 
 /**
- * @extends AbstractDbalFinder<ApiKeyCredentialResult>
+ * @extends AbstractIterableDbalFinder<ApiKeyCredentialResult>
  */
-final class DbalApiKeyCredentialFinder extends AbstractDbalFinder implements ApiKeyCredentialFinderInterface
+final class DbalApiKeyCredentialFinder extends AbstractIterableDbalFinder implements ApiKeyCredentialFinderInterface
 {
     public function ofKeyId(string $keyId): ApiKeyCredentialResult
     {
@@ -35,11 +36,15 @@ final class DbalApiKeyCredentialFinder extends AbstractDbalFinder implements Api
         );
     }
 
-    protected function buildBaseQuery(QueryBuilder $qb): void
+    protected function configureBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'identity_id', 'label', 'key_id', 'secret_hash', 'issued_at', 'revoked', 'revoked_at', 'identity_authenticatable')
-            ->from(DbalApiKeyCredentialProjector::TABLE)
-            ->orderBy('id', 'ASC');
+            ->from(DbalApiKeyCredentialProjector::TABLE);
+    }
+
+    protected function defaultSort(): array
+    {
+        return ['issued_at' => SortDirection::Ascending, 'id' => SortDirection::Ascending];
     }
 
     protected function resultClass(): string

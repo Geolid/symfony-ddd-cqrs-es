@@ -12,12 +12,13 @@ use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentResult;
 use Fulfilment\Shipping\Application\ShipmentStatus;
 use Fulfilment\Shipping\Infrastructure\Projection\Projector\DbalShipmentProjector;
-use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
+use Shared\Application\Finder\SortDirection;
+use Shared\Infrastructure\Projection\Finder\AbstractIterableDbalFinder;
 
 /**
- * @extends AbstractDbalFinder<ShipmentResult>
+ * @extends AbstractIterableDbalFinder<ShipmentResult>
  */
-final class DbalShipmentFinder extends AbstractDbalFinder implements ShipmentFinderInterface
+final class DbalShipmentFinder extends AbstractIterableDbalFinder implements ShipmentFinderInterface
 {
     public function ofId(string $id): ShipmentResult
     {
@@ -82,11 +83,15 @@ final class DbalShipmentFinder extends AbstractDbalFinder implements ShipmentFin
         );
     }
 
-    protected function buildBaseQuery(QueryBuilder $qb): void
+    protected function configureBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'order_id', 'customer_id', 'status', 'origin', 'destination', 'tracking_number', 'created_at', 'manifested_at', 'dispatched_at', 'delivered_at', 'cancelled_at', 'erasure_status')
-            ->from(DbalShipmentProjector::TABLE)
-            ->orderBy('id', 'ASC');
+            ->from(DbalShipmentProjector::TABLE);
+    }
+
+    protected function defaultSort(): array
+    {
+        return ['created_at' => SortDirection::Ascending, 'id' => SortDirection::Ascending];
     }
 
     protected function resultClass(): string

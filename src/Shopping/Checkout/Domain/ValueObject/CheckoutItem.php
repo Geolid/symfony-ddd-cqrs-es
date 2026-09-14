@@ -6,6 +6,7 @@ namespace Shopping\Checkout\Domain\ValueObject;
 
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
+use Shared\Domain\ValueObject\Quantity;
 use Webmozart\Assert\Assert;
 
 final readonly class CheckoutItem
@@ -28,9 +29,9 @@ final readonly class CheckoutItem
         return new self($productId, $label, $unitPrice, $quantity);
     }
 
-    public function subtotal(): Money
+    public function total(): Money
     {
-        return $this->unitPrice->times($this->quantity->value);
+        return $this->unitPrice->times($this->quantity);
     }
 
     public function equals(self $other): bool

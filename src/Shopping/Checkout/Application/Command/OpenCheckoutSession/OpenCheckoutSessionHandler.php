@@ -6,15 +6,12 @@ namespace Shopping\Checkout\Application\Command\OpenCheckoutSession;
 
 use Shared\Application\Command\CommandHandler;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\Label;
-use Shared\Domain\ValueObject\Money;
+use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
 use Shopping\Checkout\Domain\CheckoutSession;
 use Shopping\Checkout\Domain\Exception\CheckoutSessionAlreadyExistsException;
 use Shopping\Checkout\Domain\Exception\CheckoutSessionEmptyException;
 use Shopping\Checkout\Domain\Repository\CheckoutSessionRepositoryInterface;
-use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Checkout\Domain\ValueObject\CheckoutSessionId;
-use Shopping\Checkout\Domain\ValueObject\Quantity;
 
 #[CommandHandler]
 final readonly class OpenCheckoutSessionHandler
@@ -33,25 +30,12 @@ final readonly class OpenCheckoutSessionHandler
             id: CheckoutSessionId::fromString($command->id),
             cartId: $command->cartId,
             customerId: $command->customerId,
-            items: array_map($this->resolveItem(...), $command->lines),
+            items: array_map(CheckoutItemMapper::fromArray(...), $command->lines),
             shippingAddress: PostalAddressMapper::fromArray($command->shippingAddress),
             billingAddress: PostalAddressMapper::fromArray($command->billingAddress),
             openedAt: $command->openedAt,
         );
 
         $this->repository->save($checkoutSession);
-    }
-
-    /**
-     * @param array{productId: string, label: string, unitPriceInCents: int, quantity: int} $line
-     */
-    private function resolveItem(array $line): CheckoutItem
-    {
-        return CheckoutItem::of(
-            $line['productId'],
-            Label::fromString($line['label']),
-            Money::fromCents($line['unitPriceInCents']),
-            Quantity::of($line['quantity']),
-        );
     }
 }

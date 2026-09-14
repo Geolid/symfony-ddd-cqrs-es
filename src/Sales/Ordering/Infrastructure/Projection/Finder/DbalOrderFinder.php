@@ -9,12 +9,13 @@ use Sales\Ordering\Application\Finder\Order\Exception\OrderResultNotFoundExcepti
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\Finder\Order\OrderResult;
 use Sales\Ordering\Infrastructure\Projection\Projector\DbalOrderProjector;
-use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
+use Shared\Application\Finder\SortDirection;
+use Shared\Infrastructure\Projection\Finder\AbstractIterableDbalFinder;
 
 /**
- * @extends AbstractDbalFinder<OrderResult>
+ * @extends AbstractIterableDbalFinder<OrderResult>
  */
-final class DbalOrderFinder extends AbstractDbalFinder implements OrderFinderInterface
+final class DbalOrderFinder extends AbstractIterableDbalFinder implements OrderFinderInterface
 {
     public function ofId(string $id): OrderResult
     {
@@ -35,11 +36,15 @@ final class DbalOrderFinder extends AbstractDbalFinder implements OrderFinderInt
         );
     }
 
-    protected function buildBaseQuery(QueryBuilder $qb): void
+    protected function configureBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'customer_id', 'checkout_session_id', 'shipping_address', 'total_amount_in_cents', 'status', 'confirmed_at', 'prepared_at', 'dispatched_at', 'delivered_at', 'cancelled_at', 'failed_at', 'erasure_status')
-            ->from(DbalOrderProjector::TABLE)
-            ->orderBy('id', 'ASC');
+            ->from(DbalOrderProjector::TABLE);
+    }
+
+    protected function defaultSort(): array
+    {
+        return ['confirmed_at' => SortDirection::Ascending, 'id' => SortDirection::Ascending];
     }
 
     protected function resultClass(): string

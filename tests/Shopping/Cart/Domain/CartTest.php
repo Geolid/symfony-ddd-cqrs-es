@@ -7,6 +7,7 @@ namespace Shopping\Tests\Cart\Domain;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Shared\Domain\ValueObject\Quantity;
 use Shopping\Cart\Domain\Cart;
 use Shopping\Cart\Domain\Event\CartProductAdded;
 use Shopping\Cart\Domain\Event\CartProductQuantityChanged;
@@ -16,7 +17,6 @@ use Shopping\Cart\Domain\Event\CartStarted;
 use Shopping\Cart\Domain\Exception\CartAlreadyPurchasedException;
 use Shopping\Cart\Domain\Exception\CartProductNotFoundException;
 use Shopping\Cart\Domain\ValueObject\CartId;
-use Shopping\Cart\Domain\ValueObject\Quantity;
 use Shopping\Tests\Cart\Support\Builder\CartBuilder;
 use Support\SeededFaker;
 

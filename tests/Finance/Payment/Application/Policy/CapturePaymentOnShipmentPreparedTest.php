@@ -11,7 +11,6 @@ use Finance\Payment\Application\PSP\Exception\PaymentFatalFailureException;
 use Finance\Payment\Application\PSP\Exception\PaymentTransientFailureException;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Application\PSP\PaymentGatewayStatus;
-use Finance\Payment\Domain\ValueObject\PaymentId;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use Fulfilment\Shipping\Application\IntegrationEvent\ShipmentPrepared\ShipmentPreparedIntegrationEvent;
 use Patchlevel\EventSourcing\Message\Message;
@@ -47,7 +46,7 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
     {
         // Given
         $checkoutSessionId = Uuid::uuid7()->toString();
-        $paymentBuilder = PaymentBuilder::new()->withId(PaymentId::forCheckoutSession($checkoutSessionId)->toString())->withCheckoutSessionId($checkoutSessionId)->authorized();
+        $paymentBuilder = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionId)->authorized();
         $payment = $paymentBuilder->create();
         $order = OrderBuilder::new()->withCheckoutSessionId($checkoutSessionId)->create();
         $this->store($payment, $order);
@@ -86,7 +85,7 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
     {
         // Given
         $checkoutSessionId = Uuid::uuid7()->toString();
-        $paymentBuilder = PaymentBuilder::new()->withId(PaymentId::forCheckoutSession($checkoutSessionId)->toString())->withCheckoutSessionId($checkoutSessionId)->authorized();
+        $paymentBuilder = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionId)->authorized();
         $payment = $paymentBuilder->create();
         $order = OrderBuilder::new()->withCheckoutSessionId($checkoutSessionId)->create();
         $this->store($payment, $order);
@@ -109,7 +108,7 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
     {
         // Given
         $checkoutSessionId = Uuid::uuid7()->toString();
-        $paymentBuilder = PaymentBuilder::new()->withId(PaymentId::forCheckoutSession($checkoutSessionId)->toString())->withCheckoutSessionId($checkoutSessionId)->authorized();
+        $paymentBuilder = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionId)->authorized();
         $payment = $paymentBuilder->create();
         $order = OrderBuilder::new()->withCheckoutSessionId($checkoutSessionId)->create();
         $this->store($payment, $order);
@@ -133,7 +132,7 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
     {
         // Given
         $checkoutSessionId = Uuid::uuid7()->toString();
-        $paymentBuilder = PaymentBuilder::new()->withId(PaymentId::forCheckoutSession($checkoutSessionId)->toString())->withCheckoutSessionId($checkoutSessionId)->authorized();
+        $paymentBuilder = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionId)->authorized();
         $payment = $paymentBuilder->create();
         $order = OrderBuilder::new()->withCheckoutSessionId($checkoutSessionId)->create();
         $this->store($payment, $order);

@@ -143,7 +143,7 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
     {
         return array_reduce(
             $items,
-            static fn (Money $carry, CheckoutItem $item): Money => $carry->plus($item->subtotal()),
+            static fn (Money $carry, CheckoutItem $item): Money => $carry->plus($item->total()),
             Money::fromCents(0),
         );
     }

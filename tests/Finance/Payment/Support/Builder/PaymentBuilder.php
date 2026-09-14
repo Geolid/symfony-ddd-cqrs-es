@@ -33,11 +33,6 @@ use Symfony\Component\Clock\Clock;
  */
 final class PaymentBuilder extends AbstractAggregateBuilder
 {
-    public function withId(string $id): self
-    {
-        return $this->withAttributes(id: PaymentId::fromString($id));
-    }
-
     public function withCheckoutSessionId(string $checkoutSessionId): self
     {
         return $this->withAttributes(checkoutSessionId: $checkoutSessionId);
@@ -119,7 +114,9 @@ final class PaymentBuilder extends AbstractAggregateBuilder
         $now = Clock::get()->now();
 
         return [
-            'id' => static fn (): PaymentId => PaymentId::fromString(Uuid::uuid7()->toString()),
+            'id' => static fn (?self $builder): PaymentId => PaymentId::forCheckoutSession(
+                null !== $builder ? $builder['checkoutSessionId'] : self::sample('checkoutSessionId'),
+            ),
             'checkoutSessionId' => static fn (): string => Uuid::uuid7()->toString(),
             'orderId' => static fn (): string => Uuid::uuid7()->toString(),
             'amount' => static fn (): Money => Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000)),

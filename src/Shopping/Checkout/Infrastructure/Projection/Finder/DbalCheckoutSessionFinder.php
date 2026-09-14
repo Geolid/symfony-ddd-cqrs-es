@@ -6,7 +6,8 @@ namespace Shopping\Checkout\Infrastructure\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Types\Types;
-use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
+use Shared\Application\Finder\SortDirection;
+use Shared\Infrastructure\Projection\Finder\AbstractIterableDbalFinder;
 use Shopping\Checkout\Application\CheckoutSessionStatus;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionFinderInterface;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionResult;
@@ -14,9 +15,9 @@ use Shopping\Checkout\Application\Finder\CheckoutSession\Exception\CheckoutSessi
 use Shopping\Checkout\Infrastructure\Projection\Projector\DbalCheckoutSessionProjector;
 
 /**
- * @extends AbstractDbalFinder<CheckoutSessionResult>
+ * @extends AbstractIterableDbalFinder<CheckoutSessionResult>
  */
-final class DbalCheckoutSessionFinder extends AbstractDbalFinder implements CheckoutSessionFinderInterface
+final class DbalCheckoutSessionFinder extends AbstractIterableDbalFinder implements CheckoutSessionFinderInterface
 {
     /**
      * @throws CheckoutSessionResultNotFoundException
@@ -60,11 +61,15 @@ final class DbalCheckoutSessionFinder extends AbstractDbalFinder implements Chec
         );
     }
 
-    protected function buildBaseQuery(QueryBuilder $qb): void
+    protected function configureBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'cart_id', 'customer_id', 'shipping_address', 'billing_address', 'total_amount_in_cents', 'status', 'opened_at')
-            ->from(DbalCheckoutSessionProjector::TABLE)
-            ->orderBy('id', 'ASC');
+        $qb->select('id', 'cart_id', 'customer_id', 'items', 'shipping_address', 'billing_address', 'total_amount_in_cents', 'status', 'opened_at')
+            ->from(DbalCheckoutSessionProjector::TABLE);
+    }
+
+    protected function defaultSort(): array
+    {
+        return ['opened_at' => SortDirection::Ascending, 'id' => SortDirection::Ascending];
     }
 
     protected function resultClass(): string

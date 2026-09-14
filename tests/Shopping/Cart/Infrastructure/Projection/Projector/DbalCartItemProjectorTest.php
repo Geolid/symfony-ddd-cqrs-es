@@ -7,7 +7,7 @@ namespace Shopping\Tests\Cart\Infrastructure\Projection\Projector;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Shopping\Cart\Domain\ValueObject\Quantity;
+use Shared\Domain\ValueObject\Quantity;
 use Shopping\Cart\Infrastructure\Projection\Projector\DbalCartItemProjector;
 use Shopping\Tests\Cart\Support\Builder\CartBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;

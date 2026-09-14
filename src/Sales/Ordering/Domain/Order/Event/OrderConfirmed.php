@@ -7,7 +7,7 @@ namespace Sales\Ordering\Domain\Order\Event;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\DataSubjectId;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
-use Sales\Ordering\Domain\Order\Entity\Line;
+use Sales\Ordering\Domain\Order\Entity\OrderLine;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Shared\Domain\Pii\ErasedFieldSentinel;
 use Shared\Domain\Pii\ErasedValueObjectSentinel;
@@ -19,7 +19,7 @@ use Shared\Domain\ValueObject\PostalAddress;
 final readonly class OrderConfirmed
 {
     /**
-     * @param list<Line> $lines
+     * @param list<OrderLine> $lines
      */
     public function __construct(
         #[DataSubjectId]

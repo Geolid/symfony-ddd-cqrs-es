@@ -6,13 +6,13 @@ namespace Shopping\Cart\Application\Command\ChangeCartProductQuantity;
 
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
+use Shared\Domain\ValueObject\Quantity;
 use Shopping\Cart\Domain\Exception\CartAlreadyExistsException;
 use Shopping\Cart\Domain\Exception\CartAlreadyPurchasedException;
 use Shopping\Cart\Domain\Exception\CartNotFoundException;
 use Shopping\Cart\Domain\Exception\CartProductNotFoundException;
 use Shopping\Cart\Domain\Repository\CartRepositoryInterface;
 use Shopping\Cart\Domain\ValueObject\CartId;
-use Shopping\Cart\Domain\ValueObject\Quantity;
 
 #[CommandHandler]
 final readonly class ChangeCartProductQuantityHandler

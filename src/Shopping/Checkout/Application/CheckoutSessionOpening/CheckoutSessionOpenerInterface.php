@@ -8,6 +8,7 @@ use Shared\Application\DrivingPort;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerAddressesNotCompletedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerErasureRequestedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerNotRegisteredException;
+use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\ProductNotListedException;
 
 #[DrivingPort]
 interface CheckoutSessionOpenerInterface
@@ -16,6 +17,7 @@ interface CheckoutSessionOpenerInterface
      * @throws CustomerNotRegisteredException
      * @throws CustomerErasureRequestedException
      * @throws CustomerAddressesNotCompletedException
+     * @throws ProductNotListedException
      */
     public function openFor(string $cartId): OpenedCheckoutSession;
 }

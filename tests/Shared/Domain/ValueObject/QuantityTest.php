@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Shopping\Tests\Cart\Domain\ValueObject;
+namespace Shared\Tests\Domain\ValueObject;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Shopping\Cart\Domain\ValueObject\Quantity;
+use Shared\Domain\ValueObject\Quantity;
 
 final class QuantityTest extends TestCase
 {
@@ -67,5 +67,19 @@ final class QuantityTest extends TestCase
 
         // Then
         self::assertFalse($equals);
+    }
+
+    #[Test]
+    public function itAdds(): void
+    {
+        // Given
+        $a = Quantity::of(2);
+        $b = Quantity::of(3);
+
+        // When
+        $sum = $a->plus($b);
+
+        // Then
+        self::assertSame(5, $sum->value);
     }
 }

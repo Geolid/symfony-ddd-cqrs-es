@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Shopping\Tests\Cart\Support\Builder;
 
 use Ramsey\Uuid\Uuid;
+use Shared\Domain\ValueObject\Quantity;
 use Shopping\Cart\Domain\Cart;
 use Shopping\Cart\Domain\ValueObject\CartId;
-use Shopping\Cart\Domain\ValueObject\Quantity;
 use Support\Builder\AbstractAggregateBuilder;
 use Support\SeededFaker;
 use Symfony\Component\Clock\Clock;

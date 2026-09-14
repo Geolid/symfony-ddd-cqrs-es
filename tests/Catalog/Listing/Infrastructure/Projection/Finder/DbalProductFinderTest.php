@@ -13,16 +13,16 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Finder\PaginationMetadata;
 use Shared\Application\Finder\PaginatorInterface;
-use Shared\Tests\Support\PaginationTrait;
-use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
+use Shared\Tests\Support\TestCase\AbstractPaginatableFinderTestCase;
+use Shared\Tests\Support\TestCase\RealColumnLeadsTrait;
+use Symfony\Component\Clock\Clock;
 
 /**
- * @extends AbstractIterableFinderTestCase<ProductResult>
+ * @extends AbstractPaginatableFinderTestCase<ProductResult>
  */
-final class DbalProductFinderTest extends AbstractIterableFinderTestCase
+final class DbalProductFinderTest extends AbstractPaginatableFinderTestCase
 {
-    /** @use PaginationTrait<PaginatorInterface<ProductResult>> */
-    use PaginationTrait;
+    use RealColumnLeadsTrait;
 
     #[Test]
     public function itGetsById(): void
@@ -69,7 +69,7 @@ final class DbalProductFinderTest extends AbstractIterableFinderTestCase
             expectedIds: $ids,
             pageSize: 2,
             askPage: static fn (int $page, int $itemsPerPage): PaginatorInterface => $finder->paginate($page, $itemsPerPage),
-            idsOf: $this->resultIds(...),
+            idsOf: $this->resultIndexes(...),
             metadataOf: PaginationMetadata::fromPaginator(...),
         );
     }
@@ -83,7 +83,7 @@ final class DbalProductFinderTest extends AbstractIterableFinderTestCase
         // When
         $this->traverseEmptyPage(
             askPage: static fn (int $page, int $itemsPerPage): PaginatorInterface => $finder->paginate($page, $itemsPerPage),
-            idsOf: $this->resultIds(...),
+            idsOf: $this->resultIndexes(...),
             metadataOf: PaginationMetadata::fromPaginator(...),
             itemsPerPage: 20,
         );
@@ -105,8 +105,27 @@ final class DbalProductFinderTest extends AbstractIterableFinderTestCase
         return array_map(static fn (Product $product): string => $product->id->toString(), $products);
     }
 
-    protected function idOf(object $result): string
+    protected function indexOf(object $result): string
     {
         return $result->id;
+    }
+
+    /**
+     * @return array{string, string}
+     */
+    /**
+     * @return array{string, string}
+     */
+    protected function seedConflictingOrder(): array
+    {
+        $now = Clock::get()->now();
+        $smallerId = Uuid::uuid7($now)->toString();
+        $largerId = Uuid::uuid7($now->modify('+1 hour'))->toString();
+
+        $first = ProductBuilder::new()->withId($largerId)->withListedAt($now)->create();
+        $second = ProductBuilder::new()->withId($smallerId)->withListedAt($now->modify('+1 hour'))->create();
+        $this->store($first, $second);
+
+        return [$largerId, $smallerId];
     }
 }

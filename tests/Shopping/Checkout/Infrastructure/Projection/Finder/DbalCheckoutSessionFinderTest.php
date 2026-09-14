@@ -9,13 +9,17 @@ use Ramsey\Uuid\Uuid;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Money;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
+use Shared\Tests\Support\TestCase\RealColumnLeadsTrait;
 use Shopping\Checkout\Application\CheckoutSessionStatus;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionFinderInterface;
+use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionItemResult;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionResult;
 use Shopping\Checkout\Application\Finder\CheckoutSession\Exception\CheckoutSessionResultNotFoundException;
+use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
 use Shopping\Checkout\Domain\CheckoutSession;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
+use Shopping\Tests\Checkout\Support\PostalAddressResultMapper;
 use Symfony\Component\Clock\Clock;
 
 /**
@@ -23,6 +27,8 @@ use Symfony\Component\Clock\Clock;
  */
 final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
 {
+    use RealColumnLeadsTrait;
+
     #[Test]
     public function itGets(): void
     {
@@ -67,16 +73,28 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
         self::assertSame($builder['cartId'], $result->cartId);
         self::assertSame($builder['customerId'], $result->customerId);
         self::assertSame(
+            array_map(CheckoutItemMapper::toArray(...), $builder['items']),
+            array_map(
+                static fn (CheckoutSessionItemResult $item): array => [
+                    'productId' => $item->productId,
+                    'label' => $item->label,
+                    'unitPriceInCents' => $item->unitPriceInCents,
+                    'quantity' => $item->quantity,
+                ],
+                $result->items,
+            ),
+        );
+        self::assertSame(
             PostalAddressMapper::toArray($builder['shippingAddress']),
-            ['recipientName' => $result->shippingAddress->recipientName, 'address' => (array) $result->shippingAddress->address],
+            PostalAddressResultMapper::toArray($result->shippingAddress),
         );
         self::assertSame(
             PostalAddressMapper::toArray($builder['billingAddress']),
-            ['recipientName' => $result->billingAddress->recipientName, 'address' => (array) $result->billingAddress->address],
+            PostalAddressResultMapper::toArray($result->billingAddress),
         );
         $totalAmountInCents = array_reduce(
             $builder['items'],
-            static fn (Money $carry, CheckoutItem $item): Money => $carry->plus($item->subtotal()),
+            static fn (Money $carry, CheckoutItem $item): Money => $carry->plus($item->total()),
             Money::fromCents(0),
         )->cents;
         self::assertSame($totalAmountInCents, $result->totalAmountInCents);
@@ -136,8 +154,24 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
         return array_map(static fn (CheckoutSession $checkoutSession): string => $checkoutSession->id->toString(), $checkoutSessions);
     }
 
-    protected function idOf(object $result): string
+    protected function indexOf(object $result): string
     {
         return $result->id;
+    }
+
+    /**
+     * @return array{string, string}
+     */
+    protected function seedConflictingOrder(): array
+    {
+        $now = Clock::get()->now();
+        $smallerId = Uuid::uuid7($now)->toString();
+        $largerId = Uuid::uuid7($now->modify('+1 hour'))->toString();
+
+        $first = CheckoutSessionBuilder::new()->withId($largerId)->withOpenedAt($now)->create();
+        $second = CheckoutSessionBuilder::new()->withId($smallerId)->withOpenedAt($now->modify('+1 hour'))->create();
+        $this->store($first, $second);
+
+        return [$largerId, $smallerId];
     }
 }

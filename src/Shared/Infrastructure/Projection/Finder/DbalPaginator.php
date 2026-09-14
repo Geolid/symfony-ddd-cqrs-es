@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Shared\Infrastructure\Projection\Finder;
 
-use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Shared\Application\Finder\PaginatorInterface;
 use Webmozart\Assert\Assert;
@@ -14,20 +13,19 @@ use Webmozart\Assert\Assert;
  *
  * @implements PaginatorInterface<TResult>
  */
-final class DbalPaginator implements PaginatorInterface
+final readonly class DbalPaginator implements PaginatorInterface
 {
-    use DbalCountTrait;
-
     /**
      * @param \Closure(): QueryBuilder                $query
      * @param \Closure(array<string, mixed>): TResult $hydrate
+     * @param \Closure(): int                         $countTotal
      */
     public function __construct(
-        private readonly Connection $connection,
-        private readonly \Closure $query,
-        private readonly \Closure $hydrate,
-        private readonly int $page = 1,
-        private readonly int $itemsPerPage = 20,
+        private \Closure $query,
+        private \Closure $hydrate,
+        private \Closure $countTotal,
+        private int $page,
+        private int $itemsPerPage,
     ) {
         Assert::positiveInteger($page);
         Assert::positiveInteger($itemsPerPage);
@@ -50,7 +48,7 @@ final class DbalPaginator implements PaginatorInterface
 
     public function totalItems(): int
     {
-        return $this->countTotalItems($this->connection, $this->query);
+        return ($this->countTotal)();
     }
 
     public function count(): int

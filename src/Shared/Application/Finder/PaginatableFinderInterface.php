@@ -6,8 +6,10 @@ namespace Shared\Application\Finder;
 
 /**
  * @template TResult of object
+ *
+ * @extends IterableFinderInterface<TResult>
  */
-interface PaginatableFinderInterface
+interface PaginatableFinderInterface extends IterableFinderInterface
 {
     /**
      * @return PaginatorInterface<TResult>

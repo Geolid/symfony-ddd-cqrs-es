@@ -25,11 +25,16 @@ final readonly class DbalCartItemProjector extends AbstractDbalProjector
     public function onCartProductAdded(CartProductAdded $event): void
     {
         try {
-            $this->connection->insert(self::TABLE, [
-                'cart_id' => $event->id->toString(),
-                'product_id' => $event->productId,
-                'quantity' => $event->quantity->value,
-            ]);
+            $this->connection->insert(
+                self::TABLE,
+                [
+                    'cart_id' => $event->id->toString(),
+                    'product_id' => $event->productId,
+                    'quantity' => $event->quantity->value,
+                    'added_at' => $event->addedAt,
+                ],
+                ['added_at' => Types::DATETIME_IMMUTABLE],
+            );
         } catch (UniqueConstraintViolationException) {
             $this->connection->executeStatement(
                 \sprintf('UPDATE %s SET quantity = quantity + :delta WHERE cart_id = :cartId AND product_id = :productId', self::TABLE),
@@ -66,6 +71,7 @@ final readonly class DbalCartItemProjector extends AbstractDbalProjector
         $table->addColumn('cart_id', Types::STRING, ['length' => 36]);
         $table->addColumn('product_id', Types::STRING, ['length' => 36]);
         $table->addColumn('quantity', Types::INTEGER);
+        $table->addColumn('added_at', Types::DATETIME_IMMUTABLE);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('cart_id'), UnqualifiedName::unquoted('product_id'))

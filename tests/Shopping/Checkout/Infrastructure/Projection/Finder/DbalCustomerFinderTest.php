@@ -10,7 +10,7 @@ use Ramsey\Uuid\Uuid;
 use Shared\Application\ErasureStatus;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shopping\Checkout\Application\Finder\Customer\CustomerFinderInterface;
-use Shopping\Checkout\Application\Finder\Customer\PostalAddressResult;
+use Shopping\Tests\Checkout\Support\PostalAddressResultMapper;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
@@ -41,9 +41,9 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
         self::assertNotNull($found);
         self::assertSame($customer->id->toString(), $found->id);
         self::assertNotNull($found->shippingAddress);
-        self::assertSame(PostalAddressMapper::toArray($builder['shippingAddress']), $this->toArray($found->shippingAddress));
+        self::assertSame(PostalAddressMapper::toArray($builder['shippingAddress']), PostalAddressResultMapper::toArray($found->shippingAddress));
         self::assertNotNull($found->billingAddress);
-        self::assertSame(PostalAddressMapper::toArray($builder['billingAddress']), $this->toArray($found->billingAddress));
+        self::assertSame(PostalAddressMapper::toArray($builder['billingAddress']), PostalAddressResultMapper::toArray($found->billingAddress));
         self::assertSame(ErasureStatus::RETAINED, $found->erasureStatus);
         self::assertNull($notFound);
     }
@@ -62,21 +62,5 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
         self::assertNotNull($result);
         self::assertNull($result->shippingAddress);
         self::assertNull($result->billingAddress);
-    }
-
-    /**
-     * @return array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}}
-     */
-    private function toArray(PostalAddressResult $postalAddressResult): array
-    {
-        return [
-            'recipientName' => $postalAddressResult->recipientName,
-            'address' => [
-                'street' => $postalAddressResult->address->street,
-                'postalCode' => $postalAddressResult->address->postalCode,
-                'city' => $postalAddressResult->address->city,
-                'countryCode' => $postalAddressResult->address->countryCode,
-            ],
-        ];
     }
 }

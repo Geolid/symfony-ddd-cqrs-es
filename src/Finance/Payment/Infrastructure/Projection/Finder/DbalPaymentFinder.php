@@ -11,12 +11,13 @@ use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\Finder\Payment\PaymentResult;
 use Finance\Payment\Application\PaymentStatus;
 use Finance\Payment\Infrastructure\Projection\Projector\DbalPaymentProjector;
-use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
+use Shared\Application\Finder\SortDirection;
+use Shared\Infrastructure\Projection\Finder\AbstractIterableDbalFinder;
 
 /**
- * @extends AbstractDbalFinder<PaymentResult>
+ * @extends AbstractIterableDbalFinder<PaymentResult>
  */
-final class DbalPaymentFinder extends AbstractDbalFinder implements PaymentFinderInterface
+final class DbalPaymentFinder extends AbstractIterableDbalFinder implements PaymentFinderInterface
 {
     public function ofId(string $id): PaymentResult
     {
@@ -75,12 +76,15 @@ final class DbalPaymentFinder extends AbstractDbalFinder implements PaymentFinde
         );
     }
 
-    protected function buildBaseQuery(QueryBuilder $qb): void
+    protected function configureBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('id', 'checkout_session_id', 'order_id', 'amount_in_cents', 'reference', 'checkout_url', 'status', 'requested_at', 'authorized_at', 'captured_at', 'failed_at', 'abandoned_at', 'voided_at')
-            ->from(DbalPaymentProjector::TABLE)
-            ->orderBy('requested_at', 'ASC')
-            ->addOrderBy('id', 'ASC');
+            ->from(DbalPaymentProjector::TABLE);
+    }
+
+    protected function defaultSort(): array
+    {
+        return ['requested_at' => SortDirection::Ascending, 'id' => SortDirection::Ascending];
     }
 
     protected function resultClass(): string

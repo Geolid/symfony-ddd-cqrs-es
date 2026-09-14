@@ -14,10 +14,12 @@ use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
 use Shared\Infrastructure\Projection\SnakeCaseKeys;
 use Shopping\Checkout\Application\CheckoutSessionStatus;
+use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
 use Shopping\Checkout\Domain\Event\CheckoutSessionCompleted;
 use Shopping\Checkout\Domain\Event\CheckoutSessionExpired;
 use Shopping\Checkout\Domain\Event\CheckoutSessionOpened;
 use Shopping\Checkout\Domain\Event\CheckoutSessionStaled;
+use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 
 #[Projector('shopping.checkout.project_checkout_sessions')]
 final readonly class DbalCheckoutSessionProjector extends AbstractDbalProjector
@@ -33,13 +35,17 @@ final readonly class DbalCheckoutSessionProjector extends AbstractDbalProjector
                 'id' => $event->id,
                 'cart_id' => $event->cartId,
                 'customer_id' => $event->customerId,
+                'items' => array_map(
+                    static fn (CheckoutItem $item): array => SnakeCaseKeys::from(CheckoutItemMapper::toArray($item)),
+                    $event->items,
+                ),
                 'shipping_address' => SnakeCaseKeys::from(PostalAddressMapper::toArray($event->shippingAddress)),
                 'billing_address' => SnakeCaseKeys::from(PostalAddressMapper::toArray($event->billingAddress)),
                 'total_amount_in_cents' => $event->totalAmount->cents,
                 'status' => CheckoutSessionStatus::OPEN->value,
                 'opened_at' => $event->openedAt,
             ],
-            ['opened_at' => Types::DATETIME_IMMUTABLE, 'shipping_address' => Types::JSON, 'billing_address' => Types::JSON],
+            ['opened_at' => Types::DATETIME_IMMUTABLE, 'items' => Types::JSON, 'shipping_address' => Types::JSON, 'billing_address' => Types::JSON],
         );
     }
 
@@ -82,6 +88,7 @@ final readonly class DbalCheckoutSessionProjector extends AbstractDbalProjector
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('cart_id', Types::STRING, ['length' => 36]);
         $table->addColumn('customer_id', Types::STRING, ['length' => 36]);
+        $table->addColumn('items', Types::JSON);
         $table->addColumn('shipping_address', Types::JSON);
         $table->addColumn('billing_address', Types::JSON);
         $table->addColumn('total_amount_in_cents', Types::INTEGER);

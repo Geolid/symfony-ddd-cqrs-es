@@ -9,11 +9,13 @@ use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentResult;
 use Fulfilment\Shipping\Application\ShipmentStatus;
 use Fulfilment\Shipping\Domain\Shipment;
+use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\ErasureStatus;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
+use Shared\Tests\Support\TestCase\RealColumnLeadsTrait;
 use Symfony\Component\Clock\Clock;
 
 /**
@@ -21,6 +23,8 @@ use Symfony\Component\Clock\Clock;
  */
 final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
 {
+    use RealColumnLeadsTrait;
+
     #[Test]
     public function itGetsById(): void
     {
@@ -182,8 +186,31 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
         return array_map(static fn (Shipment $shipment): string => $shipment->id->toString(), $shipments);
     }
 
-    protected function idOf(object $result): string
+    protected function indexOf(object $result): string
     {
         return $result->id;
+    }
+
+    /**
+     * @return array{string, string}
+     */
+    /**
+     * @return array{string, string}
+     */
+    protected function seedConflictingOrder(): array
+    {
+        $orderIdByShipmentId = [];
+        foreach ([Uuid::uuid7()->toString(), Uuid::uuid7()->toString()] as $orderId) {
+            $orderIdByShipmentId[ShipmentId::forOrder($orderId)->toString()] = $orderId;
+        }
+        ksort($orderIdByShipmentId);
+        [$smallerId, $largerId] = array_keys($orderIdByShipmentId);
+
+        $now = Clock::get()->now();
+        $first = ShipmentBuilder::new()->withOrderId($orderIdByShipmentId[$largerId])->withCreatedAt($now)->create();
+        $second = ShipmentBuilder::new()->withOrderId($orderIdByShipmentId[$smallerId])->withCreatedAt($now->modify('+1 hour'))->create();
+        $this->store($first, $second);
+
+        return [$largerId, $smallerId];
     }
 }
