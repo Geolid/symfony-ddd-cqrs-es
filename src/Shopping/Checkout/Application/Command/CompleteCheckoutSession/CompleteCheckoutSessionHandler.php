@@ -7,14 +7,11 @@ namespace Shopping\Checkout\Application\Command\CompleteCheckoutSession;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\Label;
-use Shared\Domain\ValueObject\Money;
+use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
 use Shopping\Checkout\Domain\Exception\CheckoutSessionAlreadyExistsException;
 use Shopping\Checkout\Domain\Exception\CheckoutSessionNotFoundException;
 use Shopping\Checkout\Domain\Repository\CheckoutSessionRepositoryInterface;
-use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Checkout\Domain\ValueObject\CheckoutSessionId;
-use Shopping\Checkout\Domain\ValueObject\Quantity;
 
 #[CommandHandler]
 final readonly class CompleteCheckoutSessionHandler
@@ -35,25 +32,12 @@ final readonly class CompleteCheckoutSessionHandler
         $checkoutSession->complete(
             cartId: $command->cartId,
             customerId: $command->customerId,
-            items: array_map($this->resolveItem(...), $command->items),
+            items: array_map(CheckoutItemMapper::fromArray(...), $command->items),
             shippingAddress: PostalAddressMapper::fromArray($command->shippingAddress),
             billingAddress: PostalAddressMapper::fromArray($command->billingAddress),
             paymentId: $command->paymentId,
             completedAt: $this->clock->now(),
         );
         $this->repository->save($checkoutSession);
-    }
-
-    /**
-     * @param array{productId: string, label: string, unitPriceInCents: int, quantity: int} $item
-     */
-    private function resolveItem(array $item): CheckoutItem
-    {
-        return CheckoutItem::of(
-            $item['productId'],
-            Label::fromString($item['label']),
-            Money::fromCents($item['unitPriceInCents']),
-            Quantity::of($item['quantity']),
-        );
     }
 }
