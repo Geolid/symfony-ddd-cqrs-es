@@ -11,8 +11,10 @@ use Shared\Domain\ValueObject\Money;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 use Shopping\Checkout\Application\CheckoutSessionStatus;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionFinderInterface;
+use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionItemResult;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionResult;
 use Shopping\Checkout\Application\Finder\CheckoutSession\Exception\CheckoutSessionResultNotFoundException;
+use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
 use Shopping\Checkout\Domain\CheckoutSession;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
@@ -66,6 +68,18 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
         self::assertSame($checkoutSession->id->toString(), $result->id);
         self::assertSame($builder['cartId'], $result->cartId);
         self::assertSame($builder['customerId'], $result->customerId);
+        self::assertSame(
+            array_map(CheckoutItemMapper::toArray(...), $builder['items']),
+            array_map(
+                static fn (CheckoutSessionItemResult $item): array => [
+                    'productId' => $item->productId,
+                    'label' => $item->label,
+                    'unitPriceInCents' => $item->unitPriceInCents,
+                    'quantity' => $item->quantity,
+                ],
+                $result->items,
+            ),
+        );
         self::assertSame(
             PostalAddressMapper::toArray($builder['shippingAddress']),
             ['recipientName' => $result->shippingAddress->recipientName, 'address' => (array) $result->shippingAddress->address],

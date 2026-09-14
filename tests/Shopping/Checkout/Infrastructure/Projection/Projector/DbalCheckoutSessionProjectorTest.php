@@ -10,13 +10,14 @@ use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Money;
 use Shared\Infrastructure\Projection\SnakeCaseKeys;
 use Shopping\Checkout\Application\CheckoutSessionStatus;
+use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Checkout\Infrastructure\Projection\Projector\DbalCheckoutSessionProjector;
 use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{cart_id: string, customer_id: string, shipping_address: string, billing_address: string, total_amount_in_cents: int|string, status: string}
+ * @phpstan-type Row array{cart_id: string, customer_id: string, items: string, shipping_address: string, billing_address: string, total_amount_in_cents: int|string, status: string}
  */
 final class DbalCheckoutSessionProjectorTest extends AbstractIntegrationTestCase
 {
@@ -36,6 +37,13 @@ final class DbalCheckoutSessionProjectorTest extends AbstractIntegrationTestCase
         self::assertNotFalse($row);
         self::assertSame($builder['cartId'], $row['cart_id']);
         self::assertSame($builder['customerId'], $row['customer_id']);
+        self::assertSame(
+            array_map(
+                static fn (CheckoutItem $item): array => SnakeCaseKeys::from(CheckoutItemMapper::toArray($item)),
+                $builder['items'],
+            ),
+            json_decode($row['items'], true),
+        );
         self::assertSame(
             SnakeCaseKeys::from(PostalAddressMapper::toArray($builder['shippingAddress'])),
             json_decode($row['shipping_address'], true),
@@ -128,7 +136,7 @@ final class DbalCheckoutSessionProjectorTest extends AbstractIntegrationTestCase
 
         /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT cart_id, customer_id, shipping_address, billing_address, total_amount_in_cents, status FROM %s WHERE id = :id', DbalCheckoutSessionProjector::TABLE),
+            \sprintf('SELECT cart_id, customer_id, items, shipping_address, billing_address, total_amount_in_cents, status FROM %s WHERE id = :id', DbalCheckoutSessionProjector::TABLE),
             ['id' => $id],
         );
     }

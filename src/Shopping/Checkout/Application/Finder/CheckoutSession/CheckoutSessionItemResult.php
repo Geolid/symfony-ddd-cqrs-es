@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Shopping\Checkout\Application\Finder\CheckoutSessionItem;
+namespace Shopping\Checkout\Application\Finder\CheckoutSession;
 
 final readonly class CheckoutSessionItemResult
 {
     public function __construct(
-        public string $checkoutSessionId,
         public string $productId,
         public string $label,
         public int $unitPriceInCents,

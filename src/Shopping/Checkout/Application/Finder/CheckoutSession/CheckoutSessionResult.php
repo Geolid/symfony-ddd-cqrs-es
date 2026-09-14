@@ -9,10 +9,14 @@ use Shopping\Checkout\Application\Finder\Customer\PostalAddressResult;
 
 final readonly class CheckoutSessionResult
 {
+    /**
+     * @param list<CheckoutSessionItemResult> $items
+     */
     public function __construct(
         public string $id,
         public string $cartId,
         public string $customerId,
+        public array $items,
         public PostalAddressResult $shippingAddress,
         public PostalAddressResult $billingAddress,
         public int $totalAmountInCents,
