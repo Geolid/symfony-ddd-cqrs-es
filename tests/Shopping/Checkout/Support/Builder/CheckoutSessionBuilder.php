@@ -17,7 +17,7 @@ use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Checkout\Domain\ValueObject\CheckoutSessionId;
 use Shopping\Checkout\Domain\ValueObject\TaxRate;
 use Support\Builder\AbstractAggregateBuilder;
-use Support\SeededFaker;
+use Support\Faker\SeededFaker;
 use Symfony\Component\Clock\Clock;
 
 /**

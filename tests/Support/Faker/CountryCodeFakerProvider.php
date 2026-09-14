@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Support;
+namespace Support\Faker;
 
 use Faker\Provider\Base;
 use Shared\Domain\ValueObject\CountryCode;

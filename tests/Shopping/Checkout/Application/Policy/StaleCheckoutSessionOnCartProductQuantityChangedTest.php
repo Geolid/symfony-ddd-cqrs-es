@@ -11,7 +11,7 @@ use Shopping\Cart\Application\IntegrationEvent\CartProductQuantityChanged\CartPr
 use Shopping\Checkout\Application\Command\StaleCheckoutSession\StaleCheckoutSession;
 use Shopping\Checkout\Application\Policy\StaleCheckoutSessionOnCartProductQuantityChanged;
 use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
-use Support\SeededFaker;
+use Support\Faker\SeededFaker;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 

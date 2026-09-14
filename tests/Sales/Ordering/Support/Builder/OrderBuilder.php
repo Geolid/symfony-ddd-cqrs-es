@@ -16,7 +16,7 @@ use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Domain\ValueObject\Quantity;
 use Support\Builder\AbstractAggregateBuilder;
-use Support\SeededFaker;
+use Support\Faker\SeededFaker;
 use Symfony\Component\Clock\Clock;
 
 /**

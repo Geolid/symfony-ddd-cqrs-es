@@ -18,7 +18,7 @@ use Shopping\Cart\Domain\Exception\CartAlreadyPurchasedException;
 use Shopping\Cart\Domain\Exception\CartProductNotFoundException;
 use Shopping\Cart\Domain\ValueObject\CartId;
 use Shopping\Tests\Cart\Support\Builder\CartBuilder;
-use Support\SeededFaker;
+use Support\Faker\SeededFaker;
 
 final class CartTest extends AggregateRootTestCase
 {

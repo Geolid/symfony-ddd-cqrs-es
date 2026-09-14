@@ -10,7 +10,7 @@ use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
 use Support\Builder\AbstractAggregateBuilder;
-use Support\SeededFaker;
+use Support\Faker\SeededFaker;
 use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 

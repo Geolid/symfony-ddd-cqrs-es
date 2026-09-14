@@ -12,7 +12,7 @@ use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\Builder\AbstractAggregateBuilder;
-use Support\SeededFaker;
+use Support\Faker\SeededFaker;
 use Symfony\Component\Clock\Clock;
 
 /**

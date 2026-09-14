@@ -15,7 +15,7 @@ use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
-use Support\SeededFaker;
+use Support\Faker\SeededFaker;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase

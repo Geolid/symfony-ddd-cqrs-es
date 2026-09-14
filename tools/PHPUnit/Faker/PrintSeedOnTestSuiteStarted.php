@@ -6,7 +6,7 @@ namespace Tools\PHPUnit\Faker;
 
 use PHPUnit\Event\TestSuite\Started;
 use PHPUnit\Event\TestSuite\StartedSubscriber;
-use Support\SeededFaker;
+use Support\Faker\SeededFaker;
 
 final class PrintSeedOnTestSuiteStarted implements StartedSubscriber
 {

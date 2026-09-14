@@ -11,7 +11,7 @@ use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\KeyId;
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Label;
 use Support\Builder\AbstractAggregateBuilder;
-use Support\SeededFaker;
+use Support\Faker\SeededFaker;
 use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 

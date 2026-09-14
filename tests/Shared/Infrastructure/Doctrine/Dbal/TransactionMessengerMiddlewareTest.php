@@ -9,9 +9,9 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Shared\Infrastructure\Doctrine\Dbal\TransactionMessengerMiddleware;
-use Support\Double\DummyMessage;
-use Support\Double\StubNextMiddleware;
-use Support\Double\StubStack;
+use Shared\Tests\Support\Double\DummyMessage;
+use Shared\Tests\Support\Double\StubNextMiddleware;
+use Shared\Tests\Support\Double\StubStack;
 use Symfony\Component\Messenger\Envelope;
 
 final class TransactionMessengerMiddlewareTest extends TestCase
