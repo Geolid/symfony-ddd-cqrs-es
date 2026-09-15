@@ -52,7 +52,7 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
      */
     public function capture(string $reference): PaymentGatewayStatus
     {
-        return $this->parseStatus($this->globexClient->post(\sprintf('%s/%s/capture', self::SESSIONS_PATH, $reference), []));
+        return $this->parseStatus($this->globexClient->post(\sprintf('%s/%s/capture', self::SESSIONS_PATH, $reference), [], \sprintf('%s:capture', $reference)));
     }
 
     /**
@@ -60,7 +60,7 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
      */
     public function void(string $reference): PaymentGatewayStatus
     {
-        return $this->parseStatus($this->globexClient->post(\sprintf('%s/%s/cancel', self::SESSIONS_PATH, $reference), []));
+        return $this->parseStatus($this->globexClient->post(\sprintf('%s/%s/cancel', self::SESSIONS_PATH, $reference), [], \sprintf('%s:cancel', $reference)));
     }
 
     /**

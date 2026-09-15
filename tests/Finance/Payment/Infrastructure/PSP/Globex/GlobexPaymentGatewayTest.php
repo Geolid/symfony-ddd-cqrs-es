@@ -114,6 +114,24 @@ final class GlobexPaymentGatewayTest extends TestCase
     }
 
     #[Test]
+    public function itCapturesCharge(): void
+    {
+        // Given
+        $response = self::jsonResponse(['reference' => 'GLBX-9F3K2M1P', 'status' => 'captured']);
+
+        // When
+        $status = $this->gateway($response)->capture('GLBX-9F3K2M1P');
+
+        // Then
+        self::assertSame(PaymentGatewayStatus::CAPTURED, $status);
+        $requestUrl = $response->getRequestUrl();
+        self::assertSame('https://payments.globex.test/checkout/sessions/GLBX-9F3K2M1P/capture', $requestUrl);
+        self::assertSame([], $this->requestBody($response));
+        $headers = $response->getRequestOptions()['headers'];
+        self::assertContains('Idempotency-Key: GLBX-9F3K2M1P:capture', $headers);
+    }
+
+    #[Test]
     public function itVoidsCharge(): void
     {
         // Given
@@ -127,6 +145,8 @@ final class GlobexPaymentGatewayTest extends TestCase
         $requestUrl = $response->getRequestUrl();
         self::assertSame('https://payments.globex.test/checkout/sessions/GLBX-9F3K2M1P/cancel', $requestUrl);
         self::assertSame([], $this->requestBody($response));
+        $headers = $response->getRequestOptions()['headers'];
+        self::assertContains('Idempotency-Key: GLBX-9F3K2M1P:cancel', $headers);
     }
 
     #[Test]
