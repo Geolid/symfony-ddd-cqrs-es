@@ -9,7 +9,7 @@ use Iam\Authentication\Domain\PasswordCredential\Repository\PasswordCredentialRe
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakePasswordHasher;
-use Iam\Tests\Authentication\Support\Double\StubPasswordStrength;
+use Iam\Tests\Authentication\Support\Double\StubPasswordStrengthSpecification;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -17,7 +17,7 @@ use Support\TestCase\AbstractIntegrationTestCase;
 final class PatchlevelPasswordCredentialRepositoryTest extends AbstractIntegrationTestCase
 {
     private PasswordCredentialRepositoryInterface $repository;
-    private StubPasswordStrength $passwordStrength;
+    private StubPasswordStrengthSpecification $passwordStrength;
     private FakePasswordHasher $hasher;
 
     protected function setUp(): void
@@ -25,7 +25,7 @@ final class PatchlevelPasswordCredentialRepositoryTest extends AbstractIntegrati
         parent::setUp();
 
         $this->repository = $this->service(PasswordCredentialRepositoryInterface::class);
-        $this->passwordStrength = new StubPasswordStrength();
+        $this->passwordStrength = new StubPasswordStrengthSpecification();
         $this->hasher = new FakePasswordHasher();
     }
 

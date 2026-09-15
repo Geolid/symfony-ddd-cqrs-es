@@ -13,7 +13,7 @@ use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException
 use Iam\Authentication\Domain\PasswordCredential\PasswordCredential;
 use Iam\Authentication\Domain\PasswordCredential\Repository\PasswordCredentialRepositoryInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
+use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Login;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
@@ -29,7 +29,7 @@ final readonly class DefinePasswordCredentialHandler
     public function __construct(
         private PasswordCredentialRepositoryInterface $repository,
         private UniquenessRegistryInterface $uniqueValues,
-        private PasswordStrengthInterface $passwordStrength,
+        private PasswordStrengthSpecificationInterface $passwordStrength,
         private CompromisedPasswordGatewayInterface $compromisedPasswordGateway,
         private PasswordHasherInterface $hasher,
         private ClockInterface $clock,

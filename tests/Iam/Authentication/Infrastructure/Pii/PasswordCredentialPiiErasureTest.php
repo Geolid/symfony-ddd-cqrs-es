@@ -7,7 +7,7 @@ namespace Iam\Tests\Authentication\Infrastructure\Pii;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialDefined;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakePasswordHasher;
-use Iam\Tests\Authentication\Support\Double\StubPasswordStrength;
+use Iam\Tests\Authentication\Support\Double\StubPasswordStrengthSpecification;
 use Patchlevel\EventSourcing\Serializer\EventSerializer;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use PHPUnit\Framework\Attributes\Test;
@@ -33,7 +33,7 @@ final class PasswordCredentialPiiErasureTest extends AbstractIntegrationTestCase
     {
         // Given
         $credential = PasswordCredentialBuilder::new()
-            ->withPasswordStrength(new StubPasswordStrength())
+            ->withPasswordStrength(new StubPasswordStrengthSpecification())
             ->withHasher(new FakePasswordHasher())
             ->create();
         $this->store($credential);

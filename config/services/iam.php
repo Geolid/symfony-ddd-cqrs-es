@@ -8,11 +8,11 @@ use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinde
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
+use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
 use Iam\Authentication\Infrastructure\ApiKey\NativeApiKeyHasher;
 use Iam\Authentication\Infrastructure\BreachDatabase\SymfonyCompromisedPasswordGateway;
 use Iam\Authentication\Infrastructure\Password\SymfonyPasswordHasher;
-use Iam\Authentication\Infrastructure\Password\SymfonyPasswordStrength;
+use Iam\Authentication\Infrastructure\Password\SymfonyPasswordStrengthSpecification;
 use Iam\Authentication\Infrastructure\Projection\Finder\DbalApiKeyCredentialFinder;
 use Iam\Authentication\Infrastructure\Projection\Finder\DbalPasswordCredentialFinder;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
@@ -40,7 +40,7 @@ return static function (ContainerConfigurator $container): void {
         $services->alias(IdentityFinderInterface::class, DbalIdentityFinder::class)->public();
         $services->alias(PasswordCredentialFinderInterface::class, DbalPasswordCredentialFinder::class)->public();
         $services->alias(PasswordHasherInterface::class, SymfonyPasswordHasher::class)->public();
-        $services->alias(PasswordStrengthInterface::class, SymfonyPasswordStrength::class)->public();
+        $services->alias(PasswordStrengthSpecificationInterface::class, SymfonyPasswordStrengthSpecification::class)->public();
         $services->alias(CompromisedPasswordGatewayInterface::class, SymfonyCompromisedPasswordGateway::class)->public();
     }
 };

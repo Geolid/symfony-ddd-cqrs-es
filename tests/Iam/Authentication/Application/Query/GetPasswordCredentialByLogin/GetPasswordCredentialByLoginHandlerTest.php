@@ -7,7 +7,7 @@ namespace Iam\Tests\Authentication\Application\Query\GetPasswordCredentialByLogi
 use Iam\Authentication\Application\Finder\PasswordCredential\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Authentication\Application\Query\GetPasswordCredentialByLogin\GetPasswordCredentialByLogin;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
+use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -20,7 +20,7 @@ final class GetPasswordCredentialByLoginHandlerTest extends AbstractIntegrationT
         // Given
         $hasher = $this->service(PasswordHasherInterface::class);
         $builder = PasswordCredentialBuilder::new()
-            ->withPasswordStrength($this->service(PasswordStrengthInterface::class))
+            ->withPasswordStrength($this->service(PasswordStrengthSpecificationInterface::class))
             ->withHasher($hasher);
         $credential = $builder->create();
         $this->store($credential);
