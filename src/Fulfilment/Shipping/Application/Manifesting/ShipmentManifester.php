@@ -43,7 +43,7 @@ final readonly class ShipmentManifester implements ShipmentManifesterInterface
         $orderPayment = $this->orderPaymentFinder->ofOrderOrNull($shipment->orderId);
 
         if (true !== $orderPayment?->paid) {
-            throw ManifestPostponedException::forUnpaidOrder($shipmentId);
+            throw ManifestPostponedException::forShipmentWithUnpaidOrder($shipmentId, $shipment->orderId);
         }
 
         $trackingNumber = $this->carrier->manifest(

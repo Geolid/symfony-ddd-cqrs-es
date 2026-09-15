@@ -8,8 +8,8 @@ use Shared\Application\Exception\ApplicationExceptionInterface;
 
 final class ManifestPostponedException extends \RuntimeException implements ApplicationExceptionInterface
 {
-    public static function forUnpaidOrder(string $shipmentId): self
+    public static function forShipmentWithUnpaidOrder(string $shipmentId, string $orderId): self
     {
-        return new self(\sprintf('Cannot manifest shipment "%s" yet: the related order is not paid yet.', $shipmentId));
+        return new self(\sprintf('Cannot manifest shipment "%s" yet: order "%s" is not paid yet.', $shipmentId, $orderId));
     }
 }
