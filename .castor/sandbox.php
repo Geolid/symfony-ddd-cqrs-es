@@ -8,16 +8,20 @@ use Castor\Attribute\AsTask;
 use function Castor\fs;
 use function Castor\run;
 
-#[AsTask(name: 'advance', namespace: 'sandbox', description: 'Advance a sandbox record to its next status, firing the matching webhook')]
+#[AsTask(name: 'advance', namespace: 'sandbox', description: 'Advance an Acme shipment to its next status, firing the matching webhook')]
 function sandbox_advance(
-    #[AsArgument(description: 'Fake provider: "acme" or "globex"', autocomplete: ['acme', 'globex'])]
-    string $provider,
-    #[AsArgument(description: 'The provider reference to advance')]
+    #[AsArgument(description: 'The Acme tracking reference to advance')]
     string $reference,
 ): void {
-    assert_one_of($provider, ['acme', 'globex'], 'provider');
+    run(['docker', 'compose', 'exec', '-T', 'sandbox', 'php', '/var/www/sandbox/acme/cli/advance.php', $reference]);
+}
 
-    run(['docker', 'compose', 'exec', '-T', 'sandbox', 'php', "/var/www/sandbox/{$provider}/cli/advance.php", $reference]);
+#[AsTask(name: 'decline', namespace: 'sandbox', description: 'Arm a Globex session to be declined on its next capture')]
+function sandbox_decline(
+    #[AsArgument(description: 'The Globex session reference to arm')]
+    string $reference,
+): void {
+    run(['docker', 'compose', 'exec', '-T', 'sandbox', 'php', '/var/www/sandbox/globex/cli/decline.php', $reference]);
 }
 
 #[AsTask(name: 'reset', namespace: 'sandbox', description: 'Clear every fake provider record')]
