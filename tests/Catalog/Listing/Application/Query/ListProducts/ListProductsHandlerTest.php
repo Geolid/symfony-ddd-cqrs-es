@@ -75,7 +75,7 @@ final class ListProductsHandlerTest extends AbstractIntegrationTestCase
      */
     private function idsOf(PaginatedResult $result): array
     {
-        return array_map(static fn (ProductResult $item): string => $item->id, $result->items);
+        return array_map(static fn (ProductResult $productResult): string => $productResult->id, $result->items);
     }
 
     /**
