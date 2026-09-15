@@ -12,7 +12,7 @@ final class SubdomainServiceLoader
     {
         $base = '%kernel.project_dir%/src/'.$subdomain;
 
-        $services->load($subdomain.'\\', $base.'/**/Domain/**/{Repository,Service}/');
+        $services->load($subdomain.'\\', $base.'/**/Domain/**/{Repository,Service,Specification}/');
         $services->load($subdomain.'\\', $base.'/**/Application/{Command,Query}/**/*Handler.php');
         $services->load($subdomain.'\\', $base.'/**/Application/IntegrationEvent/**/*Publisher.php');
         $services->load($subdomain.'\\', $base.'/**/Application/')

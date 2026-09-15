@@ -8,14 +8,14 @@ use Iam\Authentication\Application\Finder\PasswordCredential\Exception\PasswordC
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakePasswordHasher;
-use Iam\Tests\Authentication\Support\Double\StubPasswordStrength;
+use Iam\Tests\Authentication\Support\Double\StubPasswordStrengthSpecification;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
 {
     private PasswordCredentialFinderInterface $finder;
-    private StubPasswordStrength $passwordStrength;
+    private StubPasswordStrengthSpecification $passwordStrength;
     private FakePasswordHasher $hasher;
 
     protected function setUp(): void
@@ -23,7 +23,7 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
         parent::setUp();
 
         $this->finder = $this->service(PasswordCredentialFinderInterface::class);
-        $this->passwordStrength = new StubPasswordStrength();
+        $this->passwordStrength = new StubPasswordStrengthSpecification();
         $this->hasher = new FakePasswordHasher();
     }
 

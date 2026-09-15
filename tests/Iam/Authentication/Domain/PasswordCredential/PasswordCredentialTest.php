@@ -15,7 +15,7 @@ use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakePasswordHasher;
-use Iam\Tests\Authentication\Support\Double\StubPasswordStrength;
+use Iam\Tests\Authentication\Support\Double\StubPasswordStrengthSpecification;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -50,7 +50,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 $this->identityId,
                 $this->login,
                 $this->password,
-                new StubPasswordStrength(),
+                new StubPasswordStrengthSpecification(),
                 $this->hasher,
                 $this->definedAt,
             ))
@@ -67,7 +67,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 $this->identityId,
                 $this->login,
                 Password::fromString('passwordpassword'),
-                new StubPasswordStrength(sufficient: false),
+                new StubPasswordStrengthSpecification(sufficient: false),
                 $this->hasher,
                 $this->definedAt,
             ))
@@ -84,7 +84,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
             ->given($this->defined())
             ->when(fn (PasswordCredential $credential) => $credential->change(
                 Password::fromString($newPassword),
-                new StubPasswordStrength(),
+                new StubPasswordStrengthSpecification(),
                 $this->hasher,
                 $changedAt,
             ))
@@ -102,7 +102,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
             ->given($this->defined())
             ->when(fn (PasswordCredential $credential) => $credential->change(
                 Password::fromString('updated-password'),
-                new StubPasswordStrength(sufficient: false),
+                new StubPasswordStrengthSpecification(sufficient: false),
                 $this->hasher,
                 PasswordCredentialBuilder::sample('changedAt'),
             ))
@@ -116,7 +116,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
             ->given($this->defined())
             ->when(fn (PasswordCredential $credential) => $credential->change(
                 $this->password,
-                new StubPasswordStrength(),
+                new StubPasswordStrengthSpecification(),
                 $this->hasher,
                 PasswordCredentialBuilder::sample('changedAt'),
             ))

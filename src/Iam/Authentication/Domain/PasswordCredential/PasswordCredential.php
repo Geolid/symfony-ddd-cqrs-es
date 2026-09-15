@@ -10,7 +10,7 @@ use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialRehashe
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
+use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Login;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
@@ -39,11 +39,11 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
         Login $login,
         #[\SensitiveParameter]
         Password $password,
-        PasswordStrengthInterface $passwordStrength,
+        PasswordStrengthSpecificationInterface $passwordStrength,
         PasswordHasherInterface $hasher,
         \DateTimeImmutable $definedAt,
     ): self {
-        if (!$passwordStrength->isSufficient($password)) {
+        if (!$passwordStrength->isSatisfiedBy($password)) {
             throw WeakPasswordException::forIdentity($identityId);
         }
 
@@ -63,9 +63,9 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
      * @throws WeakPasswordException
      * @throws SamePasswordException
      */
-    public function change(#[\SensitiveParameter] Password $password, PasswordStrengthInterface $passwordStrength, PasswordHasherInterface $hasher, \DateTimeImmutable $changedAt): void
+    public function change(#[\SensitiveParameter] Password $password, PasswordStrengthSpecificationInterface $passwordStrength, PasswordHasherInterface $hasher, \DateTimeImmutable $changedAt): void
     {
-        if (!$passwordStrength->isSufficient($password)) {
+        if (!$passwordStrength->isSatisfiedBy($password)) {
             throw WeakPasswordException::forPasswordCredential($this->id);
         }
 

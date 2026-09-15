@@ -6,7 +6,7 @@ namespace Iam\Tests\Authentication\Support\Builder;
 
 use Iam\Authentication\Domain\PasswordCredential\PasswordCredential;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
+use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Login;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
@@ -25,7 +25,7 @@ use Webmozart\Assert\Assert;
  *     definedAt: \DateTimeImmutable,
  *     changedAt: \DateTimeImmutable,
  *     rehashedAt: \DateTimeImmutable,
- *     passwordStrength?: PasswordStrengthInterface,
+ *     passwordStrength?: PasswordStrengthSpecificationInterface,
  *     hasher?: PasswordHasherInterface,
  * }
  *
@@ -53,7 +53,7 @@ final class PasswordCredentialBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(definedAt: $definedAt);
     }
 
-    public function withPasswordStrength(PasswordStrengthInterface $passwordStrength): self
+    public function withPasswordStrength(PasswordStrengthSpecificationInterface $passwordStrength): self
     {
         return $this->withAttributes(passwordStrength: $passwordStrength);
     }
@@ -65,7 +65,7 @@ final class PasswordCredentialBuilder extends AbstractAggregateBuilder
 
     public function changed(
         string $newPassword,
-        ?PasswordStrengthInterface $passwordStrength = null,
+        ?PasswordStrengthSpecificationInterface $passwordStrength = null,
         ?PasswordHasherInterface $hasher = null,
         ?\DateTimeImmutable $changedAt = null,
     ): self {
@@ -134,9 +134,9 @@ final class PasswordCredentialBuilder extends AbstractAggregateBuilder
         );
     }
 
-    private function passwordStrength(): PasswordStrengthInterface
+    private function passwordStrength(): PasswordStrengthSpecificationInterface
     {
-        Assert::isInstanceOf($passwordStrength = $this['passwordStrength'], PasswordStrengthInterface::class);
+        Assert::isInstanceOf($passwordStrength = $this['passwordStrength'], PasswordStrengthSpecificationInterface::class);
 
         return $passwordStrength;
     }

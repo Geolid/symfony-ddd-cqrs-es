@@ -9,7 +9,7 @@ use Iam\Authentication\Application\CredentialVerification\PasswordCredentialVeri
 use Iam\Authentication\Application\Finder\PasswordCredential\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
+use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
@@ -18,7 +18,7 @@ use Support\TestCase\AbstractIntegrationTestCase;
 final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
 {
     private PasswordHasherInterface $hasher;
-    private PasswordStrengthInterface $passwordStrength;
+    private PasswordStrengthSpecificationInterface $passwordStrength;
     private PasswordCredentialVerifier $verifier;
 
     protected function setUp(): void
@@ -26,7 +26,7 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
         parent::setUp();
 
         $this->hasher = $this->service(PasswordHasherInterface::class);
-        $this->passwordStrength = $this->service(PasswordStrengthInterface::class);
+        $this->passwordStrength = $this->service(PasswordStrengthSpecificationInterface::class);
         $this->verifier = new PasswordCredentialVerifier($this->service(PasswordCredentialFinderInterface::class), $this->hasher);
     }
 

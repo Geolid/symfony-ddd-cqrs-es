@@ -6,11 +6,11 @@ namespace Iam\Tests\Authentication\Infrastructure\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
+use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
 use Iam\Authentication\Infrastructure\Projection\Projector\DbalPasswordCredentialProjector;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakePasswordHasher;
-use Iam\Tests\Authentication\Support\Double\StubPasswordStrength;
+use Iam\Tests\Authentication\Support\Double\StubPasswordStrengthSpecification;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -22,14 +22,14 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
 {
     private const string DATE_FORMAT = 'Y-m-d H:i:s';
 
-    private PasswordStrengthInterface $passwordStrength;
+    private PasswordStrengthSpecificationInterface $passwordStrength;
     private PasswordHasherInterface $hasher;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->passwordStrength = new StubPasswordStrength();
+        $this->passwordStrength = new StubPasswordStrengthSpecification();
         $this->hasher = new FakePasswordHasher();
     }
 

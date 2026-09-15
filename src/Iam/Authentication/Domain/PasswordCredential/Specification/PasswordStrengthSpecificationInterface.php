@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Domain\PasswordCredential\Service;
+namespace Iam\Authentication\Domain\PasswordCredential\Specification;
 
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 
-interface PasswordStrengthInterface
+interface PasswordStrengthSpecificationInterface
 {
     public const int SCORE_WEAK = 1;
     public const int SCORE_MEDIUM = 2;
@@ -15,5 +15,5 @@ interface PasswordStrengthInterface
 
     public const int MIN_REQUIRED_SCORE = self::SCORE_MEDIUM;
 
-    public function isSufficient(#[\SensitiveParameter] Password $password): bool;
+    public function isSatisfiedBy(#[\SensitiveParameter] Password $password): bool;
 }

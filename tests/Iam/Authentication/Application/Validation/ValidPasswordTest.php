@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Application\Validation;
 
 use Iam\Authentication\Application\Validation\ValidPassword;
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
+use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Tests\Authentication\Support\ValidatorFactoryTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
@@ -69,7 +69,7 @@ final class ValidPasswordTest extends CompoundConstraintTestCase
         yield 'empty string' => ['', [new Assert\NotBlank()]];
         yield 'not a string' => [42, [new Assert\Type('string')]];
         yield 'too short' => [str_repeat('a', Password::MIN_LENGTH - 1), [new Assert\Length(min: Password::MIN_LENGTH, max: Password::MAX_LENGTH)]];
-        yield 'too weak' => ['passwordpassword', [new PasswordStrength(minScore: PasswordStrengthInterface::MIN_REQUIRED_SCORE)]];
+        yield 'too weak' => ['passwordpassword', [new PasswordStrength(minScore: PasswordStrengthSpecificationInterface::MIN_REQUIRED_SCORE)]];
     }
 
     #[Test]
