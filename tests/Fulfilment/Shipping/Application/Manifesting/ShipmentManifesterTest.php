@@ -10,6 +10,7 @@ use Fulfilment\Shipping\Application\Finder\OrderPayment\OrderPaymentFinderInterf
 use Fulfilment\Shipping\Application\Finder\Shipment\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\Manifesting\Exception\ManifestDeniedException;
+use Fulfilment\Shipping\Application\Manifesting\Exception\ManifestPostponedException;
 use Fulfilment\Shipping\Application\Manifesting\ShipmentManifester;
 use Fulfilment\Shipping\Application\ShipmentStatus;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
@@ -105,7 +106,7 @@ final class ShipmentManifesterTest extends AbstractIntegrationTestCase
         $this->carrier->expects(self::never())->method('manifest');
 
         // Then
-        $this->expectException(ManifestDeniedException::class);
+        $this->expectException(ManifestPostponedException::class);
 
         // When
         $this->service->manifest($shipment->id->toString());

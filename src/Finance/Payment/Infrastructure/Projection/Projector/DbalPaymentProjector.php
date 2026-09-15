@@ -25,7 +25,7 @@ use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
 #[Projector('finance.payment.project_payments')]
 final readonly class DbalPaymentProjector extends AbstractDbalProjector
 {
-    public const string TABLE = 'finance_payment';
+    public const string TABLE = 'finance_payment_payment';
 
     #[Subscribe(PaymentRequested::class)]
     public function onPaymentRequested(PaymentRequested $event): void
@@ -152,8 +152,8 @@ final readonly class DbalPaymentProjector extends AbstractDbalProjector
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
                 ->create(),
         );
-        $table->addIndex(['checkout_session_id'], 'finance_payment_checkout_session_id_idx');
-        $table->addIndex(['order_id'], 'finance_payment_order_id_idx');
-        $table->addIndex(['reference'], 'finance_payment_reference_idx');
+        $table->addIndex(['checkout_session_id'], 'finance_payment_payment_checkout_session_id_idx');
+        $table->addIndex(['order_id'], 'finance_payment_payment_order_id_idx');
+        $table->addIndex(['reference'], 'finance_payment_payment_reference_idx');
     }
 }

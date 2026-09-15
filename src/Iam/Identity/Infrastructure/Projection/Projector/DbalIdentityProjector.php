@@ -24,7 +24,7 @@ use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
 #[Projector('iam.identity.project_identities')]
 final readonly class DbalIdentityProjector extends AbstractDbalProjector
 {
-    public const string TABLE = 'iam_identity';
+    public const string TABLE = 'iam_identity_identity';
 
     #[Subscribe(IdentityRegistered::class)]
     public function onIdentityRegistered(IdentityRegistered $event): void

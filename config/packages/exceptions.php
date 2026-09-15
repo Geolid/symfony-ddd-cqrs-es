@@ -16,6 +16,7 @@ use Fulfilment\Shipping\Application\Carrier\Exception\CarrierGatewayException;
 use Fulfilment\Shipping\Application\Carrier\Exception\CarrierTransientFailureException;
 use Fulfilment\Shipping\Application\Command\ManifestShipment\Exception\ShipmentTrackingNumberAlreadyInUseException;
 use Fulfilment\Shipping\Application\Manifesting\Exception\ManifestDeniedException;
+use Fulfilment\Shipping\Application\Manifesting\Exception\ManifestPostponedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
 use Iam\Authentication\Application\BreachDatabase\Exception\CompromisedPasswordException;
@@ -52,6 +53,7 @@ return static function (ContainerConfigurator $container): void {
             ShipmentInvalidTransitionException::class => ['log_level' => 'info', 'status_code' => 409],
             ShipmentTrackingNumberAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
             ManifestDeniedException::class => ['log_level' => 'info', 'status_code' => 409],
+            ManifestPostponedException::class => ['log_level' => 'info', 'status_code' => 503],
             CarrierTransientFailureException::class => ['log_level' => 'error', 'status_code' => 503],
             CarrierGatewayException::class => ['log_level' => 'error', 'status_code' => 502],
 

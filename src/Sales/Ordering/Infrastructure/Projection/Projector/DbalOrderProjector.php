@@ -27,7 +27,7 @@ use Shared\Infrastructure\Projection\SnakeCaseKeys;
 #[Projector('sales.ordering.project_orders')]
 final readonly class DbalOrderProjector extends AbstractDbalProjector
 {
-    public const string TABLE = 'sales_ordering';
+    public const string TABLE = 'sales_ordering_order';
 
     #[Subscribe(OrderConfirmed::class)]
     public function onOrderConfirmed(OrderConfirmed $event): void
@@ -168,6 +168,6 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
                 ->create(),
         );
-        $table->addIndex(['customer_id'], 'sales_ordering_customer_id_idx');
+        $table->addIndex(['customer_id'], 'sales_ordering_order_customer_id_idx');
     }
 }

@@ -6,6 +6,7 @@ namespace Fulfilment\Shipping\Application\Manifesting;
 
 use Fulfilment\Shipping\Application\Finder\Shipment\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipping\Application\Manifesting\Exception\ManifestDeniedException;
+use Fulfilment\Shipping\Application\Manifesting\Exception\ManifestPostponedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
 use Shared\Application\DrivingPort;
@@ -18,6 +19,7 @@ interface ShipmentManifesterInterface
      *
      * @throws ShipmentResultNotFoundException
      * @throws ManifestDeniedException
+     * @throws ManifestPostponedException
      * @throws ShipmentAlreadyTrackedException
      * @throws ShipmentInvalidTransitionException
      */

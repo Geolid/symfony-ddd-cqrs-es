@@ -28,7 +28,7 @@ use Shared\Infrastructure\Projection\SnakeCaseKeys;
 #[Projector('fulfilment.shipping.project_shipments')]
 final readonly class DbalShipmentProjector extends AbstractDbalProjector
 {
-    public const string TABLE = 'fulfilment_shipping';
+    public const string TABLE = 'fulfilment_shipping_shipment';
 
     #[Subscribe(ShipmentRequested::class)]
     public function onShipmentRequested(ShipmentRequested $event): void
@@ -160,8 +160,8 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
                 ->create(),
         );
-        $table->addIndex(['order_id'], 'fulfilment_shipping_order_id_idx');
-        $table->addIndex(['customer_id'], 'fulfilment_shipping_customer_id_idx');
-        $table->addIndex(['tracking_number'], 'fulfilment_shipping_tracking_number_idx');
+        $table->addIndex(['order_id'], 'fulfilment_shipping_shipment_order_id_idx');
+        $table->addIndex(['customer_id'], 'fulfilment_shipping_shipment_customer_id_idx');
+        $table->addIndex(['tracking_number'], 'fulfilment_shipping_shipment_tracking_number_idx');
     }
 }

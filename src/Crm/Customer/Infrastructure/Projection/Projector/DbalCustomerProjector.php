@@ -25,7 +25,7 @@ use Shared\Infrastructure\Projection\SnakeCaseKeys;
 #[Projector('crm.customer.project_customers')]
 final readonly class DbalCustomerProjector extends AbstractDbalProjector
 {
-    public const string TABLE = 'crm_customer';
+    public const string TABLE = 'crm_customer_customer';
 
     #[Subscribe(CustomerRegistered::class)]
     public function onCustomerRegistered(CustomerRegistered $event): void

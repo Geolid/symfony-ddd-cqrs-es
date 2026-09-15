@@ -12,9 +12,4 @@ final class ManifestDeniedException extends \RuntimeException implements Applica
     {
         return new self(\sprintf('Cannot manifest shipment "%s": it is cancelled.', $shipmentId));
     }
-
-    public static function forUnpaidOrder(string $shipmentId): self
-    {
-        return new self(\sprintf('Cannot manifest shipment "%s": the related order is not paid yet.', $shipmentId));
-    }
 }

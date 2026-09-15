@@ -10,6 +10,7 @@ use Fulfilment\Shipping\Application\Finder\OrderPayment\OrderPaymentFinderInterf
 use Fulfilment\Shipping\Application\Finder\Shipment\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\Manifesting\Exception\ManifestDeniedException;
+use Fulfilment\Shipping\Application\Manifesting\Exception\ManifestPostponedException;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Mapper\PostalAddressMapper;
@@ -27,6 +28,7 @@ final readonly class ShipmentManifester implements ShipmentManifesterInterface
     /**
      * @throws ShipmentResultNotFoundException
      * @throws ManifestDeniedException
+     * @throws ManifestPostponedException
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
@@ -41,7 +43,7 @@ final readonly class ShipmentManifester implements ShipmentManifesterInterface
         $orderPayment = $this->orderPaymentFinder->ofOrderOrNull($shipment->orderId);
 
         if (true !== $orderPayment?->paid) {
-            throw ManifestDeniedException::forUnpaidOrder($shipmentId);
+            throw ManifestPostponedException::forUnpaidOrder($shipmentId);
         }
 
         $trackingNumber = $this->carrier->manifest(
