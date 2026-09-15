@@ -89,7 +89,7 @@ function fake_api_store_find(string $provider, string $field, string $value): ?a
 /**
  * @return array<string, mixed>|null
  */
-function fake_api_find_existing_by_idempotency_key(string $provider, ?string $idempotencyKey, string $field = 'idempotencyKey'): ?array
+function fake_api_find_existing_by_idempotency_key(string $provider, ?string $idempotencyKey, string $field = 'idempotency_key'): ?array
 {
     if (null === $idempotencyKey) {
         return null;

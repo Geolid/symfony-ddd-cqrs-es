@@ -24,7 +24,7 @@ $body = fake_api_decode_json_body($rawBody);
 
 $idempotencyKey = fake_api_read_idempotency_key();
 
-$existing = fake_api_find_existing_by_idempotency_key(GLOBEX_PROVIDER, $idempotencyKey, 'idempotency_key');
+$existing = fake_api_find_existing_by_idempotency_key(GLOBEX_PROVIDER, $idempotencyKey);
 if (null !== $existing) {
     fake_api_respond([
         'id' => $existing['reference'],
@@ -54,11 +54,11 @@ fake_api_store_mutate(GLOBEX_PROVIDER, static function (array $records) use ($id
     $records[$id] = [
         'reference' => $id,
         'idempotency_key' => $idempotencyKey,
-        'client_reference_id' => filter_var($body['client_reference_id'] ?? '', \FILTER_UNSAFE_RAW) ?: '',
+        'client_reference_id' => fake_api_read_body_field($body, 'client_reference_id'),
         'url' => $url,
         'line_items' => $lineItems,
-        'success_url' => filter_var($body['success_url'] ?? '', \FILTER_UNSAFE_RAW) ?: '',
-        'cancel_url' => filter_var($body['cancel_url'] ?? '', \FILTER_UNSAFE_RAW) ?: '',
+        'success_url' => fake_api_read_body_field($body, 'success_url'),
+        'cancel_url' => fake_api_read_body_field($body, 'cancel_url'),
         'status' => 'requested',
         'created_at' => gmdate('c'),
     ];
