@@ -7,6 +7,7 @@ namespace Iam\Tests\Authentication\Application\Validation;
 use Iam\Authentication\Application\Validation\ValidPassword;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
+use Iam\Tests\Authentication\Support\ValidatorFactoryTrait;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\HttpClient\Exception\TransportException;
@@ -14,9 +15,7 @@ use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Constraints\NotCompromisedPasswordValidator;
 use Symfony\Component\Validator\Constraints\PasswordStrength;
-use Symfony\Component\Validator\ConstraintValidatorFactory;
 use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
-use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -25,6 +24,8 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
  */
 final class ValidPasswordTest extends CompoundConstraintTestCase
 {
+    use ValidatorFactoryTrait;
+
     #[Test]
     #[DataProvider('provideAcceptedValues')]
     public function itAccepts(string $password): void
@@ -77,7 +78,7 @@ final class ValidPasswordTest extends CompoundConstraintTestCase
         // Given
         $httpClient = $this->createStub(HttpClientInterface::class);
         $httpClient->method('request')->willThrowException(new TransportException('Simulated network failure.'));
-        $validator = $this->validatorWith(new NotCompromisedPasswordValidator($httpClient));
+        $validator = $this->validatorUsing(NotCompromisedPasswordValidator::class, new NotCompromisedPasswordValidator($httpClient));
 
         // When
         $violations = $validator->validate('Correct-Horse-Battery-42!', new ValidPassword());
@@ -94,15 +95,6 @@ final class ValidPasswordTest extends CompoundConstraintTestCase
     protected function createValidator(): ValidatorInterface
     {
         // NotCompromisedPassword otherwise calls the real HIBP API over HTTP on every run.
-        return $this->validatorWith(new NotCompromisedPasswordValidator(enabled: false));
-    }
-
-    private function validatorWith(NotCompromisedPasswordValidator $notCompromisedPasswordValidator): ValidatorInterface
-    {
-        return Validation::createValidatorBuilder()
-            ->setConstraintValidatorFactory(new ConstraintValidatorFactory([
-                NotCompromisedPasswordValidator::class => $notCompromisedPasswordValidator,
-            ]))
-            ->getValidator();
+        return $this->validatorUsing(NotCompromisedPasswordValidator::class, new NotCompromisedPasswordValidator(enabled: false));
     }
 }
