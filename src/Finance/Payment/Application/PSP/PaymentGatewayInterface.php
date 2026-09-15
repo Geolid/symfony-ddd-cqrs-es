@@ -13,7 +13,7 @@ interface PaymentGatewayInterface
     /**
      * @throws PaymentGatewayException
      */
-    public function requestPayment(string $paymentId, string $checkoutSessionId, int $amountInCents, string $returnUrl, PostalAddress $billingAddress, \DateTimeImmutable $expiresAt): PaymentSession;
+    public function requestPayment(string $paymentId, string $checkoutSessionId, int $amountInCents, string $successUrl, string $cancelUrl, PostalAddress $billingAddress, \DateTimeImmutable $expiresAt): PaymentSession;
 
     /**
      * @throws PaymentGatewayException

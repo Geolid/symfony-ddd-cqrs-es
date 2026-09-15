@@ -30,7 +30,7 @@ final readonly class PaymentRequester implements PaymentRequesterInterface
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    public function requestFor(string $checkoutSessionId, int $amountInCents, string $currency, PostalAddress $billingAddress, string $returnUrl, \DateTimeImmutable $expiresAt): string
+    public function requestFor(string $checkoutSessionId, int $amountInCents, string $currency, PostalAddress $billingAddress, string $successUrl, string $cancelUrl, \DateTimeImmutable $expiresAt): string
     {
         $checkoutSessionKey = UniqueKey::for(PaymentUniqueKey::CHECKOUT_SESSION);
 
@@ -40,7 +40,7 @@ final readonly class PaymentRequester implements PaymentRequesterInterface
 
         $paymentId = PaymentId::forCheckoutSession($checkoutSessionId);
 
-        $session = $this->paymentGateway->requestPayment($paymentId->toString(), $checkoutSessionId, $amountInCents, $returnUrl, $billingAddress, $expiresAt);
+        $session = $this->paymentGateway->requestPayment($paymentId->toString(), $checkoutSessionId, $amountInCents, $successUrl, $cancelUrl, $billingAddress, $expiresAt);
 
         try {
             $this->commandBus->dispatch(new RequestPayment(

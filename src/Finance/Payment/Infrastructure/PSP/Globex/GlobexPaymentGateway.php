@@ -23,14 +23,14 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
     /**
      * @throws PaymentGatewayException
      */
-    public function requestPayment(string $paymentId, string $checkoutSessionId, int $amountInCents, string $returnUrl, PostalAddress $billingAddress, \DateTimeImmutable $expiresAt): PaymentSession
+    public function requestPayment(string $paymentId, string $checkoutSessionId, int $amountInCents, string $successUrl, string $cancelUrl, PostalAddress $billingAddress, \DateTimeImmutable $expiresAt): PaymentSession
     {
         $response = $this->globexClient->post(self::SESSIONS_PATH, [
             'client_reference_id' => $checkoutSessionId,
             'amountInCents' => $amountInCents,
             'mode' => 'payment',
-            'success_url' => $returnUrl,
-            'cancel_url' => $returnUrl,
+            'success_url' => $successUrl,
+            'cancel_url' => $cancelUrl,
             'billingAddress' => PostalAddressMapper::toArray($billingAddress),
             'expiresAt' => $expiresAt->format(\DateTimeInterface::ATOM),
         ], $paymentId);

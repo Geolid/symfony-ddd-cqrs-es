@@ -36,7 +36,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         ]);
 
         // When
-        $session = $this->gateway($response)->requestPayment($paymentId, $checkoutSessionId, 4_200, 'https://web.test/sales/orders', $this->billingAddress(), $expiresAt);
+        $session = $this->gateway($response)->requestPayment($paymentId, $checkoutSessionId, 4_200, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->billingAddress(), $expiresAt);
 
         // Then
         self::assertSame('GLBX-9F3K2M1P', $session->reference);
@@ -52,7 +52,7 @@ final class GlobexPaymentGatewayTest extends TestCase
                 'amountInCents' => 4_200,
                 'mode' => 'payment',
                 'success_url' => 'https://web.test/sales/orders',
-                'cancel_url' => 'https://web.test/sales/orders',
+                'cancel_url' => 'https://web.test/sales/cart',
                 'billingAddress' => PostalAddressMapper::toArray($this->billingAddress()),
                 'expiresAt' => $expiresAt->format(\DateTimeInterface::ATOM),
             ],
@@ -68,7 +68,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         $this->expectException(PaymentTransientFailureException::class);
 
         // When
-        $this->gateway($response)->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', $this->billingAddress(), $this->expiresAt());
+        $this->gateway($response)->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->billingAddress(), $this->expiresAt());
     }
 
     /**
@@ -87,7 +87,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         $this->expectException(PaymentFatalFailureException::class);
 
         // When
-        $this->gateway(self::jsonResponse(['error' => 'invalid amount'], 400))->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', $this->billingAddress(), $this->expiresAt());
+        $this->gateway(self::jsonResponse(['error' => 'invalid amount'], 400))->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->billingAddress(), $this->expiresAt());
     }
 
     #[Test]
@@ -98,7 +98,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         $this->expectException(PaymentFatalFailureException::class);
 
         // When
-        $this->gateway($response)->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', $this->billingAddress(), $this->expiresAt());
+        $this->gateway($response)->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->billingAddress(), $this->expiresAt());
     }
 
     /**
