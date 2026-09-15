@@ -10,6 +10,7 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 
 return static function (ContainerConfigurator $container): void {
     $container->extension('monolog', [
+        'timezone' => 'UTC',
         'channels' => ['deprecation', 'messenger'],
     ]);
 

@@ -24,9 +24,9 @@ deptrac:
       collectors:
         - { type: directory, value: 'apps/webhook/.*' }
 
-    - name: EsAdmin
+    - name: EsDashboard
       collectors:
-        - { type: directory, value: 'apps/es-admin/.*' }
+        - { type: directory, value: 'apps/es-dashboard/.*' }
 
     # Shared presentation (Twig Components) across DMs — never business logic.
     - name: Ui
@@ -39,6 +39,6 @@ deptrac:
     Api:     [ Catalog.Listing, Iam.Identity, Iam.Authentication, Shared, Vendors ]
     Cli:     [ Shopping.Checkout, Sales.Ordering, Fulfilment.Shipping, Finance.Payment, Iam.Identity, Iam.Authentication, Shared, Vendors ]
     Webhook: [ Fulfilment.Shipping, Sales.Ordering, Finance.Payment, Shared, Vendors ]
-    EsAdmin: [ Shared, Vendors ]
+    EsDashboard: [ Shared, Vendors ]
     # A Twig Component is presentation-only — framework/vendor glue, never a BC.
     Ui:      [ Vendors ]

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f2333e9c564aeb722fea310c6b148e46",
+    "content-hash": "855f24b596887aff4de3b3d00ec42e53",
     "packages": [
         {
             "name": "api-platform/core",
@@ -11203,17 +11203,17 @@
             "time": "2024-03-12T13:22:30+00:00"
         },
         {
-            "name": "patchlevel/event-sourcing-admin-bundle",
-            "version": "1.0.0-alpha8",
+            "name": "patchlevel/event-sourcing-dashboard-bundle",
+            "version": "1.0.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/patchlevel/event-sourcing-admin-bundle.git",
-                "reference": "1032abf0b4665aeb922326f9f08b47e579b9a02a"
+                "url": "https://github.com/patchlevel/event-sourcing-dashboard-bundle.git",
+                "reference": "1daa323dcf131876d2261c0370e3fb9e83238c7f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/patchlevel/event-sourcing-admin-bundle/zipball/1032abf0b4665aeb922326f9f08b47e579b9a02a",
-                "reference": "1032abf0b4665aeb922326f9f08b47e579b9a02a",
+                "url": "https://api.github.com/repos/patchlevel/event-sourcing-dashboard-bundle/zipball/1daa323dcf131876d2261c0370e3fb9e83238c7f",
+                "reference": "1daa323dcf131876d2261c0370e3fb9e83238c7f",
                 "shasum": ""
             },
             "require": {
@@ -11236,12 +11236,13 @@
                 "phpstan/phpstan": "^2.1.32",
                 "phpstan/phpstan-symfony": "^2.0.8",
                 "phpunit/phpunit": "^11.5.45",
-                "roave/security-advisories": "dev-master"
+                "roave/security-advisories": "dev-master",
+                "wnx/commonmark-markdown-renderer": "^1.6"
             },
             "type": "symfony-bundle",
             "autoload": {
                 "psr-4": {
-                    "Patchlevel\\EventSourcingAdminBundle\\": "src/"
+                    "Patchlevel\\EventSourcingDashboardBundle\\": "src/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -11258,19 +11259,20 @@
                     "email": "david.badura@patchlevel.de"
                 }
             ],
-            "description": "symfony admin ui for patchlevel/event-sourcing-bundle",
-            "homepage": "https://github.com/patchlevel/event-sourcing-admin-bundle",
+            "description": "Dashboard to inspect events, time travel through aggregates and manage subscriptions for patchlevel/event-sourcing.",
+            "homepage": "https://patchlevel.dev/docs/event-sourcing-dashboard-bundle/latest",
             "keywords": [
-                "admin",
                 "bundle",
+                "dashboard",
                 "event-sourcing",
+                "patchlevel",
                 "symfony"
             ],
             "support": {
-                "issues": "https://github.com/patchlevel/event-sourcing-admin-bundle/issues",
-                "source": "https://github.com/patchlevel/event-sourcing-admin-bundle/tree/1.0.0-alpha8"
+                "issues": "https://github.com/patchlevel/event-sourcing-dashboard-bundle/issues",
+                "source": "https://github.com/patchlevel/event-sourcing-dashboard-bundle/tree/1.0.0"
             },
-            "time": "2026-02-25T11:10:36+00:00"
+            "time": "2026-09-06T09:15:39+00:00"
         },
         {
             "name": "patchlevel/event-sourcing-phpstan-extension",
@@ -15281,9 +15283,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "patchlevel/event-sourcing-admin-bundle": 20
-    },
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

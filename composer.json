@@ -56,7 +56,7 @@
     "fakerphp/faker": "^1.24.1",
     "friendsofphp/php-cs-fixer": "^3.95",
     "infection/infection": "^0.35",
-    "patchlevel/event-sourcing-admin-bundle": "@dev",
+    "patchlevel/event-sourcing-dashboard-bundle": "^1.0",
     "patchlevel/event-sourcing-phpstan-extension": "^1.3",
     "patchlevel/event-sourcing-phpunit": "^1.7",
     "phpat/phpat": "^0.12",
