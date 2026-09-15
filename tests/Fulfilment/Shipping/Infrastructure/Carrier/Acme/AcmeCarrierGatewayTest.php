@@ -27,7 +27,7 @@ final class AcmeCarrierGatewayTest extends TestCase
     {
         // Given
         $shipmentId = Uuid::uuid7()->toString();
-        $response = self::jsonResponse(['trackingNumber' => 'ACME-4Q7X2K9']);
+        $response = self::jsonResponse(['tracking_number' => 'ACME-4Q7X2K9']);
 
         // When
         $trackingNumber = $this->gateway($response)->manifest($shipmentId, $this->originAddress(), $this->destinationAddress());
@@ -42,9 +42,9 @@ final class AcmeCarrierGatewayTest extends TestCase
         $requestBody = $this->requestBody($response);
         self::assertSame(
             [
-                'merchantReference' => $shipmentId,
-                'origin' => PostalAddressMapper::toArray($this->originAddress()),
-                'destination' => PostalAddressMapper::toArray($this->destinationAddress()),
+                'reference_number' => $shipmentId,
+                'shipper' => PostalAddressMapper::toArray($this->originAddress()),
+                'ship_to' => PostalAddressMapper::toArray($this->destinationAddress()),
             ],
             $requestBody,
         );
@@ -98,8 +98,8 @@ final class AcmeCarrierGatewayTest extends TestCase
     {
         yield 'malformed JSON body' => [self::jsonResponse('<html></html>')];
         yield 'tracking number absent' => [self::jsonResponse(['status' => 'booked'])];
-        yield 'tracking number blank' => [self::jsonResponse(['trackingNumber' => ''])];
-        yield 'tracking number of another type' => [self::jsonResponse(['trackingNumber' => 42])];
+        yield 'tracking number blank' => [self::jsonResponse(['tracking_number' => ''])];
+        yield 'tracking number of another type' => [self::jsonResponse(['tracking_number' => 42])];
     }
 
     #[Test]

@@ -26,15 +26,15 @@ final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
     public function manifest(string $shipmentId, PostalAddress $origin, PostalAddress $destination): string
     {
         $response = $this->acmeClient->post(self::SHIPMENT_PATH, [
-            'merchantReference' => $shipmentId,
-            'origin' => PostalAddressMapper::toArray($origin),
-            'destination' => PostalAddressMapper::toArray($destination),
+            'reference_number' => $shipmentId,
+            'shipper' => PostalAddressMapper::toArray($origin),
+            'ship_to' => PostalAddressMapper::toArray($destination),
         ], $shipmentId);
 
-        $trackingNumber = $response['trackingNumber'] ?? null;
+        $trackingNumber = $response['tracking_number'] ?? null;
 
         if (!\is_string($trackingNumber) || '' === $trackingNumber) {
-            throw CarrierFatalFailureException::forReason('A manifest response carries a non-empty "trackingNumber".');
+            throw CarrierFatalFailureException::forReason('A manifest response carries a non-empty "tracking_number".');
         }
 
         return $trackingNumber;
