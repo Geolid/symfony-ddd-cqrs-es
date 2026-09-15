@@ -95,7 +95,7 @@ final class ListIdentitiesHandlerTest extends AbstractIntegrationTestCase
      */
     private function idsOf(PaginatedResult $result): array
     {
-        return array_map(static fn (IdentityResult $item): string => $item->id, $result->items);
+        return array_map(static fn (IdentityResult $identityResult): string => $identityResult->id, $result->items);
     }
 
     /**
