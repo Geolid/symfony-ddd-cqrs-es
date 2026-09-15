@@ -52,6 +52,7 @@ final class GlobexPaymentGatewayTest extends TestCase
                 'amountInCents' => 4_200,
                 'mode' => 'payment',
                 'success_url' => 'https://web.test/sales/orders',
+                'cancel_url' => 'https://web.test/sales/orders',
                 'billingAddress' => PostalAddressMapper::toArray($this->billingAddress()),
                 'expiresAt' => $expiresAt->format(\DateTimeInterface::ATOM),
             ],

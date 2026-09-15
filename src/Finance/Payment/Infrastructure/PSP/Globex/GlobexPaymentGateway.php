@@ -30,6 +30,7 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
             'amountInCents' => $amountInCents,
             'mode' => 'payment',
             'success_url' => $returnUrl,
+            'cancel_url' => $returnUrl,
             'billingAddress' => PostalAddressMapper::toArray($billingAddress),
             'expiresAt' => $expiresAt->format(\DateTimeInterface::ATOM),
         ], $paymentId);
