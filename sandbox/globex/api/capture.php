@@ -3,13 +3,18 @@
 declare(strict_types=1);
 
 require dirname(__DIR__, 2).'/shared/reference.php';
+require dirname(__DIR__, 2).'/shared/request.php';
 require dirname(__DIR__, 2).'/shared/store.php';
+require dirname(__DIR__, 1).'/shared/config.php';
 
-$reference = filter_var($_GET['reference'] ?? '', \FILTER_UNSAFE_RAW) ?: '';
+$reference = fake_api_read_query('reference');
+$record = fake_api_require_record(GLOBEX_PROVIDER, $reference);
 
-fake_api_store_transition_status('globex-charges', $reference, 'captured');
+$status = 'declined' === ($record['capture_outcome'] ?? null) ? 'declined' : 'captured';
+
+fake_api_store_transition_status(GLOBEX_PROVIDER, $reference, $status);
 
 fake_api_respond([
     'reference' => $reference,
-    'status' => 'captured',
+    'status' => $status,
 ]);

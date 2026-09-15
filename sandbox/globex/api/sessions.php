@@ -5,20 +5,16 @@ declare(strict_types=1);
 require dirname(__DIR__, 2).'/shared/reference.php';
 require dirname(__DIR__, 2).'/shared/request.php';
 require dirname(__DIR__, 2).'/shared/store.php';
+require dirname(__DIR__, 1).'/shared/config.php';
+require dirname(__DIR__, 1).'/shared/line_items.php';
 
 if ('GET' === $_SERVER['REQUEST_METHOD']) {
-    $reference = filter_var($_GET['reference'] ?? '', \FILTER_UNSAFE_RAW) ?: '';
-    $records = fake_api_store_read('globex-charges');
-
-    if (!isset($records[$reference])) {
-        http_response_code(404);
-        fake_api_respond(['error' => 'unknown_reference']);
-        exit;
-    }
+    $reference = fake_api_read_query('reference');
+    $record = fake_api_require_record(GLOBEX_PROVIDER, $reference);
 
     fake_api_respond([
         'reference' => $reference,
-        'status' => $records[$reference]['status'],
+        'status' => $record['status'],
     ]);
     exit;
 }
@@ -28,41 +24,43 @@ $body = fake_api_decode_json_body($rawBody);
 
 $idempotencyKey = fake_api_read_idempotency_key();
 
-$existing = fake_api_find_existing_by_idempotency_key('globex-charges', $idempotencyKey);
+$existing = fake_api_find_existing_by_idempotency_key(GLOBEX_PROVIDER, $idempotencyKey, 'idempotency_key');
 if (null !== $existing) {
     fake_api_respond([
         'id' => $existing['reference'],
-        'url' => $existing['checkoutUrl'],
+        'url' => $existing['url'],
     ]);
     exit;
 }
 
-$id = fake_api_reference('GLBX-LOCAL', $rawBody);
-
 $lineItems = is_array($body['line_items'] ?? null) ? $body['line_items'] : [];
-$amountInCents = array_reduce($lineItems, static function (int $carry, mixed $item): int {
-    $item = is_array($item) ? $item : [];
-    $priceData = is_array($item['price_data'] ?? null) ? $item['price_data'] : [];
-    $unitAmount = filter_var($priceData['unit_amount'] ?? 0, \FILTER_VALIDATE_INT) ?: 0;
-    $quantity = filter_var($item['quantity'] ?? 1, \FILTER_VALIDATE_INT) ?: 1;
 
-    return $carry + $unitAmount * $quantity;
-}, 0);
+if ([] === $lineItems) {
+    http_response_code(400);
+    fake_api_respond(['error' => 'empty_line_items']);
+    exit;
+}
 
-$url = rtrim((string) getenv('GLOBEX_CHECKOUT_BASE_URL'), '/').'/pay/'.$id.'?'.http_build_query([
-    'total' => $amountInCents,
-    'returnUrl' => filter_var($body['success_url'] ?? '', \FILTER_UNSAFE_RAW) ?: '',
-]);
+if (count(fake_globex_line_items_currencies($lineItems)) > 1) {
+    http_response_code(400);
+    fake_api_respond(['error' => 'currency_mismatch']);
+    exit;
+}
 
-fake_api_store_mutate('globex-charges', static function (array $records) use ($id, $idempotencyKey, $url, $body, $amountInCents): array {
+$id = fake_api_reference('GLBX-LOCAL', $rawBody);
+$url = rtrim((string) getenv('GLOBEX_CHECKOUT_BASE_URL'), '/').'/pay/'.$id;
+
+fake_api_store_mutate(GLOBEX_PROVIDER, static function (array $records) use ($id, $idempotencyKey, $url, $body, $lineItems): array {
     $records[$id] = [
         'reference' => $id,
-        'idempotencyKey' => $idempotencyKey,
-        'merchantReference' => filter_var($body['client_reference_id'] ?? '', \FILTER_UNSAFE_RAW) ?: '',
-        'checkoutUrl' => $url,
-        'amountInCents' => $amountInCents,
+        'idempotency_key' => $idempotencyKey,
+        'client_reference_id' => filter_var($body['client_reference_id'] ?? '', \FILTER_UNSAFE_RAW) ?: '',
+        'url' => $url,
+        'line_items' => $lineItems,
+        'success_url' => filter_var($body['success_url'] ?? '', \FILTER_UNSAFE_RAW) ?: '',
+        'cancel_url' => filter_var($body['cancel_url'] ?? '', \FILTER_UNSAFE_RAW) ?: '',
         'status' => 'requested',
-        'createdAt' => gmdate('c'),
+        'created_at' => gmdate('c'),
     ];
 
     return $records;
