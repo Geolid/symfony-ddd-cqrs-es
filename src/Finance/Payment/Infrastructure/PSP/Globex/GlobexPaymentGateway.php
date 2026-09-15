@@ -9,8 +9,6 @@ use Finance\Payment\Application\PSP\Exception\PaymentGatewayException;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Application\PSP\PaymentGatewayStatus;
 use Finance\Payment\Application\Requesting\PaymentSession;
-use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\PostalAddress;
 
 final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
 {
@@ -23,7 +21,7 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
     /**
      * @throws PaymentGatewayException
      */
-    public function requestPayment(string $paymentId, string $checkoutSessionId, int $amountInCents, string $successUrl, string $cancelUrl, PostalAddress $billingAddress, \DateTimeImmutable $expiresAt): PaymentSession
+    public function requestPayment(string $paymentId, string $checkoutSessionId, int $amountInCents, string $successUrl, string $cancelUrl, \DateTimeImmutable $expiresAt): PaymentSession
     {
         $response = $this->globexClient->post(self::SESSIONS_PATH, [
             'client_reference_id' => $checkoutSessionId,
@@ -31,7 +29,6 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
             'mode' => 'payment',
             'success_url' => $successUrl,
             'cancel_url' => $cancelUrl,
-            'billingAddress' => PostalAddressMapper::toArray($billingAddress),
             'expiresAt' => $expiresAt->format(\DateTimeInterface::ATOM),
         ], $paymentId);
 

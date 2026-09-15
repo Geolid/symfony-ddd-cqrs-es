@@ -6,14 +6,13 @@ namespace Finance\Payment\Application\PSP;
 
 use Finance\Payment\Application\PSP\Exception\PaymentGatewayException;
 use Finance\Payment\Application\Requesting\PaymentSession;
-use Shared\Domain\ValueObject\PostalAddress;
 
 interface PaymentGatewayInterface
 {
     /**
      * @throws PaymentGatewayException
      */
-    public function requestPayment(string $paymentId, string $checkoutSessionId, int $amountInCents, string $successUrl, string $cancelUrl, PostalAddress $billingAddress, \DateTimeImmutable $expiresAt): PaymentSession;
+    public function requestPayment(string $paymentId, string $checkoutSessionId, int $amountInCents, string $successUrl, string $cancelUrl, \DateTimeImmutable $expiresAt): PaymentSession;
 
     /**
      * @throws PaymentGatewayException

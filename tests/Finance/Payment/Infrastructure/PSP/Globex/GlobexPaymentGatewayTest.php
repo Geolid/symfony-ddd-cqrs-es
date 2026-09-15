@@ -13,9 +13,6 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
-use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\PostalAddress;
 use Symfony\Component\Clock\Clock;
 use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Component\HttpClient\MockHttpClient;
@@ -36,7 +33,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         ]);
 
         // When
-        $session = $this->gateway($response)->requestPayment($paymentId, $checkoutSessionId, 4_200, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->billingAddress(), $expiresAt);
+        $session = $this->gateway($response)->requestPayment($paymentId, $checkoutSessionId, 4_200, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $expiresAt);
 
         // Then
         self::assertSame('GLBX-9F3K2M1P', $session->reference);
@@ -53,7 +50,6 @@ final class GlobexPaymentGatewayTest extends TestCase
                 'mode' => 'payment',
                 'success_url' => 'https://web.test/sales/orders',
                 'cancel_url' => 'https://web.test/sales/cart',
-                'billingAddress' => PostalAddressMapper::toArray($this->billingAddress()),
                 'expiresAt' => $expiresAt->format(\DateTimeInterface::ATOM),
             ],
             $this->requestBody($response),
@@ -68,7 +64,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         $this->expectException(PaymentTransientFailureException::class);
 
         // When
-        $this->gateway($response)->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->billingAddress(), $this->expiresAt());
+        $this->gateway($response)->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt());
     }
 
     /**
@@ -87,7 +83,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         $this->expectException(PaymentFatalFailureException::class);
 
         // When
-        $this->gateway(self::jsonResponse(['error' => 'invalid amount'], 400))->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->billingAddress(), $this->expiresAt());
+        $this->gateway(self::jsonResponse(['error' => 'invalid amount'], 400))->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt());
     }
 
     #[Test]
@@ -98,7 +94,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         $this->expectException(PaymentFatalFailureException::class);
 
         // When
-        $this->gateway($response)->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->billingAddress(), $this->expiresAt());
+        $this->gateway($response)->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt());
     }
 
     /**
@@ -234,14 +230,6 @@ final class GlobexPaymentGatewayTest extends TestCase
                 'http_code' => $statusCode,
                 'response_headers' => ['content-type' => 'application/json'],
             ],
-        );
-    }
-
-    private function billingAddress(): PostalAddress
-    {
-        return PostalAddress::of(
-            'Ada Lovelace',
-            Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'),
         );
     }
 

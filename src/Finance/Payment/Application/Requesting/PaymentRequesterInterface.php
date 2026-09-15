@@ -6,7 +6,6 @@ namespace Finance\Payment\Application\Requesting;
 
 use Finance\Payment\Application\Requesting\Exception\PaymentRequestInProgressException;
 use Shared\Application\DrivingPort;
-use Shared\Domain\ValueObject\PostalAddress;
 
 #[DrivingPort]
 interface PaymentRequesterInterface
@@ -16,5 +15,5 @@ interface PaymentRequesterInterface
      *
      * @throws PaymentRequestInProgressException
      */
-    public function requestFor(string $checkoutSessionId, int $amountInCents, string $currency, PostalAddress $billingAddress, string $successUrl, string $cancelUrl, \DateTimeImmutable $expiresAt): string;
+    public function requestFor(string $checkoutSessionId, int $amountInCents, string $currency, string $successUrl, string $cancelUrl, \DateTimeImmutable $expiresAt): string;
 }
