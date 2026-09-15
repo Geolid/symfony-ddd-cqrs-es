@@ -64,12 +64,13 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
             ->willReturn(new PaymentSession($reference, $hostedPageUrl));
 
         // When
-        $result = $this->service->requestFor($checkoutSessionId, 4_200, 'EUR', $lines, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt);
+        $result = $this->service->requestFor($checkoutSessionId, $lines, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt);
 
         // Then
         self::assertSame($hostedPageUrl, $result);
         $payment = $this->finder->ofCheckoutSession($checkoutSessionId);
         self::assertSame($reference, $payment->reference);
+        self::assertSame(4_200, $payment->amountInCents);
         self::assertSame(PaymentStatus::REQUESTED, $payment->status);
     }
 
@@ -88,7 +89,7 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
         $this->paymentGateway->expects(self::never())->method('requestPayment');
 
         // When
-        $hostedPageUrl = $this->service->requestFor($paymentBuilder['checkoutSessionId'], 4_200, 'EUR', $this->lines(), 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt);
+        $hostedPageUrl = $this->service->requestFor($paymentBuilder['checkoutSessionId'], $this->lines(), 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt);
 
         // Then
         self::assertSame($paymentBuilder['hostedPageUrl'], $hostedPageUrl);

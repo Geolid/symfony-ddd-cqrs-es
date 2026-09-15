@@ -18,5 +18,5 @@ interface PaymentRequesterInterface
      *
      * @throws PaymentRequestInProgressException
      */
-    public function requestFor(string $checkoutSessionId, int $amountInCents, string $currency, array $lines, string $successUrl, string $cancelUrl, \DateTimeImmutable $expiresAt): string;
+    public function requestFor(string $checkoutSessionId, array $lines, string $successUrl, string $cancelUrl, \DateTimeImmutable $expiresAt): string;
 }

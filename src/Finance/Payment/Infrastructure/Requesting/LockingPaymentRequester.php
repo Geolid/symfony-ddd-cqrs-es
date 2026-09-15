@@ -35,13 +35,13 @@ final readonly class LockingPaymentRequester implements PaymentRequesterInterfac
      *
      * @throws PaymentRequestInProgressException
      */
-    public function requestFor(string $checkoutSessionId, int $amountInCents, string $currency, array $lines, string $successUrl, string $cancelUrl, \DateTimeImmutable $expiresAt): string
+    public function requestFor(string $checkoutSessionId, array $lines, string $successUrl, string $cancelUrl, \DateTimeImmutable $expiresAt): string
     {
         try {
             return $this->withLock(
                 \sprintf('finance.payment.payment_request.%s', $checkoutSessionId),
                 self::LOCK_TTL_SECONDS,
-                fn (): string => $this->inner->requestFor($checkoutSessionId, $amountInCents, $currency, $lines, $successUrl, $cancelUrl, $expiresAt),
+                fn (): string => $this->inner->requestFor($checkoutSessionId, $lines, $successUrl, $cancelUrl, $expiresAt),
             );
         } catch (LockNotAcquiredException $e) {
             throw PaymentRequestInProgressException::forCheckoutSession($checkoutSessionId, $e);

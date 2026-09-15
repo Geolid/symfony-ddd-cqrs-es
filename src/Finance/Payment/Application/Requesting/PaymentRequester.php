@@ -15,6 +15,7 @@ use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
+use Webmozart\Assert\Assert;
 
 final readonly class PaymentRequester implements PaymentRequesterInterface
 {
@@ -32,8 +33,10 @@ final readonly class PaymentRequester implements PaymentRequesterInterface
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    public function requestFor(string $checkoutSessionId, int $amountInCents, string $currency, array $lines, string $successUrl, string $cancelUrl, \DateTimeImmutable $expiresAt): string
+    public function requestFor(string $checkoutSessionId, array $lines, string $successUrl, string $cancelUrl, \DateTimeImmutable $expiresAt): string
     {
+        Assert::notEmpty($lines, 'A checkout session needs at least one line, none given.');
+
         $checkoutSessionKey = UniqueKey::for(PaymentUniqueKey::CHECKOUT_SESSION);
 
         if ($this->uniqueValues->isClaimed($checkoutSessionKey, $checkoutSessionId)) {
@@ -43,6 +46,12 @@ final readonly class PaymentRequester implements PaymentRequesterInterface
         $paymentId = PaymentId::forCheckoutSession($checkoutSessionId);
 
         $session = $this->paymentGateway->requestPayment($paymentId->toString(), $checkoutSessionId, $lines, $successUrl, $cancelUrl, $expiresAt);
+
+        $amountInCents = array_sum(array_map(
+            static fn (PaymentLine $line): int => $line->unitPrice->cents * $line->quantity->value,
+            $lines,
+        ));
+        $currency = $lines[0]->unitPrice->currency->value;
 
         try {
             $this->commandBus->dispatch(new RequestPayment(
