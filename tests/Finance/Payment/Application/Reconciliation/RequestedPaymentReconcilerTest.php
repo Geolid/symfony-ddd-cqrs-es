@@ -36,9 +36,7 @@ final class RequestedPaymentReconcilerTest extends AbstractIntegrationTestCase
         $paymentBuilder = PaymentBuilder::new();
         $orderPayment = $paymentBuilder->create();
         $this->store($orderPayment);
-        $carrier = $this->createStub(PaymentGatewayInterface::class);
-        $carrier->method('checkStatus')->willReturn(PaymentGatewayStatus::AUTHORIZED);
-        $reconciler = new RequestedPaymentReconciler($carrier, $this->commandBus);
+        $reconciler = new RequestedPaymentReconciler($this->paymentGatewayReturning(PaymentGatewayStatus::AUTHORIZED), $this->commandBus);
 
         // When
         $reconciled = $reconciler->reconcile($orderPayment->id->toString(), $paymentBuilder['reference']->value);
@@ -57,9 +55,7 @@ final class RequestedPaymentReconcilerTest extends AbstractIntegrationTestCase
         $paymentBuilder = PaymentBuilder::new();
         $orderPayment = $paymentBuilder->create();
         $this->store($orderPayment);
-        $carrier = $this->createStub(PaymentGatewayInterface::class);
-        $carrier->method('checkStatus')->willReturn($gatewayStatus);
-        $reconciler = new RequestedPaymentReconciler($carrier, $this->commandBus);
+        $reconciler = new RequestedPaymentReconciler($this->paymentGatewayReturning($gatewayStatus), $this->commandBus);
 
         // When
         $reconciled = $reconciler->reconcile($orderPayment->id->toString(), $paymentBuilder['reference']->value);
@@ -77,5 +73,13 @@ final class RequestedPaymentReconcilerTest extends AbstractIntegrationTestCase
     {
         yield 'still requested' => [PaymentGatewayStatus::REQUESTED];
         yield 'declined' => [PaymentGatewayStatus::DECLINED];
+    }
+
+    private function paymentGatewayReturning(PaymentGatewayStatus $status): PaymentGatewayInterface
+    {
+        $paymentGateway = $this->createStub(PaymentGatewayInterface::class);
+        $paymentGateway->method('checkStatus')->willReturn($status);
+
+        return $paymentGateway;
     }
 }

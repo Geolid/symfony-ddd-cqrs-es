@@ -4,18 +4,20 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipping\Application\Reconciliation;
 
-use Fulfilment\Shipping\Application\Carrier\CarrierGatewayInterface;
 use Fulfilment\Shipping\Application\Carrier\CarrierGatewayStatus;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\Reconciliation\DispatchedShipmentReconciler;
 use Fulfilment\Shipping\Application\ShipmentStatus;
 use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
+use Fulfilment\Tests\Shipping\Support\Double\CarrierGatewayStubTrait;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Command\CommandBusInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DispatchedShipmentReconcilerTest extends AbstractIntegrationTestCase
 {
+    use CarrierGatewayStubTrait;
+
     private ShipmentFinderInterface $shipmentFinder;
 
     private CommandBusInterface $commandBus;
@@ -35,9 +37,7 @@ final class DispatchedShipmentReconcilerTest extends AbstractIntegrationTestCase
         $trackingNumber = ShipmentBuilder::sample('trackingNumber')->value;
         $shipment = ShipmentBuilder::new()->prepared()->manifested($trackingNumber)->dispatched()->create();
         $this->store($shipment);
-        $carrier = $this->createStub(CarrierGatewayInterface::class);
-        $carrier->method('checkStatus')->willReturn(CarrierGatewayStatus::DELIVERED);
-        $reconciler = new DispatchedShipmentReconciler($carrier, $this->commandBus);
+        $reconciler = new DispatchedShipmentReconciler($this->carrierGatewayReturning(CarrierGatewayStatus::DELIVERED), $this->commandBus);
 
         // When
         $reconciled = $reconciler->reconcile($shipment->id->toString(), $trackingNumber);
@@ -55,9 +55,7 @@ final class DispatchedShipmentReconcilerTest extends AbstractIntegrationTestCase
         $trackingNumber = ShipmentBuilder::sample('trackingNumber')->value;
         $shipment = ShipmentBuilder::new()->prepared()->manifested($trackingNumber)->dispatched()->create();
         $this->store($shipment);
-        $carrier = $this->createStub(CarrierGatewayInterface::class);
-        $carrier->method('checkStatus')->willReturn(CarrierGatewayStatus::DISPATCHED);
-        $reconciler = new DispatchedShipmentReconciler($carrier, $this->commandBus);
+        $reconciler = new DispatchedShipmentReconciler($this->carrierGatewayReturning(CarrierGatewayStatus::DISPATCHED), $this->commandBus);
 
         // When
         $reconciled = $reconciler->reconcile($shipment->id->toString(), $trackingNumber);

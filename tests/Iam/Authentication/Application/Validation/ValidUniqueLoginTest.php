@@ -6,14 +6,13 @@ namespace Iam\Tests\Authentication\Application\Validation;
 
 use Iam\Authentication\Application\PasswordCredentialUniqueKey;
 use Iam\Authentication\Application\Validation\ValidUniqueLogin;
+use Iam\Tests\Authentication\Support\ValidatorFactoryTrait;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Validation\UniqueValueValidator;
 use Shared\Application\Validation\ValidUniqueValue;
 use Shared\Tests\Support\Double\FakeUniquenessRegistry;
-use Symfony\Component\Validator\ConstraintValidatorFactory;
 use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
-use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 /**
@@ -21,6 +20,8 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class ValidUniqueLoginTest extends CompoundConstraintTestCase
 {
+    use ValidatorFactoryTrait;
+
     private FakeUniquenessRegistry $registry;
 
     protected function setUp(): void
@@ -62,10 +63,6 @@ final class ValidUniqueLoginTest extends CompoundConstraintTestCase
 
     protected function createValidator(): ValidatorInterface
     {
-        return Validation::createValidatorBuilder()
-            ->setConstraintValidatorFactory(new ConstraintValidatorFactory([
-                UniqueValueValidator::class => new UniqueValueValidator($this->registry),
-            ]))
-            ->getValidator();
+        return $this->validatorUsing(UniqueValueValidator::class, new UniqueValueValidator($this->registry));
     }
 }
