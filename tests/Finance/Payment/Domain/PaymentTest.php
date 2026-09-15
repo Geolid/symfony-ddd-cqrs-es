@@ -26,7 +26,7 @@ final class PaymentTest extends AggregateRootTestCase
     private string $orderId;
     private Money $amount;
     private PaymentReference $reference;
-    private string $checkoutUrl;
+    private string $hostedPageUrl;
     private \DateTimeImmutable $requestedAt;
     private \DateTimeImmutable $authorizedAt;
     private \DateTimeImmutable $capturedAt;
@@ -40,7 +40,7 @@ final class PaymentTest extends AggregateRootTestCase
         $this->orderId = PaymentBuilder::sample('orderId');
         $this->amount = PaymentBuilder::sample('amount');
         $this->reference = PaymentBuilder::sample('reference');
-        $this->checkoutUrl = PaymentBuilder::sample('checkoutUrl');
+        $this->hostedPageUrl = PaymentBuilder::sample('hostedPageUrl');
         $this->requestedAt = PaymentBuilder::sample('requestedAt');
         $this->authorizedAt = PaymentBuilder::sample('authorizedAt');
         $this->capturedAt = PaymentBuilder::sample('capturedAt');
@@ -56,7 +56,7 @@ final class PaymentTest extends AggregateRootTestCase
                 $this->checkoutSessionId,
                 $this->amount,
                 $this->reference,
-                $this->checkoutUrl,
+                $this->hostedPageUrl,
                 $this->requestedAt,
             ))
             ->then($this->requested());
@@ -225,7 +225,7 @@ final class PaymentTest extends AggregateRootTestCase
             $this->checkoutSessionId,
             $this->amount,
             $this->reference,
-            $this->checkoutUrl,
+            $this->hostedPageUrl,
             $this->requestedAt,
         );
     }

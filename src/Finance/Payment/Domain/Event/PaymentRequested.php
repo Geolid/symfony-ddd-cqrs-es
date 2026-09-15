@@ -17,7 +17,7 @@ final readonly class PaymentRequested
         public string $checkoutSessionId,
         public Money $amount,
         public PaymentReference $reference,
-        public string $checkoutUrl,
+        public string $hostedPageUrl,
         public \DateTimeImmutable $requestedAt,
     ) {
     }

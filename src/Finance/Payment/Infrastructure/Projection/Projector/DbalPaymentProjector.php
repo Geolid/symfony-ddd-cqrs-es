@@ -38,7 +38,7 @@ final readonly class DbalPaymentProjector extends AbstractDbalProjector
                 'order_id' => null,
                 'amount_in_cents' => $event->amount->cents,
                 'reference' => $event->reference->value,
-                'checkout_url' => $event->checkoutUrl,
+                'hosted_page_url' => $event->hostedPageUrl,
                 'status' => PaymentStatus::REQUESTED->value,
                 'requested_at' => $event->requestedAt,
             ],
@@ -139,7 +139,7 @@ final readonly class DbalPaymentProjector extends AbstractDbalProjector
         $table->addColumn('order_id', Types::STRING, ['length' => 36, 'notnull' => false, 'default' => null]);
         $table->addColumn('amount_in_cents', Types::INTEGER);
         $table->addColumn('reference', Types::STRING, ['length' => PaymentReference::MAX_LENGTH]);
-        $table->addColumn('checkout_url', Types::STRING, ['length' => 2048]);
+        $table->addColumn('hosted_page_url', Types::STRING, ['length' => 2048]);
         $table->addColumn('status', Types::STRING, ['length' => 17]);
         $table->addColumn('requested_at', Types::DATETIME_IMMUTABLE);
         $table->addColumn('authorized_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);

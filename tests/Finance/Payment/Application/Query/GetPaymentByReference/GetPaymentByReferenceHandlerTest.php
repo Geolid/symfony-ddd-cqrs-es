@@ -30,7 +30,7 @@ final class GetPaymentByReferenceHandlerTest extends AbstractIntegrationTestCase
         self::assertNull($result->orderId);
         self::assertSame($paymentFactory['amount']->cents, $result->amountInCents);
         self::assertSame($paymentFactory['reference']->value, $result->reference);
-        self::assertSame($paymentFactory['checkoutUrl'], $result->checkoutUrl);
+        self::assertSame($paymentFactory['hostedPageUrl'], $result->hostedPageUrl);
         self::assertSame(PaymentStatus::REQUESTED, $result->status);
         self::assertNotNull($result->requestedAt);
         self::assertNull($result->capturedAt);

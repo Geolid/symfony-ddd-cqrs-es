@@ -8,7 +8,9 @@ use Finance\Payment\Application\PSP\Exception\PaymentFatalFailureException;
 use Finance\Payment\Application\PSP\Exception\PaymentGatewayException;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Application\PSP\PaymentGatewayStatus;
-use Finance\Payment\Application\Requesting\PaymentSession;
+use Finance\Payment\Application\PSP\PaymentLine;
+use Finance\Payment\Application\PSP\PaymentSession;
+use Webmozart\Assert\Assert;
 
 final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
 {
@@ -19,17 +21,38 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
     }
 
     /**
+     * @param list<PaymentLine> $lines
+     *
      * @throws PaymentGatewayException
      */
-    public function requestPayment(string $paymentId, string $checkoutSessionId, int $amountInCents, string $successUrl, string $cancelUrl, \DateTimeImmutable $expiresAt): PaymentSession
+    public function requestPayment(string $paymentId, string $checkoutSessionId, array $lines, string $successUrl, string $cancelUrl, \DateTimeImmutable $expiresAt): PaymentSession
     {
+        Assert::notEmpty($lines, 'A checkout session needs at least one line, none given.');
+
         $response = $this->globexClient->post(self::SESSIONS_PATH, [
             'client_reference_id' => $checkoutSessionId,
-            'amountInCents' => $amountInCents,
             'mode' => 'payment',
+            'ui_mode' => 'hosted_page',
             'success_url' => $successUrl,
             'cancel_url' => $cancelUrl,
-            'expiresAt' => $expiresAt->format(\DateTimeInterface::ATOM),
+            'expires_at' => $expiresAt->getTimestamp(),
+            'line_items' => array_map(
+                static fn (PaymentLine $line): array => [
+                    'price_data' => [
+                        'currency' => strtolower($line->unitPrice->currency->value),
+                        'unit_amount' => $line->unitPrice->cents,
+                        'product_data' => [
+                            'name' => $line->label->value,
+                        ],
+                    ],
+                    'quantity' => $line->quantity->value,
+                ],
+                $lines,
+            ),
+            'metadata' => [
+                'payment_id' => $paymentId,
+                'checkout_session_id' => $checkoutSessionId,
+            ],
         ], $paymentId);
 
         $id = $response['id'] ?? null;

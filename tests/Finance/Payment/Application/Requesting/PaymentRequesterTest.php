@@ -8,8 +8,9 @@ use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
 use Finance\Payment\Application\PaymentUniqueKey;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
+use Finance\Payment\Application\PSP\PaymentLine;
+use Finance\Payment\Application\PSP\PaymentSession;
 use Finance\Payment\Application\Requesting\PaymentRequester;
-use Finance\Payment\Application\Requesting\PaymentSession;
 use Finance\Payment\Domain\ValueObject\PaymentId;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;
@@ -18,6 +19,9 @@ use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
+use Shared\Domain\ValueObject\Label;
+use Shared\Domain\ValueObject\Money;
+use Shared\Domain\ValueObject\Quantity;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -53,16 +57,17 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
         $checkoutSessionId = Uuid::uuid7()->toString();
         $paymentId = PaymentId::forCheckoutSession($checkoutSessionId)->toString();
         $reference = PaymentBuilder::sample('reference')->value;
-        $checkoutUrl = PaymentBuilder::sample('checkoutUrl');
+        $hostedPageUrl = PaymentBuilder::sample('hostedPageUrl');
+        $lines = $this->lines();
         $this->paymentGateway->expects(self::once())->method('requestPayment')
-            ->with($paymentId, $checkoutSessionId, 4_200, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt)
-            ->willReturn(new PaymentSession($reference, $checkoutUrl));
+            ->with($paymentId, $checkoutSessionId, $lines, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt)
+            ->willReturn(new PaymentSession($reference, $hostedPageUrl));
 
         // When
-        $result = $this->service->requestFor($checkoutSessionId, 4_200, 'EUR', 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt);
+        $result = $this->service->requestFor($checkoutSessionId, 4_200, 'EUR', $lines, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt);
 
         // Then
-        self::assertSame($checkoutUrl, $result);
+        self::assertSame($hostedPageUrl, $result);
         $payment = $this->finder->ofCheckoutSession($checkoutSessionId);
         self::assertSame($reference, $payment->reference);
         self::assertSame(PaymentStatus::REQUESTED, $payment->status);
@@ -83,9 +88,19 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
         $this->paymentGateway->expects(self::never())->method('requestPayment');
 
         // When
-        $checkoutUrl = $this->service->requestFor($paymentBuilder['checkoutSessionId'], 4_200, 'EUR', 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt);
+        $hostedPageUrl = $this->service->requestFor($paymentBuilder['checkoutSessionId'], 4_200, 'EUR', $this->lines(), 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt);
 
         // Then
-        self::assertSame($paymentBuilder['checkoutUrl'], $checkoutUrl);
+        self::assertSame($paymentBuilder['hostedPageUrl'], $hostedPageUrl);
+    }
+
+    /**
+     * @return list<PaymentLine>
+     */
+    private function lines(): array
+    {
+        return [
+            new PaymentLine(Label::fromString('Espresso cups, set of 6'), Money::fromCents(4_200, 'EUR'), Quantity::of(1)),
+        ];
     }
 }

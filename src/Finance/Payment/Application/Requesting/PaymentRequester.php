@@ -9,6 +9,7 @@ use Finance\Payment\Application\Command\RequestPayment\RequestPayment;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentUniqueKey;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
+use Finance\Payment\Application\PSP\PaymentLine;
 use Finance\Payment\Domain\ValueObject\PaymentId;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -26,20 +27,22 @@ final readonly class PaymentRequester implements PaymentRequesterInterface
     }
 
     /**
+     * @param list<PaymentLine> $lines
+     *
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    public function requestFor(string $checkoutSessionId, int $amountInCents, string $currency, string $successUrl, string $cancelUrl, \DateTimeImmutable $expiresAt): string
+    public function requestFor(string $checkoutSessionId, int $amountInCents, string $currency, array $lines, string $successUrl, string $cancelUrl, \DateTimeImmutable $expiresAt): string
     {
         $checkoutSessionKey = UniqueKey::for(PaymentUniqueKey::CHECKOUT_SESSION);
 
         if ($this->uniqueValues->isClaimed($checkoutSessionKey, $checkoutSessionId)) {
-            return $this->paymentFinder->ofCheckoutSession($checkoutSessionId)->checkoutUrl;
+            return $this->paymentFinder->ofCheckoutSession($checkoutSessionId)->hostedPageUrl;
         }
 
         $paymentId = PaymentId::forCheckoutSession($checkoutSessionId);
 
-        $session = $this->paymentGateway->requestPayment($paymentId->toString(), $checkoutSessionId, $amountInCents, $successUrl, $cancelUrl, $expiresAt);
+        $session = $this->paymentGateway->requestPayment($paymentId->toString(), $checkoutSessionId, $lines, $successUrl, $cancelUrl, $expiresAt);
 
         try {
             $this->commandBus->dispatch(new RequestPayment(
@@ -48,12 +51,12 @@ final readonly class PaymentRequester implements PaymentRequesterInterface
                 amountInCents: $amountInCents,
                 currency: $currency,
                 reference: $session->reference,
-                checkoutUrl: $session->checkoutUrl,
+                hostedPageUrl: $session->hostedPageUrl,
             ));
         } catch (PaymentAlreadyClaimedException) {
-            return $this->paymentFinder->ofCheckoutSession($checkoutSessionId)->checkoutUrl;
+            return $this->paymentFinder->ofCheckoutSession($checkoutSessionId)->hostedPageUrl;
         }
 
-        return $session->checkoutUrl;
+        return $session->hostedPageUrl;
     }
 }

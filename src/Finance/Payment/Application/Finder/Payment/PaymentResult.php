@@ -14,7 +14,7 @@ final readonly class PaymentResult
         public ?string $orderId,
         public int $amountInCents,
         public string $reference,
-        public string $checkoutUrl,
+        public string $hostedPageUrl,
         public PaymentStatus $status,
         public \DateTimeImmutable $requestedAt,
         public ?\DateTimeImmutable $authorizedAt,

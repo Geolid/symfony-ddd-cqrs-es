@@ -7,12 +7,16 @@ namespace Finance\Tests\Payment\Infrastructure\PSP\Globex;
 use Finance\Payment\Application\PSP\Exception\PaymentFatalFailureException;
 use Finance\Payment\Application\PSP\Exception\PaymentTransientFailureException;
 use Finance\Payment\Application\PSP\PaymentGatewayStatus;
+use Finance\Payment\Application\PSP\PaymentLine;
 use Finance\Payment\Infrastructure\PSP\Globex\GlobexClient;
 use Finance\Payment\Infrastructure\PSP\Globex\GlobexPaymentGateway;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
+use Shared\Domain\ValueObject\Label;
+use Shared\Domain\ValueObject\Money;
+use Shared\Domain\ValueObject\Quantity;
 use Symfony\Component\Clock\Clock;
 use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Component\HttpClient\MockHttpClient;
@@ -27,17 +31,18 @@ final class GlobexPaymentGatewayTest extends TestCase
         $paymentId = Uuid::uuid7()->toString();
         $checkoutSessionId = Uuid::uuid7()->toString();
         $expiresAt = $this->expiresAt();
+        $lines = $this->lines();
         $response = self::jsonResponse([
             'id' => 'GLBX-9F3K2M1P',
             'url' => 'https://checkout.globex.test/pay/GLBX-9F3K2M1P',
         ]);
 
         // When
-        $session = $this->gateway($response)->requestPayment($paymentId, $checkoutSessionId, 4_200, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $expiresAt);
+        $session = $this->gateway($response)->requestPayment($paymentId, $checkoutSessionId, $lines, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $expiresAt);
 
         // Then
         self::assertSame('GLBX-9F3K2M1P', $session->reference);
-        self::assertSame('https://checkout.globex.test/pay/GLBX-9F3K2M1P', $session->checkoutUrl);
+        self::assertSame('https://checkout.globex.test/pay/GLBX-9F3K2M1P', $session->hostedPageUrl);
 
         $requestUrl = $response->getRequestUrl();
         self::assertSame('https://payments.globex.test/checkout/sessions', $requestUrl);
@@ -46,11 +51,27 @@ final class GlobexPaymentGatewayTest extends TestCase
         self::assertSame(
             [
                 'client_reference_id' => $checkoutSessionId,
-                'amountInCents' => 4_200,
                 'mode' => 'payment',
+                'ui_mode' => 'hosted_page',
                 'success_url' => 'https://web.test/sales/orders',
                 'cancel_url' => 'https://web.test/sales/cart',
-                'expiresAt' => $expiresAt->format(\DateTimeInterface::ATOM),
+                'expires_at' => $expiresAt->getTimestamp(),
+                'line_items' => [
+                    [
+                        'price_data' => [
+                            'currency' => 'eur',
+                            'unit_amount' => 4_200,
+                            'product_data' => [
+                                'name' => 'Espresso cups, set of 6',
+                            ],
+                        ],
+                        'quantity' => 2,
+                    ],
+                ],
+                'metadata' => [
+                    'payment_id' => $paymentId,
+                    'checkout_session_id' => $checkoutSessionId,
+                ],
             ],
             $this->requestBody($response),
         );
@@ -64,7 +85,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         $this->expectException(PaymentTransientFailureException::class);
 
         // When
-        $this->gateway($response)->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt());
+        $this->gateway($response)->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $this->lines(), 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt());
     }
 
     /**
@@ -83,7 +104,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         $this->expectException(PaymentFatalFailureException::class);
 
         // When
-        $this->gateway(self::jsonResponse(['error' => 'invalid amount'], 400))->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt());
+        $this->gateway(self::jsonResponse(['error' => 'invalid amount'], 400))->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $this->lines(), 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt());
     }
 
     #[Test]
@@ -94,7 +115,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         $this->expectException(PaymentFatalFailureException::class);
 
         // When
-        $this->gateway($response)->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt());
+        $this->gateway($response)->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $this->lines(), 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt());
     }
 
     /**
@@ -236,6 +257,16 @@ final class GlobexPaymentGatewayTest extends TestCase
     private function expiresAt(): \DateTimeImmutable
     {
         return Clock::get()->now()->modify('+30 minutes');
+    }
+
+    /**
+     * @return list<PaymentLine>
+     */
+    private function lines(): array
+    {
+        return [
+            new PaymentLine(Label::fromString('Espresso cups, set of 6'), Money::fromCents(4_200, 'EUR'), Quantity::of(2)),
+        ];
     }
 
     /**
