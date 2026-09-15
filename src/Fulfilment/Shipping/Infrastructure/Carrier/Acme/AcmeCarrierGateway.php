@@ -13,8 +13,8 @@ use Shared\Domain\ValueObject\PostalAddress;
 
 final readonly class AcmeCarrierGateway implements CarrierGatewayInterface
 {
-    private const string SHIPMENT_PATH = '/shipments';
-    private const string TRACKING_PATH = '/tracking';
+    private const string SHIPMENT_PATH = '/shipments/ship';
+    private const string TRACKING_PATH = '/track/details';
 
     public function __construct(private AcmeClient $acmeClient)
     {

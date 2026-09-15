@@ -43,7 +43,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         self::assertSame('https://checkout.globex.test/pay/GLBX-9F3K2M1P', $session->checkoutUrl);
 
         $requestUrl = $response->getRequestUrl();
-        self::assertSame('https://payments.globex.test/charges', $requestUrl);
+        self::assertSame('https://payments.globex.test/checkout/sessions', $requestUrl);
         $headers = $response->getRequestOptions()['headers'];
         self::assertContains('Idempotency-Key: '.$paymentId, $headers);
         self::assertSame(
@@ -125,7 +125,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         // Then
         self::assertSame(PaymentGatewayStatus::VOIDED, $status);
         $requestUrl = $response->getRequestUrl();
-        self::assertSame('https://payments.globex.test/charges/GLBX-9F3K2M1P/void', $requestUrl);
+        self::assertSame('https://payments.globex.test/checkout/sessions/GLBX-9F3K2M1P/cancel', $requestUrl);
         self::assertSame([], $this->requestBody($response));
     }
 
@@ -151,7 +151,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         // Then
         self::assertSame(PaymentGatewayStatus::AUTHORIZED, $status);
         $requestUrl = $response->getRequestUrl();
-        self::assertSame('https://payments.globex.test/charges/GLBX-9F3K2M1P', $requestUrl);
+        self::assertSame('https://payments.globex.test/checkout/sessions/GLBX-9F3K2M1P', $requestUrl);
     }
 
     #[Test]

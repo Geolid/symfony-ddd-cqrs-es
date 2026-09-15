@@ -36,7 +36,7 @@ final class AcmeCarrierGatewayTest extends TestCase
         self::assertSame('ACME-4Q7X2K9', $trackingNumber);
 
         $requestUrl = $response->getRequestUrl();
-        self::assertSame('https://carrier.acme.test/shipments', $requestUrl);
+        self::assertSame('https://carrier.acme.test/shipments/ship', $requestUrl);
         $headers = $response->getRequestOptions()['headers'];
         self::assertContains('Idempotency-Key: '.$shipmentId, $headers);
         $requestBody = $this->requestBody($response);
@@ -114,7 +114,7 @@ final class AcmeCarrierGatewayTest extends TestCase
         // Then
         self::assertSame(CarrierGatewayStatus::DISPATCHED, $status);
         $requestUrl = $response->getRequestUrl();
-        self::assertSame('https://carrier.acme.test/tracking/ACME-4Q7X2K9', $requestUrl);
+        self::assertSame('https://carrier.acme.test/track/details/ACME-4Q7X2K9', $requestUrl);
     }
 
     #[Test]
