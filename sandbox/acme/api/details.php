@@ -8,13 +8,9 @@ require dirname(__DIR__, 2).'/shared/store.php';
 require dirname(__DIR__, 1).'/shared/config.php';
 
 $reference = fake_api_read_query('reference');
-$record = fake_api_require_record(GLOBEX_PROVIDER, $reference);
-
-$status = 'declined' === ($record['capture_outcome'] ?? null) ? 'declined' : 'captured';
-
-fake_api_store_transition_status(GLOBEX_PROVIDER, $reference, $status);
+$record = fake_api_require_record(ACME_PROVIDER, $reference);
 
 fake_api_respond([
     'reference' => $reference,
-    'status' => $status,
+    'status' => $record['status'],
 ]);

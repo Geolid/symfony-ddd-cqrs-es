@@ -89,13 +89,13 @@ function fake_api_store_find(string $provider, string $field, string $value): ?a
 /**
  * @return array<string, mixed>|null
  */
-function fake_api_find_existing_by_idempotency_key(string $provider, ?string $idempotencyKey): ?array
+function fake_api_find_existing_by_idempotency_key(string $provider, ?string $idempotencyKey, string $field = 'idempotency_key'): ?array
 {
     if (null === $idempotencyKey) {
         return null;
     }
 
-    return fake_api_store_find($provider, 'idempotencyKey', $idempotencyKey);
+    return fake_api_store_find($provider, $field, $idempotencyKey);
 }
 
 function fake_api_store_transition_status(string $provider, string $reference, string $status): void
@@ -107,4 +107,20 @@ function fake_api_store_transition_status(string $provider, string $reference, s
 
         return $records;
     });
+}
+
+/**
+ * @return array<string, mixed>
+ */
+function fake_api_require_record(string $provider, string $reference): array
+{
+    $record = fake_api_store_read($provider)[$reference] ?? null;
+
+    if (null === $record) {
+        http_response_code(404);
+        fake_api_respond(['error' => 'unknown_reference']);
+        exit;
+    }
+
+    return $record;
 }

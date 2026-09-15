@@ -14,7 +14,7 @@ final readonly class RequestPayment implements CommandInterface
         public int $amountInCents,
         public string $currency,
         public string $reference,
-        public string $checkoutUrl,
+        public string $hostedPageUrl,
     ) {
     }
 }

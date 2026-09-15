@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Finance\Payment\Application\Requesting;
+namespace Finance\Payment\Application\PSP;
 
 final readonly class PaymentSession
 {
     public function __construct(
         public string $reference,
-        public string $checkoutUrl,
+        public string $hostedPageUrl,
     ) {
     }
 }

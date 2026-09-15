@@ -48,7 +48,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
         string $checkoutSessionId,
         Money $amount,
         PaymentReference $reference,
-        string $checkoutUrl,
+        string $hostedPageUrl,
         \DateTimeImmutable $requestedAt,
     ): self {
         $self = new self();
@@ -57,7 +57,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
             checkoutSessionId: $checkoutSessionId,
             amount: $amount,
             reference: $reference,
-            checkoutUrl: $checkoutUrl,
+            hostedPageUrl: $hostedPageUrl,
             requestedAt: $requestedAt,
         ));
 

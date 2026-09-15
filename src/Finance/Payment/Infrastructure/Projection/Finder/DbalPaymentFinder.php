@@ -78,7 +78,7 @@ final class DbalPaymentFinder extends AbstractIterableDbalFinder implements Paym
 
     protected function configureBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'checkout_session_id', 'order_id', 'amount_in_cents', 'reference', 'checkout_url', 'status', 'requested_at', 'authorized_at', 'captured_at', 'failed_at', 'abandoned_at', 'voided_at')
+        $qb->select('id', 'checkout_session_id', 'order_id', 'amount_in_cents', 'reference', 'hosted_page_url', 'status', 'requested_at', 'authorized_at', 'captured_at', 'failed_at', 'abandoned_at', 'voided_at')
             ->from(DbalPaymentProjector::TABLE);
     }
 

@@ -20,7 +20,7 @@ use Symfony\Component\Clock\Clock;
  *     orderId: string,
  *     amount: Money,
  *     reference: PaymentReference,
- *     checkoutUrl: string,
+ *     hostedPageUrl: string,
  *     requestedAt: \DateTimeImmutable,
  *     authorizedAt: \DateTimeImmutable,
  *     failedAt: \DateTimeImmutable,
@@ -48,9 +48,9 @@ final class PaymentBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(reference: PaymentReference::fromString($reference));
     }
 
-    public function withCheckoutUrl(string $checkoutUrl): self
+    public function withHostedPageUrl(string $hostedPageUrl): self
     {
-        return $this->withAttributes(checkoutUrl: $checkoutUrl);
+        return $this->withAttributes(hostedPageUrl: $hostedPageUrl);
     }
 
     public function withRequestedAt(\DateTimeImmutable $requestedAt): self
@@ -121,7 +121,7 @@ final class PaymentBuilder extends AbstractAggregateBuilder
             'orderId' => static fn (): string => Uuid::uuid7()->toString(),
             'amount' => static fn (): Money => Money::fromCents(SeededFaker::get()->numberBetween(500, 5_000), 'EUR'),
             'reference' => static fn (): PaymentReference => PaymentReference::fromString(SeededFaker::get()->unique()->regexify('GLBX-[A-Z0-9]{8}')),
-            'checkoutUrl' => static fn (): string => 'https://checkout.globex.test/pay/'.SeededFaker::get()->regexify('[A-Z0-9]{8}'),
+            'hostedPageUrl' => static fn (): string => 'https://checkout.globex.test/pay/'.SeededFaker::get()->regexify('[A-Z0-9]{8}'),
             'requestedAt' => static fn (): \DateTimeImmutable => $now,
             'authorizedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
             'failedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
@@ -138,7 +138,7 @@ final class PaymentBuilder extends AbstractAggregateBuilder
             checkoutSessionId: $this['checkoutSessionId'],
             amount: $this['amount'],
             reference: $this['reference'],
-            checkoutUrl: $this['checkoutUrl'],
+            hostedPageUrl: $this['hostedPageUrl'],
             requestedAt: $this['requestedAt'],
         );
     }

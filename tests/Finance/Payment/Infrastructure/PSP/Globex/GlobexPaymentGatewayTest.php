@@ -7,15 +7,16 @@ namespace Finance\Tests\Payment\Infrastructure\PSP\Globex;
 use Finance\Payment\Application\PSP\Exception\PaymentFatalFailureException;
 use Finance\Payment\Application\PSP\Exception\PaymentTransientFailureException;
 use Finance\Payment\Application\PSP\PaymentGatewayStatus;
+use Finance\Payment\Application\PSP\PaymentLine;
 use Finance\Payment\Infrastructure\PSP\Globex\GlobexClient;
 use Finance\Payment\Infrastructure\PSP\Globex\GlobexPaymentGateway;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
-use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Domain\ValueObject\Label;
+use Shared\Domain\ValueObject\Money;
+use Shared\Domain\ValueObject\Quantity;
 use Symfony\Component\Clock\Clock;
 use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Component\HttpClient\MockHttpClient;
@@ -30,29 +31,47 @@ final class GlobexPaymentGatewayTest extends TestCase
         $paymentId = Uuid::uuid7()->toString();
         $checkoutSessionId = Uuid::uuid7()->toString();
         $expiresAt = $this->expiresAt();
+        $lines = $this->lines();
         $response = self::jsonResponse([
-            'chargeReference' => 'GLBX-9F3K2M1P',
-            'checkoutUrl' => 'https://checkout.globex.test/pay/GLBX-9F3K2M1P',
+            'id' => 'GLBX-9F3K2M1P',
+            'url' => 'https://checkout.globex.test/pay/GLBX-9F3K2M1P',
         ]);
 
         // When
-        $session = $this->gateway($response)->requestPayment($paymentId, $checkoutSessionId, 4_200, 'https://web.test/sales/orders', $this->billingAddress(), $expiresAt);
+        $session = $this->gateway($response)->requestPayment($paymentId, $checkoutSessionId, $lines, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $expiresAt);
 
         // Then
         self::assertSame('GLBX-9F3K2M1P', $session->reference);
-        self::assertSame('https://checkout.globex.test/pay/GLBX-9F3K2M1P', $session->checkoutUrl);
+        self::assertSame('https://checkout.globex.test/pay/GLBX-9F3K2M1P', $session->hostedPageUrl);
 
         $requestUrl = $response->getRequestUrl();
-        self::assertSame('https://payments.globex.test/charges', $requestUrl);
+        self::assertSame('https://payments.globex.test/checkout/sessions', $requestUrl);
         $headers = $response->getRequestOptions()['headers'];
         self::assertContains('Idempotency-Key: '.$paymentId, $headers);
         self::assertSame(
             [
-                'merchantReference' => $checkoutSessionId,
-                'amountInCents' => 4_200,
-                'returnUrl' => 'https://web.test/sales/orders',
-                'billingAddress' => PostalAddressMapper::toArray($this->billingAddress()),
-                'expiresAt' => $expiresAt->format(\DateTimeInterface::ATOM),
+                'client_reference_id' => $checkoutSessionId,
+                'mode' => 'payment',
+                'ui_mode' => 'hosted_page',
+                'success_url' => 'https://web.test/sales/orders',
+                'cancel_url' => 'https://web.test/sales/cart',
+                'expires_at' => $expiresAt->getTimestamp(),
+                'line_items' => [
+                    [
+                        'price_data' => [
+                            'currency' => 'eur',
+                            'unit_amount' => 4_200,
+                            'product_data' => [
+                                'name' => 'Espresso cups, set of 6',
+                            ],
+                        ],
+                        'quantity' => 2,
+                    ],
+                ],
+                'metadata' => [
+                    'payment_id' => $paymentId,
+                    'checkout_session_id' => $checkoutSessionId,
+                ],
             ],
             $this->requestBody($response),
         );
@@ -66,7 +85,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         $this->expectException(PaymentTransientFailureException::class);
 
         // When
-        $this->gateway($response)->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', $this->billingAddress(), $this->expiresAt());
+        $this->gateway($response)->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $this->lines(), 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt());
     }
 
     /**
@@ -85,18 +104,18 @@ final class GlobexPaymentGatewayTest extends TestCase
         $this->expectException(PaymentFatalFailureException::class);
 
         // When
-        $this->gateway(self::jsonResponse(['error' => 'invalid amount'], 400))->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', $this->billingAddress(), $this->expiresAt());
+        $this->gateway(self::jsonResponse(['error' => 'invalid amount'], 400))->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $this->lines(), 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt());
     }
 
     #[Test]
     #[DataProvider('provideUnreadableResponses')]
-    public function itThrowsFatalWhenChargeResponseUnreadable(MockResponse $response): void
+    public function itThrowsFatalWhenSessionResponseUnreadable(MockResponse $response): void
     {
         // Then
         $this->expectException(PaymentFatalFailureException::class);
 
         // When
-        $this->gateway($response)->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 4_200, 'https://web.test/sales/orders', $this->billingAddress(), $this->expiresAt());
+        $this->gateway($response)->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $this->lines(), 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt());
     }
 
     /**
@@ -105,16 +124,34 @@ final class GlobexPaymentGatewayTest extends TestCase
     public static function provideUnreadableResponses(): iterable
     {
         yield 'malformed JSON body' => [self::jsonResponse('<html></html>')];
-        yield 'charge reference absent' => [self::jsonResponse(['checkoutUrl' => 'https://checkout.globex.test/pay/x'])];
-        yield 'charge reference blank' => [self::jsonResponse(['chargeReference' => '', 'checkoutUrl' => 'https://checkout.globex.test/pay/x'])];
-        yield 'charge reference of another type' => [self::jsonResponse(['chargeReference' => 42, 'checkoutUrl' => 'https://checkout.globex.test/pay/x'])];
-        yield 'checkout url absent' => [self::jsonResponse(['chargeReference' => 'GLBX-9F3K2M1P'])];
-        yield 'checkout url blank' => [self::jsonResponse(['chargeReference' => 'GLBX-9F3K2M1P', 'checkoutUrl' => ''])];
-        yield 'checkout url of another type' => [self::jsonResponse(['chargeReference' => 'GLBX-9F3K2M1P', 'checkoutUrl' => 42])];
+        yield 'id absent' => [self::jsonResponse(['url' => 'https://checkout.globex.test/pay/x'])];
+        yield 'id blank' => [self::jsonResponse(['id' => '', 'url' => 'https://checkout.globex.test/pay/x'])];
+        yield 'id of another type' => [self::jsonResponse(['id' => 42, 'url' => 'https://checkout.globex.test/pay/x'])];
+        yield 'url absent' => [self::jsonResponse(['id' => 'GLBX-9F3K2M1P'])];
+        yield 'url blank' => [self::jsonResponse(['id' => 'GLBX-9F3K2M1P', 'url' => ''])];
+        yield 'url of another type' => [self::jsonResponse(['id' => 'GLBX-9F3K2M1P', 'url' => 42])];
     }
 
     #[Test]
-    public function itVoidsCharge(): void
+    public function itCapturesSession(): void
+    {
+        // Given
+        $response = self::jsonResponse(['reference' => 'GLBX-9F3K2M1P', 'status' => 'captured']);
+
+        // When
+        $status = $this->gateway($response)->capture('GLBX-9F3K2M1P');
+
+        // Then
+        self::assertSame(PaymentGatewayStatus::CAPTURED, $status);
+        $requestUrl = $response->getRequestUrl();
+        self::assertSame('https://payments.globex.test/checkout/sessions/GLBX-9F3K2M1P/capture', $requestUrl);
+        self::assertSame([], $this->requestBody($response));
+        $headers = $response->getRequestOptions()['headers'];
+        self::assertContains('Idempotency-Key: GLBX-9F3K2M1P:capture', $headers);
+    }
+
+    #[Test]
+    public function itVoidsSession(): void
     {
         // Given
         $response = self::jsonResponse(['reference' => 'GLBX-9F3K2M1P', 'status' => 'voided']);
@@ -125,8 +162,10 @@ final class GlobexPaymentGatewayTest extends TestCase
         // Then
         self::assertSame(PaymentGatewayStatus::VOIDED, $status);
         $requestUrl = $response->getRequestUrl();
-        self::assertSame('https://payments.globex.test/charges/GLBX-9F3K2M1P/void', $requestUrl);
+        self::assertSame('https://payments.globex.test/checkout/sessions/GLBX-9F3K2M1P/cancel', $requestUrl);
         self::assertSame([], $this->requestBody($response));
+        $headers = $response->getRequestOptions()['headers'];
+        self::assertContains('Idempotency-Key: GLBX-9F3K2M1P:cancel', $headers);
     }
 
     #[Test]
@@ -140,7 +179,7 @@ final class GlobexPaymentGatewayTest extends TestCase
     }
 
     #[Test]
-    public function itChecksChargeStatus(): void
+    public function itChecksSessionStatus(): void
     {
         // Given
         $response = self::jsonResponse(['reference' => 'GLBX-9F3K2M1P', 'status' => 'authorized']);
@@ -151,7 +190,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         // Then
         self::assertSame(PaymentGatewayStatus::AUTHORIZED, $status);
         $requestUrl = $response->getRequestUrl();
-        self::assertSame('https://payments.globex.test/charges/GLBX-9F3K2M1P', $requestUrl);
+        self::assertSame('https://payments.globex.test/checkout/sessions/GLBX-9F3K2M1P', $requestUrl);
     }
 
     #[Test]
@@ -215,17 +254,19 @@ final class GlobexPaymentGatewayTest extends TestCase
         );
     }
 
-    private function billingAddress(): PostalAddress
-    {
-        return PostalAddress::of(
-            'Ada Lovelace',
-            Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'),
-        );
-    }
-
     private function expiresAt(): \DateTimeImmutable
     {
         return Clock::get()->now()->modify('+30 minutes');
+    }
+
+    /**
+     * @return list<PaymentLine>
+     */
+    private function lines(): array
+    {
+        return [
+            new PaymentLine(Label::fromString('Espresso cups, set of 6'), Money::fromCents(4_200, 'EUR'), Quantity::of(2)),
+        ];
     }
 
     /**

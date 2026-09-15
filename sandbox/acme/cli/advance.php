@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 require dirname(__DIR__, 2).'/shared/store.php';
 require dirname(__DIR__, 2).'/shared/webhook_caller.php';
+require dirname(__DIR__, 1).'/shared/config.php';
 
 $reference = $argv[1] ?? '';
 
@@ -12,7 +13,7 @@ if ('' === $reference) {
     exit(1);
 }
 
-$shipments = fake_api_store_read('acme-shipments');
+$shipments = fake_api_store_read(ACME_PROVIDER);
 
 if (!isset($shipments[$reference])) {
     fwrite(\STDERR, sprintf("Unknown reference \"%s\".\n", $reference));
@@ -36,6 +37,6 @@ if (null === $next) {
 [$nextStatus, $eventType] = $next;
 
 fake_api_call_webhook('CARRIER_WEBHOOK_SECRET', 'X-Carrier-Signature', $eventType, ['trackingReference' => $reference]);
-fake_api_store_transition_status('acme-shipments', $reference, $nextStatus);
+fake_api_store_transition_status(ACME_PROVIDER, $reference, $nextStatus);
 
 echo sprintf("Shipment \"%s\": %s -> %s.\n", $reference, $status, $nextStatus);

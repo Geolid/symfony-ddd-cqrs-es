@@ -25,3 +25,16 @@ function fake_api_read_idempotency_key(): ?string
 
     return filter_var($_SERVER['HTTP_IDEMPOTENCY_KEY'], \FILTER_UNSAFE_RAW) ?: null;
 }
+
+function fake_api_read_query(string $key): string
+{
+    return filter_var($_GET[$key] ?? '', \FILTER_UNSAFE_RAW) ?: '';
+}
+
+/**
+ * @param array<string, mixed> $body
+ */
+function fake_api_read_body_field(array $body, string $key): string
+{
+    return filter_var($body[$key] ?? '', \FILTER_UNSAFE_RAW) ?: '';
+}

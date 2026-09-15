@@ -4,10 +4,14 @@ declare(strict_types=1);
 
 namespace Finance\Payment\Infrastructure\Requesting;
 
+use Finance\Payment\Application\PSP\PaymentLine;
+use Finance\Payment\Application\Requesting\Exception\PaymentRequestAlreadyExpiredException;
+use Finance\Payment\Application\Requesting\Exception\PaymentRequestCurrencyMismatchException;
 use Finance\Payment\Application\Requesting\Exception\PaymentRequestInProgressException;
+use Finance\Payment\Application\Requesting\Exception\PaymentRequestInvalidUrlException;
+use Finance\Payment\Application\Requesting\Exception\PaymentRequestWithoutLineException;
 use Finance\Payment\Application\Requesting\PaymentRequester;
 use Finance\Payment\Application\Requesting\PaymentRequesterInterface;
-use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Infrastructure\Locking\Exception\LockNotAcquiredException;
 use Shared\Infrastructure\Locking\LockingTrait;
 use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
@@ -31,15 +35,21 @@ final readonly class LockingPaymentRequester implements PaymentRequesterInterfac
     }
 
     /**
+     * @param list<PaymentLine> $lines
+     *
+     * @throws PaymentRequestWithoutLineException
+     * @throws PaymentRequestCurrencyMismatchException
+     * @throws PaymentRequestInvalidUrlException
+     * @throws PaymentRequestAlreadyExpiredException
      * @throws PaymentRequestInProgressException
      */
-    public function requestFor(string $checkoutSessionId, int $amountInCents, string $currency, PostalAddress $billingAddress, string $returnUrl, \DateTimeImmutable $expiresAt): string
+    public function requestFor(string $checkoutSessionId, string $currency, array $lines, string $successUrl, string $cancelUrl, \DateTimeImmutable $expiresAt): string
     {
         try {
             return $this->withLock(
                 \sprintf('finance.payment.payment_request.%s', $checkoutSessionId),
                 self::LOCK_TTL_SECONDS,
-                fn (): string => $this->inner->requestFor($checkoutSessionId, $amountInCents, $currency, $billingAddress, $returnUrl, $expiresAt),
+                fn (): string => $this->inner->requestFor($checkoutSessionId, $currency, $lines, $successUrl, $cancelUrl, $expiresAt),
             );
         } catch (LockNotAcquiredException $e) {
             throw PaymentRequestInProgressException::forCheckoutSession($checkoutSessionId, $e);

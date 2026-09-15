@@ -57,7 +57,7 @@ final readonly class RequestPaymentHandler
             checkoutSessionId: $command->checkoutSessionId,
             amount: Money::fromCents($command->amountInCents, $command->currency),
             reference: PaymentReference::fromString($command->reference),
-            checkoutUrl: $command->checkoutUrl,
+            hostedPageUrl: $command->hostedPageUrl,
             requestedAt: $this->clock->now(),
         );
 

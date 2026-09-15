@@ -5,15 +5,15 @@ declare(strict_types=1);
 namespace Finance\Payment\Application\PSP;
 
 use Finance\Payment\Application\PSP\Exception\PaymentGatewayException;
-use Finance\Payment\Application\Requesting\PaymentSession;
-use Shared\Domain\ValueObject\PostalAddress;
 
 interface PaymentGatewayInterface
 {
     /**
+     * @param list<PaymentLine> $lines each line's unit price is tax-inclusive
+     *
      * @throws PaymentGatewayException
      */
-    public function requestPayment(string $paymentId, string $checkoutSessionId, int $amountInCents, string $returnUrl, PostalAddress $billingAddress, \DateTimeImmutable $expiresAt): PaymentSession;
+    public function requestPayment(string $paymentId, string $checkoutSessionId, array $lines, string $successUrl, string $cancelUrl, \DateTimeImmutable $expiresAt): PaymentSession;
 
     /**
      * @throws PaymentGatewayException

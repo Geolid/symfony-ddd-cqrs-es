@@ -8,43 +8,62 @@ use Finance\Payment\Application\PSP\Exception\PaymentFatalFailureException;
 use Finance\Payment\Application\PSP\Exception\PaymentGatewayException;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Application\PSP\PaymentGatewayStatus;
-use Finance\Payment\Application\Requesting\PaymentSession;
-use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\PostalAddress;
+use Finance\Payment\Application\PSP\PaymentLine;
+use Finance\Payment\Application\PSP\PaymentSession;
 
 final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
 {
-    private const string CHARGES_PATH = '/charges';
+    private const string SESSIONS_PATH = '/checkout/sessions';
 
     public function __construct(private GlobexClient $globexClient)
     {
     }
 
     /**
+     * @param list<PaymentLine> $lines
+     *
      * @throws PaymentGatewayException
      */
-    public function requestPayment(string $paymentId, string $checkoutSessionId, int $amountInCents, string $returnUrl, PostalAddress $billingAddress, \DateTimeImmutable $expiresAt): PaymentSession
+    public function requestPayment(string $paymentId, string $checkoutSessionId, array $lines, string $successUrl, string $cancelUrl, \DateTimeImmutable $expiresAt): PaymentSession
     {
-        $response = $this->globexClient->post(self::CHARGES_PATH, [
-            'merchantReference' => $checkoutSessionId,
-            'amountInCents' => $amountInCents,
-            'returnUrl' => $returnUrl,
-            'billingAddress' => PostalAddressMapper::toArray($billingAddress),
-            'expiresAt' => $expiresAt->format(\DateTimeInterface::ATOM),
+        $response = $this->globexClient->post(self::SESSIONS_PATH, [
+            'client_reference_id' => $checkoutSessionId,
+            'mode' => 'payment',
+            'ui_mode' => 'hosted_page',
+            'success_url' => $successUrl,
+            'cancel_url' => $cancelUrl,
+            'expires_at' => $expiresAt->getTimestamp(),
+            'line_items' => array_map(
+                static fn (PaymentLine $line): array => [
+                    'price_data' => [
+                        'currency' => strtolower($line->unitPrice->currency->value),
+                        'unit_amount' => $line->unitPrice->cents,
+                        'product_data' => [
+                            'name' => $line->label->value,
+                        ],
+                    ],
+                    'quantity' => $line->quantity->value,
+                ],
+                $lines,
+            ),
+            'metadata' => [
+                'payment_id' => $paymentId,
+                'checkout_session_id' => $checkoutSessionId,
+            ],
         ], $paymentId);
 
-        $chargeReference = $response['chargeReference'] ?? null;
-        $checkoutUrl = $response['checkoutUrl'] ?? null;
+        $id = $response['id'] ?? null;
+        $url = $response['url'] ?? null;
 
-        if (!\is_string($chargeReference) || '' === $chargeReference) {
-            throw PaymentFatalFailureException::forReason('A charge response carries a non-empty "chargeReference".');
+        if (!\is_string($id) || '' === $id) {
+            throw PaymentFatalFailureException::forReason('A checkout session response carries a non-empty "id".');
         }
 
-        if (!\is_string($checkoutUrl) || '' === $checkoutUrl) {
-            throw PaymentFatalFailureException::forReason('A charge response carries a non-empty "checkoutUrl".');
+        if (!\is_string($url) || '' === $url) {
+            throw PaymentFatalFailureException::forReason('A checkout session response carries a non-empty "url".');
         }
 
-        return new PaymentSession($chargeReference, $checkoutUrl);
+        return new PaymentSession($id, $url);
     }
 
     /**
@@ -52,7 +71,7 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
      */
     public function capture(string $reference): PaymentGatewayStatus
     {
-        return $this->parseStatus($this->globexClient->post(\sprintf('%s/%s/capture', self::CHARGES_PATH, $reference), []));
+        return $this->parseStatus($this->globexClient->post(\sprintf('%s/%s/capture', self::SESSIONS_PATH, $reference), [], \sprintf('%s:capture', $reference)));
     }
 
     /**
@@ -60,7 +79,7 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
      */
     public function void(string $reference): PaymentGatewayStatus
     {
-        return $this->parseStatus($this->globexClient->post(\sprintf('%s/%s/void', self::CHARGES_PATH, $reference), []));
+        return $this->parseStatus($this->globexClient->post(\sprintf('%s/%s/cancel', self::SESSIONS_PATH, $reference), [], \sprintf('%s:cancel', $reference)));
     }
 
     /**
@@ -68,7 +87,7 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
      */
     public function checkStatus(string $reference): PaymentGatewayStatus
     {
-        return $this->parseStatus($this->globexClient->get(\sprintf('%s/%s', self::CHARGES_PATH, $reference)));
+        return $this->parseStatus($this->globexClient->get(\sprintf('%s/%s', self::SESSIONS_PATH, $reference)));
     }
 
     /**
