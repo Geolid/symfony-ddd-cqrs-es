@@ -6,6 +6,9 @@
     --text-dark: #30313d;
     --text-light: #697386;
     --border: #e6ebf1;
+    --banner-bg: #fef3c7;
+    --banner-text: #b45309;
+    --danger: #df1b41;
 }
 
 body {
@@ -31,8 +34,8 @@ body {
 }
 
 .checkout__banner {
-    background-color: #fef3c7;
-    color: #b45309;
+    background-color: var(--banner-bg);
+    color: var(--banner-text);
     text-align: center;
     font-weight: 600;
     font-size: 0.75rem;
@@ -68,13 +71,22 @@ body {
     margin-bottom: 0.5rem;
 }
 
-.checkout__line {
+.checkout__line,
+.checkout__row {
     display: flex;
     justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+}
+
+.checkout__line {
     gap: 1rem;
     padding: 0.6rem 0;
-    border-bottom: 1px solid var(--border);
     font-size: 0.85rem;
+}
+
+.checkout__row {
+    padding: 0.75rem 0;
+    font-size: 0.9rem;
 }
 
 .checkout__line-label {
@@ -90,14 +102,6 @@ body {
     font-weight: 600;
     font-family: ui-monospace, monospace;
     white-space: nowrap;
-}
-
-.checkout__row {
-    display: flex;
-    justify-content: space-between;
-    padding: 0.75rem 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 0.9rem;
 }
 
 .checkout__row:last-of-type {
@@ -141,7 +145,7 @@ body {
 
 .checkout__button--cancel {
     margin-top: 0.75rem;
-    color: #df1b41;
+    color: var(--danger);
     text-decoration: none;
     font-size: 0.9rem;
 }
