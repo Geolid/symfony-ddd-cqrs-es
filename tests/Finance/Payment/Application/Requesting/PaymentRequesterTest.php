@@ -10,13 +10,16 @@ use Finance\Payment\Application\PaymentUniqueKey;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Application\PSP\PaymentLine;
 use Finance\Payment\Application\PSP\PaymentSession;
+use Finance\Payment\Application\Requesting\Exception\PaymentRequestAlreadyExpiredException;
 use Finance\Payment\Application\Requesting\Exception\PaymentRequestCurrencyMismatchException;
+use Finance\Payment\Application\Requesting\Exception\PaymentRequestInvalidUrlException;
 use Finance\Payment\Application\Requesting\Exception\PaymentRequestWithoutLineException;
 use Finance\Payment\Application\Requesting\PaymentRequester;
 use Finance\Payment\Domain\ValueObject\PaymentId;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
+use Psr\Clock\ClockInterface;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Uniqueness\UniqueKey;
@@ -48,6 +51,7 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
             $this->finder,
             $this->paymentGateway,
             $this->service(CommandBusInterface::class),
+            $this->service(ClockInterface::class),
         );
         $this->expiresAt = Clock::get()->now()->modify('+30 minutes');
     }
@@ -124,6 +128,32 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
 
         // When
         $this->service->requestFor(Uuid::uuid7()->toString(), 'EUR', $lines, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt);
+    }
+
+    #[Test]
+    public function itFailsWhenUrlInvalid(): void
+    {
+        // Given
+        $this->paymentGateway->expects(self::never())->method('requestPayment');
+
+        // Then
+        $this->expectException(PaymentRequestInvalidUrlException::class);
+
+        // When
+        $this->service->requestFor(Uuid::uuid7()->toString(), 'EUR', $this->lines(), 'not-a-url', 'https://web.test/sales/cart', $this->expiresAt);
+    }
+
+    #[Test]
+    public function itFailsWhenAlreadyExpired(): void
+    {
+        // Given
+        $this->paymentGateway->expects(self::never())->method('requestPayment');
+
+        // Then
+        $this->expectException(PaymentRequestAlreadyExpiredException::class);
+
+        // When
+        $this->service->requestFor(Uuid::uuid7()->toString(), 'EUR', $this->lines(), 'https://web.test/sales/orders', 'https://web.test/sales/cart', Clock::get()->now());
     }
 
     /**

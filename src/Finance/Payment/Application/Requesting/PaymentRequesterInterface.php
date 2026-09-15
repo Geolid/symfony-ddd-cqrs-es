@@ -5,8 +5,10 @@ declare(strict_types=1);
 namespace Finance\Payment\Application\Requesting;
 
 use Finance\Payment\Application\PSP\PaymentLine;
+use Finance\Payment\Application\Requesting\Exception\PaymentRequestAlreadyExpiredException;
 use Finance\Payment\Application\Requesting\Exception\PaymentRequestCurrencyMismatchException;
 use Finance\Payment\Application\Requesting\Exception\PaymentRequestInProgressException;
+use Finance\Payment\Application\Requesting\Exception\PaymentRequestInvalidUrlException;
 use Finance\Payment\Application\Requesting\Exception\PaymentRequestWithoutLineException;
 use Shared\Application\DrivingPort;
 
@@ -20,6 +22,8 @@ interface PaymentRequesterInterface
      *
      * @throws PaymentRequestWithoutLineException
      * @throws PaymentRequestCurrencyMismatchException
+     * @throws PaymentRequestInvalidUrlException
+     * @throws PaymentRequestAlreadyExpiredException
      * @throws PaymentRequestInProgressException
      */
     public function requestFor(string $checkoutSessionId, string $currency, array $lines, string $successUrl, string $cancelUrl, \DateTimeImmutable $expiresAt): string;

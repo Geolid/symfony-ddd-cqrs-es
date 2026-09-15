@@ -10,9 +10,12 @@ use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentUniqueKey;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Application\PSP\PaymentLine;
+use Finance\Payment\Application\Requesting\Exception\PaymentRequestAlreadyExpiredException;
 use Finance\Payment\Application\Requesting\Exception\PaymentRequestCurrencyMismatchException;
+use Finance\Payment\Application\Requesting\Exception\PaymentRequestInvalidUrlException;
 use Finance\Payment\Application\Requesting\Exception\PaymentRequestWithoutLineException;
 use Finance\Payment\Domain\ValueObject\PaymentId;
+use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Uniqueness\UniqueKey;
@@ -25,6 +28,7 @@ final readonly class PaymentRequester implements PaymentRequesterInterface
         private PaymentFinderInterface $paymentFinder,
         private PaymentGatewayInterface $paymentGateway,
         private CommandBusInterface $commandBus,
+        private ClockInterface $clock,
     ) {
     }
 
@@ -33,6 +37,8 @@ final readonly class PaymentRequester implements PaymentRequesterInterface
      *
      * @throws PaymentRequestWithoutLineException
      * @throws PaymentRequestCurrencyMismatchException
+     * @throws PaymentRequestInvalidUrlException
+     * @throws PaymentRequestAlreadyExpiredException
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
@@ -46,6 +52,14 @@ final readonly class PaymentRequester implements PaymentRequesterInterface
             if ($line->unitPrice->currency->value !== $currency) {
                 throw PaymentRequestCurrencyMismatchException::forCheckoutSession($checkoutSessionId);
             }
+        }
+
+        if (false === filter_var($successUrl, \FILTER_VALIDATE_URL) || false === filter_var($cancelUrl, \FILTER_VALIDATE_URL)) {
+            throw PaymentRequestInvalidUrlException::forCheckoutSession($checkoutSessionId);
+        }
+
+        if ($expiresAt <= $this->clock->now()) {
+            throw PaymentRequestAlreadyExpiredException::forCheckoutSession($checkoutSessionId);
         }
 
         $checkoutSessionKey = UniqueKey::for(PaymentUniqueKey::CHECKOUT_SESSION);
