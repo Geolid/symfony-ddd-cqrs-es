@@ -26,25 +26,26 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
     public function requestPayment(string $paymentId, string $checkoutSessionId, int $amountInCents, string $returnUrl, PostalAddress $billingAddress, \DateTimeImmutable $expiresAt): PaymentSession
     {
         $response = $this->globexClient->post(self::SESSIONS_PATH, [
-            'merchantReference' => $checkoutSessionId,
+            'client_reference_id' => $checkoutSessionId,
             'amountInCents' => $amountInCents,
-            'returnUrl' => $returnUrl,
+            'mode' => 'payment',
+            'success_url' => $returnUrl,
             'billingAddress' => PostalAddressMapper::toArray($billingAddress),
             'expiresAt' => $expiresAt->format(\DateTimeInterface::ATOM),
         ], $paymentId);
 
-        $chargeReference = $response['chargeReference'] ?? null;
-        $checkoutUrl = $response['checkoutUrl'] ?? null;
+        $id = $response['id'] ?? null;
+        $url = $response['url'] ?? null;
 
-        if (!\is_string($chargeReference) || '' === $chargeReference) {
-            throw PaymentFatalFailureException::forReason('A charge response carries a non-empty "chargeReference".');
+        if (!\is_string($id) || '' === $id) {
+            throw PaymentFatalFailureException::forReason('A checkout session response carries a non-empty "id".');
         }
 
-        if (!\is_string($checkoutUrl) || '' === $checkoutUrl) {
-            throw PaymentFatalFailureException::forReason('A charge response carries a non-empty "checkoutUrl".');
+        if (!\is_string($url) || '' === $url) {
+            throw PaymentFatalFailureException::forReason('A checkout session response carries a non-empty "url".');
         }
 
-        return new PaymentSession($chargeReference, $checkoutUrl);
+        return new PaymentSession($id, $url);
     }
 
     /**

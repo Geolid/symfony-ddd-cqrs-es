@@ -31,8 +31,8 @@ final class GlobexPaymentGatewayTest extends TestCase
         $checkoutSessionId = Uuid::uuid7()->toString();
         $expiresAt = $this->expiresAt();
         $response = self::jsonResponse([
-            'chargeReference' => 'GLBX-9F3K2M1P',
-            'checkoutUrl' => 'https://checkout.globex.test/pay/GLBX-9F3K2M1P',
+            'id' => 'GLBX-9F3K2M1P',
+            'url' => 'https://checkout.globex.test/pay/GLBX-9F3K2M1P',
         ]);
 
         // When
@@ -48,9 +48,10 @@ final class GlobexPaymentGatewayTest extends TestCase
         self::assertContains('Idempotency-Key: '.$paymentId, $headers);
         self::assertSame(
             [
-                'merchantReference' => $checkoutSessionId,
+                'client_reference_id' => $checkoutSessionId,
                 'amountInCents' => 4_200,
-                'returnUrl' => 'https://web.test/sales/orders',
+                'mode' => 'payment',
+                'success_url' => 'https://web.test/sales/orders',
                 'billingAddress' => PostalAddressMapper::toArray($this->billingAddress()),
                 'expiresAt' => $expiresAt->format(\DateTimeInterface::ATOM),
             ],
@@ -90,7 +91,7 @@ final class GlobexPaymentGatewayTest extends TestCase
 
     #[Test]
     #[DataProvider('provideUnreadableResponses')]
-    public function itThrowsFatalWhenChargeResponseUnreadable(MockResponse $response): void
+    public function itThrowsFatalWhenSessionResponseUnreadable(MockResponse $response): void
     {
         // Then
         $this->expectException(PaymentFatalFailureException::class);
@@ -105,16 +106,16 @@ final class GlobexPaymentGatewayTest extends TestCase
     public static function provideUnreadableResponses(): iterable
     {
         yield 'malformed JSON body' => [self::jsonResponse('<html></html>')];
-        yield 'charge reference absent' => [self::jsonResponse(['checkoutUrl' => 'https://checkout.globex.test/pay/x'])];
-        yield 'charge reference blank' => [self::jsonResponse(['chargeReference' => '', 'checkoutUrl' => 'https://checkout.globex.test/pay/x'])];
-        yield 'charge reference of another type' => [self::jsonResponse(['chargeReference' => 42, 'checkoutUrl' => 'https://checkout.globex.test/pay/x'])];
-        yield 'checkout url absent' => [self::jsonResponse(['chargeReference' => 'GLBX-9F3K2M1P'])];
-        yield 'checkout url blank' => [self::jsonResponse(['chargeReference' => 'GLBX-9F3K2M1P', 'checkoutUrl' => ''])];
-        yield 'checkout url of another type' => [self::jsonResponse(['chargeReference' => 'GLBX-9F3K2M1P', 'checkoutUrl' => 42])];
+        yield 'id absent' => [self::jsonResponse(['url' => 'https://checkout.globex.test/pay/x'])];
+        yield 'id blank' => [self::jsonResponse(['id' => '', 'url' => 'https://checkout.globex.test/pay/x'])];
+        yield 'id of another type' => [self::jsonResponse(['id' => 42, 'url' => 'https://checkout.globex.test/pay/x'])];
+        yield 'url absent' => [self::jsonResponse(['id' => 'GLBX-9F3K2M1P'])];
+        yield 'url blank' => [self::jsonResponse(['id' => 'GLBX-9F3K2M1P', 'url' => ''])];
+        yield 'url of another type' => [self::jsonResponse(['id' => 'GLBX-9F3K2M1P', 'url' => 42])];
     }
 
     #[Test]
-    public function itCapturesCharge(): void
+    public function itCapturesSession(): void
     {
         // Given
         $response = self::jsonResponse(['reference' => 'GLBX-9F3K2M1P', 'status' => 'captured']);
@@ -132,7 +133,7 @@ final class GlobexPaymentGatewayTest extends TestCase
     }
 
     #[Test]
-    public function itVoidsCharge(): void
+    public function itVoidsSession(): void
     {
         // Given
         $response = self::jsonResponse(['reference' => 'GLBX-9F3K2M1P', 'status' => 'voided']);
@@ -160,7 +161,7 @@ final class GlobexPaymentGatewayTest extends TestCase
     }
 
     #[Test]
-    public function itChecksChargeStatus(): void
+    public function itChecksSessionStatus(): void
     {
         // Given
         $response = self::jsonResponse(['reference' => 'GLBX-9F3K2M1P', 'status' => 'authorized']);
