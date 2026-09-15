@@ -10,7 +10,6 @@ use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Application\PSP\PaymentGatewayStatus;
 use Finance\Payment\Application\PSP\PaymentLine;
 use Finance\Payment\Application\PSP\PaymentSession;
-use Webmozart\Assert\Assert;
 
 final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
 {
@@ -27,8 +26,6 @@ final readonly class GlobexPaymentGateway implements PaymentGatewayInterface
      */
     public function requestPayment(string $paymentId, string $checkoutSessionId, array $lines, string $successUrl, string $cancelUrl, \DateTimeImmutable $expiresAt): PaymentSession
     {
-        Assert::notEmpty($lines, 'A checkout session needs at least one line, none given.');
-
         $response = $this->globexClient->post(self::SESSIONS_PATH, [
             'client_reference_id' => $checkoutSessionId,
             'mode' => 'payment',

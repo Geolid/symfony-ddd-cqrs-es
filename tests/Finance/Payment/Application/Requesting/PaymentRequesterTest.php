@@ -10,6 +10,8 @@ use Finance\Payment\Application\PaymentUniqueKey;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Application\PSP\PaymentLine;
 use Finance\Payment\Application\PSP\PaymentSession;
+use Finance\Payment\Application\Requesting\Exception\PaymentRequestCurrencyMismatchException;
+use Finance\Payment\Application\Requesting\Exception\PaymentRequestWithoutLineException;
 use Finance\Payment\Application\Requesting\PaymentRequester;
 use Finance\Payment\Domain\ValueObject\PaymentId;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
@@ -64,7 +66,7 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
             ->willReturn(new PaymentSession($reference, $hostedPageUrl));
 
         // When
-        $result = $this->service->requestFor($checkoutSessionId, $lines, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt);
+        $result = $this->service->requestFor($checkoutSessionId, 'EUR', $lines, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt);
 
         // Then
         self::assertSame($hostedPageUrl, $result);
@@ -89,10 +91,39 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
         $this->paymentGateway->expects(self::never())->method('requestPayment');
 
         // When
-        $hostedPageUrl = $this->service->requestFor($paymentBuilder['checkoutSessionId'], $this->lines(), 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt);
+        $hostedPageUrl = $this->service->requestFor($paymentBuilder['checkoutSessionId'], 'EUR', $this->lines(), 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt);
 
         // Then
         self::assertSame($paymentBuilder['hostedPageUrl'], $hostedPageUrl);
+    }
+
+    #[Test]
+    public function itFailsWhenNoLine(): void
+    {
+        // Given
+        $this->paymentGateway->expects(self::never())->method('requestPayment');
+
+        // Then
+        $this->expectException(PaymentRequestWithoutLineException::class);
+
+        // When
+        $this->service->requestFor(Uuid::uuid7()->toString(), 'EUR', [], 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt);
+    }
+
+    #[Test]
+    public function itFailsWhenLinesCurrencyMismatch(): void
+    {
+        // Given
+        $this->paymentGateway->expects(self::never())->method('requestPayment');
+        $lines = [
+            new PaymentLine(Label::fromString('Mug'), Money::fromCents(1_500, 'GBP'), Quantity::of(1)),
+        ];
+
+        // Then
+        $this->expectException(PaymentRequestCurrencyMismatchException::class);
+
+        // When
+        $this->service->requestFor(Uuid::uuid7()->toString(), 'EUR', $lines, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt);
     }
 
     /**

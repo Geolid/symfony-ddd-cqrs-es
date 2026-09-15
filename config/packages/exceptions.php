@@ -7,7 +7,9 @@ use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentAlreadyC
 use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentReferenceAlreadyInUseException;
 use Finance\Payment\Application\PSP\Exception\PaymentGatewayException;
 use Finance\Payment\Application\PSP\Exception\PaymentTransientFailureException;
+use Finance\Payment\Application\Requesting\Exception\PaymentRequestCurrencyMismatchException;
 use Finance\Payment\Application\Requesting\Exception\PaymentRequestInProgressException;
+use Finance\Payment\Application\Requesting\Exception\PaymentRequestWithoutLineException;
 use Fulfilment\Shipping\Application\Carrier\Exception\CarrierGatewayException;
 use Fulfilment\Shipping\Application\Carrier\Exception\CarrierTransientFailureException;
 use Fulfilment\Shipping\Application\Command\ManifestShipment\Exception\ShipmentTrackingNumberAlreadyInUseException;
@@ -72,6 +74,8 @@ return static function (ContainerConfigurator $container): void {
 
             // Finance
             PaymentRequestInProgressException::class => ['log_level' => 'info', 'status_code' => 503],
+            PaymentRequestWithoutLineException::class => ['log_level' => 'info', 'status_code' => 422],
+            PaymentRequestCurrencyMismatchException::class => ['log_level' => 'info', 'status_code' => 422],
             PaymentReferenceAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
             PaymentAlreadyClaimedException::class => ['log_level' => 'info', 'status_code' => 409],
             PaymentTransientFailureException::class => ['log_level' => 'error', 'status_code' => 503],

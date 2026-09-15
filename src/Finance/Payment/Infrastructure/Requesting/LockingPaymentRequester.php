@@ -5,7 +5,9 @@ declare(strict_types=1);
 namespace Finance\Payment\Infrastructure\Requesting;
 
 use Finance\Payment\Application\PSP\PaymentLine;
+use Finance\Payment\Application\Requesting\Exception\PaymentRequestCurrencyMismatchException;
 use Finance\Payment\Application\Requesting\Exception\PaymentRequestInProgressException;
+use Finance\Payment\Application\Requesting\Exception\PaymentRequestWithoutLineException;
 use Finance\Payment\Application\Requesting\PaymentRequester;
 use Finance\Payment\Application\Requesting\PaymentRequesterInterface;
 use Shared\Infrastructure\Locking\Exception\LockNotAcquiredException;
@@ -33,15 +35,17 @@ final readonly class LockingPaymentRequester implements PaymentRequesterInterfac
     /**
      * @param list<PaymentLine> $lines
      *
+     * @throws PaymentRequestWithoutLineException
+     * @throws PaymentRequestCurrencyMismatchException
      * @throws PaymentRequestInProgressException
      */
-    public function requestFor(string $checkoutSessionId, array $lines, string $successUrl, string $cancelUrl, \DateTimeImmutable $expiresAt): string
+    public function requestFor(string $checkoutSessionId, string $currency, array $lines, string $successUrl, string $cancelUrl, \DateTimeImmutable $expiresAt): string
     {
         try {
             return $this->withLock(
                 \sprintf('finance.payment.payment_request.%s', $checkoutSessionId),
                 self::LOCK_TTL_SECONDS,
-                fn (): string => $this->inner->requestFor($checkoutSessionId, $lines, $successUrl, $cancelUrl, $expiresAt),
+                fn (): string => $this->inner->requestFor($checkoutSessionId, $currency, $lines, $successUrl, $cancelUrl, $expiresAt),
             );
         } catch (LockNotAcquiredException $e) {
             throw PaymentRequestInProgressException::forCheckoutSession($checkoutSessionId, $e);
