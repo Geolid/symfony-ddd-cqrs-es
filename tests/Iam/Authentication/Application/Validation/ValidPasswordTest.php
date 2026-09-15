@@ -7,9 +7,9 @@ namespace Iam\Tests\Authentication\Application\Validation;
 use Iam\Authentication\Application\Validation\ValidPassword;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
-use Iam\Tests\Authentication\Support\Double\StubFailingHttpClient;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Constraints\NotCompromisedPasswordValidator;
@@ -18,6 +18,7 @@ use Symfony\Component\Validator\ConstraintValidatorFactory;
 use Symfony\Component\Validator\Test\CompoundConstraintTestCase;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * @extends CompoundConstraintTestCase<ValidPassword>
@@ -74,7 +75,9 @@ final class ValidPasswordTest extends CompoundConstraintTestCase
     public function itSkipsWhenCompromisedCheckFails(): void
     {
         // Given
-        $validator = $this->validatorWith(new NotCompromisedPasswordValidator(new StubFailingHttpClient()));
+        $httpClient = $this->createStub(HttpClientInterface::class);
+        $httpClient->method('request')->willThrowException(new TransportException('Simulated network failure.'));
+        $validator = $this->validatorWith(new NotCompromisedPasswordValidator($httpClient));
 
         // When
         $violations = $validator->validate('Correct-Horse-Battery-42!', new ValidPassword());

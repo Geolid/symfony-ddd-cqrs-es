@@ -6,15 +6,16 @@ namespace Iam\Tests\Authentication\Infrastructure\BreachDatabase;
 
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Infrastructure\BreachDatabase\SymfonyCompromisedPasswordGateway;
-use Iam\Tests\Authentication\Support\Double\StubFailingHttpClient;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Component\Validator\Constraints\NotCompromisedPasswordValidator;
 use Symfony\Component\Validator\ConstraintValidatorFactory;
 use Symfony\Component\Validator\ConstraintViolationInterface;
 use Symfony\Component\Validator\ConstraintViolationList;
 use Symfony\Component\Validator\Validation;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 final class SymfonyCompromisedPasswordGatewayTest extends TestCase
 {
@@ -64,9 +65,12 @@ final class SymfonyCompromisedPasswordGatewayTest extends TestCase
 
     private function validatorWithFailingHttpClient(): ValidatorInterface
     {
+        $httpClient = $this->createStub(HttpClientInterface::class);
+        $httpClient->method('request')->willThrowException(new TransportException('Simulated network failure.'));
+
         return Validation::createValidatorBuilder()
             ->setConstraintValidatorFactory(new ConstraintValidatorFactory([
-                NotCompromisedPasswordValidator::class => new NotCompromisedPasswordValidator(new StubFailingHttpClient()),
+                NotCompromisedPasswordValidator::class => new NotCompromisedPasswordValidator($httpClient),
             ]))
             ->getValidator();
     }
