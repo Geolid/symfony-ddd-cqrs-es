@@ -34,7 +34,7 @@ final readonly class PasswordUserProvider implements UserProviderInterface
             throw new UserNotFoundException($e->getMessage(), $e->getCode(), previous: $e);
         }
 
-        return new PasswordUser($credential->identityId, $credential->login, $credential->identityAuthenticatable, $credential->passwordChangedAt->format('c'));
+        return new PasswordUser($credential->identityId, $credential->login, $credential->identityAuthenticatable, $credential->passwordChangedAt->format(\DateTimeInterface::ATOM));
     }
 
     /**
@@ -56,7 +56,7 @@ final readonly class PasswordUserProvider implements UserProviderInterface
             throw new DisabledException(\sprintf('Identity "%s" is not authenticatable.', $credential->identityId));
         }
 
-        return new PasswordUser($credential->identityId, $credential->login, $credential->identityAuthenticatable, $credential->passwordChangedAt->format('c'));
+        return new PasswordUser($credential->identityId, $credential->login, $credential->identityAuthenticatable, $credential->passwordChangedAt->format(\DateTimeInterface::ATOM));
     }
 
     public function supportsClass(string $class): bool

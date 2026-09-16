@@ -30,8 +30,8 @@ return static function (ContainerConfigurator $container): void {
                     'signature_properties' => ['authenticatable', 'passwordChangedAt'],
                 ],
                 'two_factor' => [
-                    'auth_form_path' => 'storefront_totp_challenge',
-                    'check_path' => 'storefront_totp_challenge_check',
+                    'auth_form_path' => 'storefront_two_factor_challenge',
+                    'check_path' => 'storefront_two_factor_challenge_check',
                     'default_target_path' => 'storefront_account_show',
                     'enable_csrf' => true,
                 ],

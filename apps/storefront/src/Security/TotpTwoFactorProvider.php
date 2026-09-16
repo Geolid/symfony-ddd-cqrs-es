@@ -56,6 +56,6 @@ final readonly class TotpTwoFactorProvider implements TwoFactorProviderInterface
 
     public function getFormRenderer(): TwoFactorFormRendererInterface
     {
-        return new DefaultTwoFactorFormRenderer($this->twig, 'security/totp_challenge.html.twig');
+        return new DefaultTwoFactorFormRenderer($this->twig, 'two_factor/challenge.html.twig');
     }
 }

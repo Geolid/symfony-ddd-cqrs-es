@@ -62,7 +62,7 @@ final class PasswordCredentialAuthenticator extends AbstractLoginFormAuthenticat
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): RedirectResponse
     {
         if ($token instanceof TwoFactorTokenInterface) {
-            return new RedirectResponse($this->urlGenerator->generate('storefront_totp_challenge'));
+            return new RedirectResponse($this->urlGenerator->generate('storefront_two_factor_challenge'));
         }
 
         return new RedirectResponse($this->urlGenerator->generate('storefront_account_show'));

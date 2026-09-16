@@ -6,7 +6,7 @@ namespace Storefront\Form\FormData;
 
 use Iam\Authentication\Application\Validation\ValidTotpCode;
 
-final class TotpConfirmFormData
+final class TwoFactorConfirmFormData
 {
     #[ValidTotpCode]
     public ?string $code = null;
