@@ -8,9 +8,9 @@
     <p data-testid="account-identity-id">{{ user.identityId }}</p>
 
     {% if totpEnrolled %}
-        <p data-testid="account-totp-status">Authentification à deux facteurs activée.</p>
+        <p data-testid="account-two-factor-status">Authentification à deux facteurs activée.</p>
     {% else %}
-        <p><a href="{{ path('storefront_totp_enroll') }}" data-testid="nav-totp-enroll">Activer l'authentification à deux facteurs</a></p>
+        <p><a href="{{ path('storefront_two_factor_enroll') }}" data-testid="nav-two-factor-enroll">Activer l'authentification à deux facteurs</a></p>
     {% endif %}
 
     <p><a href="{{ logout_path() }}" data-testid="nav-logout">Se déconnecter</a></p>

@@ -37,10 +37,10 @@ final class TwoFactorAuthenticationTest extends AbstractStorefrontTestCase
         $this->logIn($client, $login, 'MyStr0ngP@ssw0rd123!');
 
         // Then
-        self::assertResponseRedirects($this->path('storefront_totp_challenge'));
+        self::assertResponseRedirects($this->path('storefront_two_factor_challenge'));
 
         $crawler = $client->followRedirect();
-        $form = $crawler->filter('[data-testid="totp-form"]')->form();
+        $form = $crawler->filter('[data-testid="two-factor-form"]')->form();
         $form->setValues(['_auth_code' => $code]);
         $client->submit($form);
 
@@ -67,15 +67,15 @@ final class TwoFactorAuthenticationTest extends AbstractStorefrontTestCase
         $login = $this->givenPasswordCredential($identity->id->toString());
         $this->logIn($client, $login, 'MyStr0ngP@ssw0rd123!');
         $crawler = $client->followRedirect();
-        $form = $crawler->filter('[data-testid="totp-form"]')->form();
+        $form = $crawler->filter('[data-testid="two-factor-form"]')->form();
 
         // When
         $form->setValues(['_auth_code' => '000000']);
         $client->submit($form);
 
         // Then
-        self::assertResponseRedirects($this->path('storefront_totp_challenge'));
+        self::assertResponseRedirects($this->path('storefront_two_factor_challenge'));
         $crawler = $client->followRedirect();
-        self::assertGreaterThan(0, $crawler->filter('[data-testid="totp-error"]')->count());
+        self::assertGreaterThan(0, $crawler->filter('[data-testid="two-factor-error"]')->count());
     }
 }

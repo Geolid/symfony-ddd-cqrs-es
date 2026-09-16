@@ -18,7 +18,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-final class IdentityController extends AbstractController
+final class RegistrationController extends AbstractController
 {
     public function __construct(private readonly CommandBusInterface $commandBus)
     {
@@ -28,7 +28,7 @@ final class IdentityController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route(path: '/inscription', name: 'storefront_identity_register', methods: ['GET', 'POST'])]
+    #[Route(path: '/inscription', name: 'storefront_register', methods: ['GET', 'POST'])]
     public function register(Request $request): Response
     {
         $formData = new RegisterFormData();
@@ -46,7 +46,7 @@ final class IdentityController extends AbstractController
                 $this->commandBus->dispatch(new EraseIdentity($id));
                 $this->addFlash('error', 'Ce login est déjà utilisé.');
 
-                return $this->render('identity/register.html.twig', ['form' => $form]);
+                return $this->render('registration/register.html.twig', ['form' => $form]);
             } catch (\Throwable $e) {
                 $this->commandBus->dispatch(new EraseIdentity($id));
 
@@ -58,6 +58,6 @@ final class IdentityController extends AbstractController
             return $this->redirectToRoute('security_login');
         }
 
-        return $this->render('identity/register.html.twig', ['form' => $form]);
+        return $this->render('registration/register.html.twig', ['form' => $form]);
     }
 }

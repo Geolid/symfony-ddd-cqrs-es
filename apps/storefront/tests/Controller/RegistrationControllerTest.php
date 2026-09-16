@@ -12,14 +12,14 @@ use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
 
-final class IdentityControllerTest extends AbstractStorefrontTestCase
+final class RegistrationControllerTest extends AbstractStorefrontTestCase
 {
     #[Test]
     public function itShowsTheRegisterForm(): void
     {
         // When
         $client = self::browser();
-        $client->request('GET', $this->path('storefront_identity_register'));
+        $client->request('GET', $this->path('storefront_register'));
 
         // Then
         self::assertResponseIsSuccessful();
@@ -32,7 +32,7 @@ final class IdentityControllerTest extends AbstractStorefrontTestCase
         // Given
         $login = \sprintf('test-%s', Uuid::uuid7()->toString());
         $client = self::browser();
-        $crawler = $client->request('GET', $this->path('storefront_identity_register'));
+        $crawler = $client->request('GET', $this->path('storefront_register'));
         $form = $crawler->filter('[data-testid="register-form"]')->form();
 
         // When
@@ -55,7 +55,7 @@ final class IdentityControllerTest extends AbstractStorefrontTestCase
         $commandBus = $this->service(CommandBusInterface::class);
         $commandBus->dispatch(new RegisterIdentity($existingIdentityId));
         $commandBus->dispatch(new DefinePasswordCredential($existingIdentityId, $login, 'AnExistingStr0ngP@ss1!'));
-        $crawler = $client->request('GET', $this->path('storefront_identity_register'));
+        $crawler = $client->request('GET', $this->path('storefront_register'));
         $form = $crawler->filter('[data-testid="register-form"]')->form();
 
         // When
