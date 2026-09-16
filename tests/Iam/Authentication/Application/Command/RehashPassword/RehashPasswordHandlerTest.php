@@ -8,7 +8,7 @@ use Iam\Authentication\Application\Command\RehashPassword\RehashPassword;
 use Iam\Authentication\Application\Finder\PasswordCredential\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
+use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
 use Iam\Authentication\Infrastructure\Password\SymfonyPasswordHasher;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
@@ -17,7 +17,7 @@ use Symfony\Component\PasswordHasher\Hasher\NativePasswordHasher;
 
 final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
 {
-    private PasswordStrengthInterface $passwordStrength;
+    private PasswordStrengthSpecificationInterface $passwordStrength;
 
     private PasswordCredentialFinderInterface $finder;
 
@@ -25,7 +25,7 @@ final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
     {
         parent::setUp();
 
-        $this->passwordStrength = $this->service(PasswordStrengthInterface::class);
+        $this->passwordStrength = $this->service(PasswordStrengthSpecificationInterface::class);
         $this->finder = $this->service(PasswordCredentialFinderInterface::class);
     }
 

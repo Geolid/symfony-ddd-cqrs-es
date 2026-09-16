@@ -5,32 +5,32 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Infrastructure\Password;
 
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
-use Iam\Authentication\Infrastructure\Password\SymfonyPasswordStrength;
+use Iam\Authentication\Infrastructure\Password\SymfonyPasswordStrengthSpecification;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Validator\Validation;
 
-final class SymfonyPasswordStrengthTest extends TestCase
+final class SymfonyPasswordStrengthSpecificationTest extends TestCase
 {
-    private SymfonyPasswordStrength $passwordStrength;
+    private SymfonyPasswordStrengthSpecification $passwordStrength;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->passwordStrength = new SymfonyPasswordStrength(Validation::createValidator());
+        $this->passwordStrength = new SymfonyPasswordStrengthSpecification(Validation::createValidator());
     }
 
     #[Test]
     #[DataProvider('providePasswords')]
-    public function itEvaluates(string $rawPassword, bool $expected): void
+    public function itIsSatisfiedBy(string $rawPassword, bool $expected): void
     {
         // When
-        $isSufficient = $this->passwordStrength->isSufficient(Password::fromString($rawPassword));
+        $isSatisfied = $this->passwordStrength->isSatisfiedBy(Password::fromString($rawPassword));
 
         // Then
-        self::assertSame($expected, $isSufficient);
+        self::assertSame($expected, $isSatisfied);
     }
 
     /**

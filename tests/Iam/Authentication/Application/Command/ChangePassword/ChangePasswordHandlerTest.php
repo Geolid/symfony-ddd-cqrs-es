@@ -12,7 +12,7 @@ use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialNot
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordStrengthInterface;
+use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\StubCompromisedPasswordGateway;
 use PHPUnit\Framework\Attributes\Test;
@@ -22,7 +22,7 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
 {
     private const string NEW_PASSWORD = 'Qm3&nJ8wXv5Tz1p!';
 
-    private PasswordStrengthInterface $passwordStrength;
+    private PasswordStrengthSpecificationInterface $passwordStrength;
 
     private PasswordHasherInterface $hasher;
 
@@ -30,7 +30,7 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
     {
         parent::setUp();
 
-        $this->passwordStrength = $this->service(PasswordStrengthInterface::class);
+        $this->passwordStrength = $this->service(PasswordStrengthSpecificationInterface::class);
         $this->hasher = $this->service(PasswordHasherInterface::class);
     }
 
