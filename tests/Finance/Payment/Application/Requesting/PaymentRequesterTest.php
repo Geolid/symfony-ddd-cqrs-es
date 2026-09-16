@@ -37,17 +37,17 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
     private PaymentRequester $service;
     private PaymentFinderInterface $finder;
     private \DateTimeImmutable $expiresAt;
-    private UniquenessRegistryInterface $uniqueValues;
+    private UniquenessRegistryInterface $uniqueness;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->paymentGateway = $this->createMock(PaymentGatewayInterface::class);
-        $this->uniqueValues = $this->service(UniquenessRegistryInterface::class);
+        $this->uniqueness = $this->service(UniquenessRegistryInterface::class);
         $this->finder = $this->service(PaymentFinderInterface::class);
         $this->service = new PaymentRequester(
-            $this->uniqueValues,
+            $this->uniqueness,
             $this->finder,
             $this->paymentGateway,
             $this->service(CommandBusInterface::class),
@@ -87,7 +87,7 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
         $paymentBuilder = PaymentBuilder::new();
         $payment = $paymentBuilder->create();
         $this->store($payment);
-        $this->uniqueValues->claim(
+        $this->uniqueness->claim(
             UniqueKey::for(PaymentUniqueKey::CHECKOUT_SESSION),
             $paymentBuilder['checkoutSessionId'],
             $payment->id->toString(),

@@ -20,7 +20,7 @@ use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
 {
-    private UniquenessRegistryInterface $uniqueValues;
+    private UniquenessRegistryInterface $uniqueness;
 
     private ShipmentFinderInterface $finder;
 
@@ -28,7 +28,7 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
     {
         parent::setUp();
 
-        $this->uniqueValues = $this->service(UniquenessRegistryInterface::class);
+        $this->uniqueness = $this->service(UniquenessRegistryInterface::class);
         $this->finder = $this->service(ShipmentFinderInterface::class);
     }
 
@@ -55,7 +55,7 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
         $trackingNumber = ShipmentBuilder::new()->manifested()['trackingNumber']->value;
         $shipment = ShipmentBuilder::new()->prepared()->manifested($trackingNumber)->create();
         $this->store($shipment);
-        $this->uniqueValues->claim(UniqueKey::for(ShipmentUniqueKey::TRACKING_NUMBER), $trackingNumber, $shipment->id->toString());
+        $this->uniqueness->claim(UniqueKey::for(ShipmentUniqueKey::TRACKING_NUMBER), $trackingNumber, $shipment->id->toString());
 
         // When
         $this->dispatch(new ManifestShipment($shipment->id->toString(), $trackingNumber));
@@ -111,7 +111,7 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $trackingNumber = ShipmentBuilder::new()->manifested()['trackingNumber']->value;
-        $this->uniqueValues->claim(UniqueKey::for(ShipmentUniqueKey::TRACKING_NUMBER), $trackingNumber, ShipmentBuilder::new()->create()->id->toString());
+        $this->uniqueness->claim(UniqueKey::for(ShipmentUniqueKey::TRACKING_NUMBER), $trackingNumber, ShipmentBuilder::new()->create()->id->toString());
         $shipment = ShipmentBuilder::new()->prepared()->create();
         $this->store($shipment);
 

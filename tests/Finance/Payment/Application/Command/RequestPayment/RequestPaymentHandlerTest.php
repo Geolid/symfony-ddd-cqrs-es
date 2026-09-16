@@ -20,14 +20,14 @@ use Support\TestCase\AbstractIntegrationTestCase;
 final class RequestPaymentHandlerTest extends AbstractIntegrationTestCase
 {
     private PaymentFinderInterface $finder;
-    private UniquenessRegistryInterface $uniqueValues;
+    private UniquenessRegistryInterface $uniqueness;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->finder = $this->service(PaymentFinderInterface::class);
-        $this->uniqueValues = $this->service(UniquenessRegistryInterface::class);
+        $this->uniqueness = $this->service(UniquenessRegistryInterface::class);
     }
 
     #[Test]
@@ -59,7 +59,7 @@ final class RequestPaymentHandlerTest extends AbstractIntegrationTestCase
         // Given
         $checkoutSessionId = PaymentBuilder::sample('checkoutSessionId');
         $reference = PaymentBuilder::sample('reference')->value;
-        $this->uniqueValues->claim(UniqueKey::for(PaymentUniqueKey::REFERENCE), $reference, Uuid::uuid7()->toString());
+        $this->uniqueness->claim(UniqueKey::for(PaymentUniqueKey::REFERENCE), $reference, Uuid::uuid7()->toString());
 
         // Then
         $this->expectException(PaymentReferenceAlreadyInUseException::class);
@@ -80,7 +80,7 @@ final class RequestPaymentHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $checkoutSessionId = PaymentBuilder::sample('checkoutSessionId');
-        $this->uniqueValues->claim(UniqueKey::for(PaymentUniqueKey::CHECKOUT_SESSION), $checkoutSessionId, Uuid::uuid7()->toString());
+        $this->uniqueness->claim(UniqueKey::for(PaymentUniqueKey::CHECKOUT_SESSION), $checkoutSessionId, Uuid::uuid7()->toString());
         $reference = PaymentBuilder::sample('reference')->value;
 
         // Then

@@ -9,6 +9,7 @@ use Iam\Authentication\Domain\TotpCredential\Service\TotpVerifierInterface;
 use Iam\Authentication\Domain\TotpCredential\TotpCredential;
 use Iam\Authentication\Domain\TotpCredential\ValueObject\TotpCredentialId;
 use Iam\Tests\Authentication\Support\Double\FakeTotpVerifier;
+use OTPHP\TOTP;
 use Ramsey\Uuid\Uuid;
 use Support\Builder\AbstractAggregateBuilder;
 use Symfony\Component\Clock\Clock;
@@ -60,12 +61,12 @@ final class TotpCredentialBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(verifier: $verifier);
     }
 
-    public function confirmed(?\DateTimeImmutable $confirmedAt = null): self
+    public function confirmed(?string $code = null, ?\DateTimeImmutable $confirmedAt = null): self
     {
         $builder = null !== $confirmedAt ? $this->withAttributes(confirmedAt: $confirmedAt) : $this;
 
-        return $builder->withModifier(static function (TotpCredential $credential, self $builder): void {
-            $credential->confirm($builder['identityId'], FakeTotpVerifier::codeFor($builder['secret']), $builder->cipher(), $builder->verifier(), $builder['confirmedAt']);
+        return $builder->withModifier(static function (TotpCredential $credential, self $builder) use ($code): void {
+            $credential->confirm($builder['identityId'], $code ?? FakeTotpVerifier::codeFor($builder['secret']), $builder->cipher(), $builder->verifier(), $builder['confirmedAt']);
         });
     }
 
@@ -85,7 +86,7 @@ final class TotpCredentialBuilder extends AbstractAggregateBuilder
         return [
             'id' => static fn (): TotpCredentialId => TotpCredentialId::fromString(Uuid::uuid7()->toString()),
             'identityId' => static fn (): string => Uuid::uuid7()->toString(),
-            'secret' => static fn (): string => bin2hex(random_bytes(20)),
+            'secret' => static fn (): string => TOTP::generate()->getSecret(),
             'enrolledAt' => static fn (): \DateTimeImmutable => $now,
             'confirmedAt' => static fn (): \DateTimeImmutable => $now->modify('+15 seconds'),
             'revokedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),

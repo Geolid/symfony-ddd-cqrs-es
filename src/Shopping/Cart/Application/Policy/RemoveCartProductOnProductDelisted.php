@@ -11,11 +11,13 @@ use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Policy;
 use Shopping\Cart\Application\Command\RemoveCartProduct\RemoveCartProduct;
 use Shopping\Cart\Application\Finder\Cart\CartFinderInterface;
+use Shopping\Cart\Application\Finder\CartItem\CartItemFinderInterface;
 
 #[Policy('shopping.cart.remove_cart_product_on_product_delisted')]
 final readonly class RemoveCartProductOnProductDelisted
 {
     public function __construct(
+        private CartItemFinderInterface $cartItemFinder,
         private CartFinderInterface $cartFinder,
         private CommandBusInterface $commandBus,
     ) {
@@ -28,7 +30,16 @@ final readonly class RemoveCartProductOnProductDelisted
     #[Subscribe(ProductDelistedIntegrationEvent::class)]
     public function __invoke(ProductDelistedIntegrationEvent $event): void
     {
-        foreach ($this->cartFinder->byProductId($event->productId) as $cart) {
+        $cartIds = [];
+        foreach ($this->cartItemFinder->byProduct($event->productId) as $item) {
+            $cartIds[] = $item->cartId;
+        }
+
+        if ([] === $cartIds) {
+            return;
+        }
+
+        foreach ($this->cartFinder->activeById(...$cartIds) as $cart) {
             $this->commandBus->dispatch(new RemoveCartProduct($cart->id, $event->productId));
         }
     }

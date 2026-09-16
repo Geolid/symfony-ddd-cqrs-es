@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Fulfilment\Shipping\Application\Finder\Shipment;
 
 use Fulfilment\Shipping\Application\Finder\Shipment\Exception\ShipmentResultNotFoundException;
-use Fulfilment\Shipping\Application\ShipmentStatus;
 use Shared\Application\Finder\IterableFinderInterface;
 
 /**
@@ -26,8 +25,6 @@ interface ShipmentFinderInterface extends IterableFinderInterface
     public function ofOrderOrNull(string $orderId): ?ShipmentResult;
 
     public function byCustomer(string $customerId): static;
-
-    public function byStatus(ShipmentStatus ...$statuses): static;
 
     public function stalledBefore(\DateTimeImmutable $cutoff): static;
 }

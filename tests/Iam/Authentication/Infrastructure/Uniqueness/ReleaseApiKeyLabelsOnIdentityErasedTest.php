@@ -17,13 +17,13 @@ use Symfony\Component\Clock\Clock;
 
 final class ReleaseApiKeyLabelsOnIdentityErasedTest extends AbstractIntegrationTestCase
 {
-    private UniquenessRegistryInterface $uniqueValues;
+    private UniquenessRegistryInterface $uniqueness;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->uniqueValues = $this->service(UniquenessRegistryInterface::class);
+        $this->uniqueness = $this->service(UniquenessRegistryInterface::class);
     }
 
     #[Test]
@@ -47,13 +47,13 @@ final class ReleaseApiKeyLabelsOnIdentityErasedTest extends AbstractIntegrationT
         $key = UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId);
         $otherKey = UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $otherIdentityId);
 
-        self::assertFalse($this->uniqueValues->isClaimed($key, $label));
-        self::assertFalse($this->uniqueValues->isClaimed($key, $otherLabel));
-        self::assertTrue($this->uniqueValues->isClaimed($otherKey, $label));
+        self::assertFalse($this->uniqueness->isClaimed($key, $label));
+        self::assertFalse($this->uniqueness->isClaimed($key, $otherLabel));
+        self::assertTrue($this->uniqueness->isClaimed($otherKey, $label));
     }
 
     private function claimLabel(string $identityId, string $label): void
     {
-        $this->uniqueValues->claim(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId), $label, Uuid::uuid7()->toString());
+        $this->uniqueness->claim(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId), $label, Uuid::uuid7()->toString());
     }
 }

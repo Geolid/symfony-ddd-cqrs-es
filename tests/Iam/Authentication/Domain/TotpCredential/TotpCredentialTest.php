@@ -8,6 +8,7 @@ use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialEnrolled;
 use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialEnrollmentConfirmed;
 use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialRevoked;
 use Iam\Authentication\Domain\TotpCredential\Exception\InvalidTotpCodeException;
+use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialNotConfirmableException;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialOwnedByAnotherIdentityException;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpCipherInterface;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpVerifierInterface;
@@ -93,6 +94,21 @@ final class TotpCredentialTest extends AggregateRootTestCase
             ->given($this->enrolled())
             ->when(fn (TotpCredential $credential) => $credential->confirm($anotherIdentityId, $code, $this->cipher, $this->verifier, TotpCredentialBuilder::sample('confirmedAt')))
             ->expectsException(TotpCredentialOwnedByAnotherIdentityException::class);
+    }
+
+    #[Test]
+    public function itCannotConfirmWhenRevoked(): void
+    {
+        $revokedAt = TotpCredentialBuilder::sample('revokedAt');
+        $code = FakeTotpVerifier::codeFor($this->secret);
+
+        $this
+            ->given(
+                $this->enrolled(),
+                new TotpCredentialRevoked($this->id, $revokedAt),
+            )
+            ->when(fn (TotpCredential $credential) => $credential->confirm($this->identityId, $code, $this->cipher, $this->verifier, TotpCredentialBuilder::sample('confirmedAt')))
+            ->expectsException(TotpCredentialNotConfirmableException::class);
     }
 
     #[Test]

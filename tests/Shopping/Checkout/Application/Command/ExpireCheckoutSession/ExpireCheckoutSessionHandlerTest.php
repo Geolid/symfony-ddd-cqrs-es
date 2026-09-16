@@ -29,16 +29,14 @@ final class ExpireCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
     public function itExpires(): void
     {
         // Given
-        $checkoutSessionBuilder = CheckoutSessionBuilder::new()->withOpenedAt(Clock::get()->now()->modify('-31 minutes'));
-        $checkoutSession = $checkoutSessionBuilder->create();
+        $checkoutSession = CheckoutSessionBuilder::new()->withOpenedAt(Clock::get()->now()->modify('-31 minutes'))->create();
         $this->store($checkoutSession);
 
         // When
         $this->dispatch(new ExpireCheckoutSession($checkoutSession->id->toString()));
 
         // Then
-        $result = $this->finder->ofCartOrNull($checkoutSessionBuilder['cartId']);
-        self::assertNotNull($result);
+        $result = $this->finder->ofId($checkoutSession->id->toString());
         self::assertSame(CheckoutSessionStatus::EXPIRED, $result->status);
     }
 

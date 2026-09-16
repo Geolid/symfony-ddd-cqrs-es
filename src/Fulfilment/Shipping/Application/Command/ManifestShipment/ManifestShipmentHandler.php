@@ -24,7 +24,7 @@ final readonly class ManifestShipmentHandler
 {
     public function __construct(
         private ShipmentRepositoryInterface $repository,
-        private UniquenessRegistryInterface $uniqueValues,
+        private UniquenessRegistryInterface $uniqueness,
         private ClockInterface $clock,
     ) {
     }
@@ -43,7 +43,7 @@ final readonly class ManifestShipmentHandler
         $shipment->manifest(TrackingNumber::fromString($command->trackingNumber), $this->clock->now());
 
         try {
-            $this->uniqueValues->claim(UniqueKey::for(ShipmentUniqueKey::TRACKING_NUMBER), $command->trackingNumber, $command->id);
+            $this->uniqueness->claim(UniqueKey::for(ShipmentUniqueKey::TRACKING_NUMBER), $command->trackingNumber, $command->id);
         } catch (UniquenessViolatedException $e) {
             throw ShipmentTrackingNumberAlreadyInUseException::forTrackingNumber($command->trackingNumber, $e);
         }

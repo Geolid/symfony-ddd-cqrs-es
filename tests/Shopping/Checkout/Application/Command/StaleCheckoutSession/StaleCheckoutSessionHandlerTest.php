@@ -28,16 +28,14 @@ final class StaleCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
     public function itStales(): void
     {
         // Given
-        $checkoutSessionBuilder = CheckoutSessionBuilder::new();
-        $checkoutSession = $checkoutSessionBuilder->create();
+        $checkoutSession = CheckoutSessionBuilder::new()->create();
         $this->store($checkoutSession);
 
         // When
         $this->dispatch(new StaleCheckoutSession($checkoutSession->id->toString()));
 
         // Then
-        $result = $this->finder->ofCartOrNull($checkoutSessionBuilder['cartId']);
-        self::assertNotNull($result);
+        $result = $this->finder->ofId($checkoutSession->id->toString());
         self::assertSame(CheckoutSessionStatus::STALE, $result->status);
     }
 

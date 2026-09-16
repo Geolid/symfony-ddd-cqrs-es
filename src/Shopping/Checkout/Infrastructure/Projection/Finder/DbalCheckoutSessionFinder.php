@@ -31,11 +31,13 @@ final class DbalCheckoutSessionFinder extends AbstractIterableDbalFinder impleme
         )->one() ?? throw CheckoutSessionResultNotFoundException::forId($id);
     }
 
-    public function ofCartOrNull(string $cartId): ?CheckoutSessionResult
+    public function openOfCartOrNull(string $cartId): ?CheckoutSessionResult
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($cartId): void {
-                $qb->andWhere('cart_id = :cartId')->setParameter('cartId', $cartId);
+                $qb->andWhere('cart_id = :cartId AND status = :open')
+                    ->setParameter('cartId', $cartId)
+                    ->setParameter('open', CheckoutSessionStatus::OPEN);
             },
         )->one();
     }
@@ -53,10 +55,9 @@ final class DbalCheckoutSessionFinder extends AbstractIterableDbalFinder impleme
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($cutoff): void {
-                $cutoffParam = $qb->createNamedParameter($cutoff, Types::DATETIME_IMMUTABLE);
-                $openParam = $qb->createNamedParameter(CheckoutSessionStatus::OPEN);
-
-                $qb->andWhere("status = {$openParam} AND opened_at < {$cutoffParam}");
+                $qb->andWhere('status = :open AND opened_at < :cutoff')
+                    ->setParameter('open', CheckoutSessionStatus::OPEN)
+                    ->setParameter('cutoff', $cutoff, Types::DATETIME_IMMUTABLE);
             },
         );
     }

@@ -8,6 +8,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 use Shared\Tests\Support\TestCase\RealColumnLeadsTrait;
+use Shopping\Cart\Application\CartStatus;
 use Shopping\Cart\Application\Finder\Cart\CartFinderInterface;
 use Shopping\Cart\Application\Finder\Cart\CartResult;
 use Shopping\Cart\Application\Finder\Cart\Exception\CartResultNotFoundException;
@@ -37,6 +38,7 @@ final class DbalCartFinderTest extends AbstractIterableFinderTestCase
         // Then
         self::assertSame($cart->id->toString(), $result->id);
         self::assertSame($builder['customerId'], $result->customerId);
+        self::assertSame(CartStatus::ACTIVE, $result->status);
         self::assertSame($builder['startedAt']->format('Y-m-d H:i:s'), $result->startedAt->format('Y-m-d H:i:s'));
     }
 
@@ -51,16 +53,16 @@ final class DbalCartFinderTest extends AbstractIterableFinderTestCase
     }
 
     #[Test]
-    public function itFiltersByProductId(): void
+    public function itFiltersActiveById(): void
     {
         // Given
-        $other = CartBuilder::new()->productAdded()->create();
-        $productId = Uuid::uuid7()->toString();
-        $cart = CartBuilder::new()->productAdded($productId)->create();
-        $this->store($other, $cart);
+        $purchasedInList = CartBuilder::new()->purchased()->create();
+        $activeNotInList = CartBuilder::new()->create();
+        $cart = CartBuilder::new()->create();
+        $this->store($purchasedInList, $activeNotInList, $cart);
 
         // When
-        $results = iterator_to_array($this->finder()->byProductId($productId));
+        $results = iterator_to_array($this->finder()->activeById($cart->id->toString(), $purchasedInList->id->toString()));
 
         // Then
         self::assertCount(1, $results);

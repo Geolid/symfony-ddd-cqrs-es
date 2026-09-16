@@ -28,7 +28,7 @@ final readonly class DefinePasswordCredentialHandler
 {
     public function __construct(
         private PasswordCredentialRepositoryInterface $repository,
-        private UniquenessRegistryInterface $uniqueValues,
+        private UniquenessRegistryInterface $uniqueness,
         private PasswordStrengthSpecificationInterface $passwordStrength,
         private CompromisedPasswordGatewayInterface $compromisedPasswordGateway,
         private PasswordHasherInterface $hasher,
@@ -53,7 +53,7 @@ final readonly class DefinePasswordCredentialHandler
         }
 
         try {
-            $this->uniqueValues->claim(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), $login->value, $id->toString());
+            $this->uniqueness->claim(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), $login->value, $id->toString());
         } catch (UniquenessViolatedException $e) {
             throw PasswordCredentialLoginAlreadyInUseException::forLogin($login->value, $e);
         }

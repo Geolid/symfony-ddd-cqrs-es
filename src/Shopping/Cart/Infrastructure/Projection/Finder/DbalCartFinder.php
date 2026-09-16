@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shopping\Cart\Infrastructure\Projection\Finder;
 
+use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Shared\Application\Finder\SortDirection;
 use Shared\Infrastructure\Projection\Finder\AbstractIterableDbalFinder;
@@ -11,7 +12,6 @@ use Shopping\Cart\Application\CartStatus;
 use Shopping\Cart\Application\Finder\Cart\CartFinderInterface;
 use Shopping\Cart\Application\Finder\Cart\CartResult;
 use Shopping\Cart\Application\Finder\Cart\Exception\CartResultNotFoundException;
-use Shopping\Cart\Infrastructure\Projection\Projector\DbalCartItemProjector;
 use Shopping\Cart\Infrastructure\Projection\Projector\DbalCartProjector;
 
 /**
@@ -28,26 +28,20 @@ final class DbalCartFinder extends AbstractIterableDbalFinder implements CartFin
         )->one() ?? throw CartResultNotFoundException::forId($id);
     }
 
-    public function byProductId(string $productId): static
+    public function activeById(string ...$ids): static
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($productId): void {
-                $activeParam = $qb->createNamedParameter(CartStatus::ACTIVE->value);
-                $productIdParam = $qb->createNamedParameter($productId);
-
-                $qb->andWhere(\sprintf(
-                    'id IN (SELECT cart_id FROM %s WHERE product_id = %s) AND status = %s',
-                    DbalCartItemProjector::TABLE,
-                    $productIdParam,
-                    $activeParam,
-                ));
+            static function (QueryBuilder $qb) use ($ids): void {
+                $qb->andWhere('id IN (:ids) AND status = :active')
+                    ->setParameter('ids', $ids, ArrayParameterType::STRING)
+                    ->setParameter('active', CartStatus::ACTIVE);
             },
         );
     }
 
     protected function configureBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'customer_id', 'started_at')
+        $qb->select('id', 'customer_id', 'status', 'started_at')
             ->from(DbalCartProjector::TABLE);
     }
 

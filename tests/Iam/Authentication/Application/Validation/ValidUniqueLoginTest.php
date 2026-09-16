@@ -22,12 +22,12 @@ final class ValidUniqueLoginTest extends CompoundConstraintTestCase
 {
     use ValidatorFactoryTrait;
 
-    private FakeUniquenessRegistry $registry;
+    private FakeUniquenessRegistry $uniqueness;
 
     protected function setUp(): void
     {
-        // Before parent::setUp() — it calls createValidator(), which reads $this->registry.
-        $this->registry = new FakeUniquenessRegistry();
+        // Before parent::setUp() — it calls createValidator(), which reads $this->uniqueness.
+        $this->uniqueness = new FakeUniquenessRegistry();
 
         parent::setUp();
     }
@@ -46,7 +46,7 @@ final class ValidUniqueLoginTest extends CompoundConstraintTestCase
     public function itRefuses(): void
     {
         // Given
-        $this->registry->claim(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), 'john.doe', 'owner-id');
+        $this->uniqueness->claim(UniqueKey::for(PasswordCredentialUniqueKey::LOGIN), 'john.doe', 'owner-id');
 
         // When
         $this->validateValue('john.doe');
@@ -63,6 +63,6 @@ final class ValidUniqueLoginTest extends CompoundConstraintTestCase
 
     protected function createValidator(): ValidatorInterface
     {
-        return $this->validatorUsing(UniqueValueValidator::class, new UniqueValueValidator($this->registry));
+        return $this->validatorUsing(UniqueValueValidator::class, new UniqueValueValidator($this->uniqueness));
     }
 }

@@ -20,14 +20,14 @@ use Support\TestCase\AbstractIntegrationTestCase;
 final class RevokeApiKeyHandlerTest extends AbstractIntegrationTestCase
 {
     private ApiKeyHasherInterface $hasher;
-    private UniquenessRegistryInterface $registry;
+    private UniquenessRegistryInterface $uniqueness;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->hasher = $this->service(ApiKeyHasherInterface::class);
-        $this->registry = $this->service(UniquenessRegistryInterface::class);
+        $this->uniqueness = $this->service(UniquenessRegistryInterface::class);
     }
 
     #[Test]
@@ -38,11 +38,11 @@ final class RevokeApiKeyHandlerTest extends AbstractIntegrationTestCase
         $credential = $builder->create();
 
         $labelKey = UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $builder['identityId']);
-        $this->registry->claim($labelKey, $builder['label']->value, $credential->id->toString());
+        $this->uniqueness->claim($labelKey, $builder['label']->value, $credential->id->toString());
 
         $otherBuilder = ApiKeyCredentialBuilder::new()->withHasher($this->hasher)->withIdentityId($builder['identityId']);
         $otherCredential = $otherBuilder->create();
-        $this->registry->claim($labelKey, $otherBuilder['label']->value, $otherCredential->id->toString());
+        $this->uniqueness->claim($labelKey, $otherBuilder['label']->value, $otherCredential->id->toString());
 
         $this->store($credential, $otherCredential);
 
@@ -53,8 +53,8 @@ final class RevokeApiKeyHandlerTest extends AbstractIntegrationTestCase
         $result = $this->service(ApiKeyCredentialFinderInterface::class)->ofKeyId($builder['keyId']->value);
         self::assertTrue($result->revoked);
 
-        self::assertFalse($this->registry->isClaimed($labelKey, $builder['label']->value));
-        self::assertTrue($this->registry->isClaimed($labelKey, $otherBuilder['label']->value));
+        self::assertFalse($this->uniqueness->isClaimed($labelKey, $builder['label']->value));
+        self::assertTrue($this->uniqueness->isClaimed($labelKey, $otherBuilder['label']->value));
     }
 
     #[Test]

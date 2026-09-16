@@ -19,7 +19,7 @@ final readonly class CancelErasureHandler
 {
     public function __construct(
         private ErasureRepositoryInterface $repository,
-        private UniquenessRegistryInterface $uniqueValues,
+        private UniquenessRegistryInterface $uniqueness,
         private ClockInterface $clock,
     ) {
     }
@@ -36,7 +36,7 @@ final readonly class CancelErasureHandler
         $this->repository->save($erasure);
 
         if ($erasure->state->isCancelled()) {
-            $this->uniqueValues->release(UniqueKey::for(ErasureUniqueKey::IDENTITY), $erasure->id->toString());
+            $this->uniqueness->release(UniqueKey::for(ErasureUniqueKey::IDENTITY), $erasure->id->toString());
         }
     }
 }

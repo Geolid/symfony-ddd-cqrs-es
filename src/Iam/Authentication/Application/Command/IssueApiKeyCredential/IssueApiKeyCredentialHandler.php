@@ -24,7 +24,7 @@ final readonly class IssueApiKeyCredentialHandler
 {
     public function __construct(
         private ApiKeyCredentialRepositoryInterface $repository,
-        private UniquenessRegistryInterface $uniqueValues,
+        private UniquenessRegistryInterface $uniqueness,
         private ApiKeyHasherInterface $hasher,
         private ClockInterface $clock,
     ) {
@@ -40,7 +40,7 @@ final readonly class IssueApiKeyCredentialHandler
         $label = Label::fromString($command->label);
 
         try {
-            $this->uniqueValues->claim(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $command->identityId), $label->value, $id->toString());
+            $this->uniqueness->claim(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $command->identityId), $label->value, $id->toString());
         } catch (UniquenessViolatedException $e) {
             throw ApiKeyCredentialLabelAlreadyInUseException::forLabel($label->value, $e);
         }

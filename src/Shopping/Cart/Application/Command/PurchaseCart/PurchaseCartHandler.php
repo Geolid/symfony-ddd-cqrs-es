@@ -19,7 +19,7 @@ final readonly class PurchaseCartHandler
 {
     public function __construct(
         private CartRepositoryInterface $repository,
-        private UniquenessRegistryInterface $uniqueValues,
+        private UniquenessRegistryInterface $uniqueness,
         private ClockInterface $clock,
     ) {
     }
@@ -34,6 +34,6 @@ final readonly class PurchaseCartHandler
         $cart->purchase($this->clock->now());
         $this->repository->save($cart);
 
-        $this->uniqueValues->release(UniqueKey::for(CartUniqueKey::CUSTOMER), $command->id);
+        $this->uniqueness->release(UniqueKey::for(CartUniqueKey::CUSTOMER), $command->id);
     }
 }

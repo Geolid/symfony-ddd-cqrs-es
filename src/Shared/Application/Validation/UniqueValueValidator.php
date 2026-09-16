@@ -14,7 +14,7 @@ use Webmozart\Assert\Assert;
 
 final class UniqueValueValidator extends ConstraintValidator
 {
-    public function __construct(private readonly UniquenessRegistryInterface $registry)
+    public function __construct(private readonly UniquenessRegistryInterface $uniqueness)
     {
     }
 
@@ -41,7 +41,7 @@ final class UniqueValueValidator extends ConstraintValidator
             Assert::string($excludeOwnerId);
         }
 
-        if ($this->registry->isClaimed($key, (string) $value, $excludeOwnerId)) {
+        if ($this->uniqueness->isClaimed($key, (string) $value, $excludeOwnerId)) {
             $this->context->buildViolation($constraint->message)
                 ->setParameter('{{ value }}', (string) $value)
                 ->setParameter('{{ key }}', $key->discriminator->name)

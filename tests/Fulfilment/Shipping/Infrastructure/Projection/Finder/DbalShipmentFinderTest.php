@@ -125,26 +125,6 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
     }
 
     #[Test]
-    public function itFiltersByStatus(): void
-    {
-        // Given
-        $other = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->create();
-        $manifested = ShipmentBuilder::new()->prepared()->manifested()->create();
-        $dispatched = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->create();
-        $this->store($other, $manifested, $dispatched);
-
-        // When
-        $results = iterator_to_array($this->finder()->byStatus(ShipmentStatus::MANIFESTED, ShipmentStatus::DISPATCHED));
-
-        // Then
-        self::assertCount(2, $results);
-        self::assertEqualsCanonicalizing(
-            [$manifested->id->toString(), $dispatched->id->toString()],
-            array_map(static fn (ShipmentResult $result): string => $result->id, $results),
-        );
-    }
-
-    #[Test]
     public function itFiltersStalledBefore(): void
     {
         // Given

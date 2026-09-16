@@ -20,14 +20,14 @@ use Symfony\Component\Clock\Clock;
 final class ApproveErasureHandlerTest extends AbstractIntegrationTestCase
 {
     private ErasureFinderInterface $finder;
-    private UniquenessRegistryInterface $uniqueValues;
+    private UniquenessRegistryInterface $uniqueness;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->finder = $this->service(ErasureFinderInterface::class);
-        $this->uniqueValues = $this->service(UniquenessRegistryInterface::class);
+        $this->uniqueness = $this->service(UniquenessRegistryInterface::class);
     }
 
     #[Test]
@@ -38,7 +38,7 @@ final class ApproveErasureHandlerTest extends AbstractIntegrationTestCase
         $erasure = $builder->create();
         $this->store($erasure);
         $identityKey = UniqueKey::for(ErasureUniqueKey::IDENTITY);
-        $this->uniqueValues->claim($identityKey, $builder['identityId'], $erasure->id->toString());
+        $this->uniqueness->claim($identityKey, $builder['identityId'], $erasure->id->toString());
 
         // When
         $this->dispatch(new ApproveErasure($erasure->id->toString()));
@@ -46,7 +46,7 @@ final class ApproveErasureHandlerTest extends AbstractIntegrationTestCase
         // Then
         $result = $this->finder->ofId($erasure->id->toString());
         self::assertSame(ErasureRequestStatus::APPROVED, $result->status);
-        self::assertTrue($this->uniqueValues->isClaimed($identityKey, $builder['identityId']));
+        self::assertTrue($this->uniqueness->isClaimed($identityKey, $builder['identityId']));
     }
 
     #[Test]
@@ -57,7 +57,7 @@ final class ApproveErasureHandlerTest extends AbstractIntegrationTestCase
         $erasure = $builder->create();
         $this->store($erasure);
         $identityKey = UniqueKey::for(ErasureUniqueKey::IDENTITY);
-        $this->uniqueValues->claim($identityKey, $builder['identityId'], $erasure->id->toString());
+        $this->uniqueness->claim($identityKey, $builder['identityId'], $erasure->id->toString());
 
         // When
         $this->dispatch(new ApproveErasure($erasure->id->toString()));
@@ -65,7 +65,7 @@ final class ApproveErasureHandlerTest extends AbstractIntegrationTestCase
         // Then
         $result = $this->finder->ofId($erasure->id->toString());
         self::assertSame(ErasureRequestStatus::REQUESTED, $result->status);
-        self::assertTrue($this->uniqueValues->isClaimed($identityKey, $builder['identityId']));
+        self::assertTrue($this->uniqueness->isClaimed($identityKey, $builder['identityId']));
     }
 
     #[Test]

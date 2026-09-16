@@ -21,7 +21,7 @@ final readonly class RequestErasureHandler
 {
     public function __construct(
         private ErasureRepositoryInterface $repository,
-        private UniquenessRegistryInterface $uniqueValues,
+        private UniquenessRegistryInterface $uniqueness,
         private ClockInterface $clock,
     ) {
     }
@@ -35,7 +35,7 @@ final readonly class RequestErasureHandler
         $id = ErasureId::fromString($command->id);
 
         try {
-            $this->uniqueValues->claim(UniqueKey::for(ErasureUniqueKey::IDENTITY), $command->identityId, $id->toString());
+            $this->uniqueness->claim(UniqueKey::for(ErasureUniqueKey::IDENTITY), $command->identityId, $id->toString());
         } catch (UniquenessViolatedException $e) {
             throw ErasureAlreadyClaimedException::forIdentity($command->identityId, $e);
         }

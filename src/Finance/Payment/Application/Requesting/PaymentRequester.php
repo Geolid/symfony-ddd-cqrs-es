@@ -24,7 +24,7 @@ use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 final readonly class PaymentRequester implements PaymentRequesterInterface
 {
     public function __construct(
-        private UniquenessRegistryInterface $uniqueValues,
+        private UniquenessRegistryInterface $uniqueness,
         private PaymentFinderInterface $paymentFinder,
         private PaymentGatewayInterface $paymentGateway,
         private CommandBusInterface $commandBus,
@@ -64,7 +64,7 @@ final readonly class PaymentRequester implements PaymentRequesterInterface
 
         $checkoutSessionKey = UniqueKey::for(PaymentUniqueKey::CHECKOUT_SESSION);
 
-        if ($this->uniqueValues->isClaimed($checkoutSessionKey, $checkoutSessionId)) {
+        if ($this->uniqueness->isClaimed($checkoutSessionKey, $checkoutSessionId)) {
             return $this->paymentFinder->ofCheckoutSession($checkoutSessionId)->hostedPageUrl;
         }
 

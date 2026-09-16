@@ -14,13 +14,13 @@ use Shared\Infrastructure\Processor;
 #[Processor('iam.authentication.release_api_key_labels_on_identity_erased')]
 final readonly class ReleaseApiKeyLabelsOnIdentityErased
 {
-    public function __construct(private UniquenessRegistryInterface $uniqueValues)
+    public function __construct(private UniquenessRegistryInterface $uniqueness)
     {
     }
 
     #[Subscribe(IdentityErasedIntegrationEvent::class)]
     public function __invoke(IdentityErasedIntegrationEvent $event): void
     {
-        $this->uniqueValues->releaseAll(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $event->identityId));
+        $this->uniqueness->releaseAll(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $event->identityId));
     }
 }
