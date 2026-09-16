@@ -8,6 +8,7 @@ use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialEnrolled;
 use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialEnrollmentConfirmed;
 use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialRevoked;
 use Iam\Authentication\Domain\TotpCredential\Exception\InvalidTotpCodeException;
+use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialOwnedByAnotherIdentityException;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpCipherInterface;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpVerifierInterface;
 use Iam\Authentication\Domain\TotpCredential\TotpCredential;
@@ -63,7 +64,7 @@ final class TotpCredentialTest extends AggregateRootTestCase
 
         $this
             ->given($this->enrolled())
-            ->when(fn (TotpCredential $credential) => $credential->confirm($code, $this->cipher, $this->verifier, $confirmedAt))
+            ->when(fn (TotpCredential $credential) => $credential->confirm($this->identityId, $code, $this->cipher, $this->verifier, $confirmedAt))
             ->then(new TotpCredentialEnrollmentConfirmed($this->id, $confirmedAt));
     }
 
@@ -78,8 +79,20 @@ final class TotpCredentialTest extends AggregateRootTestCase
                 $this->enrolled(),
                 new TotpCredentialEnrollmentConfirmed($this->id, $confirmedAt),
             )
-            ->when(fn (TotpCredential $credential) => $credential->confirm($code, $this->cipher, $this->verifier, $confirmedAt))
+            ->when(fn (TotpCredential $credential) => $credential->confirm($this->identityId, $code, $this->cipher, $this->verifier, $confirmedAt))
             ->then();
+    }
+
+    #[Test]
+    public function itCannotConfirmWhenOwnedByAnotherIdentity(): void
+    {
+        $anotherIdentityId = TotpCredentialBuilder::sample('identityId');
+        $code = FakeTotpVerifier::codeFor($this->secret);
+
+        $this
+            ->given($this->enrolled())
+            ->when(fn (TotpCredential $credential) => $credential->confirm($anotherIdentityId, $code, $this->cipher, $this->verifier, TotpCredentialBuilder::sample('confirmedAt')))
+            ->expectsException(TotpCredentialOwnedByAnotherIdentityException::class);
     }
 
     #[Test]
@@ -87,7 +100,7 @@ final class TotpCredentialTest extends AggregateRootTestCase
     {
         $this
             ->given($this->enrolled())
-            ->when(fn (TotpCredential $credential) => $credential->confirm('invalid', $this->cipher, $this->verifier, TotpCredentialBuilder::sample('confirmedAt')))
+            ->when(fn (TotpCredential $credential) => $credential->confirm($this->identityId, 'invalid', $this->cipher, $this->verifier, TotpCredentialBuilder::sample('confirmedAt')))
             ->expectsException(InvalidTotpCodeException::class);
     }
 
@@ -98,7 +111,7 @@ final class TotpCredentialTest extends AggregateRootTestCase
 
         $this
             ->given($this->enrolled())
-            ->when(static fn (TotpCredential $credential) => $credential->revoke($revokedAt))
+            ->when(fn (TotpCredential $credential) => $credential->revoke($this->identityId, $revokedAt))
             ->then(new TotpCredentialRevoked($this->id, $revokedAt));
     }
 
@@ -112,8 +125,19 @@ final class TotpCredentialTest extends AggregateRootTestCase
                 $this->enrolled(),
                 new TotpCredentialRevoked($this->id, $revokedAt),
             )
-            ->when(static fn (TotpCredential $credential) => $credential->revoke($revokedAt))
+            ->when(fn (TotpCredential $credential) => $credential->revoke($this->identityId, $revokedAt))
             ->then();
+    }
+
+    #[Test]
+    public function itCannotRevokeWhenOwnedByAnotherIdentity(): void
+    {
+        $anotherIdentityId = TotpCredentialBuilder::sample('identityId');
+
+        $this
+            ->given($this->enrolled())
+            ->when(static fn (TotpCredential $credential) => $credential->revoke($anotherIdentityId, TotpCredentialBuilder::sample('revokedAt')))
+            ->expectsException(TotpCredentialOwnedByAnotherIdentityException::class);
     }
 
     protected function aggregateClass(): string

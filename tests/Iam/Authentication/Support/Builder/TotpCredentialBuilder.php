@@ -65,7 +65,7 @@ final class TotpCredentialBuilder extends AbstractAggregateBuilder
         $builder = null !== $confirmedAt ? $this->withAttributes(confirmedAt: $confirmedAt) : $this;
 
         return $builder->withModifier(static function (TotpCredential $credential, self $builder): void {
-            $credential->confirm(FakeTotpVerifier::codeFor($builder['secret']), $builder->cipher(), $builder->verifier(), $builder['confirmedAt']);
+            $credential->confirm($builder['identityId'], FakeTotpVerifier::codeFor($builder['secret']), $builder->cipher(), $builder->verifier(), $builder['confirmedAt']);
         });
     }
 
@@ -74,7 +74,7 @@ final class TotpCredentialBuilder extends AbstractAggregateBuilder
         $builder = null !== $revokedAt ? $this->withAttributes(revokedAt: $revokedAt) : $this;
 
         return $builder->withModifier(static function (TotpCredential $credential, self $builder): void {
-            $credential->revoke($builder['revokedAt']);
+            $credential->revoke($builder['identityId'], $builder['revokedAt']);
         });
     }
 

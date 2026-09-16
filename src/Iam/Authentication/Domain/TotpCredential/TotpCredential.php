@@ -8,6 +8,7 @@ use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialEnrolled;
 use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialEnrollmentConfirmed;
 use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialRevoked;
 use Iam\Authentication\Domain\TotpCredential\Exception\InvalidTotpCodeException;
+use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialOwnedByAnotherIdentityException;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpCipherInterface;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpVerifierInterface;
 use Iam\Authentication\Domain\TotpCredential\ValueObject\TotpCredentialId;
@@ -25,6 +26,7 @@ final class TotpCredential implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     public private(set) TotpCredentialId $id;
+    private string $identityId;
     private string $encryptedSecret;
     private bool $confirmed;
     private bool $revoked;
@@ -49,10 +51,15 @@ final class TotpCredential implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
+     * @throws TotpCredentialOwnedByAnotherIdentityException
      * @throws InvalidTotpCodeException
      */
-    public function confirm(#[\SensitiveParameter] string $code, TotpCipherInterface $cipher, TotpVerifierInterface $verifier, \DateTimeImmutable $confirmedAt): void
+    public function confirm(string $identityId, #[\SensitiveParameter] string $code, TotpCipherInterface $cipher, TotpVerifierInterface $verifier, \DateTimeImmutable $confirmedAt): void
     {
+        if ($this->identityId !== $identityId) {
+            throw TotpCredentialOwnedByAnotherIdentityException::forId($this->id);
+        }
+
         if ($this->confirmed) {
             return;
         }
@@ -67,8 +74,15 @@ final class TotpCredential implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    public function revoke(\DateTimeImmutable $revokedAt): void
+    /**
+     * @throws TotpCredentialOwnedByAnotherIdentityException
+     */
+    public function revoke(string $identityId, \DateTimeImmutable $revokedAt): void
     {
+        if ($this->identityId !== $identityId) {
+            throw TotpCredentialOwnedByAnotherIdentityException::forId($this->id);
+        }
+
         if ($this->revoked) {
             return;
         }
@@ -83,6 +97,7 @@ final class TotpCredential implements AggregateRoot, AggregateRootMetadataAware
     private function applyEnrolled(TotpCredentialEnrolled $event): void
     {
         $this->id = $event->id;
+        $this->identityId = $event->identityId;
         $this->encryptedSecret = $event->encryptedSecret;
         $this->confirmed = false;
         $this->revoked = false;
