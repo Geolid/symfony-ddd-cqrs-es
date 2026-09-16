@@ -9,8 +9,10 @@ use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialF
 use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
+use Iam\Authentication\Domain\TotpCredential\Repository\TotpCredentialRepositoryInterface;
 use Iam\Authentication\Infrastructure\ApiKey\NativeApiKeyHasher;
 use Iam\Authentication\Infrastructure\BreachDatabase\SymfonyCompromisedPasswordGateway;
+use Iam\Authentication\Infrastructure\EventStore\PatchlevelTotpCredentialRepository;
 use Iam\Authentication\Infrastructure\Password\SymfonyPasswordHasher;
 use Iam\Authentication\Infrastructure\Password\SymfonyPasswordStrengthSpecification;
 use Iam\Authentication\Infrastructure\Projection\Finder\DbalApiKeyCredentialFinder;
@@ -42,5 +44,6 @@ return static function (ContainerConfigurator $container): void {
         $services->alias(PasswordHasherInterface::class, SymfonyPasswordHasher::class)->public();
         $services->alias(PasswordStrengthSpecificationInterface::class, SymfonyPasswordStrengthSpecification::class)->public();
         $services->alias(CompromisedPasswordGatewayInterface::class, SymfonyCompromisedPasswordGateway::class)->public();
+        $services->alias(TotpCredentialRepositoryInterface::class, PatchlevelTotpCredentialRepository::class)->public();
     }
 };

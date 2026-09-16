@@ -13,7 +13,7 @@ use Ramsey\Uuid\Uuid;
 final class ApiKeyCredentialIdTest extends TestCase
 {
     #[Test]
-    public function itGenerates(): void
+    public function itCreates(): void
     {
         // When
         $id = ApiKeyCredentialId::fromString(Uuid::uuid7()->toString());

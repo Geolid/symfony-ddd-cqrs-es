@@ -15,7 +15,7 @@ final class OrderIdTest extends TestCase
     private const string CHECKOUT_SESSION_ID = '0199a1b2-3c4d-7e5f-8061-72839405a6b7';
 
     #[Test]
-    public function itGenerates(): void
+    public function itCreates(): void
     {
         // When
         $id = OrderId::fromString(Uuid::uuid7()->toString());

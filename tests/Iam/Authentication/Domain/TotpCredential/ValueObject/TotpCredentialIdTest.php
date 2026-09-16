@@ -2,36 +2,24 @@
 
 declare(strict_types=1);
 
-namespace Crm\Tests\Customer\Domain\Customer\ValueObject;
+namespace Iam\Tests\Authentication\Domain\TotpCredential\ValueObject;
 
-use Crm\Customer\Domain\Customer\ValueObject\CustomerId;
+use Iam\Authentication\Domain\TotpCredential\ValueObject\TotpCredentialId;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 
-final class CustomerIdTest extends TestCase
+final class TotpCredentialIdTest extends TestCase
 {
-    private const string IDENTITY_ID = '0199a1b2-3c4d-7e5f-8061-72839405a6b7';
-
     #[Test]
     public function itCreates(): void
     {
         // When
-        $id = CustomerId::fromString(Uuid::uuid7()->toString());
+        $id = TotpCredentialId::fromString(Uuid::uuid7()->toString());
 
         // Then
         self::assertTrue(Uuid::isValid($id->toString()));
-    }
-
-    #[Test]
-    public function itDerivesKnownId(): void
-    {
-        // When
-        $id = CustomerId::forIdentity(self::IDENTITY_ID);
-
-        // Then
-        self::assertSame('fee8fa79-34b5-5bb0-b5cf-676c35c7fdbf', $id->toString());
     }
 
     #[Test]
@@ -42,7 +30,7 @@ final class CustomerIdTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
 
         // When
-        CustomerId::fromString($value);
+        TotpCredentialId::fromString($value);
     }
 
     /**
@@ -59,8 +47,8 @@ final class CustomerIdTest extends TestCase
     {
         // Given
         $value = Uuid::uuid7()->toString();
-        $a = CustomerId::fromString($value);
-        $b = CustomerId::fromString($value);
+        $a = TotpCredentialId::fromString($value);
+        $b = TotpCredentialId::fromString($value);
 
         // When
         $equals = $a->equals($b);
@@ -73,8 +61,8 @@ final class CustomerIdTest extends TestCase
     public function itDiffers(): void
     {
         // Given
-        $a = CustomerId::fromString(Uuid::uuid7()->toString());
-        $b = CustomerId::fromString(Uuid::uuid7()->toString());
+        $a = TotpCredentialId::fromString(Uuid::uuid7()->toString());
+        $b = TotpCredentialId::fromString(Uuid::uuid7()->toString());
 
         // When
         $equals = $a->equals($b);
