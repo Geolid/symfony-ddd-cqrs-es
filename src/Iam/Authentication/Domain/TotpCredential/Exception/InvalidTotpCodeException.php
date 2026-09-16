@@ -10,6 +10,6 @@ final class InvalidTotpCodeException extends \DomainException
 {
     public static function forId(TotpCredentialId $id): self
     {
-        return new self(\sprintf('The code submitted for TOTP credential "%s" is invalid.', $id->toString()));
+        return new self(\sprintf('The code provided for TOTP credential "%s" is invalid.', $id->toString()));
     }
 }

@@ -10,33 +10,35 @@ use PHPUnit\Framework\TestCase;
 
 final class NativeTotpCipherTest extends TestCase
 {
+    private const string SECRET = 'GEZDGNBVGY3TQOJQ';
+
     private NativeTotpCipher $cipher;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->cipher = new NativeTotpCipher('a-dedicated-encryption-secret');
+        $this->cipher = new NativeTotpCipher('fake-encryption-secret');
     }
 
     #[Test]
     public function itRoundTrips(): void
     {
         // When
-        $encrypted = $this->cipher->encrypt('GEZDGNBVGY3TQOJQ');
+        $encrypted = $this->cipher->encrypt(self::SECRET);
         $decrypted = $this->cipher->decrypt($encrypted);
 
         // Then
-        self::assertNotSame('GEZDGNBVGY3TQOJQ', $encrypted);
-        self::assertSame('GEZDGNBVGY3TQOJQ', $decrypted);
+        self::assertNotSame(self::SECRET, $encrypted);
+        self::assertSame(self::SECRET, $decrypted);
     }
 
     #[Test]
     public function itCannotDecryptWithAnotherKey(): void
     {
         // Given
-        $encrypted = $this->cipher->encrypt('GEZDGNBVGY3TQOJQ');
-        $otherCipher = new NativeTotpCipher('another-encryption-secret');
+        $encrypted = $this->cipher->encrypt(self::SECRET);
+        $otherCipher = new NativeTotpCipher('another-fake-encryption-secret');
 
         // Then
         $this->expectException(\RuntimeException::class);

@@ -87,7 +87,7 @@ final class TotpCredentialBuilder extends AbstractAggregateBuilder
             'identityId' => static fn (): string => Uuid::uuid7()->toString(),
             'secret' => static fn (): string => bin2hex(random_bytes(20)),
             'enrolledAt' => static fn (): \DateTimeImmutable => $now,
-            'confirmedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 minute'),
+            'confirmedAt' => static fn (): \DateTimeImmutable => $now->modify('+15 seconds'),
             'revokedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
         ];
     }

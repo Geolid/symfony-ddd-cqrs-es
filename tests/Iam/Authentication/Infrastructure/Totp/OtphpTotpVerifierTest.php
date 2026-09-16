@@ -39,7 +39,7 @@ final class OtphpTotpVerifierTest extends TestCase
     }
 
     #[Test]
-    public function itDoesNotVerifyAnIncorrectCode(): void
+    public function itDoesNotVerifyWithIncorrectCode(): void
     {
         // When
         $verified = $this->verifier->verify($this->secret, $this->invalidCode);
