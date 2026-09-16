@@ -1,0 +1,199 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Iam\Tests\Authentication\Infrastructure\Projection\Projector;
+
+use Doctrine\DBAL\Connection;
+use Iam\Authentication\Infrastructure\Projection\Projector\DbalTotpCredentialProjector;
+use Iam\Tests\Authentication\Support\Builder\TotpCredentialBuilder;
+use Iam\Tests\Authentication\Support\Double\FakeTotpCipher;
+use Iam\Tests\Authentication\Support\Double\FakeTotpVerifier;
+use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use PHPUnit\Framework\Attributes\Test;
+use Support\TestCase\AbstractIntegrationTestCase;
+
+/**
+ * @phpstan-type Row array{enrolled_at: string, confirmed: bool, confirmed_at: string|null, revoked: bool, revoked_at: string|null, identity_authenticatable: bool}
+ */
+final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
+{
+    private const string DATE_FORMAT = 'Y-m-d H:i:s';
+
+    private FakeTotpCipher $cipher;
+    private FakeTotpVerifier $verifier;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->cipher = new FakeTotpCipher();
+        $this->verifier = new FakeTotpVerifier();
+    }
+
+    #[Test]
+    public function itProjectsOnTotpCredentialEnrolled(): void
+    {
+        // Given
+        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher);
+        $credential = $builder->create();
+
+        // When
+        $this->store($credential);
+
+        // Then
+        $row = $this->fetchRow($credential->id->toString());
+        self::assertNotFalse($row);
+        self::assertSame($builder['enrolledAt']->format(self::DATE_FORMAT), $row['enrolled_at']);
+        self::assertFalse((bool) $row['confirmed']);
+        self::assertNull($row['confirmed_at']);
+        self::assertFalse((bool) $row['revoked']);
+        self::assertNull($row['revoked_at']);
+        self::assertTrue((bool) $row['identity_authenticatable']);
+    }
+
+    #[Test]
+    public function itProjectsOnTotpCredentialEnrollmentConfirmed(): void
+    {
+        // Given
+        $other = TotpCredentialBuilder::new()->withCipher($this->cipher)->create();
+        $this->store($other);
+
+        $builder = TotpCredentialBuilder::new()
+            ->withCipher($this->cipher)
+            ->withVerifier($this->verifier)
+            ->confirmed();
+        $credential = $builder->create();
+
+        // When
+        $this->store($credential);
+
+        // Then
+        $row = $this->fetchRow($credential->id->toString());
+        self::assertNotFalse($row);
+        self::assertTrue((bool) $row['confirmed']);
+        self::assertSame($builder['confirmedAt']->format(self::DATE_FORMAT), $row['confirmed_at']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertFalse((bool) $otherRow['confirmed']);
+        self::assertNull($otherRow['confirmed_at']);
+    }
+
+    #[Test]
+    public function itProjectsOnTotpCredentialRevoked(): void
+    {
+        // Given
+        $other = TotpCredentialBuilder::new()->withCipher($this->cipher)->create();
+        $this->store($other);
+
+        $builder = TotpCredentialBuilder::new()
+            ->withCipher($this->cipher)
+            ->revoked();
+        $credential = $builder->create();
+
+        // When
+        $this->store($credential);
+
+        // Then
+        $row = $this->fetchRow($credential->id->toString());
+        self::assertNotFalse($row);
+        self::assertTrue((bool) $row['revoked']);
+        self::assertSame($builder['revokedAt']->format(self::DATE_FORMAT), $row['revoked_at']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertFalse((bool) $otherRow['revoked']);
+        self::assertNull($otherRow['revoked_at']);
+    }
+
+    #[Test]
+    public function itProjectsOnIdentitySuspendedIntegrationEvent(): void
+    {
+        // Given
+        $other = TotpCredentialBuilder::new()->withCipher($this->cipher)->create();
+        $this->store($other);
+
+        $identity = IdentityBuilder::new()->suspended()->create();
+        $credential = TotpCredentialBuilder::new()
+            ->withIdentityId($identity->id->toString())
+            ->withCipher($this->cipher)
+            ->create();
+
+        // When
+        $this->store($credential, $identity);
+
+        // Then
+        $row = $this->fetchRow($credential->id->toString());
+        self::assertNotFalse($row);
+        self::assertFalse((bool) $row['identity_authenticatable']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertTrue((bool) $otherRow['identity_authenticatable']);
+    }
+
+    #[Test]
+    public function itProjectsOnIdentityReactivatedIntegrationEvent(): void
+    {
+        // Given
+        $otherIdentity = IdentityBuilder::new()->suspended()->create();
+        $other = TotpCredentialBuilder::new()
+            ->withIdentityId($otherIdentity->id->toString())
+            ->withCipher($this->cipher)
+            ->create();
+
+        $identity = IdentityBuilder::new()->suspended()->reactivated()->create();
+        $credential = TotpCredentialBuilder::new()
+            ->withIdentityId($identity->id->toString())
+            ->withCipher($this->cipher)
+            ->create();
+
+        // When
+        $this->store($other, $otherIdentity, $credential, $identity);
+
+        // Then
+        $row = $this->fetchRow($credential->id->toString());
+        self::assertNotFalse($row);
+        self::assertTrue((bool) $row['identity_authenticatable']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertFalse((bool) $otherRow['identity_authenticatable']);
+    }
+
+    #[Test]
+    public function itRemovesOnIdentityErasedIntegrationEvent(): void
+    {
+        // Given
+        $other = TotpCredentialBuilder::new()->withCipher($this->cipher)->create();
+        $this->store($other);
+
+        $identity = IdentityBuilder::new()->erasureRequested()->erased()->create();
+        $credential = TotpCredentialBuilder::new()
+            ->withIdentityId($identity->id->toString())
+            ->withCipher($this->cipher)
+            ->create();
+
+        // When
+        $this->store($credential, $identity);
+
+        // Then
+        self::assertFalse($this->fetchRow($credential->id->toString()));
+        self::assertNotFalse($this->fetchRow($other->id->toString()));
+    }
+
+    /**
+     * @return Row|false
+     */
+    private function fetchRow(string $id): array|false
+    {
+        $connection = $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class);
+
+        /** @var Row|false */
+        return $connection->fetchAssociative(
+            \sprintf('SELECT enrolled_at, confirmed, confirmed_at, revoked, revoked_at, identity_authenticatable FROM %s WHERE id = :id', DbalTotpCredentialProjector::TABLE),
+            ['id' => $id],
+        );
+    }
+}
