@@ -24,7 +24,7 @@ final readonly class RequestPaymentHandler
 {
     public function __construct(
         private PaymentRepositoryInterface $repository,
-        private UniquenessRegistryInterface $uniqueValues,
+        private UniquenessRegistryInterface $uniqueness,
         private ClockInterface $clock,
     ) {
     }
@@ -41,13 +41,13 @@ final readonly class RequestPaymentHandler
         $checkoutSessionKey = UniqueKey::for(PaymentUniqueKey::CHECKOUT_SESSION);
 
         try {
-            $this->uniqueValues->claim($referenceKey, $command->reference, $command->id);
+            $this->uniqueness->claim($referenceKey, $command->reference, $command->id);
         } catch (UniquenessViolatedException $e) {
             throw PaymentReferenceAlreadyInUseException::forReference($command->reference, $e);
         }
 
         try {
-            $this->uniqueValues->claim($checkoutSessionKey, $command->checkoutSessionId, $command->id);
+            $this->uniqueness->claim($checkoutSessionKey, $command->checkoutSessionId, $command->id);
         } catch (UniquenessViolatedException $e) {
             throw PaymentAlreadyClaimedException::forCheckoutSession($command->checkoutSessionId, $e);
         }

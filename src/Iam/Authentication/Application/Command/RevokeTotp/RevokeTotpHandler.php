@@ -20,7 +20,7 @@ final readonly class RevokeTotpHandler
 {
     public function __construct(
         private TotpCredentialRepositoryInterface $repository,
-        private UniquenessRegistryInterface $uniqueValues,
+        private UniquenessRegistryInterface $uniqueness,
         private ClockInterface $clock,
     ) {
     }
@@ -37,7 +37,7 @@ final readonly class RevokeTotpHandler
 
         $this->repository->save($credential);
 
-        $this->uniqueValues->release(
+        $this->uniqueness->release(
             UniqueKey::for(TotpUniqueKey::IDENTITY),
             $credential->id->toString(),
         );

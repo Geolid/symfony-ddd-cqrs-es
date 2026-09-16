@@ -12,4 +12,6 @@ use Shared\Application\Finder\IterableFinderInterface;
 interface CartItemFinderInterface extends IterableFinderInterface
 {
     public function byCart(string $cartId): static;
+
+    public function byProduct(string $productId): static;
 }

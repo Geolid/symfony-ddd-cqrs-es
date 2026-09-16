@@ -28,7 +28,7 @@ final readonly class StaleCheckoutSessionOnCartProductAdded
     #[Subscribe(CartProductAddedIntegrationEvent::class)]
     public function __invoke(CartProductAddedIntegrationEvent $event): void
     {
-        $checkoutSession = $this->checkoutSessionFinder->ofCartOrNull($event->cartId);
+        $checkoutSession = $this->checkoutSessionFinder->openOfCartOrNull($event->cartId);
         if (null === $checkoutSession) {
             return;
         }

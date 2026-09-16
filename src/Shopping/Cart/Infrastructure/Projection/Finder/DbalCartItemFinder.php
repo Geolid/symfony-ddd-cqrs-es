@@ -25,6 +25,15 @@ final class DbalCartItemFinder extends AbstractIterableDbalFinder implements Car
         );
     }
 
+    public function byProduct(string $productId): static
+    {
+        return $this->filter(
+            static function (QueryBuilder $qb) use ($productId): void {
+                $qb->andWhere('product_id = :productId')->setParameter('productId', $productId);
+            },
+        );
+    }
+
     protected function configureBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('cart_id', 'product_id', 'quantity')

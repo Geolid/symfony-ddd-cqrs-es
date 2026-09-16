@@ -8,6 +8,7 @@ use Doctrine\DBAL\Query\QueryBuilder;
 use Iam\Authentication\Application\Finder\TotpCredential\Exception\TotpCredentialResultNotFoundException;
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInterface;
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialResult;
+use Iam\Authentication\Application\TotpCredentialStatus;
 use Iam\Authentication\Infrastructure\Projection\Projector\DbalTotpCredentialProjector;
 use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
 
@@ -25,23 +26,20 @@ final class DbalTotpCredentialFinder extends AbstractDbalFinder implements TotpC
         )->one() ?? throw TotpCredentialResultNotFoundException::forId($id);
     }
 
-    public function ofIdentity(string $identityId): TotpCredentialResult
+    public function confirmedOfIdentityOrNull(string $identityId): ?TotpCredentialResult
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($identityId): void {
-                $qb->andWhere('identity_id = :identityId')
-                    ->andWhere('confirmed = :confirmed')
-                    ->andWhere('revoked = :revoked')
+                $qb->andWhere('identity_id = :identityId AND status = :confirmed')
                     ->setParameter('identityId', $identityId)
-                    ->setParameter('confirmed', true)
-                    ->setParameter('revoked', false);
+                    ->setParameter('confirmed', TotpCredentialStatus::CONFIRMED);
             },
-        )->one() ?? throw TotpCredentialResultNotFoundException::forIdentity($identityId);
+        )->one();
     }
 
     protected function configureBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'identity_id', 'encrypted_secret', 'enrolled_at', 'confirmed', 'confirmed_at', 'revoked', 'revoked_at', 'identity_authenticatable')
+        $qb->select('id', 'identity_id', 'encrypted_secret', 'enrolled_at', 'status', 'confirmed_at', 'revoked_at', 'identity_authenticatable')
             ->from(DbalTotpCredentialProjector::TABLE);
     }
 

@@ -48,8 +48,7 @@ final class CompleteCheckoutSessionHandlerTest extends AbstractIntegrationTestCa
         ));
 
         // Then
-        $result = $this->finder->ofCartOrNull($checkoutSessionBuilder['cartId']);
-        self::assertNotNull($result);
+        $result = $this->finder->ofId($checkoutSession->id->toString());
         self::assertSame(CheckoutSessionStatus::COMPLETED, $result->status);
     }
 

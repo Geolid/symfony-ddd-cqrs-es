@@ -6,6 +6,7 @@ namespace Iam\Tests\Authentication\Infrastructure\Projection\Finder;
 
 use Iam\Authentication\Application\Finder\TotpCredential\Exception\TotpCredentialResultNotFoundException;
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInterface;
+use Iam\Authentication\Application\TotpCredentialStatus;
 use Iam\Tests\Authentication\Support\Builder\TotpCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakeTotpCipher;
 use Iam\Tests\Authentication\Support\Double\FakeTotpVerifier;
@@ -48,9 +49,8 @@ final class DbalTotpCredentialFinderTest extends AbstractIntegrationTestCase
             $builder['enrolledAt']->format(\DateTimeInterface::ATOM),
             $result->enrolledAt->format(\DateTimeInterface::ATOM),
         );
-        self::assertFalse($result->confirmed);
+        self::assertSame(TotpCredentialStatus::PENDING, $result->status);
         self::assertNull($result->confirmedAt);
-        self::assertFalse($result->revoked);
         self::assertNull($result->revokedAt);
         self::assertTrue($result->identityAuthenticatable);
 
@@ -68,7 +68,7 @@ final class DbalTotpCredentialFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itGetsByIdentity(): void
+    public function itFindsByIdentity(): void
     {
         // Given
         $other = TotpCredentialBuilder::new()->withCipher($this->cipher)->create();
@@ -78,23 +78,23 @@ final class DbalTotpCredentialFinderTest extends AbstractIntegrationTestCase
             ->withVerifier($this->verifier)
             ->confirmed();
         $credential = $builder->create();
-        $this->store($other, $credential);
+
+        $revokedBuilder = TotpCredentialBuilder::new()->withCipher($this->cipher)->revoked();
+        $revokedCredential = $revokedBuilder->create();
+
+        $this->store($other, $credential, $revokedCredential);
 
         // When
-        $result = $this->finder->ofIdentity($builder['identityId']);
+        $result = $this->finder->confirmedOfIdentityOrNull($builder['identityId']);
+        $revokedResult = $this->finder->confirmedOfIdentityOrNull($revokedBuilder['identityId']);
+        $nothing = $this->finder->confirmedOfIdentityOrNull(TotpCredentialBuilder::sample('identityId'));
 
         // Then
+        self::assertNotNull($result);
         self::assertSame($credential->id->toString(), $result->id);
         self::assertSame($builder['identityId'], $result->identityId);
-    }
 
-    #[Test]
-    public function itThrowsWhenIdentityNotFound(): void
-    {
-        // Then
-        $this->expectException(TotpCredentialResultNotFoundException::class);
-
-        // When
-        $this->finder->ofIdentity(TotpCredentialBuilder::sample('identityId'));
+        self::assertNull($revokedResult);
+        self::assertNull($nothing);
     }
 }

@@ -20,7 +20,7 @@ final readonly class RevokeApiKeyHandler
 {
     public function __construct(
         private ApiKeyCredentialRepositoryInterface $repository,
-        private UniquenessRegistryInterface $uniqueValues,
+        private UniquenessRegistryInterface $uniqueness,
         private ClockInterface $clock,
     ) {
     }
@@ -37,7 +37,7 @@ final readonly class RevokeApiKeyHandler
 
         $this->repository->save($credential);
 
-        $this->uniqueValues->release(
+        $this->uniqueness->release(
             UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $command->identityId),
             $credential->id->toString(),
         );

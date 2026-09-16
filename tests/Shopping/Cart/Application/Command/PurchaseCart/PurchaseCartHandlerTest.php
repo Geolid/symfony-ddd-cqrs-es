@@ -17,13 +17,13 @@ use Support\TestCase\AbstractIntegrationTestCase;
 
 final class PurchaseCartHandlerTest extends AbstractIntegrationTestCase
 {
-    private UniquenessRegistryInterface $uniqueValues;
+    private UniquenessRegistryInterface $uniqueness;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->uniqueValues = $this->service(UniquenessRegistryInterface::class);
+        $this->uniqueness = $this->service(UniquenessRegistryInterface::class);
     }
 
     #[Test]
@@ -34,7 +34,7 @@ final class PurchaseCartHandlerTest extends AbstractIntegrationTestCase
         $cart = $cartBuilder->create();
         $this->store($cart);
         $customerKey = UniqueKey::for(CartUniqueKey::CUSTOMER);
-        $this->uniqueValues->claim($customerKey, $cartBuilder['customerId'], $cart->id->toString());
+        $this->uniqueness->claim($customerKey, $cartBuilder['customerId'], $cart->id->toString());
 
         // When
         $this->dispatch(new PurchaseCart($cart->id->toString()));
@@ -42,7 +42,7 @@ final class PurchaseCartHandlerTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(CartPurchased::class);
         self::assertSame($cart->id->toString(), $event->id->toString());
-        self::assertFalse($this->uniqueValues->isClaimed($customerKey, $cartBuilder['customerId']));
+        self::assertFalse($this->uniqueness->isClaimed($customerKey, $cartBuilder['customerId']));
     }
 
     #[Test]

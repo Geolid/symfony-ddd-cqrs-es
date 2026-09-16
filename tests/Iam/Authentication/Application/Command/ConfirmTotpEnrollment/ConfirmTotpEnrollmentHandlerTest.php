@@ -6,7 +6,9 @@ namespace Iam\Tests\Authentication\Application\Command\ConfirmTotpEnrollment;
 
 use Iam\Authentication\Application\Command\ConfirmTotpEnrollment\ConfirmTotpEnrollment;
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInterface;
+use Iam\Authentication\Application\TotpCredentialStatus;
 use Iam\Authentication\Domain\TotpCredential\Exception\InvalidTotpCodeException;
+use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialNotConfirmableException;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialNotFoundException;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialOwnedByAnotherIdentityException;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpCipherInterface;
@@ -46,7 +48,7 @@ final class ConfirmTotpEnrollmentHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         $result = $this->finder->ofId($credential->id->toString());
-        self::assertTrue($result->confirmed);
+        self::assertSame(TotpCredentialStatus::CONFIRMED, $result->status);
         self::assertNotNull($result->confirmedAt);
     }
 
@@ -80,6 +82,21 @@ final class ConfirmTotpEnrollmentHandlerTest extends AbstractIntegrationTestCase
             TotpCredentialBuilder::sample('identityId'),
             '000000',
         ));
+    }
+
+    #[Test]
+    public function itFailsWhenRevoked(): void
+    {
+        // Given
+        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher)->revoked();
+        $credential = $builder->create();
+        $this->store($credential);
+
+        // Then
+        $this->expectException(TotpCredentialNotConfirmableException::class);
+
+        // When
+        $this->dispatch(new ConfirmTotpEnrollment($credential->id->toString(), $builder['identityId'], '000000'));
     }
 
     #[Test]

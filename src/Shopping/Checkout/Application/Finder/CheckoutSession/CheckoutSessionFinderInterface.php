@@ -17,7 +17,7 @@ interface CheckoutSessionFinderInterface extends IterableFinderInterface
      */
     public function ofId(string $id): CheckoutSessionResult;
 
-    public function ofCartOrNull(string $cartId): ?CheckoutSessionResult;
+    public function openOfCartOrNull(string $cartId): ?CheckoutSessionResult;
 
     public function byCustomer(string $customerId): static;
 

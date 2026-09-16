@@ -19,14 +19,14 @@ use Support\TestCase\AbstractIntegrationTestCase;
 final class RequestErasureHandlerTest extends AbstractIntegrationTestCase
 {
     private ErasureFinderInterface $finder;
-    private UniquenessRegistryInterface $uniqueValues;
+    private UniquenessRegistryInterface $uniqueness;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->finder = $this->service(ErasureFinderInterface::class);
-        $this->uniqueValues = $this->service(UniquenessRegistryInterface::class);
+        $this->uniqueness = $this->service(UniquenessRegistryInterface::class);
     }
 
     #[Test]
@@ -68,7 +68,7 @@ final class RequestErasureHandlerTest extends AbstractIntegrationTestCase
         $builder = ErasureBuilder::new();
         $erasure = $builder->create();
         $this->store($erasure);
-        $this->uniqueValues->claim(UniqueKey::for(ErasureUniqueKey::IDENTITY), $builder['identityId'], $erasure->id->toString());
+        $this->uniqueness->claim(UniqueKey::for(ErasureUniqueKey::IDENTITY), $builder['identityId'], $erasure->id->toString());
 
         // Then
         $this->expectException(ErasureAlreadyClaimedException::class);

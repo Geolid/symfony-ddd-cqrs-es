@@ -17,5 +17,5 @@ interface CartFinderInterface extends IterableFinderInterface
      */
     public function ofId(string $id): CartResult;
 
-    public function byProductId(string $productId): static;
+    public function activeById(string ...$ids): static;
 }

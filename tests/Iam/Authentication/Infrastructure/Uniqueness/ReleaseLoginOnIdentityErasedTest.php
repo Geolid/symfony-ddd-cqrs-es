@@ -18,13 +18,13 @@ use Symfony\Component\Clock\Clock;
 
 final class ReleaseLoginOnIdentityErasedTest extends AbstractIntegrationTestCase
 {
-    private UniquenessRegistryInterface $uniqueValues;
+    private UniquenessRegistryInterface $uniqueness;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->uniqueValues = $this->service(UniquenessRegistryInterface::class);
+        $this->uniqueness = $this->service(UniquenessRegistryInterface::class);
     }
 
     #[Test]
@@ -35,16 +35,16 @@ final class ReleaseLoginOnIdentityErasedTest extends AbstractIntegrationTestCase
         $builder = PasswordCredentialBuilder::new()->withIdentityId($identityId);
         $login = PasswordCredentialBuilder::sample('login')->value;
         $loginKey = UniqueKey::for(PasswordCredentialUniqueKey::LOGIN);
-        $this->uniqueValues->claim($loginKey, $login, $builder['id']->toString());
+        $this->uniqueness->claim($loginKey, $login, $builder['id']->toString());
 
         $otherLogin = PasswordCredentialBuilder::sample('login')->value;
-        $this->uniqueValues->claim($loginKey, $otherLogin, PasswordCredentialId::forIdentity(Uuid::uuid7()->toString())->toString());
+        $this->uniqueness->claim($loginKey, $otherLogin, PasswordCredentialId::forIdentity(Uuid::uuid7()->toString())->toString());
 
         // When
         $this->trigger(ReleaseLoginOnIdentityErased::class, new IdentityErasedIntegrationEvent($identityId, Clock::get()->now()));
 
         // Then
-        self::assertFalse($this->uniqueValues->isClaimed($loginKey, $login));
-        self::assertTrue($this->uniqueValues->isClaimed($loginKey, $otherLogin));
+        self::assertFalse($this->uniqueness->isClaimed($loginKey, $login));
+        self::assertTrue($this->uniqueness->isClaimed($loginKey, $otherLogin));
     }
 }

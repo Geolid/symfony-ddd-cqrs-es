@@ -55,23 +55,13 @@ final class DbalPaymentFinder extends AbstractIterableDbalFinder implements Paym
         )->one() ?? throw PaymentResultNotFoundException::forOrderId($orderId);
     }
 
-    public function byStatus(PaymentStatus $status): static
-    {
-        return $this->filter(
-            static function (QueryBuilder $qb) use ($status): void {
-                $qb->andWhere('status = :status')->setParameter('status', $status);
-            },
-        );
-    }
-
     public function stalledBefore(\DateTimeImmutable $cutoff): static
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($cutoff): void {
-                $cutoffParam = $qb->createNamedParameter($cutoff, Types::DATETIME_IMMUTABLE);
-                $requestedParam = $qb->createNamedParameter(PaymentStatus::REQUESTED);
-
-                $qb->andWhere("status = {$requestedParam} AND requested_at < {$cutoffParam}");
+                $qb->andWhere('status = :requested AND requested_at < :cutoff')
+                    ->setParameter('requested', PaymentStatus::REQUESTED)
+                    ->setParameter('cutoff', $cutoff, Types::DATETIME_IMMUTABLE);
             },
         );
     }

@@ -8,6 +8,7 @@ use Doctrine\DBAL\Schema\Name\UnqualifiedName;
 use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
+use Iam\Authentication\Application\TotpCredentialStatus;
 use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialEnrolled;
 use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialEnrollmentConfirmed;
 use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialRevoked;
@@ -31,10 +32,9 @@ final readonly class DbalTotpCredentialProjector extends AbstractDbalProjector
             'identity_id' => $event->identityId,
             'encrypted_secret' => $event->encryptedSecret,
             'enrolled_at' => $event->enrolledAt,
-            'confirmed' => false,
-            'revoked' => false,
+            'status' => TotpCredentialStatus::PENDING->value,
             'identity_authenticatable' => true,
-        ], ['enrolled_at' => Types::DATETIME_IMMUTABLE, 'confirmed' => Types::BOOLEAN, 'revoked' => Types::BOOLEAN, 'identity_authenticatable' => Types::BOOLEAN]);
+        ], ['enrolled_at' => Types::DATETIME_IMMUTABLE, 'identity_authenticatable' => Types::BOOLEAN]);
     }
 
     #[Subscribe(TotpCredentialEnrollmentConfirmed::class)]
@@ -42,9 +42,9 @@ final readonly class DbalTotpCredentialProjector extends AbstractDbalProjector
     {
         $this->connection->update(
             self::TABLE,
-            ['confirmed' => true, 'confirmed_at' => $event->confirmedAt],
+            ['status' => TotpCredentialStatus::CONFIRMED->value, 'confirmed_at' => $event->confirmedAt],
             ['id' => $event->id->toString()],
-            ['confirmed' => Types::BOOLEAN, 'confirmed_at' => Types::DATETIME_IMMUTABLE],
+            ['confirmed_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -53,9 +53,9 @@ final readonly class DbalTotpCredentialProjector extends AbstractDbalProjector
     {
         $this->connection->update(
             self::TABLE,
-            ['revoked' => true, 'revoked_at' => $event->revokedAt],
+            ['status' => TotpCredentialStatus::REVOKED->value, 'revoked_at' => $event->revokedAt],
             ['id' => $event->id->toString()],
-            ['revoked' => Types::BOOLEAN, 'revoked_at' => Types::DATETIME_IMMUTABLE],
+            ['revoked_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -87,9 +87,8 @@ final readonly class DbalTotpCredentialProjector extends AbstractDbalProjector
         $table->addColumn('identity_id', Types::STRING, ['length' => 36]);
         $table->addColumn('encrypted_secret', Types::TEXT);
         $table->addColumn('enrolled_at', Types::DATETIME_IMMUTABLE);
-        $table->addColumn('confirmed', Types::BOOLEAN);
+        $table->addColumn('status', Types::STRING, ['length' => 20]);
         $table->addColumn('confirmed_at', Types::DATETIME_IMMUTABLE, ['notnull' => false]);
-        $table->addColumn('revoked', Types::BOOLEAN);
         $table->addColumn('revoked_at', Types::DATETIME_IMMUTABLE, ['notnull' => false]);
         $table->addColumn('identity_authenticatable', Types::BOOLEAN);
         $table->addPrimaryKeyConstraint(

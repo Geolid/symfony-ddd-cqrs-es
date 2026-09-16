@@ -19,7 +19,7 @@ final readonly class AbandonPaymentHandler
 {
     public function __construct(
         private PaymentRepositoryInterface $repository,
-        private UniquenessRegistryInterface $uniqueValues,
+        private UniquenessRegistryInterface $uniqueness,
         private ClockInterface $clock,
     ) {
     }
@@ -35,6 +35,6 @@ final readonly class AbandonPaymentHandler
         $orderPayment->abandon($this->clock->now());
         $this->repository->save($orderPayment);
 
-        $this->uniqueValues->release(UniqueKey::for(PaymentUniqueKey::CHECKOUT_SESSION), $command->id);
+        $this->uniqueness->release(UniqueKey::for(PaymentUniqueKey::CHECKOUT_SESSION), $command->id);
     }
 }

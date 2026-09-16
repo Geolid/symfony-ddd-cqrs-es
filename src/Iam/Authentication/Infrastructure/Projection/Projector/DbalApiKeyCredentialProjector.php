@@ -87,6 +87,6 @@ final readonly class DbalApiKeyCredentialProjector extends AbstractDbalProjector
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
                 ->create(),
         );
-        $table->addUniqueIndex(['key_id'], 'iam_authentication_api_key_credential_key_id_unique');
+        $table->addIndex(['key_id'], 'iam_authentication_api_key_credential_key_id_idx');
     }
 }

@@ -22,7 +22,7 @@ final readonly class EnrollTotpHandler
 {
     public function __construct(
         private TotpCredentialRepositoryInterface $repository,
-        private UniquenessRegistryInterface $uniqueValues,
+        private UniquenessRegistryInterface $uniqueness,
         private TotpCipherInterface $cipher,
         private ClockInterface $clock,
     ) {
@@ -35,7 +35,7 @@ final readonly class EnrollTotpHandler
     public function __invoke(EnrollTotp $command): void
     {
         try {
-            $this->uniqueValues->claim(UniqueKey::for(TotpUniqueKey::IDENTITY), $command->identityId, $command->id);
+            $this->uniqueness->claim(UniqueKey::for(TotpUniqueKey::IDENTITY), $command->identityId, $command->id);
         } catch (UniquenessViolatedException $e) {
             throw TotpAlreadyEnrolledException::forIdentity($command->identityId, $e);
         }

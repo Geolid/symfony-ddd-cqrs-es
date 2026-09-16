@@ -148,22 +148,6 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
     }
 
     #[Test]
-    public function itFiltersByStatus(): void
-    {
-        // Given
-        $authorized = PaymentBuilder::new()->authorized()->create();
-        $requested = PaymentBuilder::new()->create();
-        $this->store($authorized, $requested);
-
-        // When
-        $results = iterator_to_array($this->finder()->byStatus(PaymentStatus::REQUESTED));
-
-        // Then
-        self::assertCount(1, $results);
-        self::assertSame($requested->id->toString(), $results[0]->id);
-    }
-
-    #[Test]
     public function itFiltersStalledBefore(): void
     {
         // Given

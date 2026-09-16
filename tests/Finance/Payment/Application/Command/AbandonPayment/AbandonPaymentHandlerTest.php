@@ -19,14 +19,14 @@ use Support\TestCase\AbstractIntegrationTestCase;
 final class AbandonPaymentHandlerTest extends AbstractIntegrationTestCase
 {
     private PaymentFinderInterface $finder;
-    private UniquenessRegistryInterface $uniqueValues;
+    private UniquenessRegistryInterface $uniqueness;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->finder = $this->service(PaymentFinderInterface::class);
-        $this->uniqueValues = $this->service(UniquenessRegistryInterface::class);
+        $this->uniqueness = $this->service(UniquenessRegistryInterface::class);
     }
 
     #[Test]
@@ -37,7 +37,7 @@ final class AbandonPaymentHandlerTest extends AbstractIntegrationTestCase
         $orderPayment = $paymentBuilder->create();
         $this->store($orderPayment);
         $checkoutSessionKey = UniqueKey::for(PaymentUniqueKey::CHECKOUT_SESSION);
-        $this->uniqueValues->claim($checkoutSessionKey, $paymentBuilder['checkoutSessionId'], $orderPayment->id->toString());
+        $this->uniqueness->claim($checkoutSessionKey, $paymentBuilder['checkoutSessionId'], $orderPayment->id->toString());
 
         // When
         $this->dispatch(new AbandonPayment($orderPayment->id->toString()));
@@ -45,7 +45,7 @@ final class AbandonPaymentHandlerTest extends AbstractIntegrationTestCase
         // Then
         $result = $this->finder->ofReference($paymentBuilder['reference']->value);
         self::assertSame(PaymentStatus::ABANDONED, $result->status);
-        self::assertFalse($this->uniqueValues->isClaimed($checkoutSessionKey, $paymentBuilder['checkoutSessionId']));
+        self::assertFalse($this->uniqueness->isClaimed($checkoutSessionKey, $paymentBuilder['checkoutSessionId']));
     }
 
     #[Test]

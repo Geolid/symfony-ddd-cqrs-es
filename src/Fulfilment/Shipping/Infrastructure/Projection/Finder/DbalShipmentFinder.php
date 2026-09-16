@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipping\Infrastructure\Projection\Finder;
 
-use Doctrine\DBAL\ArrayParameterType;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Doctrine\DBAL\Types\Types;
 use Fulfilment\Shipping\Application\Finder\Shipment\Exception\ShipmentResultNotFoundException;
@@ -57,28 +56,17 @@ final class DbalShipmentFinder extends AbstractIterableDbalFinder implements Shi
         );
     }
 
-    public function byStatus(ShipmentStatus ...$statuses): static
-    {
-        return $this->filter(
-            static function (QueryBuilder $qb) use ($statuses): void {
-                $qb->andWhere('status IN (:statuses)')
-                    ->setParameter('statuses', $statuses, ArrayParameterType::STRING);
-            },
-        );
-    }
-
     public function stalledBefore(\DateTimeImmutable $cutoff): static
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($cutoff): void {
-                $cutoffParam = $qb->createNamedParameter($cutoff, Types::DATETIME_IMMUTABLE);
-                $manifestedParam = $qb->createNamedParameter(ShipmentStatus::MANIFESTED);
-                $dispatchedParam = $qb->createNamedParameter(ShipmentStatus::DISPATCHED);
-
                 $qb->andWhere(
-                    "(status = {$manifestedParam} AND manifested_at < {$cutoffParam})
-                    OR (status = {$dispatchedParam} AND dispatched_at < {$cutoffParam})",
-                );
+                    '(status = :manifested AND manifested_at < :cutoff)
+                    OR (status = :dispatched AND dispatched_at < :cutoff)',
+                )
+                    ->setParameter('manifested', ShipmentStatus::MANIFESTED)
+                    ->setParameter('dispatched', ShipmentStatus::DISPATCHED)
+                    ->setParameter('cutoff', $cutoff, Types::DATETIME_IMMUTABLE);
             },
         );
     }

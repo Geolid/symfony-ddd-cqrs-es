@@ -15,14 +15,14 @@ use Shared\Infrastructure\Processor;
 #[Processor('iam.authentication.release_login_on_identity_erased')]
 final readonly class ReleaseLoginOnIdentityErased
 {
-    public function __construct(private UniquenessRegistryInterface $uniqueValues)
+    public function __construct(private UniquenessRegistryInterface $uniqueness)
     {
     }
 
     #[Subscribe(IdentityErasedIntegrationEvent::class)]
     public function __invoke(IdentityErasedIntegrationEvent $event): void
     {
-        $this->uniqueValues->release(
+        $this->uniqueness->release(
             UniqueKey::for(PasswordCredentialUniqueKey::LOGIN),
             PasswordCredentialId::forIdentity($event->identityId)->toString(),
         );

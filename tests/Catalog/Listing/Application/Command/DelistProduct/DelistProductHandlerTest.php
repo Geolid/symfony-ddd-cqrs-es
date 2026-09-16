@@ -18,13 +18,13 @@ use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DelistProductHandlerTest extends AbstractIntegrationTestCase
 {
-    private UniquenessRegistryInterface $uniqueValues;
+    private UniquenessRegistryInterface $uniqueness;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->uniqueValues = $this->service(UniquenessRegistryInterface::class);
+        $this->uniqueness = $this->service(UniquenessRegistryInterface::class);
     }
 
     #[Test]
@@ -35,13 +35,13 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
         $product = $builder->create();
         $this->store($product);
         $labelKey = UniqueKey::for(ProductUniqueKey::LABEL);
-        $this->uniqueValues->claim($labelKey, $builder['label']->value, $product->id->toString());
+        $this->uniqueness->claim($labelKey, $builder['label']->value, $product->id->toString());
 
         // When
         $this->dispatch(new DelistProduct($product->id->toString()));
 
         // Then
-        self::assertFalse($this->uniqueValues->isClaimed($labelKey, $builder['label']->value));
+        self::assertFalse($this->uniqueness->isClaimed($labelKey, $builder['label']->value));
         $this->expectException(ProductResultNotFoundException::class);
 
         $this->service(ProductFinderInterface::class)->ofId($product->id->toString());

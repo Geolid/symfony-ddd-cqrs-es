@@ -23,7 +23,7 @@ final readonly class PublishProductHandler
 {
     public function __construct(
         private ProductRepositoryInterface $repository,
-        private UniquenessRegistryInterface $uniqueValues,
+        private UniquenessRegistryInterface $uniqueness,
         private ClockInterface $clock,
     ) {
     }
@@ -37,7 +37,7 @@ final readonly class PublishProductHandler
         $label = Label::fromString($command->label);
 
         try {
-            $this->uniqueValues->claim(UniqueKey::for(ProductUniqueKey::LABEL), $label->value, $command->id);
+            $this->uniqueness->claim(UniqueKey::for(ProductUniqueKey::LABEL), $label->value, $command->id);
         } catch (UniquenessViolatedException $e) {
             throw ProductLabelAlreadyInUseException::forLabel($label->value, $e);
         }

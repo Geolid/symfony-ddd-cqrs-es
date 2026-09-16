@@ -19,7 +19,7 @@ final readonly class DelistProductHandler
 {
     public function __construct(
         private ProductRepositoryInterface $repository,
-        private UniquenessRegistryInterface $uniqueValues,
+        private UniquenessRegistryInterface $uniqueness,
         private ClockInterface $clock,
     ) {
     }
@@ -35,6 +35,6 @@ final readonly class DelistProductHandler
 
         $this->repository->save($product);
 
-        $this->uniqueValues->release(UniqueKey::for(ProductUniqueKey::LABEL), $product->id->toString());
+        $this->uniqueness->release(UniqueKey::for(ProductUniqueKey::LABEL), $product->id->toString());
     }
 }

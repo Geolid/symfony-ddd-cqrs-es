@@ -12,9 +12,4 @@ final class TotpCredentialResultNotFoundException extends ResultNotFoundExceptio
     {
         return new self(\sprintf('TOTP credential "%s" not found.', $id));
     }
-
-    public static function forIdentity(string $identityId): self
-    {
-        return new self(\sprintf('TOTP credential of identity "%s" not found.', $identityId));
-    }
 }

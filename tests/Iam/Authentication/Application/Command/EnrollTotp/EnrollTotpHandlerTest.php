@@ -7,6 +7,7 @@ namespace Iam\Tests\Authentication\Application\Command\EnrollTotp;
 use Iam\Authentication\Application\Command\EnrollTotp\EnrollTotp;
 use Iam\Authentication\Application\Command\EnrollTotp\Exception\TotpAlreadyEnrolledException;
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInterface;
+use Iam\Authentication\Application\TotpCredentialStatus;
 use Iam\Authentication\Application\TotpUniqueKey;
 use Iam\Tests\Authentication\Support\Builder\TotpCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
@@ -38,9 +39,8 @@ final class EnrollTotpHandlerTest extends AbstractIntegrationTestCase
             $now->format(\DateTimeInterface::ATOM),
             $result->enrolledAt->format(\DateTimeInterface::ATOM),
         );
-        self::assertFalse($result->confirmed);
+        self::assertSame(TotpCredentialStatus::PENDING, $result->status);
         self::assertNull($result->confirmedAt);
-        self::assertFalse($result->revoked);
         self::assertNull($result->revokedAt);
         self::assertTrue($result->identityAuthenticatable);
 

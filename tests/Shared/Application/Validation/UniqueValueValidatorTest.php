@@ -23,7 +23,7 @@ final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
 {
     private const string OWNER_ID = '0199a1b2-3c4d-7e5f-8061-72839405a6b7';
 
-    private FakeUniquenessRegistry $registry;
+    private FakeUniquenessRegistry $uniqueness;
     private ValidUniqueValue $baseConstraint;
     private ValidUniqueValue $exclusionConstraint;
 
@@ -49,7 +49,7 @@ final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
     public function itRefuses(): void
     {
         // Given
-        $this->registry->claim(UniqueKey::for(DummyUniqueKey::NAME), 'reserved-value', self::OWNER_ID);
+        $this->uniqueness->claim(UniqueKey::for(DummyUniqueKey::NAME), 'reserved-value', self::OWNER_ID);
 
         // When
         $this->validator->validate('reserved-value', $this->baseConstraint);
@@ -63,7 +63,7 @@ final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
     {
         // Given
         $scope = 'scope-a';
-        $this->registry->claim(UniqueKey::for(DummyUniqueKey::NAME, $scope), 'reserved-value', self::OWNER_ID);
+        $this->uniqueness->claim(UniqueKey::for(DummyUniqueKey::NAME, $scope), 'reserved-value', self::OWNER_ID);
 
         // When
         $this->validator->validate('reserved-value', new ValidUniqueValue(DummyUniqueKey::NAME, [$scope]));
@@ -76,7 +76,7 @@ final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
     public function itAcceptsWhenOwnerMatches(): void
     {
         // Given
-        $this->registry->claim(UniqueKey::for(DummyUniqueKey::NAME), 'reserved-value', self::OWNER_ID);
+        $this->uniqueness->claim(UniqueKey::for(DummyUniqueKey::NAME), 'reserved-value', self::OWNER_ID);
         $this->setObject(new DummyEditedObject(self::OWNER_ID));
 
         // When
@@ -90,7 +90,7 @@ final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
     public function itRefusesWhenOwnerDiffers(): void
     {
         // Given
-        $this->registry->claim(UniqueKey::for(DummyUniqueKey::NAME), 'reserved-value', '0199a1b2-3c4d-7e5f-8061-72839405a6b8');
+        $this->uniqueness->claim(UniqueKey::for(DummyUniqueKey::NAME), 'reserved-value', '0199a1b2-3c4d-7e5f-8061-72839405a6b8');
         $this->setObject(new DummyEditedObject(self::OWNER_ID));
 
         // When
@@ -168,9 +168,9 @@ final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
 
     protected function createValidator(): UniqueValueValidator
     {
-        $this->registry = new FakeUniquenessRegistry();
+        $this->uniqueness = new FakeUniquenessRegistry();
 
-        return new UniqueValueValidator($this->registry);
+        return new UniqueValueValidator($this->uniqueness);
     }
 
     private function assertViolationRaised(): void

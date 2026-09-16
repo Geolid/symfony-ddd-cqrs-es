@@ -55,17 +55,18 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
     }
 
     #[Test]
-    public function itFindsByCart(): void
+    public function itFindsOpenByCart(): void
     {
         // Given
         $other = CheckoutSessionBuilder::new()->create();
         $builder = CheckoutSessionBuilder::new();
         $checkoutSession = $builder->create();
-        $this->store($other, $checkoutSession);
+        $staledOnSameCart = CheckoutSessionBuilder::new()->withCartId($builder['cartId'])->staled()->create();
+        $this->store($other, $checkoutSession, $staledOnSameCart);
 
         // When
-        $result = $this->finder()->ofCartOrNull($builder['cartId']);
-        $nothing = $this->finder()->ofCartOrNull(CheckoutSessionBuilder::sample('cartId'));
+        $result = $this->finder()->openOfCartOrNull($builder['cartId']);
+        $nothing = $this->finder()->openOfCartOrNull(CheckoutSessionBuilder::sample('cartId'));
 
         // Then
         self::assertNotNull($result);

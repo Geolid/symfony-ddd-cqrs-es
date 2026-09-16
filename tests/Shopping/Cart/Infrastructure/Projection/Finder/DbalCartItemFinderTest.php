@@ -39,6 +39,28 @@ final class DbalCartItemFinderTest extends AbstractIterableFinderTestCase
         self::assertSame($productAddition['quantity']->value, $results[0]->quantity);
     }
 
+    #[Test]
+    public function itFiltersByProduct(): void
+    {
+        // Given
+        $other = CartBuilder::new()->productAdded()->create();
+
+        $productId = Uuid::uuid7()->toString();
+        $builder = CartBuilder::new()->productAdded($productId);
+        $cart = $builder->create();
+        $productAddition = $builder['productAdditions'][0];
+
+        $this->store($other, $cart);
+
+        // When
+        $results = iterator_to_array($this->finder()->byProduct($productId));
+
+        // Then
+        self::assertCount(1, $results);
+        self::assertSame($cart->id->toString(), $results[0]->cartId);
+        self::assertSame($productAddition['quantity']->value, $results[0]->quantity);
+    }
+
     protected function finder(): CartItemFinderInterface
     {
         return $this->service(CartItemFinderInterface::class);

@@ -7,6 +7,7 @@ namespace Shared\Infrastructure\Projection\Finder;
 use Doctrine\DBAL\Connection;
 use Doctrine\DBAL\Query\QueryBuilder;
 use Patchlevel\Hydrator\Hydrator;
+use Shared\Infrastructure\Projection\Finder\Exception\NonUniqueResultException;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 /**
@@ -36,9 +37,13 @@ abstract class AbstractDbalFinder
      */
     protected function one(): ?object
     {
-        $row = $this->query()->setMaxResults(1)->executeQuery()->fetchAssociative();
+        $rows = $this->query()->setMaxResults(2)->executeQuery()->fetchAllAssociative();
 
-        return false !== $row ? $this->hydrate($row) : null;
+        if (\count($rows) > 1) {
+            throw NonUniqueResultException::forClass($this->resultClass());
+        }
+
+        return [] !== $rows ? $this->hydrate($rows[0]) : null;
     }
 
     /**

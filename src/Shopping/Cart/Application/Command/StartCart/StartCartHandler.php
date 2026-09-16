@@ -21,7 +21,7 @@ final readonly class StartCartHandler
 {
     public function __construct(
         private CartRepositoryInterface $repository,
-        private UniquenessRegistryInterface $uniqueValues,
+        private UniquenessRegistryInterface $uniqueness,
         private ClockInterface $clock,
     ) {
     }
@@ -35,7 +35,7 @@ final readonly class StartCartHandler
         $id = CartId::fromString($command->id);
 
         try {
-            $this->uniqueValues->claim(UniqueKey::for(CartUniqueKey::CUSTOMER), $command->customerId, $command->id);
+            $this->uniqueness->claim(UniqueKey::for(CartUniqueKey::CUSTOMER), $command->customerId, $command->id);
         } catch (UniquenessViolatedException $e) {
             throw CartAlreadyActiveException::forCustomer($command->customerId, $e);
         }

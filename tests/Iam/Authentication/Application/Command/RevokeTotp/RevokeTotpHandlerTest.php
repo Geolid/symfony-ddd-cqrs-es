@@ -6,6 +6,7 @@ namespace Iam\Tests\Authentication\Application\Command\RevokeTotp;
 
 use Iam\Authentication\Application\Command\RevokeTotp\RevokeTotp;
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInterface;
+use Iam\Authentication\Application\TotpCredentialStatus;
 use Iam\Authentication\Application\TotpUniqueKey;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialNotFoundException;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialOwnedByAnotherIdentityException;
@@ -21,7 +22,7 @@ final class RevokeTotpHandlerTest extends AbstractIntegrationTestCase
 {
     private TotpCredentialFinderInterface $finder;
     private TotpCipherInterface $cipher;
-    private UniquenessRegistryInterface $registry;
+    private UniquenessRegistryInterface $uniqueness;
 
     protected function setUp(): void
     {
@@ -29,7 +30,7 @@ final class RevokeTotpHandlerTest extends AbstractIntegrationTestCase
 
         $this->finder = $this->service(TotpCredentialFinderInterface::class);
         $this->cipher = $this->service(TotpCipherInterface::class);
-        $this->registry = $this->service(UniquenessRegistryInterface::class);
+        $this->uniqueness = $this->service(UniquenessRegistryInterface::class);
     }
 
     #[Test]
@@ -41,16 +42,16 @@ final class RevokeTotpHandlerTest extends AbstractIntegrationTestCase
         $this->store($credential);
 
         $identityKey = UniqueKey::for(TotpUniqueKey::IDENTITY);
-        $this->registry->claim($identityKey, $builder['identityId'], $credential->id->toString());
+        $this->uniqueness->claim($identityKey, $builder['identityId'], $credential->id->toString());
 
         // When
         $this->dispatch(new RevokeTotp($credential->id->toString(), $builder['identityId']));
 
         // Then
         $result = $this->finder->ofId($credential->id->toString());
-        self::assertTrue($result->revoked);
+        self::assertSame(TotpCredentialStatus::REVOKED, $result->status);
 
-        self::assertFalse($this->registry->isClaimed($identityKey, $builder['identityId']));
+        self::assertFalse($this->uniqueness->isClaimed($identityKey, $builder['identityId']));
     }
 
     #[Test]

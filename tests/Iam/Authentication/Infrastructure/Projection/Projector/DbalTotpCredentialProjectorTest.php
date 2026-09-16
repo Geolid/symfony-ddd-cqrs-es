@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Infrastructure\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
+use Iam\Authentication\Application\TotpCredentialStatus;
 use Iam\Authentication\Infrastructure\Projection\Projector\DbalTotpCredentialProjector;
 use Iam\Tests\Authentication\Support\Builder\TotpCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakeTotpCipher;
@@ -14,7 +15,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{enrolled_at: string, confirmed: bool, confirmed_at: string|null, revoked: bool, revoked_at: string|null, identity_authenticatable: bool}
+ * @phpstan-type Row array{enrolled_at: string, status: string, confirmed_at: string|null, revoked_at: string|null, identity_authenticatable: bool}
  */
 final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
 {
@@ -45,9 +46,8 @@ final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
         self::assertSame($builder['enrolledAt']->format(self::DATE_FORMAT), $row['enrolled_at']);
-        self::assertFalse((bool) $row['confirmed']);
+        self::assertSame(TotpCredentialStatus::PENDING->value, $row['status']);
         self::assertNull($row['confirmed_at']);
-        self::assertFalse((bool) $row['revoked']);
         self::assertNull($row['revoked_at']);
         self::assertTrue((bool) $row['identity_authenticatable']);
     }
@@ -71,12 +71,12 @@ final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
-        self::assertTrue((bool) $row['confirmed']);
+        self::assertSame(TotpCredentialStatus::CONFIRMED->value, $row['status']);
         self::assertSame($builder['confirmedAt']->format(self::DATE_FORMAT), $row['confirmed_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
-        self::assertFalse((bool) $otherRow['confirmed']);
+        self::assertSame(TotpCredentialStatus::PENDING->value, $otherRow['status']);
         self::assertNull($otherRow['confirmed_at']);
     }
 
@@ -98,12 +98,12 @@ final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
-        self::assertTrue((bool) $row['revoked']);
+        self::assertSame(TotpCredentialStatus::REVOKED->value, $row['status']);
         self::assertSame($builder['revokedAt']->format(self::DATE_FORMAT), $row['revoked_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
-        self::assertFalse((bool) $otherRow['revoked']);
+        self::assertSame(TotpCredentialStatus::PENDING->value, $otherRow['status']);
         self::assertNull($otherRow['revoked_at']);
     }
 
@@ -192,7 +192,7 @@ final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
 
         /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT enrolled_at, confirmed, confirmed_at, revoked, revoked_at, identity_authenticatable FROM %s WHERE id = :id', DbalTotpCredentialProjector::TABLE),
+            \sprintf('SELECT enrolled_at, status, confirmed_at, revoked_at, identity_authenticatable FROM %s WHERE id = :id', DbalTotpCredentialProjector::TABLE),
             ['id' => $id],
         );
     }

@@ -21,12 +21,12 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
  */
 final class ValidUniqueProductLabelTest extends CompoundConstraintTestCase
 {
-    private FakeUniquenessRegistry $registry;
+    private FakeUniquenessRegistry $uniqueness;
 
     protected function setUp(): void
     {
-        // Before parent::setUp() — it calls createValidator(), which reads $this->registry.
-        $this->registry = new FakeUniquenessRegistry();
+        // Before parent::setUp() — it calls createValidator(), which reads $this->uniqueness.
+        $this->uniqueness = new FakeUniquenessRegistry();
 
         parent::setUp();
     }
@@ -45,7 +45,7 @@ final class ValidUniqueProductLabelTest extends CompoundConstraintTestCase
     public function itRefuses(): void
     {
         // Given
-        $this->registry->claim(UniqueKey::for(ProductUniqueKey::LABEL), 'mug', 'owner-id');
+        $this->uniqueness->claim(UniqueKey::for(ProductUniqueKey::LABEL), 'mug', 'owner-id');
 
         // When
         $this->validateValue('mug');
@@ -64,7 +64,7 @@ final class ValidUniqueProductLabelTest extends CompoundConstraintTestCase
     {
         return Validation::createValidatorBuilder()
             ->setConstraintValidatorFactory(new ConstraintValidatorFactory([
-                UniqueValueValidator::class => new UniqueValueValidator($this->registry),
+                UniqueValueValidator::class => new UniqueValueValidator($this->uniqueness),
             ]))
             ->getValidator();
     }

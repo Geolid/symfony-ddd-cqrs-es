@@ -6,11 +6,11 @@ namespace Iam\Tests\Authentication\Application\CredentialVerification;
 
 use Iam\Authentication\Application\CredentialVerification\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Application\CredentialVerification\TotpCredentialVerifier;
-use Iam\Authentication\Application\Finder\TotpCredential\Exception\TotpCredentialResultNotFoundException;
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInterface;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpCipherInterface;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpVerifierInterface;
 use Iam\Tests\Authentication\Support\Builder\TotpCredentialBuilder;
+use Iam\Tests\Authentication\Support\Double\FakeTotpVerifier;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use OTPHP\TOTP;
 use PHPUnit\Framework\Attributes\Test;
@@ -75,13 +75,28 @@ final class TotpCredentialVerifierTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenNotFound(): void
+    public function itRefusesWhenNotEnrolled(): void
     {
+        // When
+        $verified = $this->credentialVerifier->verify(TotpCredentialBuilder::sample('identityId'), '000000');
+
         // Then
-        $this->expectException(TotpCredentialResultNotFoundException::class);
+        self::assertFalse($verified);
+    }
+
+    #[Test]
+    public function itRefusesWhenNotConfirmed(): void
+    {
+        // Given
+        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher);
+        $credential = $builder->create();
+        $this->store($credential);
 
         // When
-        $this->credentialVerifier->verify(TotpCredentialBuilder::sample('identityId'), '000000');
+        $verified = $this->credentialVerifier->verify($builder['identityId'], '000000');
+
+        // Then
+        self::assertFalse($verified);
     }
 
     #[Test]
@@ -90,15 +105,12 @@ final class TotpCredentialVerifierTest extends AbstractIntegrationTestCase
         // Given
         $identity = IdentityBuilder::new()->suspended()->create();
 
-        $secret = TOTP::generate()->getSecret();
-        $code = TOTP::createFromSecret($secret, Clock::get())->now();
-        $builder = TotpCredentialBuilder::new()
+        $credential = TotpCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withCipher($this->cipher)
-            ->withSecret($secret)
-            ->withVerifier($this->verifier)
-            ->confirmed($code);
-        $credential = $builder->create();
+            ->withVerifier(new FakeTotpVerifier())
+            ->confirmed()
+            ->create();
         $this->store($credential, $identity);
 
         // Then
