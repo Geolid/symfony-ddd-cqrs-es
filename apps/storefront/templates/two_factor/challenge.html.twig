@@ -1,0 +1,24 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}Vérification à deux facteurs{% endblock %}
+
+{% block body %}
+    <h1>Vérification à deux facteurs</h1>
+
+    {% if authenticationError %}
+        <p data-testid="two-factor-error">{{ authenticationError|trans(authenticationErrorData, 'security') }}</p>
+    {% endif %}
+
+    <form method="post" action="{{ checkPathUrl ?? path(checkPathRoute) }}" data-testid="two-factor-form">
+        <label for="two-factor-code">Code à 6 chiffres</label>
+        <input type="text" id="two-factor-code" name="{{ authCodeParameterName }}" autocomplete="one-time-code" required autofocus>
+
+        {% if isCsrfProtectionEnabled %}
+            <input type="hidden" name="{{ csrfParameterName }}" value="{{ csrf_token(csrfTokenId) }}">
+        {% endif %}
+
+        <button type="submit" data-testid="two-factor-submit">Valider</button>
+    </form>
+
+    <p><a href="{{ logoutPath }}" data-testid="two-factor-logout">Se déconnecter</a></p>
+{% endblock %}

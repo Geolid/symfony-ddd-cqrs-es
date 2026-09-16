@@ -1,0 +1,25 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block body %}
+    <h1>Connexion</h1>
+
+    {% if error %}
+        <p data-testid="login-error">{{ error.messageKey|trans(error.messageData, 'security') }}</p>
+    {% endif %}
+
+    <form method="post" data-testid="login-form">
+        <label for="login">Login</label>
+        <input type="text" id="login" name="login" value="{{ last_username }}" required autofocus>
+
+        <label for="password">Mot de passe</label>
+        <input type="password" id="password" name="password" required>
+
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+        <button type="submit" data-testid="login-submit">Se connecter</button>
+    </form>
+
+    <p><a href="{{ path('storefront_register') }}" data-testid="nav-register">Créer un compte</a></p>
+{% endblock %}
