@@ -25,6 +25,10 @@
             <directory>apps/cron/tests</directory>
         </testsuite>
 
+        <testsuite name="storefront">
+            <directory>apps/storefront/tests</directory>
+        </testsuite>
+
         <!-- SUBDOMAINS -->
         <testsuite name="catalog">
             <directory>tests/Catalog</directory>
@@ -73,6 +77,7 @@
     >
         <include>
             <directory>src</directory>
+            <directory>apps/storefront/src</directory>
         </include>
 
         <deprecationTrigger>

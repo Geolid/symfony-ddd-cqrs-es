@@ -12,11 +12,13 @@
     "api-platform/core": "^4.3",
     "doctrine/doctrine-bundle": "^3.2",
     "dragonmantank/cron-expression": "^3.6",
+    "endroid/qr-code": "^6.1",
     "itspire/monolog-loki": "^2.1",
     "nelmio/api-doc-bundle": "^5.10",
     "patchlevel/event-sourcing-bundle": "^3.17",
     "predis/predis": "^3.6",
     "ramsey/uuid": "^4.9",
+    "scheb/2fa-bundle": "^8.6",
     "sentry/sentry-symfony": "^5.10",
     "spomky-labs/otphp": "^11.5",
     "symfony/asset": "8.1.*",
@@ -98,6 +100,7 @@
       "Sales\\": "src/Sales/",
       "Shared\\": "src/Shared/",
       "Shopping\\": "src/Shopping/",
+      "Storefront\\": "apps/storefront/src/",
       "Ui\\": "ui/src/"
     }
   },
@@ -113,6 +116,7 @@
       "Sales\\Tests\\": "tests/Sales/",
       "Shopping\\Tests\\": "tests/Shopping/",
       "Shared\\Tests\\": "tests/Shared/",
+      "Storefront\\Tests\\": "apps/storefront/tests/",
       "Support\\": "tests/Support/",
       "Demo\\": "demo/",
       "Tools\\": "tools/"
