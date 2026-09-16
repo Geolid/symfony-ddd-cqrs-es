@@ -1,0 +1,15 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}Inscription{% endblock %}
+
+{% block body %}
+    <h1>Inscription</h1>
+
+    {{ form_start(form, {attr: {'data-testid': 'register-form'}}) }}
+        {{ form_row(form.login) }}
+        {{ form_row(form.password) }}
+        <button type="submit" data-testid="register-submit">S'inscrire</button>
+    {{ form_end(form) }}
+
+    <p><a href="{{ path('security_login') }}" data-testid="nav-login">Déjà un compte ? Se connecter</a></p>
+{% endblock %}

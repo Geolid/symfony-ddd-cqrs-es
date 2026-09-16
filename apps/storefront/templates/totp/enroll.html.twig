@@ -1,0 +1,20 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}Activer la double authentification{% endblock %}
+
+{% block body %}
+    <h1>Activer la double authentification</h1>
+
+    <p>Scannez ce QR code avec votre application d'authentification (Google Authenticator, etc.) :</p>
+    <img src="{{ qrCodeDataUri }}" alt="QR code d'activation TOTP" data-testid="totp-qr-code">
+
+    <p>Ou saisissez ce code manuellement :</p>
+    <p data-testid="totp-provisioning-uri">{{ provisioningUri }}</p>
+
+    <p>Puis saisissez le code affiché pour confirmer :</p>
+
+    {{ form_start(form, {attr: {'data-testid': 'totp-confirm-form'}}) }}
+        {{ form_row(form.code) }}
+        <button type="submit" data-testid="totp-confirm-submit">Confirmer</button>
+    {{ form_end(form) }}
+{% endblock %}

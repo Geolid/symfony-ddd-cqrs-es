@@ -21,6 +21,9 @@
 
     <testsuites>
         <!-- DELIVERY MECHANISMS -->
+        <testsuite name="storefront">
+            <directory>apps/storefront/tests</directory>
+        </testsuite>
 
         <!-- SUBDOMAINS -->
         <testsuite name="catalog">
@@ -70,6 +73,7 @@
     >
         <include>
             <directory>src</directory>
+            <directory>apps/storefront/src</directory>
         </include>
 
         <deprecationTrigger>
