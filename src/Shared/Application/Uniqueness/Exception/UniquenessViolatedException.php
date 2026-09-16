@@ -16,6 +16,6 @@ final class UniquenessViolatedException extends \RuntimeException implements App
 
     public static function forValue(UniqueKey $key, string $value): self
     {
-        return new self(\sprintf('Value "%s" is already in use for "%s".', $value, $key->discriminator->value));
+        return new self(\sprintf('Value "%s" is already in use for "%s".', $value, $key->discriminator->name));
     }
 }
