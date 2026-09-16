@@ -17,6 +17,7 @@
     "patchlevel/event-sourcing-bundle": "^3.17",
     "ramsey/uuid": "^4.9",
     "sentry/sentry-symfony": "^5.10",
+    "spomky-labs/otphp": "^11.5",
     "symfony/asset": "8.1.*",
     "symfony/asset-mapper": "8.1.*",
     "symfony/console": "8.1.*",
