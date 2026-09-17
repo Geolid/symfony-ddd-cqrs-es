@@ -60,11 +60,11 @@ final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itReleasesEmailUniqueness(): void
     {
-        // Given
+        // Given — dispatched, not built via the Builder, so the email is genuinely claimed first.
         $email = IdentityBuilder::sample('email')->value;
-        $identity = IdentityBuilder::new()->withEmail($email)->erasureRequested()->create();
-        $this->store($identity);
-        $this->dispatch(new EraseIdentity($identity->id->toString()));
+        $identityId = Uuid::uuid7()->toString();
+        $this->dispatch(new RegisterIdentity($identityId, IdentityBuilder::sample('fullName')->value, $email));
+        $this->dispatch(new EraseIdentity($identityId));
 
         // When
         $this->dispatch(new RegisterIdentity(
