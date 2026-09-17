@@ -33,7 +33,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($identity->id->toString());
         self::assertNotFalse($row);
-        self::assertSame(IdentityStatus::ACTIVE->value, $row['status']);
+        self::assertSame(IdentityStatus::PENDING->value, $row['status']);
         self::assertNull($row['reason']);
         self::assertSame($builder['registeredAt']->format(self::DATE_FORMAT), $row['registered_at']);
         self::assertNull($row['suspended_at']);
@@ -64,7 +64,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
-        self::assertSame(IdentityStatus::ACTIVE->value, $otherRow['status']);
+        self::assertSame(IdentityStatus::PENDING->value, $otherRow['status']);
         self::assertNull($otherRow['reason']);
         self::assertNull($otherRow['suspended_at']);
     }

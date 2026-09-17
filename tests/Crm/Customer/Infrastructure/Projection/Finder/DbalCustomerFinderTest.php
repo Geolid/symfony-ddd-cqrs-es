@@ -40,9 +40,6 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertNotNull($found);
         self::assertSame($customer->id->toString(), $found->id);
-        self::assertSame($builder['firstName']->value, $found->firstName);
-        self::assertSame($builder['lastName']->value, $found->lastName);
-        self::assertSame($builder['email']->value, $found->email);
         self::assertSame(
             $builder['registeredAt']->format(\DateTimeInterface::ATOM),
             $found->registeredAt->format(\DateTimeInterface::ATOM),

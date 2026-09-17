@@ -12,8 +12,6 @@ use Iam\Authentication\Domain\ApiKeyCredential\Event\ApiKeyCredentialIssued;
 use Iam\Authentication\Domain\ApiKeyCredential\Event\ApiKeyCredentialRevoked;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\KeyId;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
-use Iam\Identity\Application\IntegrationEvent\IdentityReactivated\IdentityReactivatedIntegrationEvent;
-use Iam\Identity\Application\IntegrationEvent\IdentitySuspended\IdentitySuspendedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
@@ -34,8 +32,7 @@ final readonly class DbalApiKeyCredentialProjector extends AbstractDbalProjector
             'secret_hash' => $event->secretHash,
             'issued_at' => $event->issuedAt,
             'revoked' => false,
-            'identity_authenticatable' => true,
-        ], ['issued_at' => Types::DATETIME_IMMUTABLE, 'revoked' => Types::BOOLEAN, 'identity_authenticatable' => Types::BOOLEAN]);
+        ], ['issued_at' => Types::DATETIME_IMMUTABLE, 'revoked' => Types::BOOLEAN]);
     }
 
     #[Subscribe(ApiKeyCredentialRevoked::class)]
@@ -47,18 +44,6 @@ final readonly class DbalApiKeyCredentialProjector extends AbstractDbalProjector
             ['id' => $event->id->toString()],
             ['revoked' => Types::BOOLEAN, 'revoked_at' => Types::DATETIME_IMMUTABLE],
         );
-    }
-
-    #[Subscribe(IdentitySuspendedIntegrationEvent::class)]
-    public function onIdentitySuspendedIntegrationEvent(IdentitySuspendedIntegrationEvent $event): void
-    {
-        $this->connection->update(self::TABLE, ['identity_authenticatable' => false], ['identity_id' => $event->identityId], ['identity_authenticatable' => Types::BOOLEAN]);
-    }
-
-    #[Subscribe(IdentityReactivatedIntegrationEvent::class)]
-    public function onIdentityReactivatedIntegrationEvent(IdentityReactivatedIntegrationEvent $event): void
-    {
-        $this->connection->update(self::TABLE, ['identity_authenticatable' => true], ['identity_id' => $event->identityId], ['identity_authenticatable' => Types::BOOLEAN]);
     }
 
     #[Subscribe(IdentityErasedIntegrationEvent::class)]
@@ -81,12 +66,12 @@ final readonly class DbalApiKeyCredentialProjector extends AbstractDbalProjector
         $table->addColumn('issued_at', Types::DATETIME_IMMUTABLE);
         $table->addColumn('revoked', Types::BOOLEAN);
         $table->addColumn('revoked_at', Types::DATETIME_IMMUTABLE, ['notnull' => false]);
-        $table->addColumn('identity_authenticatable', Types::BOOLEAN);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
                 ->create(),
         );
         $table->addIndex(['key_id'], 'iam_authentication_api_key_credential_key_id_idx');
+        $table->addIndex(['identity_id'], 'iam_authentication_api_key_credential_identity_id_idx');
     }
 }

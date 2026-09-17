@@ -10,7 +10,6 @@ use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialRehashe
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\PasswordCredential;
-use Iam\Authentication\Domain\PasswordCredential\ValueObject\Login;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
@@ -23,7 +22,6 @@ final class PasswordCredentialTest extends AggregateRootTestCase
 {
     private PasswordCredentialId $id;
     private string $identityId;
-    private Login $login;
     private Password $password;
     private FakePasswordHasher $hasher;
     private \DateTimeImmutable $definedAt;
@@ -34,7 +32,6 @@ final class PasswordCredentialTest extends AggregateRootTestCase
 
         $this->identityId = PasswordCredentialBuilder::sample('identityId');
         $this->id = PasswordCredentialId::forIdentity($this->identityId);
-        $this->login = PasswordCredentialBuilder::sample('login');
         $this->password = PasswordCredentialBuilder::sample('password');
         $this->definedAt = PasswordCredentialBuilder::sample('definedAt');
         $this->hasher = new FakePasswordHasher();
@@ -48,7 +45,6 @@ final class PasswordCredentialTest extends AggregateRootTestCase
             ->when(fn (): PasswordCredential => PasswordCredential::define(
                 $this->id,
                 $this->identityId,
-                $this->login,
                 $this->password,
                 new StubPasswordStrengthSpecification(),
                 $this->hasher,
@@ -65,7 +61,6 @@ final class PasswordCredentialTest extends AggregateRootTestCase
             ->when(fn (): PasswordCredential => PasswordCredential::define(
                 $this->id,
                 $this->identityId,
-                $this->login,
                 Password::fromString('passwordpassword'),
                 new StubPasswordStrengthSpecification(sufficient: false),
                 $this->hasher,
@@ -152,7 +147,6 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         return new PasswordCredentialDefined(
             $this->id,
             $this->identityId,
-            $this->login,
             $this->hasher->hash($this->password->value),
             $this->definedAt,
         );

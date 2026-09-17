@@ -10,9 +10,6 @@ final readonly class CustomerResult
 {
     public function __construct(
         public string $id,
-        public string $firstName,
-        public string $lastName,
-        public string $email,
         public \DateTimeImmutable $registeredAt,
         public ?PostalAddressResult $shippingAddress,
         public ?PostalAddressResult $billingAddress,

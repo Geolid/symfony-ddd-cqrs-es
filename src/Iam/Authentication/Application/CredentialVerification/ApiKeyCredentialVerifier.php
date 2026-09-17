@@ -8,12 +8,15 @@ use Iam\Authentication\Application\CredentialVerification\Exception\ApiKeyCreden
 use Iam\Authentication\Application\CredentialVerification\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\Exception\ApiKeyCredentialResultNotFoundException;
+use Iam\Authentication\Application\Finder\Identity\Exception\IdentityResultNotFoundException;
+use Iam\Authentication\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
 
 final readonly class ApiKeyCredentialVerifier implements ApiKeyCredentialVerifierInterface
 {
     public function __construct(
         private ApiKeyCredentialFinderInterface $apiKeyCredentialFinder,
+        private IdentityFinderInterface $identityFinder,
         private ApiKeyHasherInterface $hasher,
     ) {
     }
@@ -21,6 +24,7 @@ final readonly class ApiKeyCredentialVerifier implements ApiKeyCredentialVerifie
     /**
      * @throws ApiKeyCredentialResultNotFoundException
      * @throws ApiKeyCredentialRevokedException
+     * @throws IdentityResultNotFoundException
      * @throws IdentityNotAuthenticatableException
      */
     public function verify(string $keyId, #[\SensitiveParameter] string $secret): bool
@@ -31,7 +35,7 @@ final readonly class ApiKeyCredentialVerifier implements ApiKeyCredentialVerifie
             throw ApiKeyCredentialRevokedException::forKeyId($keyId);
         }
 
-        if (!$credential->identityAuthenticatable) {
+        if (!$this->identityFinder->ofId($credential->identityId)->status->isActive()) {
             throw IdentityNotAuthenticatableException::forIdentity($credential->identityId);
         }
 

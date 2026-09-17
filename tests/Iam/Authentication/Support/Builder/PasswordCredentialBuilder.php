@@ -7,12 +7,10 @@ namespace Iam\Tests\Authentication\Support\Builder;
 use Iam\Authentication\Domain\PasswordCredential\PasswordCredential;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
-use Iam\Authentication\Domain\PasswordCredential\ValueObject\Login;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Ramsey\Uuid\Uuid;
 use Support\Builder\AbstractAggregateBuilder;
-use Support\Faker\SeededFaker;
 use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
@@ -20,7 +18,6 @@ use Webmozart\Assert\Assert;
  * @phpstan-type Attributes = array{
  *     id: PasswordCredentialId,
  *     identityId: string,
- *     login: Login,
  *     password: Password,
  *     definedAt: \DateTimeImmutable,
  *     changedAt: \DateTimeImmutable,
@@ -36,11 +33,6 @@ final class PasswordCredentialBuilder extends AbstractAggregateBuilder
     public function withIdentityId(string $identityId): self
     {
         return $this->withAttributes(identityId: $identityId);
-    }
-
-    public function withLogin(string $login): self
-    {
-        return $this->withAttributes(login: Login::fromString($login));
     }
 
     public function withPassword(string $password): self
@@ -113,7 +105,6 @@ final class PasswordCredentialBuilder extends AbstractAggregateBuilder
                 null !== $builder ? $builder['identityId'] : self::sample('identityId'),
             ),
             'identityId' => static fn (): string => Uuid::uuid7()->toString(),
-            'login' => static fn (): Login => Login::fromString(SeededFaker::get()->unique()->userName()),
             'password' => static fn (): Password => Password::fromString('Marmoset-42-Zephyr!'),
             'definedAt' => static fn (): \DateTimeImmutable => $now,
             'changedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
@@ -126,9 +117,8 @@ final class PasswordCredentialBuilder extends AbstractAggregateBuilder
         return PasswordCredential::define(
             id: $this['id'],
             identityId: $this['identityId'],
-            login: $this['login'],
             password: $this['password'],
-            passwordStrength: $this->passwordStrength(),
+            passwordStrengthSpecification: $this->passwordStrength(),
             hasher: $this->hasher(),
             definedAt: $this['definedAt'],
         );

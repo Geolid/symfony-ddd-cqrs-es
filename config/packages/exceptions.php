@@ -20,20 +20,28 @@ use Fulfilment\Shipping\Application\Manifesting\Exception\ManifestPostponedExcep
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
 use Iam\Authentication\Application\BreachDatabase\Exception\CompromisedPasswordException;
-use Iam\Authentication\Application\Command\DefinePasswordCredential\Exception\PasswordCredentialLoginAlreadyInUseException;
 use Iam\Authentication\Application\Command\IssueApiKeyCredential\Exception\ApiKeyCredentialLabelAlreadyInUseException;
+use Iam\Authentication\Application\Command\ResetPassword\Exception\InvalidPasswordResetCodeException;
 use Iam\Authentication\Application\CredentialVerification\Exception\ApiKeyCredentialRevokedException;
 use Iam\Authentication\Application\CredentialVerification\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialOwnedByAnotherIdentityException;
+use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordResetRequestedTooRecentlyException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
+use Iam\Identity\Application\Command\ConfirmIdentityEmail\Exception\InvalidConfirmationCodeException;
+use Iam\Identity\Application\Command\RegisterIdentity\Exception\IdentityEmailAlreadyInUseException;
+use Iam\Identity\Domain\Exception\EmailConfirmationResendRequestedTooRecentlyException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
+use Iam\Identity\Domain\Exception\IdentityNotPendingException;
+use Iam\Identity\Domain\Exception\IdentityNotSuspendedException;
 use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Finder\Exception\ResultNotFoundException;
 use Shared\Application\Uniqueness\Exception\UniquenessViolatedException;
+use Shared\Application\VerificationCode\Exception\VerificationCodeAttemptsExceededException;
+use Shared\Application\VerificationCode\Exception\VerificationCodeNotFoundException;
 use Shared\Domain\Exception\AggregateAlreadyExistsException;
 use Shared\Domain\Exception\AggregateNotFoundException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerAddressesNotCompletedException as CheckoutCustomerAddressesNotCompletedException;
@@ -59,11 +67,17 @@ return static function (ContainerConfigurator $container): void {
 
             // Iam
             IdentityAlreadyErasedException::class => ['log_level' => 'info', 'status_code' => 409],
+            IdentityNotPendingException::class => ['log_level' => 'info', 'status_code' => 409],
+            IdentityNotSuspendedException::class => ['log_level' => 'info', 'status_code' => 409],
+            IdentityEmailAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
+            InvalidConfirmationCodeException::class => ['log_level' => 'info', 'status_code' => 422],
+            EmailConfirmationResendRequestedTooRecentlyException::class => ['log_level' => 'info', 'status_code' => 429],
             IdentityNotAuthenticatableException::class => ['log_level' => 'info', 'status_code' => 409],
             ApiKeyCredentialRevokedException::class => ['log_level' => 'info', 'status_code' => 409],
             ApiKeyCredentialOwnedByAnotherIdentityException::class => ['log_level' => 'info', 'status_code' => 403],
             ApiKeyCredentialLabelAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
-            PasswordCredentialLoginAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
+            InvalidPasswordResetCodeException::class => ['log_level' => 'info', 'status_code' => 422],
+            PasswordResetRequestedTooRecentlyException::class => ['log_level' => 'info', 'status_code' => 429],
             SamePasswordException::class => ['log_level' => 'info', 'status_code' => 422],
             WeakPasswordException::class => ['log_level' => 'info', 'status_code' => 422],
             CompromisedPasswordException::class => ['log_level' => 'info', 'status_code' => 422],
@@ -92,6 +106,8 @@ return static function (ContainerConfigurator $container): void {
             AggregateAlreadyExistsException::class => ['log_level' => 'info', 'status_code' => 409],
             ResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             UniquenessViolatedException::class => ['log_level' => 'info', 'status_code' => 409],
+            VerificationCodeNotFoundException::class => ['log_level' => 'info', 'status_code' => 404],
+            VerificationCodeAttemptsExceededException::class => ['log_level' => 'info', 'status_code' => 429],
             ApplicationExceptionInterface::class => ['log_level' => 'error', 'status_code' => 500],
 
             // WARNING: Must be the last entries. (Order matters: first match wins)

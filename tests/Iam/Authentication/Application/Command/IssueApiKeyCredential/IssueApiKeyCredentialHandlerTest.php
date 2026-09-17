@@ -44,7 +44,6 @@ final class IssueApiKeyCredentialHandlerTest extends AbstractIntegrationTestCase
         );
         self::assertFalse($result->revoked);
         self::assertNull($result->revokedAt);
-        self::assertTrue($result->identityAuthenticatable);
 
         self::assertNotSame($secret, $result->secretHash);
     }

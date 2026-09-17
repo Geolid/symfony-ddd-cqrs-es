@@ -7,17 +7,12 @@ namespace Iam\Tests\Authentication\Application\Command\DefinePasswordCredential;
 use Iam\Authentication\Application\BreachDatabase\CompromisedPasswordGatewayInterface;
 use Iam\Authentication\Application\BreachDatabase\Exception\CompromisedPasswordException;
 use Iam\Authentication\Application\Command\DefinePasswordCredential\DefinePasswordCredential;
-use Iam\Authentication\Application\Command\DefinePasswordCredential\Exception\PasswordCredentialLoginAlreadyInUseException;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
-use Iam\Authentication\Application\PasswordCredentialUniqueKey;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\StubCompromisedPasswordGateway;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
-use Shared\Application\Uniqueness\UniqueKey;
-use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -28,18 +23,16 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
     {
         // Given
         $identityId = PasswordCredentialBuilder::sample('identityId');
-        $login = PasswordCredentialBuilder::sample('login')->value;
         $password = PasswordCredentialBuilder::sample('password')->value;
         $now = Clock::get()->now();
 
         // When
-        $this->dispatch(new DefinePasswordCredential($identityId, $login, $password));
+        $this->dispatch(new DefinePasswordCredential($identityId, $password));
 
         // Then
-        $result = $this->service(PasswordCredentialFinderInterface::class)->ofLogin($login);
+        $result = $this->service(PasswordCredentialFinderInterface::class)->ofIdentity($identityId);
         self::assertSame(PasswordCredentialId::forIdentity($identityId)->toString(), $result->id);
         self::assertSame($identityId, $result->identityId);
-        self::assertSame($login, $result->login);
         self::assertSame(
             $now->format(\DateTimeInterface::ATOM),
             $result->definedAt->format(\DateTimeInterface::ATOM),
@@ -48,8 +41,6 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
             $now->format(\DateTimeInterface::ATOM),
             $result->passwordChangedAt->format(\DateTimeInterface::ATOM),
         );
-        self::assertTrue($result->identityAuthenticatable);
-
         self::assertNotSame($password, $result->passwordHash);
     }
 
@@ -65,29 +56,6 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         // When
         $this->dispatch(new DefinePasswordCredential(
             PasswordCredentialBuilder::sample('identityId'),
-            PasswordCredentialBuilder::sample('login')->value,
-            PasswordCredentialBuilder::sample('password')->value,
-        ));
-    }
-
-    #[Test]
-    public function itFailsWhenLoginAlreadyInUse(): void
-    {
-        // Given
-        $login = PasswordCredentialBuilder::sample('login')->value;
-        $this->service(UniquenessRegistryInterface::class)->claim(
-            UniqueKey::for(PasswordCredentialUniqueKey::LOGIN),
-            $login,
-            PasswordCredentialId::forIdentity(Uuid::uuid7()->toString())->toString(),
-        );
-
-        // Then
-        $this->expectException(PasswordCredentialLoginAlreadyInUseException::class);
-
-        // When
-        $this->dispatch(new DefinePasswordCredential(
-            PasswordCredentialBuilder::sample('identityId'),
-            $login,
             PasswordCredentialBuilder::sample('password')->value,
         ));
     }
@@ -101,7 +69,6 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         // When
         $this->dispatch(new DefinePasswordCredential(
             PasswordCredentialBuilder::sample('identityId'),
-            PasswordCredentialBuilder::sample('login')->value,
             'passwordpassword',
         ));
     }

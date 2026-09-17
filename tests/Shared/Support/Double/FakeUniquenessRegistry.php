@@ -13,32 +13,32 @@ final class FakeUniquenessRegistry implements UniquenessRegistryInterface
     /** @var array<string, string> */
     private array $claimed = [];
 
-    public function claim(UniqueKey $key, string $value, string $ownerId): void
+    public function claim(UniqueKey $key, string $value, string $subjectId): void
     {
         if ($this->isClaimed($key, $value)) {
             throw UniquenessViolatedException::forValue($key, $value);
         }
 
-        $this->claimed[$this->normalize($key, $value)] = $ownerId;
+        $this->claimed[$this->normalize($key, $value)] = $subjectId;
     }
 
-    public function isClaimed(UniqueKey $key, string $value, ?string $excludeOwnerId = null): bool
+    public function isClaimed(UniqueKey $key, string $value, ?string $excludeSubjectId = null): bool
     {
-        $existingOwnerId = $this->claimed[$this->normalize($key, $value)] ?? null;
+        $existingSubjectId = $this->claimed[$this->normalize($key, $value)] ?? null;
 
-        if (null === $existingOwnerId) {
+        if (null === $existingSubjectId) {
             return false;
         }
 
-        return $existingOwnerId !== $excludeOwnerId;
+        return $existingSubjectId !== $excludeSubjectId;
     }
 
-    public function release(UniqueKey $key, string $ownerId): void
+    public function release(UniqueKey $key, string $subjectId): void
     {
         $prefix = $key->toString().':';
 
-        foreach ($this->claimed as $normalized => $existingOwnerId) {
-            if (str_starts_with($normalized, $prefix) && $ownerId === $existingOwnerId) {
+        foreach ($this->claimed as $normalized => $existingSubjectId) {
+            if (str_starts_with($normalized, $prefix) && $subjectId === $existingSubjectId) {
                 unset($this->claimed[$normalized]);
             }
         }
@@ -48,7 +48,7 @@ final class FakeUniquenessRegistry implements UniquenessRegistryInterface
     {
         $prefix = $key->toString().':';
 
-        foreach ($this->claimed as $normalized => $existingOwnerId) {
+        foreach ($this->claimed as $normalized => $existingSubjectId) {
             if (str_starts_with($normalized, $prefix)) {
                 unset($this->claimed[$normalized]);
             }

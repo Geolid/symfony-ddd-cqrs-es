@@ -28,50 +28,6 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itGetsByLogin(): void
-    {
-        // Given
-        $other = PasswordCredentialBuilder::new()
-            ->withPasswordStrength($this->passwordStrength)
-            ->withHasher($this->hasher)
-            ->create();
-
-        $builder = PasswordCredentialBuilder::new()
-            ->withPasswordStrength($this->passwordStrength)
-            ->withHasher($this->hasher);
-        $credential = $builder->create();
-        $this->store($other, $credential);
-
-        // When
-        $result = $this->finder->ofLogin($builder['login']->value);
-
-        // Then
-        self::assertSame($credential->id->toString(), $result->id);
-        self::assertSame($builder['login']->value, $result->login);
-        self::assertSame(
-            $builder['definedAt']->format(\DateTimeInterface::ATOM),
-            $result->definedAt->format(\DateTimeInterface::ATOM),
-        );
-        self::assertSame(
-            $builder['definedAt']->format(\DateTimeInterface::ATOM),
-            $result->passwordChangedAt->format(\DateTimeInterface::ATOM),
-        );
-        self::assertTrue($result->identityAuthenticatable);
-
-        self::assertSame($this->hasher->hash($builder['password']->value), $result->passwordHash);
-    }
-
-    #[Test]
-    public function itThrowsWhenLoginNotFound(): void
-    {
-        // Then
-        $this->expectException(PasswordCredentialResultNotFoundException::class);
-
-        // When
-        $this->finder->ofLogin(PasswordCredentialBuilder::sample('login')->value);
-    }
-
-    #[Test]
     public function itGetsByIdentity(): void
     {
         // Given
@@ -92,6 +48,15 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertSame($credential->id->toString(), $result->id);
         self::assertSame($builder['identityId'], $result->identityId);
+        self::assertSame(
+            $builder['definedAt']->format(\DateTimeInterface::ATOM),
+            $result->definedAt->format(\DateTimeInterface::ATOM),
+        );
+        self::assertSame(
+            $builder['definedAt']->format(\DateTimeInterface::ATOM),
+            $result->passwordChangedAt->format(\DateTimeInterface::ATOM),
+        );
+        self::assertSame($this->hasher->hash($builder['password']->value), $result->passwordHash);
     }
 
     #[Test]

@@ -6,6 +6,7 @@ namespace Iam\Tests\Authentication\Application\CredentialVerification;
 
 use Iam\Authentication\Application\CredentialVerification\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Application\CredentialVerification\PasswordCredentialVerifier;
+use Iam\Authentication\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Authentication\Application\Finder\PasswordCredential\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
@@ -27,7 +28,11 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
 
         $this->hasher = $this->service(PasswordHasherInterface::class);
         $this->passwordStrength = $this->service(PasswordStrengthSpecificationInterface::class);
-        $this->verifier = new PasswordCredentialVerifier($this->service(PasswordCredentialFinderInterface::class), $this->hasher);
+        $this->verifier = new PasswordCredentialVerifier(
+            $this->service(PasswordCredentialFinderInterface::class),
+            $this->service(IdentityFinderInterface::class),
+            $this->hasher,
+        );
     }
 
     #[Test]
@@ -38,7 +43,8 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher);
         $credential = $builder->create();
-        $this->store($credential);
+        $identity = IdentityBuilder::new()->withId($builder['identityId'])->activated()->create();
+        $this->store($credential, $identity);
 
         // When
         $verified = $this->verifier->verify($builder['identityId'], $builder['password']->value);
@@ -55,7 +61,8 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher);
         $credential = $builder->create();
-        $this->store($credential);
+        $identity = IdentityBuilder::new()->withId($builder['identityId'])->activated()->create();
+        $this->store($credential, $identity);
 
         // When
         $verified = $this->verifier->verify($builder['identityId'], 'WrongPassword456!');

@@ -16,4 +16,11 @@ interface IdentityFinderInterface extends PaginatableFinderInterface
      * @throws IdentityResultNotFoundException
      */
     public function ofId(string $id): IdentityResult;
+
+    /**
+     * @throws IdentityResultNotFoundException
+     */
+    public function ofEmail(string $email): IdentityResult;
+
+    public function pendingBefore(\DateTimeImmutable $cutoff): static;
 }

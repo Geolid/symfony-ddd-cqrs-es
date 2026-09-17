@@ -14,7 +14,7 @@ use Shared\Infrastructure\Projection\SnakeCaseKeys;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{first_name: string, last_name: string, email: string, registered_at: string, shipping_address: string|null, billing_address: string|null, erasure_status: string}
+ * @phpstan-type Row array{registered_at: string, shipping_address: string|null, billing_address: string|null, erasure_status: string}
  */
 final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
 {
@@ -31,9 +31,6 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($customer->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($builder['firstName']->value, $row['first_name']);
-        self::assertSame($builder['lastName']->value, $row['last_name']);
-        self::assertSame($builder['email']->value, $row['email']);
         self::assertSame($builder['registeredAt']->format('Y-m-d H:i:s'), $row['registered_at']);
         self::assertSame(ErasureStatus::RETAINED->value, $row['erasure_status']);
     }
@@ -156,10 +153,7 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertFalse($this->fetchRow($customer->id->toString()));
-
-        $otherRow = $this->fetchRow($other->id->toString());
-        self::assertNotFalse($otherRow);
-        self::assertSame($otherBuilder['email']->value, $otherRow['email']);
+        self::assertNotFalse($this->fetchRow($other->id->toString()));
     }
 
     /**
@@ -183,7 +177,7 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $connection->fetchAssociative(
             \sprintf(
-                'SELECT first_name, last_name, email, registered_at, shipping_address, billing_address, erasure_status FROM %s WHERE id = :id',
+                'SELECT registered_at, shipping_address, billing_address, erasure_status FROM %s WHERE id = :id',
                 DbalCustomerProjector::TABLE,
             ),
             ['id' => $id],

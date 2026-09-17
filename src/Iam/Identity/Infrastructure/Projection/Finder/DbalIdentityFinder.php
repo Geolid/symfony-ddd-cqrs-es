@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Iam\Identity\Infrastructure\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
+use Doctrine\DBAL\Types\Types;
 use Iam\Identity\Application\Finder\Identity\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Finder\Identity\IdentityResult;
+use Iam\Identity\Application\IdentityStatus;
 use Iam\Identity\Infrastructure\Projection\Projector\DbalIdentityProjector;
 use Shared\Application\Finder\SortDirection;
 use Shared\Infrastructure\Projection\Finder\AbstractPaginatableDbalFinder;
@@ -26,9 +28,30 @@ final class DbalIdentityFinder extends AbstractPaginatableDbalFinder implements 
         )->one() ?? throw IdentityResultNotFoundException::forId($id);
     }
 
+    public function ofEmail(string $email): IdentityResult
+    {
+        return $this->filter(
+            static function (QueryBuilder $qb) use ($email): void {
+                $qb->andWhere('email = :email')->setParameter('email', $email);
+            },
+        )->one() ?? throw IdentityResultNotFoundException::forEmail($email);
+    }
+
+    public function pendingBefore(\DateTimeImmutable $cutoff): static
+    {
+        return $this->filter(
+            static function (QueryBuilder $qb) use ($cutoff): void {
+                $qb->andWhere('status = :pending')
+                    ->andWhere('registered_at < :cutoff')
+                    ->setParameter('pending', IdentityStatus::PENDING)
+                    ->setParameter('cutoff', $cutoff, Types::DATETIME_IMMUTABLE);
+            },
+        );
+    }
+
     protected function configureBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'status', 'reason', 'registered_at', 'suspended_at', 'reactivated_at', 'erasure_status')
+        $qb->select('id', 'full_name', 'email', 'status', 'reason', 'registered_at', 'suspended_at', 'reactivated_at', 'erasure_status')
             ->from(DbalIdentityProjector::TABLE);
     }
 

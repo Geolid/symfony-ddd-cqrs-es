@@ -23,7 +23,7 @@ final class ValidUniqueValue extends Constraint
     public function __construct(
         public \BackedEnum $key,
         public array $scope = [],
-        public ?string $excludeOwnerIdPropertyPath = null,
+        public ?string $excludeSubjectIdPropertyPath = null,
         mixed $options = null,
         ?array $groups = null,
         mixed $payload = null,

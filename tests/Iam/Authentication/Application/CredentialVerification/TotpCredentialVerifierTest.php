@@ -6,6 +6,7 @@ namespace Iam\Tests\Authentication\Application\CredentialVerification;
 
 use Iam\Authentication\Application\CredentialVerification\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Application\CredentialVerification\TotpCredentialVerifier;
+use Iam\Authentication\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInterface;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpCipherInterface;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpVerifierInterface;
@@ -29,7 +30,12 @@ final class TotpCredentialVerifierTest extends AbstractIntegrationTestCase
 
         $this->cipher = $this->service(TotpCipherInterface::class);
         $this->verifier = $this->service(TotpVerifierInterface::class);
-        $this->credentialVerifier = new TotpCredentialVerifier($this->service(TotpCredentialFinderInterface::class), $this->cipher, $this->verifier);
+        $this->credentialVerifier = new TotpCredentialVerifier(
+            $this->service(TotpCredentialFinderInterface::class),
+            $this->service(IdentityFinderInterface::class),
+            $this->cipher,
+            $this->verifier,
+        );
     }
 
     #[Test]
@@ -44,7 +50,8 @@ final class TotpCredentialVerifierTest extends AbstractIntegrationTestCase
             ->withVerifier($this->verifier)
             ->confirmed($code);
         $credential = $builder->create();
-        $this->store($credential);
+        $identity = IdentityBuilder::new()->withId($builder['identityId'])->activated()->create();
+        $this->store($credential, $identity);
 
         // When
         $verified = $this->credentialVerifier->verify($builder['identityId'], $code);
@@ -65,7 +72,8 @@ final class TotpCredentialVerifierTest extends AbstractIntegrationTestCase
             ->withVerifier($this->verifier)
             ->confirmed($code);
         $credential = $builder->create();
-        $this->store($credential);
+        $identity = IdentityBuilder::new()->withId($builder['identityId'])->activated()->create();
+        $this->store($credential, $identity);
 
         // When
         $verified = $this->credentialVerifier->verify($builder['identityId'], '000000');

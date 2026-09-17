@@ -11,10 +11,5 @@ interface PasswordCredentialFinderInterface
     /**
      * @throws PasswordCredentialResultNotFoundException
      */
-    public function ofLogin(string $login): PasswordCredentialResult;
-
-    /**
-     * @throws PasswordCredentialResultNotFoundException
-     */
     public function ofIdentity(string $identityId): PasswordCredentialResult;
 }

@@ -25,7 +25,7 @@ final class ListIdentitiesHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $suspendedBuilder = IdentityBuilder::new()->suspended();
-        $activeBuilder = IdentityBuilder::new();
+        $activeBuilder = IdentityBuilder::new()->activated();
         $active = $activeBuilder->create();
         $suspended = $suspendedBuilder->create();
         $others = IdentityBuilder::new()->many(3)->create();

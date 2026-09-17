@@ -26,7 +26,7 @@ final readonly class DbalUniquenessRegistry implements UniquenessRegistryInterfa
     ) {
     }
 
-    public function claim(UniqueKey $key, string $value, string $ownerId): void
+    public function claim(UniqueKey $key, string $value, string $subjectId): void
     {
         $keyType = $key->toString();
 
@@ -34,16 +34,16 @@ final readonly class DbalUniquenessRegistry implements UniquenessRegistryInterfa
             $this->connection->insert(self::TABLE, [
                 'key_type' => $keyType,
                 'key_value' => $value,
-                'owner_id' => $ownerId,
+                'subject_id' => $subjectId,
             ]);
         } catch (UniqueConstraintViolationException) {
-            if ($this->isClaimed($key, $value, $ownerId)) {
+            if ($this->isClaimed($key, $value, $subjectId)) {
                 throw UniquenessViolatedException::forValue($key, $value);
             }
         }
     }
 
-    public function isClaimed(UniqueKey $key, string $value, ?string $excludeOwnerId = null): bool
+    public function isClaimed(UniqueKey $key, string $value, ?string $excludeSubjectId = null): bool
     {
         $qb = $this->connection->createQueryBuilder()
             ->select('1')
@@ -53,19 +53,19 @@ final readonly class DbalUniquenessRegistry implements UniquenessRegistryInterfa
             ->setParameter('type', $key->toString())
             ->setParameter('value', $value);
 
-        if (null !== $excludeOwnerId) {
-            $qb->andWhere('owner_id != :excludeOwnerId')
-                ->setParameter('excludeOwnerId', $excludeOwnerId);
+        if (null !== $excludeSubjectId) {
+            $qb->andWhere('subject_id != :excludeSubjectId')
+                ->setParameter('excludeSubjectId', $excludeSubjectId);
         }
 
         return false !== $qb->fetchOne();
     }
 
-    public function release(UniqueKey $key, string $ownerId): void
+    public function release(UniqueKey $key, string $subjectId): void
     {
         $this->connection->delete(self::TABLE, [
             'key_type' => $key->toString(),
-            'owner_id' => $ownerId,
+            'subject_id' => $subjectId,
         ]);
     }
 
@@ -82,7 +82,7 @@ final readonly class DbalUniquenessRegistry implements UniquenessRegistryInterfa
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('key_type', Types::STRING, ['length' => 255]);
         $table->addColumn('key_value', Types::STRING, ['length' => 255]);
-        $table->addColumn('owner_id', Types::STRING, ['length' => 36]);
+        $table->addColumn('subject_id', Types::STRING, ['length' => 36]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(

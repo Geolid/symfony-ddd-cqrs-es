@@ -15,7 +15,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{enrolled_at: string, status: string, confirmed_at: string|null, revoked_at: string|null, identity_authenticatable: bool}
+ * @phpstan-type Row array{enrolled_at: string, status: string, confirmed_at: string|null, revoked_at: string|null}
  */
 final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
 {
@@ -49,7 +49,6 @@ final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
         self::assertSame(TotpCredentialStatus::PENDING->value, $row['status']);
         self::assertNull($row['confirmed_at']);
         self::assertNull($row['revoked_at']);
-        self::assertTrue((bool) $row['identity_authenticatable']);
     }
 
     #[Test]
@@ -108,61 +107,6 @@ final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsOnIdentitySuspendedIntegrationEvent(): void
-    {
-        // Given
-        $other = TotpCredentialBuilder::new()->withCipher($this->cipher)->create();
-        $this->store($other);
-
-        $identity = IdentityBuilder::new()->suspended()->create();
-        $credential = TotpCredentialBuilder::new()
-            ->withIdentityId($identity->id->toString())
-            ->withCipher($this->cipher)
-            ->create();
-
-        // When
-        $this->store($credential, $identity);
-
-        // Then
-        $row = $this->fetchRow($credential->id->toString());
-        self::assertNotFalse($row);
-        self::assertFalse((bool) $row['identity_authenticatable']);
-
-        $otherRow = $this->fetchRow($other->id->toString());
-        self::assertNotFalse($otherRow);
-        self::assertTrue((bool) $otherRow['identity_authenticatable']);
-    }
-
-    #[Test]
-    public function itProjectsOnIdentityReactivatedIntegrationEvent(): void
-    {
-        // Given
-        $otherIdentity = IdentityBuilder::new()->suspended()->create();
-        $other = TotpCredentialBuilder::new()
-            ->withIdentityId($otherIdentity->id->toString())
-            ->withCipher($this->cipher)
-            ->create();
-
-        $identity = IdentityBuilder::new()->suspended()->reactivated()->create();
-        $credential = TotpCredentialBuilder::new()
-            ->withIdentityId($identity->id->toString())
-            ->withCipher($this->cipher)
-            ->create();
-
-        // When
-        $this->store($other, $otherIdentity, $credential, $identity);
-
-        // Then
-        $row = $this->fetchRow($credential->id->toString());
-        self::assertNotFalse($row);
-        self::assertTrue((bool) $row['identity_authenticatable']);
-
-        $otherRow = $this->fetchRow($other->id->toString());
-        self::assertNotFalse($otherRow);
-        self::assertFalse((bool) $otherRow['identity_authenticatable']);
-    }
-
-    #[Test]
     public function itRemovesOnIdentityErasedIntegrationEvent(): void
     {
         // Given
@@ -192,7 +136,7 @@ final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
 
         /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT enrolled_at, status, confirmed_at, revoked_at, identity_authenticatable FROM %s WHERE id = :id', DbalTotpCredentialProjector::TABLE),
+            \sprintf('SELECT enrolled_at, status, confirmed_at, revoked_at FROM %s WHERE id = :id', DbalTotpCredentialProjector::TABLE),
             ['id' => $id],
         );
     }

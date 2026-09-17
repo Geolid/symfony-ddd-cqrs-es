@@ -11,10 +11,7 @@ use Doctrine\DBAL\Types\Types;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialChanged;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialDefined;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialRehashed;
-use Iam\Authentication\Domain\PasswordCredential\ValueObject\Login;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
-use Iam\Identity\Application\IntegrationEvent\IdentityReactivated\IdentityReactivatedIntegrationEvent;
-use Iam\Identity\Application\IntegrationEvent\IdentitySuspended\IdentitySuspendedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Projection\Projector;
 use Shared\Infrastructure\Projection\Projector\AbstractDbalProjector;
@@ -30,15 +27,12 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
         $this->connection->insert(self::TABLE, [
             'id' => $event->id->toString(),
             'identity_id' => $event->identityId,
-            'login' => $event->login->value,
             'password_hash' => $event->passwordHash,
             'defined_at' => $event->definedAt,
             'password_changed_at' => $event->definedAt,
-            'identity_authenticatable' => true,
         ], [
             'defined_at' => Types::DATETIME_IMMUTABLE,
             'password_changed_at' => Types::DATETIME_IMMUTABLE,
-            'identity_authenticatable' => Types::BOOLEAN,
         ]);
     }
 
@@ -59,18 +53,6 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
         $this->connection->update(self::TABLE, ['password_hash' => $event->passwordHash], ['id' => $event->id->toString()]);
     }
 
-    #[Subscribe(IdentitySuspendedIntegrationEvent::class)]
-    public function onIdentitySuspendedIntegrationEvent(IdentitySuspendedIntegrationEvent $event): void
-    {
-        $this->connection->update(self::TABLE, ['identity_authenticatable' => false], ['identity_id' => $event->identityId], ['identity_authenticatable' => Types::BOOLEAN]);
-    }
-
-    #[Subscribe(IdentityReactivatedIntegrationEvent::class)]
-    public function onIdentityReactivatedIntegrationEvent(IdentityReactivatedIntegrationEvent $event): void
-    {
-        $this->connection->update(self::TABLE, ['identity_authenticatable' => true], ['identity_id' => $event->identityId], ['identity_authenticatable' => Types::BOOLEAN]);
-    }
-
     #[Subscribe(IdentityErasedIntegrationEvent::class)]
     public function onIdentityErasedIntegrationEvent(IdentityErasedIntegrationEvent $event): void
     {
@@ -85,16 +67,14 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('identity_id', Types::STRING, ['length' => 36]);
-        $table->addColumn('login', Types::STRING, ['length' => Login::MAX_LENGTH]);
         $table->addColumn('password_hash', Types::STRING, ['length' => 255]);
         $table->addColumn('defined_at', Types::DATETIME_IMMUTABLE);
         $table->addColumn('password_changed_at', Types::DATETIME_IMMUTABLE);
-        $table->addColumn('identity_authenticatable', Types::BOOLEAN);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
                 ->create(),
         );
-        $table->addIndex(['login'], 'iam_authentication_password_credential_login_idx');
+        $table->addIndex(['identity_id'], 'iam_authentication_password_credential_identity_id_idx');
     }
 }

@@ -6,8 +6,14 @@ namespace Iam\Identity\Domain\ValueObject;
 
 enum IdentityState: string
 {
+    case PENDING = 'pending';
     case ACTIVE = 'active';
     case SUSPENDED = 'suspended';
+
+    public function isPending(): bool
+    {
+        return self::PENDING === $this;
+    }
 
     public function isActive(): bool
     {

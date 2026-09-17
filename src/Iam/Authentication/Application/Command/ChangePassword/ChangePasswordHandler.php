@@ -23,7 +23,7 @@ final readonly class ChangePasswordHandler
 {
     public function __construct(
         private PasswordCredentialRepositoryInterface $repository,
-        private PasswordStrengthSpecificationInterface $passwordStrength,
+        private PasswordStrengthSpecificationInterface $passwordStrengthSpecification,
         private CompromisedPasswordGatewayInterface $compromisedPasswordGateway,
         private PasswordHasherInterface $hasher,
         private ClockInterface $clock,
@@ -46,7 +46,7 @@ final readonly class ChangePasswordHandler
         }
 
         $credential = $this->repository->load(PasswordCredentialId::forIdentity($command->identityId));
-        $credential->change($password, $this->passwordStrength, $this->hasher, $this->clock->now());
+        $credential->change($password, $this->passwordStrengthSpecification, $this->hasher, $this->clock->now());
 
         $this->repository->save($credential);
     }

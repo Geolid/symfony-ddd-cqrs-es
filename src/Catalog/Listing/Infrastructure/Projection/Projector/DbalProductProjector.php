@@ -72,6 +72,5 @@ final readonly class DbalProductProjector extends AbstractDbalProjector
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
                 ->create(),
         );
-        $table->addIndex(['label'], 'catalog_listing_product_label_idx');
     }
 }

@@ -10,7 +10,6 @@ use Crm\Customer\Domain\Customer\Event\CustomerErasureCancelled;
 use Crm\Customer\Domain\Customer\Event\CustomerErasureRequested;
 use Crm\Customer\Domain\Customer\Event\CustomerRegistered;
 use Crm\Customer\Domain\Customer\Event\CustomerShippingAddressDefined;
-use Crm\Customer\Domain\Customer\ValueObject\Name;
 use Doctrine\DBAL\Schema\Name\UnqualifiedName;
 use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
@@ -34,9 +33,6 @@ final readonly class DbalCustomerProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'id' => $event->id->toString(),
-                'first_name' => $event->firstName->value,
-                'last_name' => $event->lastName->value,
-                'email' => $event->email->value,
                 'registered_at' => $event->registeredAt,
                 'erasure_status' => ErasureStatus::RETAINED->value,
             ],
@@ -99,9 +95,6 @@ final readonly class DbalCustomerProjector extends AbstractDbalProjector
     {
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
-        $table->addColumn('first_name', Types::STRING, ['length' => Name::MAX_LENGTH]);
-        $table->addColumn('last_name', Types::STRING, ['length' => Name::MAX_LENGTH]);
-        $table->addColumn('email', Types::STRING, ['length' => 255]);
         $table->addColumn('registered_at', Types::DATETIME_IMMUTABLE);
         $table->addColumn('shipping_address', Types::JSON, ['notnull' => false, 'default' => null]);
         $table->addColumn('billing_address', Types::JSON, ['notnull' => false, 'default' => null]);

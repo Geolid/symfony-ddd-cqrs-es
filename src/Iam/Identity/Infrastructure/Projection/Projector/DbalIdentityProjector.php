@@ -8,13 +8,15 @@ use Doctrine\DBAL\Schema\Name\UnqualifiedName;
 use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
+use Iam\Identity\Application\IdentityStatus;
+use Iam\Identity\Domain\Event\IdentityActivated;
 use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\Event\IdentityErasureCancelled;
 use Iam\Identity\Domain\Event\IdentityErasureRequested;
 use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Identity\Domain\Event\IdentitySuspended;
-use Iam\Identity\Domain\ValueObject\IdentityState;
+use Iam\Identity\Domain\ValueObject\FullName;
 use Iam\Identity\Domain\ValueObject\Reason;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Application\ErasureStatus;
@@ -33,11 +35,23 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'id' => $event->id->toString(),
-                'status' => IdentityState::ACTIVE->value,
+                'full_name' => $event->fullName->value,
+                'email' => $event->email->value,
+                'status' => IdentityStatus::PENDING->value,
                 'registered_at' => $event->registeredAt,
                 'erasure_status' => ErasureStatus::RETAINED->value,
             ],
             ['registered_at' => Types::DATETIME_IMMUTABLE],
+        );
+    }
+
+    #[Subscribe(IdentityActivated::class)]
+    public function onIdentityActivated(IdentityActivated $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            ['status' => IdentityStatus::ACTIVE->value],
+            ['id' => $event->id->toString()],
         );
     }
 
@@ -47,7 +61,7 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             [
-                'status' => IdentityState::SUSPENDED->value,
+                'status' => IdentityStatus::SUSPENDED->value,
                 'reason' => $event->reason->value,
                 'suspended_at' => $event->suspendedAt,
                 'reactivated_at' => null,
@@ -63,7 +77,7 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             [
-                'status' => IdentityState::ACTIVE->value,
+                'status' => IdentityStatus::ACTIVE->value,
                 'reason' => $event->reason->value,
                 'reactivated_at' => $event->reactivatedAt,
                 'suspended_at' => null,
@@ -106,6 +120,8 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
     {
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
+        $table->addColumn('full_name', Types::STRING, ['length' => FullName::MAX_LENGTH]);
+        $table->addColumn('email', Types::STRING, ['length' => 255]);
         $table->addColumn('status', Types::STRING, ['length' => 20]);
         $table->addColumn('reason', Types::STRING, ['length' => Reason::MAX_LENGTH, 'notnull' => false]);
         $table->addColumn('registered_at', Types::DATETIME_IMMUTABLE);
@@ -117,5 +133,7 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
                 ->create(),
         );
+        $table->addIndex(['email'], 'iam_identity_identity_email_idx');
+        $table->addIndex(['status', 'registered_at'], 'iam_identity_identity_status_registered_at_idx');
     }
 }

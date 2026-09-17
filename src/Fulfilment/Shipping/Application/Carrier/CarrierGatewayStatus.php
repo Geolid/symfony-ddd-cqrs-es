@@ -9,4 +9,14 @@ enum CarrierGatewayStatus: string
     case REQUESTED = 'requested';
     case DISPATCHED = 'dispatched';
     case DELIVERED = 'delivered';
+
+    public function isDispatched(): bool
+    {
+        return self::DISPATCHED === $this;
+    }
+
+    public function isDelivered(): bool
+    {
+        return self::DELIVERED === $this;
+    }
 }

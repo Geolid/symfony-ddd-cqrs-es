@@ -51,7 +51,7 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyActive(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->create();
+        $identity = IdentityBuilder::new()->activated()->create();
         $this->store($identity);
 
         // When

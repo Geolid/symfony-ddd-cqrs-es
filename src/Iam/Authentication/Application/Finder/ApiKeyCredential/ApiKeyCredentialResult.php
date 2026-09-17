@@ -15,7 +15,6 @@ final readonly class ApiKeyCredentialResult
         public \DateTimeImmutable $issuedAt,
         public bool $revoked,
         public ?\DateTimeImmutable $revokedAt,
-        public bool $identityAuthenticatable,
     ) {
     }
 }

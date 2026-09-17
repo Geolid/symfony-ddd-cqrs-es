@@ -31,7 +31,7 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
     {
         // Given
         $other = IdentityBuilder::new()->create();
-        $builder = IdentityBuilder::new();
+        $builder = IdentityBuilder::new()->activated();
         $identity = $builder->create();
         $this->store($other, $identity);
 

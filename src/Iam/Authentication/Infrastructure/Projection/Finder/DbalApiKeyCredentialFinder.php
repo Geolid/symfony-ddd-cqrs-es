@@ -38,7 +38,7 @@ final class DbalApiKeyCredentialFinder extends AbstractIterableDbalFinder implem
 
     protected function configureBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'identity_id', 'label', 'key_id', 'secret_hash', 'issued_at', 'revoked', 'revoked_at', 'identity_authenticatable')
+        $qb->select('id', 'identity_id', 'label', 'key_id', 'secret_hash', 'issued_at', 'revoked', 'revoked_at')
             ->from(DbalApiKeyCredentialProjector::TABLE);
     }
 

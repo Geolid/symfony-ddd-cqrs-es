@@ -42,7 +42,6 @@ final class EnrollTotpHandlerTest extends AbstractIntegrationTestCase
         self::assertSame(TotpCredentialStatus::PENDING, $result->status);
         self::assertNull($result->confirmedAt);
         self::assertNull($result->revokedAt);
-        self::assertTrue($result->identityAuthenticatable);
 
         self::assertNotSame($secret, $result->encryptedSecret);
     }

@@ -8,8 +8,6 @@ use Crm\Customer\Domain\Customer\Customer;
 use Crm\Customer\Domain\Customer\Exception\CustomerAlreadyExistsException;
 use Crm\Customer\Domain\Customer\Repository\CustomerRepositoryInterface;
 use Crm\Customer\Domain\Customer\ValueObject\CustomerId;
-use Crm\Customer\Domain\Customer\ValueObject\Email;
-use Crm\Customer\Domain\Customer\ValueObject\Name;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
 
@@ -29,9 +27,6 @@ final readonly class RegisterCustomerHandler
     {
         $customer = Customer::register(
             id: CustomerId::forIdentity($command->identityId),
-            firstName: Name::fromString($command->firstName),
-            lastName: Name::fromString($command->lastName),
-            email: Email::fromString($command->email),
             registeredAt: $this->clock->now(),
         );
 

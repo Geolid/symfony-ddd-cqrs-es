@@ -115,7 +115,7 @@ class Kernel extends BaseKernel
     private function importConfigs(ContainerConfigurator $container, string $dir): void
     {
         $container->import($dir.'/{packages}/*.php');
-        $container->import($dir.'/{services}/*.php');
+        $container->import($dir.'/{services}/**/*.php');
 
         if (is_file($dir.'/services.php')) {
             $container->import($dir.'/services.php');

@@ -11,6 +11,8 @@ final readonly class IdentityResult
 {
     public function __construct(
         public string $id,
+        public string $fullName,
+        public string $email,
         public IdentityStatus $status,
         public ?string $reason,
         public \DateTimeImmutable $registeredAt,

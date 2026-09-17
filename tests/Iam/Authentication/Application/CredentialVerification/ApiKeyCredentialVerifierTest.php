@@ -9,6 +9,7 @@ use Iam\Authentication\Application\CredentialVerification\Exception\ApiKeyCreden
 use Iam\Authentication\Application\CredentialVerification\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\Exception\ApiKeyCredentialResultNotFoundException;
+use Iam\Authentication\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
@@ -25,7 +26,11 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
         parent::setUp();
 
         $this->hasher = $this->service(ApiKeyHasherInterface::class);
-        $this->verifier = new ApiKeyCredentialVerifier($this->service(ApiKeyCredentialFinderInterface::class), $this->hasher);
+        $this->verifier = new ApiKeyCredentialVerifier(
+            $this->service(ApiKeyCredentialFinderInterface::class),
+            $this->service(IdentityFinderInterface::class),
+            $this->hasher,
+        );
     }
 
     #[Test]
@@ -34,7 +39,8 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
         // Given
         $builder = ApiKeyCredentialBuilder::new()->withHasher($this->hasher);
         $credential = $builder->create();
-        $this->store($credential);
+        $identity = IdentityBuilder::new()->withId($builder['identityId'])->activated()->create();
+        $this->store($credential, $identity);
 
         // When
         $verified = $this->verifier->verify($builder['keyId']->value, $builder['secret']);
@@ -49,7 +55,8 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
         // Given
         $builder = ApiKeyCredentialBuilder::new()->withHasher($this->hasher);
         $credential = $builder->create();
-        $this->store($credential);
+        $identity = IdentityBuilder::new()->withId($builder['identityId'])->activated()->create();
+        $this->store($credential, $identity);
 
         // When
         $verified = $this->verifier->verify($builder['keyId']->value, 'wrong-secret');

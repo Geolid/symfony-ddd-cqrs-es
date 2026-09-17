@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Support\Builder;
 
 use Iam\Identity\Domain\Identity;
+use Iam\Identity\Domain\ValueObject\Email;
+use Iam\Identity\Domain\ValueObject\FullName;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Reason;
 use Ramsey\Uuid\Uuid;
@@ -15,7 +17,11 @@ use Symfony\Component\Clock\Clock;
 /**
  * @phpstan-type Attributes = array{
  *     id: IdentityId,
+ *     fullName: FullName,
+ *     email: Email,
  *     registeredAt: \DateTimeImmutable,
+ *     activatedAt: \DateTimeImmutable,
+ *     emailConfirmationResendRequestedAt: \DateTimeImmutable,
  *     reason: Reason,
  *     suspendedAt: \DateTimeImmutable,
  *     reactivatedAt: \DateTimeImmutable,
@@ -33,9 +39,28 @@ final class IdentityBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(id: IdentityId::fromString($id));
     }
 
+    public function withFullName(string $fullName): self
+    {
+        return $this->withAttributes(fullName: FullName::fromString($fullName));
+    }
+
+    public function withEmail(string $email): self
+    {
+        return $this->withAttributes(email: Email::fromString($email));
+    }
+
     public function withRegisteredAt(\DateTimeImmutable $registeredAt): self
     {
         return $this->withAttributes(registeredAt: $registeredAt);
+    }
+
+    public function activated(?\DateTimeImmutable $activatedAt = null): self
+    {
+        $builder = null !== $activatedAt ? $this->withAttributes(activatedAt: $activatedAt) : $this;
+
+        return $builder->withModifier(
+            static fn (Identity $identity, self $builder) => $identity->activate($builder['activatedAt']),
+        );
     }
 
     public function suspended(?string $reason = null, ?\DateTimeImmutable $suspendedAt = null): self
@@ -59,6 +84,15 @@ final class IdentityBuilder extends AbstractAggregateBuilder
 
         return $builder->withModifier(
             static fn (Identity $identity, self $builder) => $identity->reactivate($builder['reason'], $builder['reactivatedAt']),
+        );
+    }
+
+    public function emailConfirmationResendRequested(?\DateTimeImmutable $requestedAt = null): self
+    {
+        $builder = null !== $requestedAt ? $this->withAttributes(emailConfirmationResendRequestedAt: $requestedAt) : $this;
+
+        return $builder->withModifier(
+            static fn (Identity $identity, self $builder) => $identity->requestEmailConfirmationResend($builder['emailConfirmationResendRequestedAt']),
         );
     }
 
@@ -95,7 +129,11 @@ final class IdentityBuilder extends AbstractAggregateBuilder
 
         return [
             'id' => static fn (): IdentityId => IdentityId::fromString(Uuid::uuid7()->toString()),
+            'fullName' => static fn (): FullName => FullName::fromString(SeededFaker::get()->name()),
+            'email' => static fn (): Email => Email::fromString(SeededFaker::get()->unique()->safeEmail()),
             'registeredAt' => static fn (): \DateTimeImmutable => $now,
+            'activatedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 hour'),
+            'emailConfirmationResendRequestedAt' => static fn (): \DateTimeImmutable => $now->modify('+30 minutes'),
             'reason' => static fn (): Reason => Reason::fromString(SeededFaker::get()->sentence(4)),
             'suspendedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
             'reactivatedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 day'),
@@ -109,6 +147,8 @@ final class IdentityBuilder extends AbstractAggregateBuilder
     {
         return Identity::register(
             id: $this['id'],
+            fullName: $this['fullName'],
+            email: $this['email'],
             registeredAt: $this['registeredAt'],
         );
     }

@@ -21,7 +21,7 @@ use Symfony\Component\Validator\Test\ConstraintValidatorTestCase;
  */
 final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
 {
-    private const string OWNER_ID = '0199a1b2-3c4d-7e5f-8061-72839405a6b7';
+    private const string SUBJECT_ID = '0199a1b2-3c4d-7e5f-8061-72839405a6b7';
 
     private FakeUniquenessRegistry $uniqueness;
     private ValidUniqueValue $baseConstraint;
@@ -32,7 +32,7 @@ final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
         parent::setUp();
 
         $this->baseConstraint = new ValidUniqueValue(DummyUniqueKey::NAME);
-        $this->exclusionConstraint = new ValidUniqueValue(DummyUniqueKey::NAME, excludeOwnerIdPropertyPath: 'id');
+        $this->exclusionConstraint = new ValidUniqueValue(DummyUniqueKey::NAME, excludeSubjectIdPropertyPath: 'id');
     }
 
     #[Test]
@@ -49,7 +49,7 @@ final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
     public function itRefuses(): void
     {
         // Given
-        $this->uniqueness->claim(UniqueKey::for(DummyUniqueKey::NAME), 'reserved-value', self::OWNER_ID);
+        $this->uniqueness->claim(UniqueKey::for(DummyUniqueKey::NAME), 'reserved-value', self::SUBJECT_ID);
 
         // When
         $this->validator->validate('reserved-value', $this->baseConstraint);
@@ -63,7 +63,7 @@ final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
     {
         // Given
         $scope = 'scope-a';
-        $this->uniqueness->claim(UniqueKey::for(DummyUniqueKey::NAME, $scope), 'reserved-value', self::OWNER_ID);
+        $this->uniqueness->claim(UniqueKey::for(DummyUniqueKey::NAME, $scope), 'reserved-value', self::SUBJECT_ID);
 
         // When
         $this->validator->validate('reserved-value', new ValidUniqueValue(DummyUniqueKey::NAME, [$scope]));
@@ -73,11 +73,11 @@ final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
     }
 
     #[Test]
-    public function itAcceptsWhenOwnerMatches(): void
+    public function itAcceptsWhenSubjectMatches(): void
     {
         // Given
-        $this->uniqueness->claim(UniqueKey::for(DummyUniqueKey::NAME), 'reserved-value', self::OWNER_ID);
-        $this->setObject(new DummyEditedObject(self::OWNER_ID));
+        $this->uniqueness->claim(UniqueKey::for(DummyUniqueKey::NAME), 'reserved-value', self::SUBJECT_ID);
+        $this->setObject(new DummyEditedObject(self::SUBJECT_ID));
 
         // When
         $this->validator->validate('reserved-value', $this->exclusionConstraint);
@@ -87,11 +87,11 @@ final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
     }
 
     #[Test]
-    public function itRefusesWhenOwnerDiffers(): void
+    public function itRefusesWhenSubjectDiffers(): void
     {
         // Given
         $this->uniqueness->claim(UniqueKey::for(DummyUniqueKey::NAME), 'reserved-value', '0199a1b2-3c4d-7e5f-8061-72839405a6b8');
-        $this->setObject(new DummyEditedObject(self::OWNER_ID));
+        $this->setObject(new DummyEditedObject(self::SUBJECT_ID));
 
         // When
         $this->validator->validate('reserved-value', $this->exclusionConstraint);
@@ -111,7 +111,7 @@ final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
     }
 
     #[Test]
-    public function itFailsWhenOwnerIdInvalid(): void
+    public function itFailsWhenSubjectIdInvalid(): void
     {
         // Given
         $this->setObject(new DummyEditedObject(42));

@@ -10,7 +10,6 @@ final readonly class DefinePasswordCredential implements CommandInterface
 {
     public function __construct(
         public string $identityId,
-        public string $login,
         #[\SensitiveParameter]
         public string $password,
     ) {
