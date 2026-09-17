@@ -306,6 +306,46 @@ final class IdentityTest extends AggregateRootTestCase
             ->then();
     }
 
+    #[Test]
+    public function itErasesUnconfirmed(): void
+    {
+        $this
+            ->given($this->registered())
+            ->when(fn (Identity $identity) => $identity->eraseUnconfirmed($this->erasedAt))
+            ->then(new IdentityErased($this->id, $this->erasedAt));
+    }
+
+    #[Test]
+    public function itDoesNotEraseUnconfirmedWhenActive(): void
+    {
+        $this
+            ->given($this->registered(), $this->activated())
+            ->when(static fn (Identity $identity) => $identity->eraseUnconfirmed(IdentityBuilder::sample('erasedAt')))
+            ->then();
+    }
+
+    #[Test]
+    public function itDoesNotEraseUnconfirmedWhenNotYetExpired(): void
+    {
+        $this
+            ->given($this->registered())
+            ->when(fn (Identity $identity) => $identity->eraseUnconfirmed($this->registeredAt->modify('+1 hour')))
+            ->then();
+    }
+
+    #[Test]
+    public function itDoesNotEraseUnconfirmedWhenAlreadyErased(): void
+    {
+        $this
+            ->given(
+                $this->registered(),
+                $this->erasureRequested(),
+                $this->erased(),
+            )
+            ->when(static fn (Identity $identity) => $identity->eraseUnconfirmed(IdentityBuilder::sample('erasedAt')))
+            ->then();
+    }
+
     protected function aggregateClass(): string
     {
         return Identity::class;

@@ -16,6 +16,7 @@ use Iam\Identity\Domain\Exception\EmailConfirmationResendRequestedTooRecentlyExc
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotPendingException;
 use Iam\Identity\Domain\Exception\IdentityNotSuspendedException;
+use Iam\Identity\Domain\Specification\PendingIdentityExpiredSpecification;
 use Iam\Identity\Domain\ValueObject\Email;
 use Iam\Identity\Domain\ValueObject\FullName;
 use Iam\Identity\Domain\ValueObject\IdentityId;
@@ -55,6 +56,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     public private(set) IdentityId $id;
     private IdentityState $accessState;
     private ErasureState $erasureState;
+    private \DateTimeImmutable $registeredAt;
     private ?\DateTimeImmutable $emailConfirmationResendRequestedAt = null;
 
     public static function register(IdentityId $id, FullName $fullName, Email $email, \DateTimeImmutable $registeredAt): self
@@ -201,6 +203,26 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    public function eraseUnconfirmed(\DateTimeImmutable $erasedAt): void
+    {
+        if (!$this->accessState->isPending()) {
+            return;
+        }
+
+        if (!new PendingIdentityExpiredSpecification($erasedAt)->isSatisfiedBy($this->registeredAt)) {
+            return;
+        }
+
+        if (!$this->erasureState->isRetained()) {
+            return;
+        }
+
+        $this->recordThat(new IdentityErased(
+            id: $this->id,
+            erasedAt: $erasedAt,
+        ));
+    }
+
     private function canTransitionErasureTo(ErasureState $target): bool
     {
         return new CanTransitionToSpecification(self::ERASURE_TRANSITIONS, $target)->isSatisfiedBy($this->erasureState);
@@ -217,6 +239,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         $this->id = $event->id;
         $this->accessState = IdentityState::PENDING;
         $this->erasureState = ErasureState::RETAINED;
+        $this->registeredAt = $event->registeredAt;
     }
 
     #[Apply]

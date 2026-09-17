@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Cron\Console;
 
-use Iam\Identity\Application\Command\EraseIdentity\EraseIdentity;
+use Iam\Identity\Application\Command\EraseUnconfirmedIdentity\EraseUnconfirmedIdentity;
 use Iam\Identity\Application\Query\ListExpiredPendingIdentities\ListExpiredPendingIdentities;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -44,7 +44,7 @@ final class SweepExpiredPendingIdentitiesCommand
             $count = 0;
 
             foreach ($expired as $identity) {
-                $this->commandBus->dispatch(new EraseIdentity($identity->id));
+                $this->commandBus->dispatch(new EraseUnconfirmedIdentity($identity->id));
                 ++$count;
             }
 

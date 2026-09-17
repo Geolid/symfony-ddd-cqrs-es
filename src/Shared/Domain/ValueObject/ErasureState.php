@@ -11,6 +11,11 @@ enum ErasureState: string
     case APPROVED = 'approved';
     case ERASED = 'erased';
 
+    public function isRetained(): bool
+    {
+        return self::RETAINED === $this;
+    }
+
     public function isApproved(): bool
     {
         return self::APPROVED === $this;

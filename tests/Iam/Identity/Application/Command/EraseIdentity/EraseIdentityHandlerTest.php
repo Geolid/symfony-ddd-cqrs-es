@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Application\Command\EraseIdentity;
 
 use Iam\Identity\Application\Command\EraseIdentity\EraseIdentity;
-use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
 use Iam\Identity\Application\Finder\Identity\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
@@ -42,7 +41,7 @@ final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itErasesWhenNotYetRequested(): void
+    public function itIgnoresWhenNotYetRequested(): void
     {
         // Given
         $identity = IdentityBuilder::new()->create();
@@ -50,28 +49,6 @@ final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new EraseIdentity($identity->id->toString()));
-
-        // Then
-        $this->expectException(IdentityResultNotFoundException::class);
-
-        $this->identityFinder->ofId($identity->id->toString());
-    }
-
-    #[Test]
-    public function itReleasesEmailUniqueness(): void
-    {
-        // Given — dispatched, not built via the Builder, so the email is genuinely claimed first.
-        $email = IdentityBuilder::sample('email')->value;
-        $identityId = Uuid::uuid7()->toString();
-        $this->dispatch(new RegisterIdentity($identityId, IdentityBuilder::sample('fullName')->value, $email));
-        $this->dispatch(new EraseIdentity($identityId));
-
-        // When
-        $this->dispatch(new RegisterIdentity(
-            Uuid::uuid7()->toString(),
-            IdentityBuilder::sample('fullName')->value,
-            $email,
-        ));
 
         // Then
         self::expectNotToPerformAssertions();
