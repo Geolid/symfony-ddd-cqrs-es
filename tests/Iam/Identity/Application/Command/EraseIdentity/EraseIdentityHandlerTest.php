@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Application\Command\EraseIdentity;
 
 use Iam\Identity\Application\Command\EraseIdentity\EraseIdentity;
+use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
 use Iam\Identity\Application\Finder\Identity\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
@@ -54,6 +55,26 @@ final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityResultNotFoundException::class);
 
         $this->identityFinder->ofId($identity->id->toString());
+    }
+
+    #[Test]
+    public function itReleasesEmailUniqueness(): void
+    {
+        // Given
+        $email = IdentityBuilder::sample('email')->value;
+        $identity = IdentityBuilder::new()->withEmail($email)->erasureRequested()->create();
+        $this->store($identity);
+        $this->dispatch(new EraseIdentity($identity->id->toString()));
+
+        // When
+        $this->dispatch(new RegisterIdentity(
+            Uuid::uuid7()->toString(),
+            IdentityBuilder::sample('fullName')->value,
+            $email,
+        ));
+
+        // Then
+        self::expectNotToPerformAssertions();
     }
 
     #[Test]

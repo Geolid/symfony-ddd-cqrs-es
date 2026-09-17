@@ -42,6 +42,28 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itProjectsOnIdentityActivated(): void
+    {
+        // Given
+        $other = IdentityBuilder::new()->create();
+        $this->store($other);
+
+        $identity = IdentityBuilder::new()->activated()->create();
+
+        // When
+        $this->store($identity);
+
+        // Then
+        $row = $this->fetchRow($identity->id->toString());
+        self::assertNotFalse($row);
+        self::assertSame(IdentityStatus::ACTIVE->value, $row['status']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame(IdentityStatus::PENDING->value, $otherRow['status']);
+    }
+
+    #[Test]
     public function itProjectsOnIdentitySuspended(): void
     {
         // Given

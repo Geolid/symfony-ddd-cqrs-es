@@ -226,6 +226,20 @@ final class IdentityTest extends AggregateRootTestCase
     }
 
     #[Test]
+    public function itRequestsEmailConfirmationResendAtCooldownBoundary(): void
+    {
+        $boundary = $this->emailConfirmationResendRequestedAt->modify('+60 seconds');
+
+        $this
+            ->given(
+                $this->registered(),
+                $this->emailConfirmationResendRequested(),
+            )
+            ->when(static fn (Identity $identity) => $identity->requestEmailConfirmationResend($boundary))
+            ->then(new IdentityEmailConfirmationResendRequested($this->id, $boundary));
+    }
+
+    #[Test]
     public function itRequestsErasure(): void
     {
         $this
