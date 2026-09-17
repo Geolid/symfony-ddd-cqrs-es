@@ -59,7 +59,7 @@ final class EraseUnconfirmedIdentityHandlerTest extends AbstractIntegrationTestC
     }
 
     #[Test]
-    public function itIgnoresWhenNotYetExpired(): void
+    public function itIgnoresWhenNotExpired(): void
     {
         // Given
         $now = Clock::get()->now();

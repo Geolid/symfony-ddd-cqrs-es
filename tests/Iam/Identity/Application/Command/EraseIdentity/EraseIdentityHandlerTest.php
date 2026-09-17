@@ -41,7 +41,7 @@ final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresWhenNotYetRequested(): void
+    public function itIgnoresWhenRetained(): void
     {
         // Given
         $identity = IdentityBuilder::new()->create();

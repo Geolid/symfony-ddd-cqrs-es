@@ -325,7 +325,7 @@ final class IdentityTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotEraseUnconfirmedWhenNotYetExpired(): void
+    public function itDoesNotEraseUnconfirmedWhenNotExpired(): void
     {
         $this
             ->given($this->registered())
