@@ -34,7 +34,7 @@ return static function (ContainerConfigurator $container): void {
     BoundedContextServiceLoader::load($services, 'Shared');
 
     // Always constructed directly with per-call closures, never resolved via the container.
-    $services->get(DbalPaginator::class)->autowire(false);
+    $services->remove(DbalPaginator::class);
 
     $commandBusAlias = $services->alias(CommandBusInterface::class, SymfonyCommandBus::class);
     $queryBusAlias = $services->alias(QueryBusInterface::class, SymfonyQueryBus::class);
