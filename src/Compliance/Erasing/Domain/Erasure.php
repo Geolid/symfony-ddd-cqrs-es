@@ -61,20 +61,20 @@ final class Erasure implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    public function approve(\DateTimeImmutable $now): void
+    public function approve(\DateTimeImmutable $approvedAt): void
     {
         if (!$this->canTransitionStateTo(ErasureRequestState::APPROVED)) {
             return;
         }
 
-        if (!new ErasureRetentionExpiredSpecification($now)->isSatisfiedBy($this->requestedAt)) {
+        if (!new ErasureRetentionExpiredSpecification($approvedAt)->isSatisfiedBy($this->requestedAt)) {
             return;
         }
 
         $this->recordThat(new ErasureApproved(
             id: $this->id,
             identityId: $this->identityId,
-            approvedAt: $now,
+            approvedAt: $approvedAt,
         ));
     }
 

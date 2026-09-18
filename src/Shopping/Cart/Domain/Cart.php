@@ -54,7 +54,7 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
     /**
      * @throws CartAlreadyPurchasedException
      */
-    public function addProduct(string $productId, Quantity $quantity, \DateTimeImmutable $now): void
+    public function addProduct(string $productId, Quantity $quantity, \DateTimeImmutable $addedAt): void
     {
         $this->guardActive();
 
@@ -62,7 +62,7 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
             id: $this->id,
             productId: $productId,
             quantity: $quantity,
-            addedAt: $now,
+            addedAt: $addedAt,
         ));
     }
 
@@ -70,7 +70,7 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
      * @throws CartAlreadyPurchasedException
      * @throws CartProductNotFoundException
      */
-    public function removeProduct(string $productId, \DateTimeImmutable $now): void
+    public function removeProduct(string $productId, \DateTimeImmutable $removedAt): void
     {
         $this->guardActive();
 
@@ -81,7 +81,7 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
         $this->recordThat(new CartProductRemoved(
             id: $this->id,
             productId: $productId,
-            removedAt: $now,
+            removedAt: $removedAt,
         ));
     }
 
@@ -89,7 +89,7 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
      * @throws CartAlreadyPurchasedException
      * @throws CartProductNotFoundException
      */
-    public function changeQuantity(string $productId, Quantity $quantity, \DateTimeImmutable $now): void
+    public function changeQuantity(string $productId, Quantity $quantity, \DateTimeImmutable $changedAt): void
     {
         $this->guardActive();
 
@@ -101,11 +101,11 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
             id: $this->id,
             productId: $productId,
             quantity: $quantity,
-            changedAt: $now,
+            changedAt: $changedAt,
         ));
     }
 
-    public function purchase(\DateTimeImmutable $now): void
+    public function purchase(\DateTimeImmutable $purchasedAt): void
     {
         if (!$this->canTransitionOperationalTo(CartState::PURCHASED)) {
             return;
@@ -113,7 +113,7 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
 
         $this->recordThat(new CartPurchased(
             id: $this->id,
-            purchasedAt: $now,
+            purchasedAt: $purchasedAt,
         ));
     }
 
