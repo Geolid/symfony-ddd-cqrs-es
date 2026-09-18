@@ -25,13 +25,13 @@ use Symfony\Component\Lock\LockFactory;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return static function (ContainerConfigurator $container): void {
+    $container->parameters()->set('verification_code.max_attempts', 5);
+    $container->parameters()->set('verification_code.expiry', '+15 minutes');
+
     $services = $container->services();
     $services->defaults()->autowire()->autoconfigure();
 
     BoundedContextServiceLoader::load($services, 'Shared');
-
-    $container->parameters()->set('verification_code.max_attempts', 5);
-    $container->parameters()->set('verification_code.expiry', '+15 minutes');
 
     // Always constructed directly with per-call closures, never resolved via the container.
     $services->get(DbalPaginator::class)->autowire(false);
