@@ -7,6 +7,7 @@ namespace Iam\Tests\Identity\Application\Command\ResendEmailConfirmation;
 use Iam\Identity\Application\Command\ResendEmailConfirmation\ResendEmailConfirmation;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\IdentityStatus;
+use Iam\Identity\Domain\Exception\EmailConfirmationResendRequestedTooRecentlyException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Exception\IdentityNotPendingException;
@@ -65,6 +66,21 @@ final class ResendEmailConfirmationHandlerTest extends AbstractIntegrationTestCa
 
         // Then
         $this->expectException(IdentityNotPendingException::class);
+
+        // When
+        $this->dispatch(new ResendEmailConfirmation($identity->id->toString()));
+    }
+
+    #[Test]
+    public function itFailsWhenRequestedTooRecently(): void
+    {
+        // Given
+        $identity = IdentityBuilder::new()->create();
+        $this->store($identity);
+        $this->dispatch(new ResendEmailConfirmation($identity->id->toString()));
+
+        // Then
+        $this->expectException(EmailConfirmationResendRequestedTooRecentlyException::class);
 
         // When
         $this->dispatch(new ResendEmailConfirmation($identity->id->toString()));
