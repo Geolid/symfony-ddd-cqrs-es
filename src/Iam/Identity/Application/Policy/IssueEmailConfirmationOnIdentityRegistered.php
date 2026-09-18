@@ -9,6 +9,7 @@ use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Identity\Domain\ValueObject\IdentityVerificationCodePurpose;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Psr\Clock\ClockInterface;
+use Shared\Application\Mailer\Exception\MailerException;
 use Shared\Application\Policy;
 use Shared\Domain\Service\VerificationCodeInterface;
 
@@ -22,6 +23,9 @@ final readonly class IssueEmailConfirmationOnIdentityRegistered
     ) {
     }
 
+    /**
+     * @throws MailerException
+     */
     #[Subscribe(IdentityRegistered::class)]
     public function __invoke(IdentityRegistered $event): void
     {

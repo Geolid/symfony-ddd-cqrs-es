@@ -37,6 +37,7 @@ use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Finder\Exception\ResultNotFoundException;
+use Shared\Application\Mailer\Exception\MailerException;
 use Shared\Application\Uniqueness\Exception\UniquenessViolatedException;
 use Shared\Domain\Exception\AggregateAlreadyExistsException;
 use Shared\Domain\Exception\AggregateNotFoundException;
@@ -102,6 +103,7 @@ return static function (ContainerConfigurator $container): void {
             AggregateAlreadyExistsException::class => ['log_level' => 'info', 'status_code' => 409],
             ResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             UniquenessViolatedException::class => ['log_level' => 'info', 'status_code' => 409],
+            MailerException::class => ['log_level' => 'error', 'status_code' => 502],
             VerificationCodeNotFoundException::class => ['log_level' => 'info', 'status_code' => 404],
             VerificationCodeAttemptsExceededException::class => ['log_level' => 'info', 'status_code' => 429],
             ApplicationExceptionInterface::class => ['log_level' => 'error', 'status_code' => 500],

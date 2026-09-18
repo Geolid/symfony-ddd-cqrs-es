@@ -11,6 +11,7 @@ use Iam\Identity\Domain\Event\IdentityEmailConfirmationResendRequested;
 use Iam\Identity\Domain\ValueObject\IdentityVerificationCodePurpose;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Psr\Clock\ClockInterface;
+use Shared\Application\Mailer\Exception\MailerException;
 use Shared\Application\Policy;
 use Shared\Domain\Service\VerificationCodeInterface;
 
@@ -27,6 +28,7 @@ final readonly class IssueEmailConfirmationOnIdentityEmailConfirmationResendRequ
 
     /**
      * @throws IdentityResultNotFoundException
+     * @throws MailerException
      */
     #[Subscribe(IdentityEmailConfirmationResendRequested::class)]
     public function __invoke(IdentityEmailConfirmationResendRequested $event): void

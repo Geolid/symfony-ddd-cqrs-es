@@ -11,6 +11,7 @@ use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialResetRe
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialVerificationCodePurpose;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Psr\Clock\ClockInterface;
+use Shared\Application\Mailer\Exception\MailerException;
 use Shared\Application\Policy;
 use Shared\Domain\Service\VerificationCodeInterface;
 
@@ -27,6 +28,7 @@ final readonly class IssuePasswordResetOnPasswordCredentialResetRequested
 
     /**
      * @throws IdentityResultNotFoundException
+     * @throws MailerException
      */
     #[Subscribe(PasswordCredentialResetRequested::class)]
     public function __invoke(PasswordCredentialResetRequested $event): void
