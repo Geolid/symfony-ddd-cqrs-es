@@ -43,11 +43,11 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresWhenActive(): void
+    public function itIgnoresWhenConfirmed(): void
     {
         // Given
         $now = Clock::get()->now();
-        $identity = IdentityBuilder::new()->withRegisteredAt($now->modify('-25 hours'))->activated()->create();
+        $identity = IdentityBuilder::new()->withRegisteredAt($now->modify('-25 hours'))->confirmed()->create();
         $this->store($identity);
 
         // When

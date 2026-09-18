@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Application\Query\ListIdentities;
 
 use Iam\Identity\Application\Finder\Identity\IdentityResult;
-use Iam\Identity\Application\IdentityStatus;
+use Iam\Identity\Application\IdentityModerationStatus;
 use Iam\Identity\Application\Query\ListIdentities\ListIdentities;
 use Iam\Identity\Domain\Identity;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
@@ -24,8 +24,8 @@ final class ListIdentitiesHandlerTest extends AbstractIntegrationTestCase
     public function itPaginates(): void
     {
         // Given
-        $suspendedBuilder = IdentityBuilder::new()->activated()->suspended();
-        $activeBuilder = IdentityBuilder::new()->activated();
+        $suspendedBuilder = IdentityBuilder::new()->confirmed()->suspended();
+        $activeBuilder = IdentityBuilder::new()->confirmed();
         $active = $activeBuilder->create();
         $suspended = $suspendedBuilder->create();
         $others = IdentityBuilder::new()->many(3)->create();
@@ -45,7 +45,7 @@ final class ListIdentitiesHandlerTest extends AbstractIntegrationTestCase
         [$activeResult, $suspendedResult] = $pages[1]->items;
 
         self::assertSame($active->id->toString(), $activeResult->id);
-        self::assertSame(IdentityStatus::ACTIVE, $activeResult->status);
+        self::assertSame(IdentityModerationStatus::ACTIVE, $activeResult->moderationStatus);
         self::assertNull($activeResult->reason);
         self::assertSame(
             $activeBuilder['registeredAt']->format(\DateTimeInterface::ATOM),
@@ -55,7 +55,7 @@ final class ListIdentitiesHandlerTest extends AbstractIntegrationTestCase
         self::assertNull($activeResult->reactivatedAt);
 
         self::assertSame($suspended->id->toString(), $suspendedResult->id);
-        self::assertSame(IdentityStatus::SUSPENDED, $suspendedResult->status);
+        self::assertSame(IdentityModerationStatus::SUSPENDED, $suspendedResult->moderationStatus);
         self::assertSame($suspendedBuilder['reason']->value, $suspendedResult->reason);
         self::assertSame(
             $suspendedBuilder['registeredAt']->format(\DateTimeInterface::ATOM),

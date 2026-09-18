@@ -42,7 +42,7 @@ final class TotpCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itAccepts(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->activated()->create();
+        $identity = IdentityBuilder::new()->confirmed()->create();
         $secret = TOTP::generate()->getSecret();
         $code = TOTP::createFromSecret($secret, Clock::get())->now();
         $credential = TotpCredentialBuilder::new()
@@ -65,7 +65,7 @@ final class TotpCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itRefuses(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->activated()->create();
+        $identity = IdentityBuilder::new()->confirmed()->create();
         $secret = TOTP::generate()->getSecret();
         $code = TOTP::createFromSecret($secret, Clock::get())->now();
         $credential = TotpCredentialBuilder::new()
@@ -113,7 +113,7 @@ final class TotpCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itFailsWhenIdentityNotAuthenticatable(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->activated()->suspended()->create();
+        $identity = IdentityBuilder::new()->confirmed()->suspended()->create();
 
         $credential = TotpCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())

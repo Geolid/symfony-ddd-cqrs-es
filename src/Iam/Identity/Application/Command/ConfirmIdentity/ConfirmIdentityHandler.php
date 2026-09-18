@@ -2,12 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Iam\Identity\Application\Command\ConfirmIdentityEmail;
+namespace Iam\Identity\Application\Command\ConfirmIdentity;
 
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyExistsException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
-use Iam\Identity\Domain\Exception\IdentityNotPendingException;
 use Iam\Identity\Domain\Exception\InvalidConfirmationCodeException;
 use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
@@ -18,7 +17,7 @@ use Shared\Domain\Exception\VerificationCodeNotFoundException;
 use Shared\Domain\Service\CodeChallengerInterface;
 
 #[CommandHandler]
-final readonly class ConfirmIdentityEmailHandler
+final readonly class ConfirmIdentityHandler
 {
     public function __construct(
         private IdentityRepositoryInterface $repository,
@@ -30,16 +29,15 @@ final readonly class ConfirmIdentityEmailHandler
     /**
      * @throws IdentityNotFoundException
      * @throws IdentityAlreadyErasedException
-     * @throws IdentityNotPendingException
      * @throws InvalidConfirmationCodeException
      * @throws VerificationCodeNotFoundException
      * @throws VerificationCodeAttemptsExceededException
      * @throws IdentityAlreadyExistsException
      */
-    public function __invoke(ConfirmIdentityEmail $command): void
+    public function __invoke(ConfirmIdentity $command): void
     {
         $identity = $this->repository->load(IdentityId::fromString($command->id));
-        $identity->activate($command->code, $this->codeChallenger, $this->clock->now());
+        $identity->confirm($command->code, $this->codeChallenger, $this->clock->now());
 
         $this->repository->save($identity);
     }

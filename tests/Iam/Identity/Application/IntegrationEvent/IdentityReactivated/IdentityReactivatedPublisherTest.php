@@ -15,7 +15,7 @@ final class IdentityReactivatedPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $builder = IdentityBuilder::new()->activated()->suspended()->reactivated();
+        $builder = IdentityBuilder::new()->confirmed()->suspended()->reactivated();
         $identity = $builder->create();
 
         // When

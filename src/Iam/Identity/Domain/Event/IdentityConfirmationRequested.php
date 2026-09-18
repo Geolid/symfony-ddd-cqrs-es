@@ -7,12 +7,12 @@ namespace Iam\Identity\Domain\Event;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Patchlevel\EventSourcing\Attribute\Event;
 
-#[Event('iam.identity.identity.activated')]
-final readonly class IdentityActivated
+#[Event('iam.identity.identity.confirmation_requested')]
+final readonly class IdentityConfirmationRequested
 {
     public function __construct(
         public IdentityId $id,
-        public \DateTimeImmutable $activatedAt,
+        public \DateTimeImmutable $requestedAt,
     ) {
     }
 }

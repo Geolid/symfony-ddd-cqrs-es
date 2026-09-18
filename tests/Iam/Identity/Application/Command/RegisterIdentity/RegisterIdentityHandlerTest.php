@@ -7,7 +7,7 @@ namespace Iam\Tests\Identity\Application\Command\RegisterIdentity;
 use Iam\Identity\Application\Command\RegisterIdentity\Exception\IdentityEmailAlreadyInUseException;
 use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
-use Iam\Identity\Application\IdentityStatus;
+use Iam\Identity\Application\IdentityVerificationStatus;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -33,7 +33,7 @@ final class RegisterIdentityHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($id, $result->id);
         self::assertSame($fullName, $result->fullName);
         self::assertSame($email, $result->email);
-        self::assertSame(IdentityStatus::PENDING, $result->status);
+        self::assertSame(IdentityVerificationStatus::PENDING, $result->verificationStatus);
         self::assertNull($result->reason);
         self::assertSame(
             $now->format(\DateTimeInterface::ATOM),

@@ -9,7 +9,7 @@ use Doctrine\DBAL\Types\Types;
 use Iam\Identity\Application\Finder\Identity\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Finder\Identity\IdentityResult;
-use Iam\Identity\Application\IdentityStatus;
+use Iam\Identity\Application\IdentityVerificationStatus;
 use Iam\Identity\Infrastructure\Projection\Projector\DbalIdentityProjector;
 use Shared\Application\Finder\SortDirection;
 use Shared\Infrastructure\Projection\Finder\AbstractPaginatableDbalFinder;
@@ -41,9 +41,9 @@ final class DbalIdentityFinder extends AbstractPaginatableDbalFinder implements 
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($cutoff): void {
-                $qb->andWhere('status = :pending')
+                $qb->andWhere('verification_status = :pending')
                     ->andWhere('registered_at < :cutoff')
-                    ->setParameter('pending', IdentityStatus::PENDING)
+                    ->setParameter('pending', IdentityVerificationStatus::PENDING)
                     ->setParameter('cutoff', $cutoff, Types::DATETIME_IMMUTABLE);
             },
         );
@@ -51,7 +51,7 @@ final class DbalIdentityFinder extends AbstractPaginatableDbalFinder implements 
 
     protected function configureBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'full_name', 'email', 'status', 'reason', 'registered_at', 'email_confirmation_requested_at', 'suspended_at', 'reactivated_at', 'erasure_status')
+        $qb->select('id', 'full_name', 'email', 'verification_status', 'moderation_status', 'reason', 'registered_at', 'confirmation_requested_at', 'suspended_at', 'reactivated_at', 'erasure_status')
             ->from(DbalIdentityProjector::TABLE);
     }
 

@@ -6,7 +6,7 @@ namespace Iam\Tests\Identity\Application\Command\ReactivateIdentity;
 
 use Iam\Identity\Application\Command\ReactivateIdentity\ReactivateIdentity;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
-use Iam\Identity\Application\IdentityStatus;
+use Iam\Identity\Application\IdentityModerationStatus;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
@@ -24,7 +24,7 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
         $reason = IdentityBuilder::sample('reason')->value;
         $now = Clock::get()->now();
 
-        $builder = IdentityBuilder::new()->activated()->suspended();
+        $builder = IdentityBuilder::new()->confirmed()->suspended();
         $identity = $builder->create();
         $this->store($identity);
 
@@ -34,7 +34,7 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
         // Then
         $result = $this->service(IdentityFinderInterface::class)->ofId($identity->id->toString());
         self::assertSame($identity->id->toString(), $result->id);
-        self::assertSame(IdentityStatus::ACTIVE, $result->status);
+        self::assertSame(IdentityModerationStatus::ACTIVE, $result->moderationStatus);
         self::assertSame($reason, $result->reason);
         self::assertSame(
             $builder['registeredAt']->format(\DateTimeInterface::ATOM),
@@ -51,7 +51,7 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyActive(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->activated()->create();
+        $identity = IdentityBuilder::new()->confirmed()->create();
         $this->store($identity);
 
         // When

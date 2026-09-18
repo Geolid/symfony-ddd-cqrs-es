@@ -13,8 +13,8 @@ use Shared\Application\Mailer\Exception\MailerException;
 use Shared\Application\Policy;
 use Shared\Domain\Service\CodeChallengerInterface;
 
-#[Policy('iam.identity.issue_email_confirmation_on_identity_registered')]
-final readonly class IssueEmailConfirmationOnIdentityRegistered
+#[Policy('iam.identity.issue_confirmation_on_identity_registered')]
+final readonly class IssueConfirmationOnIdentityRegistered
 {
     public function __construct(
         private CodeChallengerInterface $codeChallenger,

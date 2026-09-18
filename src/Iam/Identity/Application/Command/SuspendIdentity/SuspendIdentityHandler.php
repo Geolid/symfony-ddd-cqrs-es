@@ -6,7 +6,6 @@ namespace Iam\Identity\Application\Command\SuspendIdentity;
 
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyExistsException;
-use Iam\Identity\Domain\Exception\IdentityNotActiveException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
@@ -26,7 +25,6 @@ final readonly class SuspendIdentityHandler
     /**
      * @throws IdentityNotFoundException
      * @throws IdentityAlreadyErasedException
-     * @throws IdentityNotActiveException
      * @throws IdentityAlreadyExistsException
      */
     public function __invoke(SuspendIdentity $command): void

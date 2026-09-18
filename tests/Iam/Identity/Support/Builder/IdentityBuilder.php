@@ -21,9 +21,9 @@ use Symfony\Component\Clock\Clock;
  *     fullName: FullName,
  *     email: Email,
  *     registeredAt: \DateTimeImmutable,
- *     activatedAt: \DateTimeImmutable,
+ *     confirmedAt: \DateTimeImmutable,
  *     confirmationCode: string,
- *     emailConfirmationRequestedAt: \DateTimeImmutable,
+ *     confirmationRequestedAt: \DateTimeImmutable,
  *     reason: Reason,
  *     suspendedAt: \DateTimeImmutable,
  *     reactivatedAt: \DateTimeImmutable,
@@ -56,15 +56,15 @@ final class IdentityBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(registeredAt: $registeredAt);
     }
 
-    public function activated(?\DateTimeImmutable $activatedAt = null): self
+    public function confirmed(?\DateTimeImmutable $confirmedAt = null): self
     {
-        $builder = null !== $activatedAt ? $this->withAttributes(activatedAt: $activatedAt) : $this;
+        $builder = null !== $confirmedAt ? $this->withAttributes(confirmedAt: $confirmedAt) : $this;
 
         return $builder->withModifier(
-            static fn (Identity $identity, self $builder) => $identity->activate(
+            static fn (Identity $identity, self $builder) => $identity->confirm(
                 $builder['confirmationCode'],
                 new FakeCodeChallenger(),
-                $builder['activatedAt'],
+                $builder['confirmedAt'],
             ),
         );
     }
@@ -93,12 +93,12 @@ final class IdentityBuilder extends AbstractAggregateBuilder
         );
     }
 
-    public function emailConfirmationRequested(?\DateTimeImmutable $requestedAt = null): self
+    public function confirmationRequested(?\DateTimeImmutable $requestedAt = null): self
     {
-        $builder = null !== $requestedAt ? $this->withAttributes(emailConfirmationRequestedAt: $requestedAt) : $this;
+        $builder = null !== $requestedAt ? $this->withAttributes(confirmationRequestedAt: $requestedAt) : $this;
 
         return $builder->withModifier(
-            static fn (Identity $identity, self $builder) => $identity->requestEmailConfirmation($builder['emailConfirmationRequestedAt']),
+            static fn (Identity $identity, self $builder) => $identity->requestConfirmation($builder['confirmationRequestedAt']),
         );
     }
 
@@ -138,9 +138,9 @@ final class IdentityBuilder extends AbstractAggregateBuilder
             'fullName' => static fn (): FullName => FullName::fromString(SeededFaker::get()->name()),
             'email' => static fn (): Email => Email::fromString(SeededFaker::get()->unique()->safeEmail()),
             'registeredAt' => static fn (): \DateTimeImmutable => $now,
-            'activatedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 hour'),
+            'confirmedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 hour'),
             'confirmationCode' => static fn (): string => FakeCodeChallenger::CODE,
-            'emailConfirmationRequestedAt' => static fn (): \DateTimeImmutable => $now->modify('+30 minutes'),
+            'confirmationRequestedAt' => static fn (): \DateTimeImmutable => $now->modify('+30 minutes'),
             'reason' => static fn (): Reason => Reason::fromString(SeededFaker::get()->sentence(4)),
             'suspendedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
             'reactivatedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 day'),

@@ -22,7 +22,7 @@ final class IssuePasswordResetOnPasswordCredentialResetRequestedTest extends Abs
     public function itNotifies(): void
     {
         // Given
-        $builder = IdentityBuilder::new()->activated();
+        $builder = IdentityBuilder::new()->confirmed();
         $identity = $builder->create();
         $this->store($identity);
 

@@ -35,7 +35,7 @@ final class RequestPasswordResetHandlerTest extends AbstractIntegrationTestCase
     public function itRequests(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->activated()->create();
+        $identity = IdentityBuilder::new()->confirmed()->create();
         $credential = PasswordCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withPasswordStrength($this->passwordStrength)
@@ -85,7 +85,7 @@ final class RequestPasswordResetHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenCredentialNotFound(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->activated()->create();
+        $identity = IdentityBuilder::new()->confirmed()->create();
         $this->store($identity);
 
         // Then

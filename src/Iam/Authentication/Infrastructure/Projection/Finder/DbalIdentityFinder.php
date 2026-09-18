@@ -27,7 +27,7 @@ final class DbalIdentityFinder extends AbstractDbalFinder implements IdentityFin
 
     protected function configureBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('identity_id', 'full_name', 'email', 'status')->from(DbalIdentityProjector::TABLE);
+        $qb->select('identity_id', 'full_name', 'email', 'verification_status', 'moderation_status')->from(DbalIdentityProjector::TABLE);
     }
 
     protected function resultClass(): string

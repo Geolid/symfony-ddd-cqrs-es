@@ -39,7 +39,7 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itAccepts(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->activated()->create();
+        $identity = IdentityBuilder::new()->confirmed()->create();
         $builder = PasswordCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withPasswordStrength($this->passwordStrength)
@@ -58,7 +58,7 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itRefuses(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->activated()->create();
+        $identity = IdentityBuilder::new()->confirmed()->create();
         $builder = PasswordCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withPasswordStrength($this->passwordStrength)
@@ -90,7 +90,7 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itFailsWhenIdentityNotAuthenticatable(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->activated()->suspended()->create();
+        $identity = IdentityBuilder::new()->confirmed()->suspended()->create();
 
         $builder = PasswordCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())

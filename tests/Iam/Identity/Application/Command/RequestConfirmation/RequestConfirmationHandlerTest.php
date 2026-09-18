@@ -2,22 +2,22 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Identity\Application\Command\RequestEmailConfirmation;
+namespace Iam\Tests\Identity\Application\Command\RequestConfirmation;
 
-use Iam\Identity\Application\Command\RequestEmailConfirmation\RequestEmailConfirmation;
+use Iam\Identity\Application\Command\RequestConfirmation\RequestConfirmation;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
-use Iam\Identity\Application\IdentityStatus;
-use Iam\Identity\Domain\Exception\EmailConfirmationRequestedTooRecentlyException;
+use Iam\Identity\Application\IdentityVerificationStatus;
+use Iam\Identity\Domain\Exception\ConfirmationRequestedTooRecentlyException;
+use Iam\Identity\Domain\Exception\IdentityAlreadyConfirmedException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
-use Iam\Identity\Domain\Exception\IdentityNotPendingException;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
-final class RequestEmailConfirmationHandlerTest extends AbstractIntegrationTestCase
+final class RequestConfirmationHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
     public function itRequests(): void
@@ -28,14 +28,14 @@ final class RequestEmailConfirmationHandlerTest extends AbstractIntegrationTestC
         $this->store($identity);
 
         // When
-        $this->dispatch(new RequestEmailConfirmation($identity->id->toString()));
+        $this->dispatch(new RequestConfirmation($identity->id->toString()));
 
         // Then
         $result = $this->service(IdentityFinderInterface::class)->ofId($identity->id->toString());
-        self::assertSame(IdentityStatus::PENDING, $result->status);
+        self::assertSame(IdentityVerificationStatus::PENDING, $result->verificationStatus);
         self::assertSame(
             $now->format(\DateTimeInterface::ATOM),
-            $result->emailConfirmationRequestedAt->format(\DateTimeInterface::ATOM),
+            $result->confirmationRequestedAt->format(\DateTimeInterface::ATOM),
         );
     }
 
@@ -46,7 +46,7 @@ final class RequestEmailConfirmationHandlerTest extends AbstractIntegrationTestC
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new RequestEmailConfirmation(Uuid::uuid7()->toString()));
+        $this->dispatch(new RequestConfirmation(Uuid::uuid7()->toString()));
     }
 
     #[Test]
@@ -60,34 +60,34 @@ final class RequestEmailConfirmationHandlerTest extends AbstractIntegrationTestC
         $this->expectException(IdentityAlreadyErasedException::class);
 
         // When
-        $this->dispatch(new RequestEmailConfirmation($identity->id->toString()));
+        $this->dispatch(new RequestConfirmation($identity->id->toString()));
     }
 
     #[Test]
-    public function itFailsWhenNotPending(): void
+    public function itFailsWhenAlreadyConfirmed(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->activated()->create();
+        $identity = IdentityBuilder::new()->confirmed()->create();
         $this->store($identity);
 
         // Then
-        $this->expectException(IdentityNotPendingException::class);
+        $this->expectException(IdentityAlreadyConfirmedException::class);
 
         // When
-        $this->dispatch(new RequestEmailConfirmation($identity->id->toString()));
+        $this->dispatch(new RequestConfirmation($identity->id->toString()));
     }
 
     #[Test]
     public function itFailsWhenRequestedTooRecently(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->emailConfirmationRequested()->create();
+        $identity = IdentityBuilder::new()->confirmationRequested()->create();
         $this->store($identity);
 
         // Then
-        $this->expectException(EmailConfirmationRequestedTooRecentlyException::class);
+        $this->expectException(ConfirmationRequestedTooRecentlyException::class);
 
         // When
-        $this->dispatch(new RequestEmailConfirmation($identity->id->toString()));
+        $this->dispatch(new RequestConfirmation($identity->id->toString()));
     }
 }

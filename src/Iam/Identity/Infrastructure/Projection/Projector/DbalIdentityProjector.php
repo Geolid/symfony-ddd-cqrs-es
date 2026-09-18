@@ -8,9 +8,10 @@ use Doctrine\DBAL\Schema\Name\UnqualifiedName;
 use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
-use Iam\Identity\Application\IdentityStatus;
-use Iam\Identity\Domain\Event\IdentityActivated;
-use Iam\Identity\Domain\Event\IdentityEmailConfirmationRequested;
+use Iam\Identity\Application\IdentityModerationStatus;
+use Iam\Identity\Application\IdentityVerificationStatus;
+use Iam\Identity\Domain\Event\IdentityConfirmationRequested;
+use Iam\Identity\Domain\Event\IdentityConfirmed;
 use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\Event\IdentityErasureCancelled;
 use Iam\Identity\Domain\Event\IdentityErasureRequested;
@@ -38,33 +39,34 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
                 'id' => $event->id->toString(),
                 'full_name' => $event->fullName->value,
                 'email' => $event->email->value,
-                'status' => IdentityStatus::PENDING->value,
+                'verification_status' => IdentityVerificationStatus::PENDING->value,
+                'moderation_status' => IdentityModerationStatus::ACTIVE->value,
                 'registered_at' => $event->registeredAt,
-                'email_confirmation_requested_at' => $event->registeredAt,
+                'confirmation_requested_at' => $event->registeredAt,
                 'erasure_status' => ErasureStatus::RETAINED->value,
             ],
-            ['registered_at' => Types::DATETIME_IMMUTABLE, 'email_confirmation_requested_at' => Types::DATETIME_IMMUTABLE],
+            ['registered_at' => Types::DATETIME_IMMUTABLE, 'confirmation_requested_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
-    #[Subscribe(IdentityActivated::class)]
-    public function onIdentityActivated(IdentityActivated $event): void
+    #[Subscribe(IdentityConfirmed::class)]
+    public function onIdentityConfirmed(IdentityConfirmed $event): void
     {
         $this->connection->update(
             self::TABLE,
-            ['status' => IdentityStatus::ACTIVE->value],
+            ['verification_status' => IdentityVerificationStatus::CONFIRMED->value],
             ['id' => $event->id->toString()],
         );
     }
 
-    #[Subscribe(IdentityEmailConfirmationRequested::class)]
-    public function onIdentityEmailConfirmationRequested(IdentityEmailConfirmationRequested $event): void
+    #[Subscribe(IdentityConfirmationRequested::class)]
+    public function onIdentityConfirmationRequested(IdentityConfirmationRequested $event): void
     {
         $this->connection->update(
             self::TABLE,
-            ['email_confirmation_requested_at' => $event->requestedAt],
+            ['confirmation_requested_at' => $event->requestedAt],
             ['id' => $event->id->toString()],
-            ['email_confirmation_requested_at' => Types::DATETIME_IMMUTABLE],
+            ['confirmation_requested_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -74,7 +76,7 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             [
-                'status' => IdentityStatus::SUSPENDED->value,
+                'moderation_status' => IdentityModerationStatus::SUSPENDED->value,
                 'reason' => $event->reason->value,
                 'suspended_at' => $event->suspendedAt,
                 'reactivated_at' => null,
@@ -90,7 +92,7 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             [
-                'status' => IdentityStatus::ACTIVE->value,
+                'moderation_status' => IdentityModerationStatus::ACTIVE->value,
                 'reason' => $event->reason->value,
                 'reactivated_at' => $event->reactivatedAt,
                 'suspended_at' => null,
@@ -135,10 +137,11 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('full_name', Types::STRING, ['length' => FullName::MAX_LENGTH]);
         $table->addColumn('email', Types::STRING, ['length' => 255]);
-        $table->addColumn('status', Types::STRING, ['length' => 20]);
+        $table->addColumn('verification_status', Types::STRING, ['length' => 20]);
+        $table->addColumn('moderation_status', Types::STRING, ['length' => 20]);
         $table->addColumn('reason', Types::STRING, ['length' => Reason::MAX_LENGTH, 'notnull' => false]);
         $table->addColumn('registered_at', Types::DATETIME_IMMUTABLE);
-        $table->addColumn('email_confirmation_requested_at', Types::DATETIME_IMMUTABLE);
+        $table->addColumn('confirmation_requested_at', Types::DATETIME_IMMUTABLE);
         $table->addColumn('suspended_at', Types::DATETIME_IMMUTABLE, ['notnull' => false]);
         $table->addColumn('reactivated_at', Types::DATETIME_IMMUTABLE, ['notnull' => false]);
         $table->addColumn('erasure_status', Types::STRING, ['length' => 20]);
@@ -148,6 +151,6 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
                 ->create(),
         );
         $table->addIndex(['email'], 'iam_identity_identity_email_idx');
-        $table->addIndex(['status', 'registered_at'], 'iam_identity_identity_status_registered_at_idx');
+        $table->addIndex(['verification_status', 'registered_at'], 'iam_identity_identity_verification_status_registered_at_idx');
     }
 }

@@ -8,8 +8,9 @@ use Doctrine\DBAL\Schema\Name\UnqualifiedName;
 use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
-use Iam\Authentication\Application\IdentityStatus;
-use Iam\Identity\Application\IntegrationEvent\IdentityActivated\IdentityActivatedIntegrationEvent;
+use Iam\Authentication\Application\IdentityModerationStatus;
+use Iam\Authentication\Application\IdentityVerificationStatus;
+use Iam\Identity\Application\IntegrationEvent\IdentityConfirmed\IdentityConfirmedIntegrationEvent;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
 use Iam\Identity\Application\IntegrationEvent\IdentityReactivated\IdentityReactivatedIntegrationEvent;
 use Iam\Identity\Application\IntegrationEvent\IdentityRegistered\IdentityRegisteredIntegrationEvent;
@@ -30,26 +31,27 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
             'identity_id' => $event->identityId,
             'full_name' => $event->fullName,
             'email' => $event->email,
-            'status' => IdentityStatus::PENDING->value,
+            'verification_status' => IdentityVerificationStatus::PENDING->value,
+            'moderation_status' => IdentityModerationStatus::ACTIVE->value,
         ]);
     }
 
-    #[Subscribe(IdentityActivatedIntegrationEvent::class)]
-    public function onIdentityActivatedIntegrationEvent(IdentityActivatedIntegrationEvent $event): void
+    #[Subscribe(IdentityConfirmedIntegrationEvent::class)]
+    public function onIdentityConfirmedIntegrationEvent(IdentityConfirmedIntegrationEvent $event): void
     {
-        $this->connection->update(self::TABLE, ['status' => IdentityStatus::ACTIVE->value], ['identity_id' => $event->identityId]);
+        $this->connection->update(self::TABLE, ['verification_status' => IdentityVerificationStatus::CONFIRMED->value], ['identity_id' => $event->identityId]);
     }
 
     #[Subscribe(IdentitySuspendedIntegrationEvent::class)]
     public function onIdentitySuspendedIntegrationEvent(IdentitySuspendedIntegrationEvent $event): void
     {
-        $this->connection->update(self::TABLE, ['status' => IdentityStatus::SUSPENDED->value], ['identity_id' => $event->identityId]);
+        $this->connection->update(self::TABLE, ['moderation_status' => IdentityModerationStatus::SUSPENDED->value], ['identity_id' => $event->identityId]);
     }
 
     #[Subscribe(IdentityReactivatedIntegrationEvent::class)]
     public function onIdentityReactivatedIntegrationEvent(IdentityReactivatedIntegrationEvent $event): void
     {
-        $this->connection->update(self::TABLE, ['status' => IdentityStatus::ACTIVE->value], ['identity_id' => $event->identityId]);
+        $this->connection->update(self::TABLE, ['moderation_status' => IdentityModerationStatus::ACTIVE->value], ['identity_id' => $event->identityId]);
     }
 
     #[Subscribe(IdentityErasedIntegrationEvent::class)]
@@ -67,7 +69,8 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
         $table->addColumn('identity_id', Types::STRING, ['length' => 36]);
         $table->addColumn('full_name', Types::STRING, ['length' => 200]);
         $table->addColumn('email', Types::STRING, ['length' => 255]);
-        $table->addColumn('status', Types::STRING, ['length' => 20]);
+        $table->addColumn('verification_status', Types::STRING, ['length' => 20]);
+        $table->addColumn('moderation_status', Types::STRING, ['length' => 20]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('identity_id'))

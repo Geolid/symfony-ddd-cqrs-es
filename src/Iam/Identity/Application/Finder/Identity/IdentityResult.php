@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Application\Finder\Identity;
 
-use Iam\Identity\Application\IdentityStatus;
+use Iam\Identity\Application\IdentityModerationStatus;
+use Iam\Identity\Application\IdentityVerificationStatus;
 use Shared\Application\ErasureStatus;
 
 final readonly class IdentityResult
@@ -13,10 +14,11 @@ final readonly class IdentityResult
         public string $id,
         public string $fullName,
         public string $email,
-        public IdentityStatus $status,
+        public IdentityVerificationStatus $verificationStatus,
+        public IdentityModerationStatus $moderationStatus,
         public ?string $reason,
         public \DateTimeImmutable $registeredAt,
-        public \DateTimeImmutable $emailConfirmationRequestedAt,
+        public \DateTimeImmutable $confirmationRequestedAt,
         public ?\DateTimeImmutable $suspendedAt,
         public ?\DateTimeImmutable $reactivatedAt,
         public ErasureStatus $erasureStatus,

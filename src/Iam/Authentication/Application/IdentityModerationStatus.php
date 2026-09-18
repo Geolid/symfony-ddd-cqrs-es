@@ -4,9 +4,8 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Application;
 
-enum IdentityStatus: string
+enum IdentityModerationStatus: string
 {
-    case PENDING = 'pending';
     case ACTIVE = 'active';
     case SUSPENDED = 'suspended';
 

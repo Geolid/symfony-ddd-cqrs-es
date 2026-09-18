@@ -6,9 +6,9 @@ namespace Iam\Tests\Identity\Application\Command\SuspendIdentity;
 
 use Iam\Identity\Application\Command\SuspendIdentity\SuspendIdentity;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
-use Iam\Identity\Application\IdentityStatus;
+use Iam\Identity\Application\IdentityModerationStatus;
+use Iam\Identity\Application\IdentityVerificationStatus;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
-use Iam\Identity\Domain\Exception\IdentityNotActiveException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
@@ -18,6 +18,15 @@ use Symfony\Component\Clock\Clock;
 
 final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
 {
+    private IdentityFinderInterface $identityFinder;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->identityFinder = $this->service(IdentityFinderInterface::class);
+    }
+
     #[Test]
     public function itSuspends(): void
     {
@@ -25,7 +34,7 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
         $reason = IdentityBuilder::sample('reason')->value;
         $now = Clock::get()->now();
 
-        $builder = IdentityBuilder::new()->activated();
+        $builder = IdentityBuilder::new()->confirmed();
         $identity = $builder->create();
         $this->store($identity);
 
@@ -33,9 +42,9 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new SuspendIdentity($identity->id->toString(), $reason));
 
         // Then
-        $result = $this->service(IdentityFinderInterface::class)->ofId($identity->id->toString());
+        $result = $this->identityFinder->ofId($identity->id->toString());
         self::assertSame($identity->id->toString(), $result->id);
-        self::assertSame(IdentityStatus::SUSPENDED, $result->status);
+        self::assertSame(IdentityModerationStatus::SUSPENDED, $result->moderationStatus);
         self::assertSame($reason, $result->reason);
         self::assertSame(
             $builder['registeredAt']->format(\DateTimeInterface::ATOM),
@@ -49,10 +58,26 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itSuspendsWhenPending(): void
+    {
+        // Given
+        $identity = IdentityBuilder::new()->create();
+        $this->store($identity);
+
+        // When
+        $this->dispatch(new SuspendIdentity($identity->id->toString(), IdentityBuilder::sample('reason')->value));
+
+        // Then
+        $result = $this->identityFinder->ofId($identity->id->toString());
+        self::assertSame(IdentityModerationStatus::SUSPENDED, $result->moderationStatus);
+        self::assertSame(IdentityVerificationStatus::PENDING, $result->verificationStatus);
+    }
+
+    #[Test]
     public function itIgnoresWhenAlreadySuspended(): void
     {
         // Given
-        $builder = IdentityBuilder::new()->activated()->suspended();
+        $builder = IdentityBuilder::new()->confirmed()->suspended();
         $identity = $builder->create();
         $this->store($identity);
 
@@ -85,23 +110,6 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         $this->expectException(IdentityAlreadyErasedException::class);
-
-        // When
-        $this->dispatch(new SuspendIdentity(
-            $identity->id->toString(),
-            IdentityBuilder::sample('reason')->value,
-        ));
-    }
-
-    #[Test]
-    public function itFailsWhenNotActive(): void
-    {
-        // Given
-        $identity = IdentityBuilder::new()->create();
-        $this->store($identity);
-
-        // Then
-        $this->expectException(IdentityNotActiveException::class);
 
         // When
         $this->dispatch(new SuspendIdentity(

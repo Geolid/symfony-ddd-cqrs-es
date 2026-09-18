@@ -4,19 +4,18 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Application;
 
-enum IdentityStatus: string
+enum IdentityVerificationStatus: string
 {
     case PENDING = 'pending';
-    case ACTIVE = 'active';
-    case SUSPENDED = 'suspended';
+    case CONFIRMED = 'confirmed';
 
     public function isPending(): bool
     {
         return self::PENDING === $this;
     }
 
-    public function isActive(): bool
+    public function isConfirmed(): bool
     {
-        return self::ACTIVE === $this;
+        return self::CONFIRMED === $this;
     }
 }

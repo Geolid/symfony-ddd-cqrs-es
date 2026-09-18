@@ -4,19 +4,17 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Identity\Domain;
 
-use Iam\Identity\Domain\Event\IdentityActivated;
-use Iam\Identity\Domain\Event\IdentityEmailConfirmationRequested;
+use Iam\Identity\Domain\Event\IdentityConfirmationRequested;
+use Iam\Identity\Domain\Event\IdentityConfirmed;
 use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\Event\IdentityErasureCancelled;
 use Iam\Identity\Domain\Event\IdentityErasureRequested;
 use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Identity\Domain\Event\IdentitySuspended;
-use Iam\Identity\Domain\Exception\EmailConfirmationRequestedTooRecentlyException;
+use Iam\Identity\Domain\Exception\ConfirmationRequestedTooRecentlyException;
+use Iam\Identity\Domain\Exception\IdentityAlreadyConfirmedException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
-use Iam\Identity\Domain\Exception\IdentityNotActiveException;
-use Iam\Identity\Domain\Exception\IdentityNotPendingException;
-use Iam\Identity\Domain\Exception\IdentityNotSuspendedException;
 use Iam\Identity\Domain\Exception\InvalidConfirmationCodeException;
 use Iam\Identity\Domain\Identity;
 use Iam\Identity\Domain\ValueObject\Email;
@@ -37,7 +35,7 @@ final class IdentityTest extends AggregateRootTestCase
     private Email $email;
     private Reason $reason;
     private \DateTimeImmutable $registeredAt;
-    private \DateTimeImmutable $activatedAt;
+    private \DateTimeImmutable $confirmedAt;
     private string $confirmationCode;
     private CodeChallengerInterface $codeChallenger;
     private \DateTimeImmutable $suspendedAt;
@@ -45,7 +43,7 @@ final class IdentityTest extends AggregateRootTestCase
     private \DateTimeImmutable $requestedAt;
     private \DateTimeImmutable $cancelledAt;
     private \DateTimeImmutable $erasedAt;
-    private \DateTimeImmutable $emailConfirmationRequestedAt;
+    private \DateTimeImmutable $confirmationRequestedAt;
 
     protected function setUp(): void
     {
@@ -56,7 +54,7 @@ final class IdentityTest extends AggregateRootTestCase
         $this->email = IdentityBuilder::sample('email');
         $this->reason = IdentityBuilder::sample('reason');
         $this->registeredAt = IdentityBuilder::sample('registeredAt');
-        $this->activatedAt = IdentityBuilder::sample('activatedAt');
+        $this->confirmedAt = IdentityBuilder::sample('confirmedAt');
         $this->confirmationCode = IdentityBuilder::sample('confirmationCode');
         $this->codeChallenger = new FakeCodeChallenger();
         $this->suspendedAt = IdentityBuilder::sample('suspendedAt');
@@ -64,7 +62,7 @@ final class IdentityTest extends AggregateRootTestCase
         $this->requestedAt = IdentityBuilder::sample('requestedAt');
         $this->cancelledAt = IdentityBuilder::sample('cancelledAt');
         $this->erasedAt = IdentityBuilder::sample('erasedAt');
-        $this->emailConfirmationRequestedAt = IdentityBuilder::sample('emailConfirmationRequestedAt');
+        $this->confirmationRequestedAt = IdentityBuilder::sample('confirmationRequestedAt');
     }
 
     #[Test]
@@ -77,25 +75,34 @@ final class IdentityTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itActivates(): void
+    public function itConfirms(): void
     {
         $this
             ->given($this->registered())
-            ->when(fn (Identity $identity) => $identity->activate($this->confirmationCode, $this->codeChallenger, $this->activatedAt))
-            ->then($this->activated());
+            ->when(fn (Identity $identity) => $identity->confirm($this->confirmationCode, $this->codeChallenger, $this->confirmedAt))
+            ->then($this->confirmed());
     }
 
     #[Test]
-    public function itDoesNotActivateWhenAlreadyActive(): void
+    public function itConfirmsWhenSuspended(): void
     {
         $this
-            ->given($this->registered(), $this->activated())
-            ->when(fn (Identity $identity) => $identity->activate($this->confirmationCode, $this->codeChallenger, IdentityBuilder::sample('activatedAt')))
+            ->given($this->registered(), $this->suspended())
+            ->when(fn (Identity $identity) => $identity->confirm($this->confirmationCode, $this->codeChallenger, $this->confirmedAt))
+            ->then($this->confirmed());
+    }
+
+    #[Test]
+    public function itDoesNotConfirmWhenAlreadyConfirmed(): void
+    {
+        $this
+            ->given($this->registered(), $this->confirmed())
+            ->when(fn (Identity $identity) => $identity->confirm($this->confirmationCode, $this->codeChallenger, IdentityBuilder::sample('confirmedAt')))
             ->then();
     }
 
     #[Test]
-    public function itCannotActivateWhenErased(): void
+    public function itCannotConfirmWhenErased(): void
     {
         $this
             ->given(
@@ -103,28 +110,16 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->erasureRequested(),
                 $this->erased(),
             )
-            ->when(fn (Identity $identity) => $identity->activate($this->confirmationCode, $this->codeChallenger, $this->activatedAt))
+            ->when(fn (Identity $identity) => $identity->confirm($this->confirmationCode, $this->codeChallenger, $this->confirmedAt))
             ->expectsException(IdentityAlreadyErasedException::class);
     }
 
     #[Test]
-    public function itCannotActivateWhenSuspended(): void
-    {
-        $this
-            ->given(
-                $this->registered(),
-                $this->suspended(),
-            )
-            ->when(fn (Identity $identity) => $identity->activate($this->confirmationCode, $this->codeChallenger, $this->activatedAt))
-            ->expectsException(IdentityNotPendingException::class);
-    }
-
-    #[Test]
-    public function itCannotActivateWithInvalidCode(): void
+    public function itCannotConfirmWithInvalidCode(): void
     {
         $this
             ->given($this->registered())
-            ->when(fn (Identity $identity) => $identity->activate('wrong', new FakeCodeChallenger(), $this->activatedAt))
+            ->when(fn (Identity $identity) => $identity->confirm('wrong', new FakeCodeChallenger(), $this->confirmedAt))
             ->expectsException(InvalidConfirmationCodeException::class);
     }
 
@@ -132,7 +127,16 @@ final class IdentityTest extends AggregateRootTestCase
     public function itSuspends(): void
     {
         $this
-            ->given($this->registered(), $this->activated())
+            ->given($this->registered(), $this->confirmed())
+            ->when(fn (Identity $identity) => $identity->suspend($this->reason, $this->suspendedAt))
+            ->then($this->suspended());
+    }
+
+    #[Test]
+    public function itSuspendsWhenPending(): void
+    {
+        $this
+            ->given($this->registered())
             ->when(fn (Identity $identity) => $identity->suspend($this->reason, $this->suspendedAt))
             ->then($this->suspended());
     }
@@ -143,7 +147,7 @@ final class IdentityTest extends AggregateRootTestCase
         $this
             ->given(
                 $this->registered(),
-                $this->activated(),
+                $this->confirmed(),
                 $this->suspended(),
             )
             ->when(fn (Identity $identity) => $identity->suspend(IdentityBuilder::sample('reason'), $this->suspendedAt))
@@ -156,21 +160,12 @@ final class IdentityTest extends AggregateRootTestCase
         $this
             ->given(
                 $this->registered(),
-                $this->activated(),
+                $this->confirmed(),
                 $this->erasureRequested(),
                 $this->erased(),
             )
             ->when(fn (Identity $identity) => $identity->suspend($this->reason, $this->suspendedAt))
             ->expectsException(IdentityAlreadyErasedException::class);
-    }
-
-    #[Test]
-    public function itCannotSuspendWhenPending(): void
-    {
-        $this
-            ->given($this->registered())
-            ->when(fn (Identity $identity) => $identity->suspend($this->reason, $this->suspendedAt))
-            ->expectsException(IdentityNotActiveException::class);
     }
 
     #[Test]
@@ -191,19 +186,10 @@ final class IdentityTest extends AggregateRootTestCase
         $this
             ->given(
                 $this->registered(),
-                $this->activated(),
+                $this->confirmed(),
             )
             ->when(fn (Identity $identity) => $identity->reactivate(IdentityBuilder::sample('reason'), $this->reactivatedAt))
             ->then();
-    }
-
-    #[Test]
-    public function itCannotReactivateWhenPending(): void
-    {
-        $this
-            ->given($this->registered())
-            ->when(fn (Identity $identity) => $identity->reactivate($this->reason, $this->reactivatedAt))
-            ->expectsException(IdentityNotSuspendedException::class);
     }
 
     #[Test]
@@ -221,45 +207,45 @@ final class IdentityTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itRequestsEmailConfirmation(): void
+    public function itRequestsConfirmation(): void
     {
         $this
             ->given($this->registered())
-            ->when(fn (Identity $identity) => $identity->requestEmailConfirmation($this->emailConfirmationRequestedAt))
-            ->then($this->emailConfirmationRequested());
+            ->when(fn (Identity $identity) => $identity->requestConfirmation($this->confirmationRequestedAt))
+            ->then($this->confirmationRequested());
     }
 
     #[Test]
-    public function itCannotRequestEmailConfirmationWhenAlreadyActive(): void
+    public function itCannotRequestConfirmationWhenAlreadyConfirmed(): void
     {
         $this
             ->given(
                 $this->registered(),
-                $this->activated(),
+                $this->confirmed(),
             )
-            ->when(fn (Identity $identity) => $identity->requestEmailConfirmation($this->emailConfirmationRequestedAt))
-            ->expectsException(IdentityNotPendingException::class);
+            ->when(fn (Identity $identity) => $identity->requestConfirmation($this->confirmationRequestedAt))
+            ->expectsException(IdentityAlreadyConfirmedException::class);
     }
 
     #[Test]
-    public function itCannotRequestEmailConfirmationTooSoon(): void
+    public function itCannotRequestConfirmationTooSoon(): void
     {
         $this
             ->given(
                 $this->registered(),
-                $this->emailConfirmationRequested(),
+                $this->confirmationRequested(),
             )
-            ->when(fn (Identity $identity) => $identity->requestEmailConfirmation($this->emailConfirmationRequestedAt->modify('+1 second')))
-            ->expectsException(EmailConfirmationRequestedTooRecentlyException::class);
+            ->when(fn (Identity $identity) => $identity->requestConfirmation($this->confirmationRequestedAt->modify('+1 second')))
+            ->expectsException(ConfirmationRequestedTooRecentlyException::class);
     }
 
     #[Test]
-    public function itCannotRequestEmailConfirmationTooSoonAfterRegistering(): void
+    public function itCannotRequestConfirmationTooSoonAfterRegistering(): void
     {
         $this
             ->given($this->registered())
-            ->when(fn (Identity $identity) => $identity->requestEmailConfirmation($this->registeredAt->modify('+1 second')))
-            ->expectsException(EmailConfirmationRequestedTooRecentlyException::class);
+            ->when(fn (Identity $identity) => $identity->requestConfirmation($this->registeredAt->modify('+1 second')))
+            ->expectsException(ConfirmationRequestedTooRecentlyException::class);
     }
 
     #[Test]
@@ -339,10 +325,10 @@ final class IdentityTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotErasePendingWhenActive(): void
+    public function itDoesNotErasePendingWhenConfirmed(): void
     {
         $this
-            ->given($this->registered(), $this->activated())
+            ->given($this->registered(), $this->confirmed())
             ->when(static fn (Identity $identity) => $identity->erasePending(IdentityBuilder::sample('erasedAt')))
             ->then();
     }
@@ -379,9 +365,9 @@ final class IdentityTest extends AggregateRootTestCase
         return new IdentityRegistered($this->id, $this->fullName, $this->email, $this->registeredAt);
     }
 
-    private function activated(): IdentityActivated
+    private function confirmed(): IdentityConfirmed
     {
-        return new IdentityActivated($this->id, $this->activatedAt);
+        return new IdentityConfirmed($this->id, $this->confirmedAt);
     }
 
     private function suspended(): IdentitySuspended
@@ -399,8 +385,8 @@ final class IdentityTest extends AggregateRootTestCase
         return new IdentityErased($this->id, $this->erasedAt);
     }
 
-    private function emailConfirmationRequested(): IdentityEmailConfirmationRequested
+    private function confirmationRequested(): IdentityConfirmationRequested
     {
-        return new IdentityEmailConfirmationRequested($this->id, $this->emailConfirmationRequestedAt);
+        return new IdentityConfirmationRequested($this->id, $this->confirmationRequestedAt);
     }
 }

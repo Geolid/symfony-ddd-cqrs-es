@@ -6,7 +6,8 @@ namespace Iam\Tests\Authentication\Infrastructure\Projection\Finder;
 
 use Iam\Authentication\Application\Finder\Identity\Exception\IdentityResultNotFoundException;
 use Iam\Authentication\Application\Finder\Identity\IdentityFinderInterface;
-use Iam\Authentication\Application\IdentityStatus;
+use Iam\Authentication\Application\IdentityModerationStatus;
+use Iam\Authentication\Application\IdentityVerificationStatus;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -28,7 +29,7 @@ final class DbalIdentityFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $other = IdentityBuilder::new()->create();
-        $builder = IdentityBuilder::new()->activated();
+        $builder = IdentityBuilder::new()->confirmed();
         $identity = $builder->create();
         $this->store($other, $identity);
 
@@ -39,7 +40,8 @@ final class DbalIdentityFinderTest extends AbstractIntegrationTestCase
         self::assertSame($identity->id->toString(), $result->identityId);
         self::assertSame($builder['fullName']->value, $result->fullName);
         self::assertSame($builder['email']->value, $result->email);
-        self::assertSame(IdentityStatus::ACTIVE, $result->status);
+        self::assertSame(IdentityVerificationStatus::CONFIRMED, $result->verificationStatus);
+        self::assertSame(IdentityModerationStatus::ACTIVE, $result->moderationStatus);
     }
 
     #[Test]

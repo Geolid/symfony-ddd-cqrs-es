@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Identity\Application\Command\ConfirmIdentityEmail;
+namespace Iam\Tests\Identity\Application\Command\ConfirmIdentity;
 
-use Iam\Identity\Application\Command\ConfirmIdentityEmail\ConfirmIdentityEmail;
+use Iam\Identity\Application\Command\ConfirmIdentity\ConfirmIdentity;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
-use Iam\Identity\Application\IdentityStatus;
+use Iam\Identity\Application\IdentityVerificationStatus;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Exception\InvalidConfirmationCodeException;
 use Iam\Identity\Domain\ValueObject\IdentityVerificationCodePurpose;
@@ -17,7 +17,7 @@ use Shared\Infrastructure\VerificationCode\NativeCodeChallenger;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
-final class ConfirmIdentityEmailHandlerTest extends AbstractIntegrationTestCase
+final class ConfirmIdentityHandlerTest extends AbstractIntegrationTestCase
 {
     private NativeCodeChallenger $codeChallenger;
 
@@ -37,23 +37,23 @@ final class ConfirmIdentityEmailHandlerTest extends AbstractIntegrationTestCase
         $code = $this->codeChallenger->issue(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $identity->id->toString(), Clock::get()->now());
 
         // When
-        $this->dispatch(new ConfirmIdentityEmail($identity->id->toString(), $code));
+        $this->dispatch(new ConfirmIdentity($identity->id->toString(), $code));
 
         // Then
         $result = $this->service(IdentityFinderInterface::class)->ofId($identity->id->toString());
-        self::assertSame(IdentityStatus::ACTIVE, $result->status);
+        self::assertSame(IdentityVerificationStatus::CONFIRMED, $result->verificationStatus);
     }
 
     #[Test]
-    public function itIgnoresWhenAlreadyActive(): void
+    public function itIgnoresWhenAlreadyConfirmed(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->activated()->create();
+        $identity = IdentityBuilder::new()->confirmed()->create();
         $this->store($identity);
         $code = $this->codeChallenger->issue(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $identity->id->toString(), Clock::get()->now());
 
         // When
-        $this->dispatch(new ConfirmIdentityEmail($identity->id->toString(), $code));
+        $this->dispatch(new ConfirmIdentity($identity->id->toString(), $code));
 
         // Then
         self::expectNotToPerformAssertions();
@@ -66,7 +66,7 @@ final class ConfirmIdentityEmailHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new ConfirmIdentityEmail(Uuid::uuid7()->toString(), '123456'));
+        $this->dispatch(new ConfirmIdentity(Uuid::uuid7()->toString(), '123456'));
     }
 
     #[Test]
@@ -81,6 +81,6 @@ final class ConfirmIdentityEmailHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(InvalidConfirmationCodeException::class);
 
         // When
-        $this->dispatch(new ConfirmIdentityEmail($identity->id->toString(), 'wrong'));
+        $this->dispatch(new ConfirmIdentity($identity->id->toString(), 'wrong'));
     }
 }
