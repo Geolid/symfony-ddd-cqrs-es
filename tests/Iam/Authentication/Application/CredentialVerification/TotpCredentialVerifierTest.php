@@ -113,7 +113,7 @@ final class TotpCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itFailsWhenIdentityNotAuthenticatable(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->suspended()->create();
+        $identity = IdentityBuilder::new()->activated()->suspended()->create();
 
         $credential = TotpCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())

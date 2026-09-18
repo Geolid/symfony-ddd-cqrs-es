@@ -48,7 +48,10 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
             $builder['registeredAt']->format(\DateTimeInterface::ATOM),
             $result->registeredAt->format(\DateTimeInterface::ATOM),
         );
-        self::assertNull($result->emailConfirmationResendRequestedAt);
+        self::assertSame(
+            $builder['registeredAt']->format(\DateTimeInterface::ATOM),
+            $result->emailConfirmationRequestedAt->format(\DateTimeInterface::ATOM),
+        );
         self::assertNull($result->suspendedAt);
         self::assertNull($result->reactivatedAt);
         self::assertSame(ErasureStatus::RETAINED, $result->erasureStatus);

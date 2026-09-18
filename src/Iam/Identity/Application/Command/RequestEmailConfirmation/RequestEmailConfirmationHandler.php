@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Iam\Identity\Application\Command\ResendEmailConfirmation;
+namespace Iam\Identity\Application\Command\RequestEmailConfirmation;
 
-use Iam\Identity\Domain\Exception\EmailConfirmationResendRequestedTooRecentlyException;
+use Iam\Identity\Domain\Exception\EmailConfirmationRequestedTooRecentlyException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyExistsException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
@@ -15,7 +15,7 @@ use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
 
 #[CommandHandler]
-final readonly class ResendEmailConfirmationHandler
+final readonly class RequestEmailConfirmationHandler
 {
     public function __construct(
         private IdentityRepositoryInterface $repository,
@@ -27,13 +27,13 @@ final readonly class ResendEmailConfirmationHandler
      * @throws IdentityNotFoundException
      * @throws IdentityAlreadyErasedException
      * @throws IdentityNotPendingException
-     * @throws EmailConfirmationResendRequestedTooRecentlyException
+     * @throws EmailConfirmationRequestedTooRecentlyException
      * @throws IdentityAlreadyExistsException
      */
-    public function __invoke(ResendEmailConfirmation $command): void
+    public function __invoke(RequestEmailConfirmation $command): void
     {
         $identity = $this->repository->load(IdentityId::fromString($command->id));
-        $identity->requestEmailConfirmationResend($this->clock->now());
+        $identity->requestEmailConfirmation($this->clock->now());
 
         $this->repository->save($identity);
     }

@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace Iam\Identity\Domain;
 
 use Iam\Identity\Domain\Event\IdentityActivated;
-use Iam\Identity\Domain\Event\IdentityEmailConfirmationResendRequested;
+use Iam\Identity\Domain\Event\IdentityEmailConfirmationRequested;
 use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\Event\IdentityErasureCancelled;
 use Iam\Identity\Domain\Event\IdentityErasureRequested;
 use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Identity\Domain\Event\IdentitySuspended;
-use Iam\Identity\Domain\Exception\EmailConfirmationResendRequestedTooRecentlyException;
+use Iam\Identity\Domain\Exception\EmailConfirmationRequestedTooRecentlyException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
+use Iam\Identity\Domain\Exception\IdentityNotActiveException;
 use Iam\Identity\Domain\Exception\IdentityNotPendingException;
 use Iam\Identity\Domain\Exception\IdentityNotSuspendedException;
 use Iam\Identity\Domain\Exception\InvalidConfirmationCodeException;
@@ -49,21 +50,14 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         ErasureState::ERASED->value => [],
     ];
 
-    /** @var array<string, list<IdentityState>> */
-    private const array ACCESS_TRANSITIONS = [
-        IdentityState::PENDING->value => [IdentityState::ACTIVE, IdentityState::SUSPENDED],
-        IdentityState::ACTIVE->value => [IdentityState::SUSPENDED],
-        IdentityState::SUSPENDED->value => [IdentityState::ACTIVE],
-    ];
-
-    private const string EMAIL_CONFIRMATION_RESEND_COOLDOWN = '+60 seconds';
+    private const string EMAIL_CONFIRMATION_COOLDOWN = '+60 seconds';
 
     #[Id]
     public private(set) IdentityId $id;
     private IdentityState $accessState;
     private ErasureState $erasureState;
     private \DateTimeImmutable $registeredAt;
-    private ?\DateTimeImmutable $emailConfirmationResendRequestedAt = null;
+    private \DateTimeImmutable $emailConfirmationRequestedAt;
 
     public static function register(IdentityId $id, FullName $fullName, Email $email, \DateTimeImmutable $registeredAt): self
     {
@@ -111,6 +105,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
 
     /**
      * @throws IdentityAlreadyErasedException
+     * @throws IdentityNotActiveException
      */
     public function suspend(Reason $reason, \DateTimeImmutable $suspendedAt): void
     {
@@ -118,8 +113,12 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
             throw IdentityAlreadyErasedException::forId($this->id);
         }
 
-        if (!$this->canTransitionAccessTo(IdentityState::SUSPENDED)) {
+        if ($this->accessState->isSuspended()) {
             return;
+        }
+
+        if ($this->accessState->isPending()) {
+            throw IdentityNotActiveException::forId($this->id);
         }
 
         $this->recordThat(new IdentitySuspended(
@@ -157,9 +156,9 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     /**
      * @throws IdentityAlreadyErasedException
      * @throws IdentityNotPendingException
-     * @throws EmailConfirmationResendRequestedTooRecentlyException
+     * @throws EmailConfirmationRequestedTooRecentlyException
      */
-    public function requestEmailConfirmationResend(\DateTimeImmutable $requestedAt): void
+    public function requestEmailConfirmation(\DateTimeImmutable $requestedAt): void
     {
         if ($this->erasureState->isErased()) {
             throw IdentityAlreadyErasedException::forId($this->id);
@@ -169,11 +168,11 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
             throw IdentityNotPendingException::forId($this->id);
         }
 
-        if (!new CooldownElapsedSpecification(self::EMAIL_CONFIRMATION_RESEND_COOLDOWN, $requestedAt)->isSatisfiedBy($this->emailConfirmationResendRequestedAt)) {
-            throw EmailConfirmationResendRequestedTooRecentlyException::forId($this->id);
+        if (!new CooldownElapsedSpecification(self::EMAIL_CONFIRMATION_COOLDOWN, $requestedAt)->isSatisfiedBy($this->emailConfirmationRequestedAt)) {
+            throw EmailConfirmationRequestedTooRecentlyException::forId($this->id);
         }
 
-        $this->recordThat(new IdentityEmailConfirmationResendRequested(
+        $this->recordThat(new IdentityEmailConfirmationRequested(
             id: $this->id,
             requestedAt: $requestedAt,
         ));
@@ -240,11 +239,6 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         return new CanTransitionToSpecification(self::ERASURE_TRANSITIONS, $target)->isSatisfiedBy($this->erasureState);
     }
 
-    private function canTransitionAccessTo(IdentityState $target): bool
-    {
-        return new CanTransitionToSpecification(self::ACCESS_TRANSITIONS, $target)->isSatisfiedBy($this->accessState);
-    }
-
     #[Apply]
     private function applyRegistered(IdentityRegistered $event): void
     {
@@ -252,6 +246,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         $this->accessState = IdentityState::PENDING;
         $this->erasureState = ErasureState::RETAINED;
         $this->registeredAt = $event->registeredAt;
+        $this->emailConfirmationRequestedAt = $event->registeredAt;
     }
 
     #[Apply]
@@ -291,8 +286,8 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyEmailConfirmationResendRequested(IdentityEmailConfirmationResendRequested $event): void
+    private function applyEmailConfirmationRequested(IdentityEmailConfirmationRequested $event): void
     {
-        $this->emailConfirmationResendRequestedAt = $event->requestedAt;
+        $this->emailConfirmationRequestedAt = $event->requestedAt;
     }
 }

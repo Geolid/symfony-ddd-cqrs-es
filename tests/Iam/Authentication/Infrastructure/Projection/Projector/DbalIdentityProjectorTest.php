@@ -59,7 +59,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $other = IdentityBuilder::new()->create();
-        $identity = IdentityBuilder::new()->suspended()->create();
+        $identity = IdentityBuilder::new()->activated()->suspended()->create();
 
         // When
         $this->store($other, $identity);
@@ -78,8 +78,8 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnIdentityReactivatedIntegrationEvent(): void
     {
         // Given
-        $other = IdentityBuilder::new()->suspended()->create();
-        $identity = IdentityBuilder::new()->suspended()->reactivated()->create();
+        $other = IdentityBuilder::new()->activated()->suspended()->create();
+        $identity = IdentityBuilder::new()->activated()->suspended()->reactivated()->create();
 
         // When
         $this->store($other, $identity);

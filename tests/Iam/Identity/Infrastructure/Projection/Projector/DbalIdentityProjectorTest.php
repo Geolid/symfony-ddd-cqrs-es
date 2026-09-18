@@ -14,7 +14,7 @@ use Shared\Application\ErasureStatus;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{id: string, full_name: string, email: string, status: string, reason: string|null, registered_at: string, email_confirmation_resend_requested_at: string|null, suspended_at: string|null, reactivated_at: string|null, erasure_status: string}
+ * @phpstan-type Row array{id: string, full_name: string, email: string, status: string, reason: string|null, registered_at: string, email_confirmation_requested_at: string, suspended_at: string|null, reactivated_at: string|null, erasure_status: string}
  */
 final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
 {
@@ -38,20 +38,20 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         self::assertSame(IdentityStatus::PENDING->value, $row['status']);
         self::assertNull($row['reason']);
         self::assertSame($builder['registeredAt']->format(self::DATE_FORMAT), $row['registered_at']);
-        self::assertNull($row['email_confirmation_resend_requested_at']);
+        self::assertSame($builder['registeredAt']->format(self::DATE_FORMAT), $row['email_confirmation_requested_at']);
         self::assertNull($row['suspended_at']);
         self::assertNull($row['reactivated_at']);
         self::assertSame(ErasureStatus::RETAINED->value, $row['erasure_status']);
     }
 
     #[Test]
-    public function itProjectsOnIdentityEmailConfirmationResendRequested(): void
+    public function itProjectsOnIdentityEmailConfirmationRequested(): void
     {
         // Given
         $other = IdentityBuilder::new()->create();
         $this->store($other);
 
-        $builder = IdentityBuilder::new()->emailConfirmationResendRequested();
+        $builder = IdentityBuilder::new()->emailConfirmationRequested();
         $identity = $builder->create();
 
         // When
@@ -61,13 +61,13 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($identity->id->toString());
         self::assertNotFalse($row);
         self::assertSame(
-            $builder['emailConfirmationResendRequestedAt']->format(self::DATE_FORMAT),
-            $row['email_confirmation_resend_requested_at'],
+            $builder['emailConfirmationRequestedAt']->format(self::DATE_FORMAT),
+            $row['email_confirmation_requested_at'],
         );
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
-        self::assertNull($otherRow['email_confirmation_resend_requested_at']);
+        self::assertSame($otherRow['registered_at'], $otherRow['email_confirmation_requested_at']);
     }
 
     #[Test]
@@ -99,7 +99,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         $other = IdentityBuilder::new()->create();
         $this->store($other);
 
-        $builder = IdentityBuilder::new()->suspended()->reactivated()->suspended();
+        $builder = IdentityBuilder::new()->activated()->suspended()->reactivated()->suspended();
         $identity = $builder->create();
 
         // When
@@ -124,11 +124,11 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnIdentityReactivated(): void
     {
         // Given
-        $otherBuilder = IdentityBuilder::new()->suspended();
+        $otherBuilder = IdentityBuilder::new()->activated()->suspended();
         $other = $otherBuilder->create();
         $this->store($other);
 
-        $builder = IdentityBuilder::new()->suspended()->reactivated();
+        $builder = IdentityBuilder::new()->activated()->suspended()->reactivated();
         $identity = $builder->create();
 
         // When
@@ -218,7 +218,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
 
         /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT id, full_name, email, status, reason, registered_at, email_confirmation_resend_requested_at, suspended_at, reactivated_at, erasure_status FROM %s WHERE id = :id', DbalIdentityProjector::TABLE),
+            \sprintf('SELECT id, full_name, email, status, reason, registered_at, email_confirmation_requested_at, suspended_at, reactivated_at, erasure_status FROM %s WHERE id = :id', DbalIdentityProjector::TABLE),
             ['id' => $id],
         );
     }

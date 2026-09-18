@@ -15,7 +15,7 @@ final class IdentitySuspendedPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $builder = IdentityBuilder::new()->suspended();
+        $builder = IdentityBuilder::new()->activated()->suspended();
         $identity = $builder->create();
 
         // When

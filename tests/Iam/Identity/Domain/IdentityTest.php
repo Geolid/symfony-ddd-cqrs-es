@@ -5,15 +5,16 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Domain;
 
 use Iam\Identity\Domain\Event\IdentityActivated;
-use Iam\Identity\Domain\Event\IdentityEmailConfirmationResendRequested;
+use Iam\Identity\Domain\Event\IdentityEmailConfirmationRequested;
 use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\Event\IdentityErasureCancelled;
 use Iam\Identity\Domain\Event\IdentityErasureRequested;
 use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Identity\Domain\Event\IdentitySuspended;
-use Iam\Identity\Domain\Exception\EmailConfirmationResendRequestedTooRecentlyException;
+use Iam\Identity\Domain\Exception\EmailConfirmationRequestedTooRecentlyException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
+use Iam\Identity\Domain\Exception\IdentityNotActiveException;
 use Iam\Identity\Domain\Exception\IdentityNotPendingException;
 use Iam\Identity\Domain\Exception\IdentityNotSuspendedException;
 use Iam\Identity\Domain\Exception\InvalidConfirmationCodeException;
@@ -44,7 +45,7 @@ final class IdentityTest extends AggregateRootTestCase
     private \DateTimeImmutable $requestedAt;
     private \DateTimeImmutable $cancelledAt;
     private \DateTimeImmutable $erasedAt;
-    private \DateTimeImmutable $emailConfirmationResendRequestedAt;
+    private \DateTimeImmutable $emailConfirmationRequestedAt;
 
     protected function setUp(): void
     {
@@ -63,7 +64,7 @@ final class IdentityTest extends AggregateRootTestCase
         $this->requestedAt = IdentityBuilder::sample('requestedAt');
         $this->cancelledAt = IdentityBuilder::sample('cancelledAt');
         $this->erasedAt = IdentityBuilder::sample('erasedAt');
-        $this->emailConfirmationResendRequestedAt = IdentityBuilder::sample('emailConfirmationResendRequestedAt');
+        $this->emailConfirmationRequestedAt = IdentityBuilder::sample('emailConfirmationRequestedAt');
     }
 
     #[Test]
@@ -131,7 +132,7 @@ final class IdentityTest extends AggregateRootTestCase
     public function itSuspends(): void
     {
         $this
-            ->given($this->registered())
+            ->given($this->registered(), $this->activated())
             ->when(fn (Identity $identity) => $identity->suspend($this->reason, $this->suspendedAt))
             ->then($this->suspended());
     }
@@ -142,6 +143,7 @@ final class IdentityTest extends AggregateRootTestCase
         $this
             ->given(
                 $this->registered(),
+                $this->activated(),
                 $this->suspended(),
             )
             ->when(fn (Identity $identity) => $identity->suspend(IdentityBuilder::sample('reason'), $this->suspendedAt))
@@ -154,11 +156,21 @@ final class IdentityTest extends AggregateRootTestCase
         $this
             ->given(
                 $this->registered(),
+                $this->activated(),
                 $this->erasureRequested(),
                 $this->erased(),
             )
             ->when(fn (Identity $identity) => $identity->suspend($this->reason, $this->suspendedAt))
             ->expectsException(IdentityAlreadyErasedException::class);
+    }
+
+    #[Test]
+    public function itCannotSuspendWhenPending(): void
+    {
+        $this
+            ->given($this->registered())
+            ->when(fn (Identity $identity) => $identity->suspend($this->reason, $this->suspendedAt))
+            ->expectsException(IdentityNotActiveException::class);
     }
 
     #[Test]
@@ -209,36 +221,45 @@ final class IdentityTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itRequestsEmailConfirmationResend(): void
+    public function itRequestsEmailConfirmation(): void
     {
         $this
             ->given($this->registered())
-            ->when(fn (Identity $identity) => $identity->requestEmailConfirmationResend($this->emailConfirmationResendRequestedAt))
-            ->then($this->emailConfirmationResendRequested());
+            ->when(fn (Identity $identity) => $identity->requestEmailConfirmation($this->emailConfirmationRequestedAt))
+            ->then($this->emailConfirmationRequested());
     }
 
     #[Test]
-    public function itCannotRequestEmailConfirmationResendWhenAlreadyActive(): void
+    public function itCannotRequestEmailConfirmationWhenAlreadyActive(): void
     {
         $this
             ->given(
                 $this->registered(),
                 $this->activated(),
             )
-            ->when(fn (Identity $identity) => $identity->requestEmailConfirmationResend($this->emailConfirmationResendRequestedAt))
+            ->when(fn (Identity $identity) => $identity->requestEmailConfirmation($this->emailConfirmationRequestedAt))
             ->expectsException(IdentityNotPendingException::class);
     }
 
     #[Test]
-    public function itCannotRequestEmailConfirmationResendTooSoon(): void
+    public function itCannotRequestEmailConfirmationTooSoon(): void
     {
         $this
             ->given(
                 $this->registered(),
-                $this->emailConfirmationResendRequested(),
+                $this->emailConfirmationRequested(),
             )
-            ->when(fn (Identity $identity) => $identity->requestEmailConfirmationResend($this->emailConfirmationResendRequestedAt->modify('+1 second')))
-            ->expectsException(EmailConfirmationResendRequestedTooRecentlyException::class);
+            ->when(fn (Identity $identity) => $identity->requestEmailConfirmation($this->emailConfirmationRequestedAt->modify('+1 second')))
+            ->expectsException(EmailConfirmationRequestedTooRecentlyException::class);
+    }
+
+    #[Test]
+    public function itCannotRequestEmailConfirmationTooSoonAfterRegistering(): void
+    {
+        $this
+            ->given($this->registered())
+            ->when(fn (Identity $identity) => $identity->requestEmailConfirmation($this->registeredAt->modify('+1 second')))
+            ->expectsException(EmailConfirmationRequestedTooRecentlyException::class);
     }
 
     #[Test]
@@ -378,8 +399,8 @@ final class IdentityTest extends AggregateRootTestCase
         return new IdentityErased($this->id, $this->erasedAt);
     }
 
-    private function emailConfirmationResendRequested(): IdentityEmailConfirmationResendRequested
+    private function emailConfirmationRequested(): IdentityEmailConfirmationRequested
     {
-        return new IdentityEmailConfirmationResendRequested($this->id, $this->emailConfirmationResendRequestedAt);
+        return new IdentityEmailConfirmationRequested($this->id, $this->emailConfirmationRequestedAt);
     }
 }

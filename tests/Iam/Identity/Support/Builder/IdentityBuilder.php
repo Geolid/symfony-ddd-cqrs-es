@@ -23,7 +23,7 @@ use Symfony\Component\Clock\Clock;
  *     registeredAt: \DateTimeImmutable,
  *     activatedAt: \DateTimeImmutable,
  *     confirmationCode: string,
- *     emailConfirmationResendRequestedAt: \DateTimeImmutable,
+ *     emailConfirmationRequestedAt: \DateTimeImmutable,
  *     reason: Reason,
  *     suspendedAt: \DateTimeImmutable,
  *     reactivatedAt: \DateTimeImmutable,
@@ -93,12 +93,12 @@ final class IdentityBuilder extends AbstractAggregateBuilder
         );
     }
 
-    public function emailConfirmationResendRequested(?\DateTimeImmutable $requestedAt = null): self
+    public function emailConfirmationRequested(?\DateTimeImmutable $requestedAt = null): self
     {
-        $builder = null !== $requestedAt ? $this->withAttributes(emailConfirmationResendRequestedAt: $requestedAt) : $this;
+        $builder = null !== $requestedAt ? $this->withAttributes(emailConfirmationRequestedAt: $requestedAt) : $this;
 
         return $builder->withModifier(
-            static fn (Identity $identity, self $builder) => $identity->requestEmailConfirmationResend($builder['emailConfirmationResendRequestedAt']),
+            static fn (Identity $identity, self $builder) => $identity->requestEmailConfirmation($builder['emailConfirmationRequestedAt']),
         );
     }
 
@@ -140,7 +140,7 @@ final class IdentityBuilder extends AbstractAggregateBuilder
             'registeredAt' => static fn (): \DateTimeImmutable => $now,
             'activatedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 hour'),
             'confirmationCode' => static fn (): string => FakeCodeChallenger::CODE,
-            'emailConfirmationResendRequestedAt' => static fn (): \DateTimeImmutable => $now->modify('+30 minutes'),
+            'emailConfirmationRequestedAt' => static fn (): \DateTimeImmutable => $now->modify('+30 minutes'),
             'reason' => static fn (): Reason => Reason::fromString(SeededFaker::get()->sentence(4)),
             'suspendedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
             'reactivatedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 day'),

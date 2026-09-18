@@ -24,7 +24,7 @@ final class ListIdentitiesHandlerTest extends AbstractIntegrationTestCase
     public function itPaginates(): void
     {
         // Given
-        $suspendedBuilder = IdentityBuilder::new()->suspended();
+        $suspendedBuilder = IdentityBuilder::new()->activated()->suspended();
         $activeBuilder = IdentityBuilder::new()->activated();
         $active = $activeBuilder->create();
         $suspended = $suspendedBuilder->create();

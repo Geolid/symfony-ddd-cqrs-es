@@ -28,8 +28,9 @@ use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordResetRequeste
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Identity\Application\Command\RegisterIdentity\Exception\IdentityEmailAlreadyInUseException;
-use Iam\Identity\Domain\Exception\EmailConfirmationResendRequestedTooRecentlyException;
+use Iam\Identity\Domain\Exception\EmailConfirmationRequestedTooRecentlyException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
+use Iam\Identity\Domain\Exception\IdentityNotActiveException;
 use Iam\Identity\Domain\Exception\IdentityNotPendingException;
 use Iam\Identity\Domain\Exception\IdentityNotSuspendedException;
 use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherCustomerException;
@@ -66,10 +67,11 @@ return static function (ContainerConfigurator $container): void {
 
             // Iam
             IdentityAlreadyErasedException::class => ['log_level' => 'info', 'status_code' => 409],
+            IdentityNotActiveException::class => ['log_level' => 'info', 'status_code' => 409],
             IdentityNotPendingException::class => ['log_level' => 'info', 'status_code' => 409],
             IdentityNotSuspendedException::class => ['log_level' => 'info', 'status_code' => 409],
             IdentityEmailAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
-            EmailConfirmationResendRequestedTooRecentlyException::class => ['log_level' => 'info', 'status_code' => 429],
+            EmailConfirmationRequestedTooRecentlyException::class => ['log_level' => 'info', 'status_code' => 429],
             IdentityNotAuthenticatableException::class => ['log_level' => 'info', 'status_code' => 409],
             ApiKeyCredentialRevokedException::class => ['log_level' => 'info', 'status_code' => 409],
             ApiKeyCredentialOwnedByAnotherIdentityException::class => ['log_level' => 'info', 'status_code' => 403],

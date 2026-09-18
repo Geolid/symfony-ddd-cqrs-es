@@ -90,7 +90,7 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itFailsWhenIdentityNotAuthenticatable(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->suspended()->create();
+        $identity = IdentityBuilder::new()->activated()->suspended()->create();
 
         $builder = PasswordCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())

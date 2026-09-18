@@ -24,7 +24,7 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
         $reason = IdentityBuilder::sample('reason')->value;
         $now = Clock::get()->now();
 
-        $builder = IdentityBuilder::new()->suspended();
+        $builder = IdentityBuilder::new()->activated()->suspended();
         $identity = $builder->create();
         $this->store($identity);
 

@@ -101,7 +101,7 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itFailsWhenIdentityNotAuthenticatable(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->suspended()->create();
+        $identity = IdentityBuilder::new()->activated()->suspended()->create();
 
         $builder = ApiKeyCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())

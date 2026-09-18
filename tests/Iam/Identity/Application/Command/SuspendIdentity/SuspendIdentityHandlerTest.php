@@ -8,6 +8,7 @@ use Iam\Identity\Application\Command\SuspendIdentity\SuspendIdentity;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\IdentityStatus;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
+use Iam\Identity\Domain\Exception\IdentityNotActiveException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
@@ -24,7 +25,7 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
         $reason = IdentityBuilder::sample('reason')->value;
         $now = Clock::get()->now();
 
-        $builder = IdentityBuilder::new();
+        $builder = IdentityBuilder::new()->activated();
         $identity = $builder->create();
         $this->store($identity);
 
@@ -51,7 +52,7 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadySuspended(): void
     {
         // Given
-        $builder = IdentityBuilder::new()->suspended();
+        $builder = IdentityBuilder::new()->activated()->suspended();
         $identity = $builder->create();
         $this->store($identity);
 
@@ -84,6 +85,23 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         $this->expectException(IdentityAlreadyErasedException::class);
+
+        // When
+        $this->dispatch(new SuspendIdentity(
+            $identity->id->toString(),
+            IdentityBuilder::sample('reason')->value,
+        ));
+    }
+
+    #[Test]
+    public function itFailsWhenNotActive(): void
+    {
+        // Given
+        $identity = IdentityBuilder::new()->create();
+        $this->store($identity);
+
+        // Then
+        $this->expectException(IdentityNotActiveException::class);
 
         // When
         $this->dispatch(new SuspendIdentity(

@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Identity\Application\Command\ResendEmailConfirmation;
+namespace Iam\Tests\Identity\Application\Command\RequestEmailConfirmation;
 
-use Iam\Identity\Application\Command\ResendEmailConfirmation\ResendEmailConfirmation;
+use Iam\Identity\Application\Command\RequestEmailConfirmation\RequestEmailConfirmation;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\IdentityStatus;
-use Iam\Identity\Domain\Exception\EmailConfirmationResendRequestedTooRecentlyException;
+use Iam\Identity\Domain\Exception\EmailConfirmationRequestedTooRecentlyException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Exception\IdentityNotPendingException;
@@ -17,25 +17,25 @@ use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
-final class ResendEmailConfirmationHandlerTest extends AbstractIntegrationTestCase
+final class RequestEmailConfirmationHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itResends(): void
+    public function itRequests(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->create();
+        $now = Clock::get()->now();
+        $identity = IdentityBuilder::new()->withRegisteredAt($now->modify('-1 hour'))->create();
         $this->store($identity);
 
         // When
-        $this->dispatch(new ResendEmailConfirmation($identity->id->toString()));
+        $this->dispatch(new RequestEmailConfirmation($identity->id->toString()));
 
         // Then
         $result = $this->service(IdentityFinderInterface::class)->ofId($identity->id->toString());
         self::assertSame(IdentityStatus::PENDING, $result->status);
-        self::assertNotNull($result->emailConfirmationResendRequestedAt);
         self::assertSame(
-            Clock::get()->now()->format(\DateTimeInterface::ATOM),
-            $result->emailConfirmationResendRequestedAt->format(\DateTimeInterface::ATOM),
+            $now->format(\DateTimeInterface::ATOM),
+            $result->emailConfirmationRequestedAt->format(\DateTimeInterface::ATOM),
         );
     }
 
@@ -46,7 +46,7 @@ final class ResendEmailConfirmationHandlerTest extends AbstractIntegrationTestCa
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new ResendEmailConfirmation(Uuid::uuid7()->toString()));
+        $this->dispatch(new RequestEmailConfirmation(Uuid::uuid7()->toString()));
     }
 
     #[Test]
@@ -60,7 +60,7 @@ final class ResendEmailConfirmationHandlerTest extends AbstractIntegrationTestCa
         $this->expectException(IdentityAlreadyErasedException::class);
 
         // When
-        $this->dispatch(new ResendEmailConfirmation($identity->id->toString()));
+        $this->dispatch(new RequestEmailConfirmation($identity->id->toString()));
     }
 
     #[Test]
@@ -74,20 +74,20 @@ final class ResendEmailConfirmationHandlerTest extends AbstractIntegrationTestCa
         $this->expectException(IdentityNotPendingException::class);
 
         // When
-        $this->dispatch(new ResendEmailConfirmation($identity->id->toString()));
+        $this->dispatch(new RequestEmailConfirmation($identity->id->toString()));
     }
 
     #[Test]
     public function itFailsWhenRequestedTooRecently(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->emailConfirmationResendRequested()->create();
+        $identity = IdentityBuilder::new()->emailConfirmationRequested()->create();
         $this->store($identity);
 
         // Then
-        $this->expectException(EmailConfirmationResendRequestedTooRecentlyException::class);
+        $this->expectException(EmailConfirmationRequestedTooRecentlyException::class);
 
         // When
-        $this->dispatch(new ResendEmailConfirmation($identity->id->toString()));
+        $this->dispatch(new RequestEmailConfirmation($identity->id->toString()));
     }
 }
