@@ -17,7 +17,7 @@ return static function (ContainerConfigurator $container): void {
     $services = $container->services();
     $services->defaults()->autowire()->autoconfigure();
 
-    BoundedContextServiceLoader::load($services, 'Shopping', 'Checkout');
+    BoundedContextServiceLoader::load($services, 'Shopping\\Checkout');
 
     if ('test' === $container->env()) {
         $services->alias(CheckoutCartFinderInterface::class, CheckoutDbalCartFinder::class)->public();

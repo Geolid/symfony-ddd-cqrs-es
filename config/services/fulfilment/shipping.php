@@ -31,7 +31,7 @@ return static function (ContainerConfigurator $container): void {
 
     $services->instanceof(ShipmentStatusReconcilerInterface::class)->tag('fulfilment.shipping.status_reconciler');
 
-    BoundedContextServiceLoader::load($services, 'Fulfilment', 'Shipping');
+    BoundedContextServiceLoader::load($services, 'Fulfilment\\Shipping');
 
     $services->get(ShipmentReconciler::class)->arg('$reconcilers', tagged_iterator('fulfilment.shipping.status_reconciler'));
 

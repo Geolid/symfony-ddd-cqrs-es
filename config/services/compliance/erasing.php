@@ -9,5 +9,5 @@ return static function (ContainerConfigurator $container): void {
     $services = $container->services();
     $services->defaults()->autowire()->autoconfigure();
 
-    BoundedContextServiceLoader::load($services, 'Compliance', 'Erasing');
+    BoundedContextServiceLoader::load($services, 'Compliance\\Erasing');
 };

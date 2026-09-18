@@ -8,12 +8,12 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ServicesConfigurat
 
 final class BoundedContextServiceLoader
 {
-    public static function load(ServicesConfigurator $services, string $subdomain, ?string $boundedContext = null): void
+    public static function load(ServicesConfigurator $services, string $namespace): void
     {
-        $relativeBase = '/'.$subdomain.(null !== $boundedContext ? '/'.$boundedContext : '');
-        $base = '%kernel.project_dir%/src'.$relativeBase;
-        $realBase = \dirname(__DIR__, 2).'/src'.$relativeBase;
-        $prefix = $subdomain.'\\'.(null !== $boundedContext ? $boundedContext.'\\' : '');
+        $relativePath = str_replace('\\', '/', $namespace);
+        $base = '%kernel.project_dir%/src/'.$relativePath;
+        $realBase = \dirname(__DIR__, 2).'/src/'.$relativePath;
+        $prefix = $namespace.'\\';
 
         $services->load($prefix.'Domain\\', $base.'/Domain/**/{Repository,Service,Specification}/');
         $services->load($prefix.'Application\\', $base.'/Application/{Command,Query}/**/*Handler.php');

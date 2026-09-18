@@ -26,7 +26,7 @@ return static function (ContainerConfigurator $container): void {
     $services = $container->services();
     $services->defaults()->autowire()->autoconfigure();
 
-    BoundedContextServiceLoader::load($services, 'Iam', 'Authentication');
+    BoundedContextServiceLoader::load($services, 'Iam\\Authentication');
 
     // Self-contained — no SecurityBundle dependency, works in apps with no firewall.
     $services->set(NativePasswordHasher::class);

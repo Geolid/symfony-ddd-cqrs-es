@@ -20,7 +20,7 @@ return static function (ContainerConfigurator $container): void {
 
     $services->instanceof(PaymentStatusReconcilerInterface::class)->tag('finance.payment.payment_status_reconciler');
 
-    BoundedContextServiceLoader::load($services, 'Finance', 'Payment');
+    BoundedContextServiceLoader::load($services, 'Finance\\Payment');
 
     $services->get(ListPaymentsPastReconciliationThresholdHandler::class)->arg('$thresholdMinutes', '%finance.payment.reconciliation_threshold_minutes%');
 

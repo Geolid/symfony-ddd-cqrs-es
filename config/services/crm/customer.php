@@ -11,7 +11,7 @@ return static function (ContainerConfigurator $container): void {
     $services = $container->services();
     $services->defaults()->autowire()->autoconfigure();
 
-    BoundedContextServiceLoader::load($services, 'Crm', 'Customer');
+    BoundedContextServiceLoader::load($services, 'Crm\\Customer');
 
     if ('test' === $container->env()) {
         $services->alias(CustomerFinderInterface::class, DbalCustomerFinder::class)->public();

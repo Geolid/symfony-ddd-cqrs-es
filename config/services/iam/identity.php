@@ -11,7 +11,7 @@ return static function (ContainerConfigurator $container): void {
     $services = $container->services();
     $services->defaults()->autowire()->autoconfigure();
 
-    BoundedContextServiceLoader::load($services, 'Iam', 'Identity');
+    BoundedContextServiceLoader::load($services, 'Iam\\Identity');
 
     if ('test' === $container->env()) {
         $services->alias(IdentityFinderInterface::class, DbalIdentityFinder::class)->public();

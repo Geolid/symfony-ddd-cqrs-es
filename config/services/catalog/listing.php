@@ -9,5 +9,5 @@ return static function (ContainerConfigurator $container): void {
     $services = $container->services();
     $services->defaults()->autowire()->autoconfigure();
 
-    BoundedContextServiceLoader::load($services, 'Catalog', 'Listing');
+    BoundedContextServiceLoader::load($services, 'Catalog\\Listing');
 };
