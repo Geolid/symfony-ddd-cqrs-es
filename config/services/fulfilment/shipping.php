@@ -3,8 +3,6 @@
 declare(strict_types=1);
 
 use Bootstrap\DependencyInjection\BoundedContextServiceLoader;
-use Fulfilment\Shipping\Application\Manifesting\ShipmentManifester;
-use Fulfilment\Shipping\Application\Manifesting\ShipmentManifesterInterface;
 use Fulfilment\Shipping\Application\Policy\RequestShipmentOnOrderConfirmed;
 use Fulfilment\Shipping\Application\Query\ListShipmentsPastReconciliationThreshold\ListShipmentsPastReconciliationThresholdHandler;
 use Fulfilment\Shipping\Application\Reconciliation\ShipmentReconciler;
@@ -42,9 +40,5 @@ return static function (ContainerConfigurator $container): void {
     if ('test' === $container->env()) {
         // Fetched directly by type; must be public for that.
         $services->get(RequestShipmentOnOrderConfirmed::class)->public();
-
-        // Not otherwise referenced by a service definition; alias+public here or the
-        // test container's compiler prunes it.
-        $services->alias(ShipmentManifesterInterface::class, ShipmentManifester::class)->public();
     }
 };

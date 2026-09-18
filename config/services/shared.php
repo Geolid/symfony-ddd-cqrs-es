@@ -18,6 +18,7 @@ use Shared\Infrastructure\EventStore\PatchlevelIntegrationEventPublisher;
 use Shared\Infrastructure\Messaging\SymfonyCommandBus;
 use Shared\Infrastructure\Messaging\SymfonyQueryBus;
 use Shared\Infrastructure\Patchlevel\Hydrator\HydratorFactory;
+use Shared\Infrastructure\Projection\Finder\DbalPaginator;
 use Shared\Infrastructure\Sentry\AppIdTagger;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\Lock\LockFactory;
@@ -29,6 +30,9 @@ return static function (ContainerConfigurator $container): void {
     $services->defaults()->autowire()->autoconfigure();
 
     BoundedContextServiceLoader::load($services, 'Shared');
+
+    // Always constructed directly with per-call closures, never resolved via the container.
+    $services->get(DbalPaginator::class)->autowire(false);
 
     $commandBusAlias = $services->alias(CommandBusInterface::class, SymfonyCommandBus::class);
     $queryBusAlias = $services->alias(QueryBusInterface::class, SymfonyQueryBus::class);

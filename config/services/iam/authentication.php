@@ -3,22 +3,6 @@
 declare(strict_types=1);
 
 use Bootstrap\DependencyInjection\BoundedContextServiceLoader;
-use Iam\Authentication\Application\BreachDatabase\CompromisedPasswordGatewayInterface;
-use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
-use Iam\Authentication\Application\Finder\Identity\IdentityFinderInterface;
-use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
-use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
-use Iam\Authentication\Domain\TotpCredential\Repository\TotpCredentialRepositoryInterface;
-use Iam\Authentication\Infrastructure\ApiKey\NativeApiKeyHasher;
-use Iam\Authentication\Infrastructure\BreachDatabase\SymfonyCompromisedPasswordGateway;
-use Iam\Authentication\Infrastructure\EventStore\PatchlevelTotpCredentialRepository;
-use Iam\Authentication\Infrastructure\Password\SymfonyPasswordHasher;
-use Iam\Authentication\Infrastructure\Password\SymfonyPasswordStrengthSpecification;
-use Iam\Authentication\Infrastructure\Projection\Finder\DbalApiKeyCredentialFinder;
-use Iam\Authentication\Infrastructure\Projection\Finder\DbalIdentityFinder;
-use Iam\Authentication\Infrastructure\Projection\Finder\DbalPasswordCredentialFinder;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\PasswordHasher\Hasher\NativePasswordHasher;
 
@@ -34,16 +18,5 @@ return static function (ContainerConfigurator $container): void {
     if ('test' === $container->env()) {
         // Same algorithm, lowest cost — real hashing still runs, just fast.
         $services->get(NativePasswordHasher::class)->arg('$cost', 4);
-
-        // Not otherwise referenced by a service definition; alias+public here or the
-        // test container's compiler prunes them.
-        $services->alias(ApiKeyCredentialFinderInterface::class, DbalApiKeyCredentialFinder::class)->public();
-        $services->alias(ApiKeyHasherInterface::class, NativeApiKeyHasher::class)->public();
-        $services->alias(IdentityFinderInterface::class, DbalIdentityFinder::class)->public();
-        $services->alias(PasswordCredentialFinderInterface::class, DbalPasswordCredentialFinder::class)->public();
-        $services->alias(PasswordHasherInterface::class, SymfonyPasswordHasher::class)->public();
-        $services->alias(PasswordStrengthSpecificationInterface::class, SymfonyPasswordStrengthSpecification::class)->public();
-        $services->alias(CompromisedPasswordGatewayInterface::class, SymfonyCompromisedPasswordGateway::class)->public();
-        $services->alias(TotpCredentialRepositoryInterface::class, PatchlevelTotpCredentialRepository::class)->public();
     }
 };

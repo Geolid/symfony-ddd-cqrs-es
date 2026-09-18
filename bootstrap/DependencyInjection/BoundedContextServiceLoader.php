@@ -26,6 +26,7 @@ final class BoundedContextServiceLoader
             ->exclude([
                 $base.'/Application/{Command,Query,IntegrationEvent}/',
                 $base.'/Application/Finder/**/*Result.php',
+                $base.'/Application/**/Exception/',
             ]);
         $services->load($prefix.'Infrastructure\\', $base.'/Infrastructure/');
     }
