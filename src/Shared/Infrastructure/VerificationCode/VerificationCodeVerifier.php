@@ -1,0 +1,58 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Shared\Infrastructure\VerificationCode;
+
+use Shared\Application\VerificationCode\VerificationCodeStoreInterface;
+use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
+use Shared\Domain\Exception\VerificationCodeNotFoundException;
+use Shared\Domain\Service\VerificationCodeVerifierInterface;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+
+final readonly class VerificationCodeVerifier implements VerificationCodeVerifierInterface
+{
+    private const int MAX_ATTEMPTS = 5;
+
+    public function __construct(
+        private VerificationCodeStoreInterface $store,
+        #[Autowire('%env(VERIFICATION_CODE_HASH_SECRET)%')]
+        #[\SensitiveParameter]
+        private string $secret,
+    ) {
+    }
+
+    public function verify(\BackedEnum $purpose, string $subjectId, #[\SensitiveParameter] string $code, \DateTimeImmutable $now): bool
+    {
+        $record = $this->store->find($purpose, $subjectId);
+
+        if (null === $record) {
+            throw VerificationCodeNotFoundException::forSubject($purpose, $subjectId);
+        }
+
+        if ($record->expiresAt < $now) {
+            $this->store->delete($purpose, $subjectId);
+
+            throw VerificationCodeNotFoundException::forSubject($purpose, $subjectId);
+        }
+
+        if ($record->attempts >= self::MAX_ATTEMPTS) {
+            throw VerificationCodeAttemptsExceededException::forSubject($purpose, $subjectId);
+        }
+
+        if (!hash_equals($record->codeHash, $this->hash($code))) {
+            $this->store->incrementAttempts($purpose, $subjectId);
+
+            return false;
+        }
+
+        $this->store->delete($purpose, $subjectId);
+
+        return true;
+    }
+
+    private function hash(#[\SensitiveParameter] string $code): string
+    {
+        return hash_hmac('sha256', $code, $this->secret);
+    }
+}

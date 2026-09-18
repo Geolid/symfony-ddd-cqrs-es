@@ -6,9 +6,9 @@ namespace Iam\Identity\Application\Policy;
 
 use Iam\Identity\Application\Finder\Identity\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
-use Iam\Identity\Application\IdentityVerificationCodePurpose;
 use Iam\Identity\Application\Notification\IdentityNotifierInterface;
 use Iam\Identity\Domain\Event\IdentityEmailConfirmationResendRequested;
+use Iam\Identity\Domain\ValueObject\IdentityVerificationCodePurpose;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Policy;

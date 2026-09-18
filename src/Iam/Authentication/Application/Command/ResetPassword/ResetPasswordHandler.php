@@ -21,9 +21,9 @@ use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
-use Shared\Application\VerificationCode\Exception\VerificationCodeAttemptsExceededException;
-use Shared\Application\VerificationCode\Exception\VerificationCodeNotFoundException;
-use Shared\Application\VerificationCode\VerificationCode;
+use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
+use Shared\Domain\Exception\VerificationCodeNotFoundException;
+use Shared\Domain\Service\VerificationCodeVerifierInterface;
 
 #[CommandHandler]
 final readonly class ResetPasswordHandler
@@ -31,7 +31,7 @@ final readonly class ResetPasswordHandler
     public function __construct(
         private PasswordCredentialRepositoryInterface $repository,
         private IdentityFinderInterface $identityFinder,
-        private VerificationCode $verificationCode,
+        private VerificationCodeVerifierInterface $verifier,
         private PasswordStrengthSpecificationInterface $passwordStrengthSpecification,
         private PasswordHasherInterface $hasher,
         private ClockInterface $clock,
@@ -52,7 +52,7 @@ final readonly class ResetPasswordHandler
     {
         $now = $this->clock->now();
 
-        if (!$this->verificationCode->verify(AuthenticationVerificationCodePurpose::PASSWORD_RESET, $command->identityId, $command->code, $now)) {
+        if (!$this->verifier->verify(AuthenticationVerificationCodePurpose::PASSWORD_RESET, $command->identityId, $command->code, $now)) {
             throw InvalidPasswordResetCodeException::forIdentity($command->identityId);
         }
 

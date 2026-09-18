@@ -28,7 +28,6 @@ use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialOwnedBy
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordResetRequestedTooRecentlyException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
-use Iam\Identity\Application\Command\ConfirmIdentityEmail\Exception\InvalidConfirmationCodeException;
 use Iam\Identity\Application\Command\RegisterIdentity\Exception\IdentityEmailAlreadyInUseException;
 use Iam\Identity\Domain\Exception\EmailConfirmationResendRequestedTooRecentlyException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
@@ -40,10 +39,10 @@ use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Finder\Exception\ResultNotFoundException;
 use Shared\Application\Uniqueness\Exception\UniquenessViolatedException;
-use Shared\Application\VerificationCode\Exception\VerificationCodeAttemptsExceededException;
-use Shared\Application\VerificationCode\Exception\VerificationCodeNotFoundException;
 use Shared\Domain\Exception\AggregateAlreadyExistsException;
 use Shared\Domain\Exception\AggregateNotFoundException;
+use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
+use Shared\Domain\Exception\VerificationCodeNotFoundException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerAddressesNotCompletedException as CheckoutCustomerAddressesNotCompletedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerErasureRequestedException as CheckoutCustomerErasureRequestedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerNotRegisteredException as CheckoutCustomerNotRegisteredException;
@@ -70,7 +69,6 @@ return static function (ContainerConfigurator $container): void {
             IdentityNotPendingException::class => ['log_level' => 'info', 'status_code' => 409],
             IdentityNotSuspendedException::class => ['log_level' => 'info', 'status_code' => 409],
             IdentityEmailAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
-            InvalidConfirmationCodeException::class => ['log_level' => 'info', 'status_code' => 422],
             EmailConfirmationResendRequestedTooRecentlyException::class => ['log_level' => 'info', 'status_code' => 429],
             IdentityNotAuthenticatableException::class => ['log_level' => 'info', 'status_code' => 409],
             ApiKeyCredentialRevokedException::class => ['log_level' => 'info', 'status_code' => 409],

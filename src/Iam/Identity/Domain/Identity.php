@@ -16,11 +16,13 @@ use Iam\Identity\Domain\Exception\EmailConfirmationResendRequestedTooRecentlyExc
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotPendingException;
 use Iam\Identity\Domain\Exception\IdentityNotSuspendedException;
+use Iam\Identity\Domain\Exception\InvalidConfirmationCodeException;
 use Iam\Identity\Domain\Specification\PendingIdentityExpiredSpecification;
 use Iam\Identity\Domain\ValueObject\Email;
 use Iam\Identity\Domain\ValueObject\FullName;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\IdentityState;
+use Iam\Identity\Domain\ValueObject\IdentityVerificationCodePurpose;
 use Iam\Identity\Domain\ValueObject\Reason;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootAttributeBehaviour;
@@ -28,6 +30,9 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
+use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
+use Shared\Domain\Exception\VerificationCodeNotFoundException;
+use Shared\Domain\Service\VerificationCodeVerifierInterface;
 use Shared\Domain\Specification\CanTransitionToSpecification;
 use Shared\Domain\Specification\CooldownElapsedSpecification;
 use Shared\Domain\ValueObject\ErasureState;
@@ -76,8 +81,11 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     /**
      * @throws IdentityAlreadyErasedException
      * @throws IdentityNotPendingException
+     * @throws VerificationCodeNotFoundException
+     * @throws VerificationCodeAttemptsExceededException
+     * @throws InvalidConfirmationCodeException
      */
-    public function activate(\DateTimeImmutable $activatedAt): void
+    public function activate(#[\SensitiveParameter] string $code, VerificationCodeVerifierInterface $verifier, \DateTimeImmutable $activatedAt): void
     {
         if ($this->erasureState->isErased()) {
             throw IdentityAlreadyErasedException::forId($this->id);
@@ -89,6 +97,10 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
 
         if ($this->accessState->isSuspended()) {
             throw IdentityNotPendingException::forId($this->id);
+        }
+
+        if (!$verifier->verify(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $this->id->toString(), $code, $activatedAt)) {
+            throw InvalidConfirmationCodeException::forId($this->id);
         }
 
         $this->recordThat(new IdentityActivated(

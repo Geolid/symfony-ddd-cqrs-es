@@ -16,6 +16,7 @@ use Iam\Identity\Domain\Exception\EmailConfirmationResendRequestedTooRecentlyExc
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotPendingException;
 use Iam\Identity\Domain\Exception\IdentityNotSuspendedException;
+use Iam\Identity\Domain\Exception\InvalidConfirmationCodeException;
 use Iam\Identity\Domain\Identity;
 use Iam\Identity\Domain\ValueObject\Email;
 use Iam\Identity\Domain\ValueObject\FullName;
@@ -25,6 +26,8 @@ use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Shared\Domain\Service\VerificationCodeVerifierInterface;
+use Shared\Tests\Support\Double\StubVerificationCodeVerifier;
 
 final class IdentityTest extends AggregateRootTestCase
 {
@@ -34,6 +37,8 @@ final class IdentityTest extends AggregateRootTestCase
     private Reason $reason;
     private \DateTimeImmutable $registeredAt;
     private \DateTimeImmutable $activatedAt;
+    private string $confirmationCode;
+    private VerificationCodeVerifierInterface $verifier;
     private \DateTimeImmutable $suspendedAt;
     private \DateTimeImmutable $reactivatedAt;
     private \DateTimeImmutable $requestedAt;
@@ -51,6 +56,8 @@ final class IdentityTest extends AggregateRootTestCase
         $this->reason = IdentityBuilder::sample('reason');
         $this->registeredAt = IdentityBuilder::sample('registeredAt');
         $this->activatedAt = IdentityBuilder::sample('activatedAt');
+        $this->confirmationCode = IdentityBuilder::sample('confirmationCode');
+        $this->verifier = new StubVerificationCodeVerifier();
         $this->suspendedAt = IdentityBuilder::sample('suspendedAt');
         $this->reactivatedAt = IdentityBuilder::sample('reactivatedAt');
         $this->requestedAt = IdentityBuilder::sample('requestedAt');
@@ -73,7 +80,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered())
-            ->when(fn (Identity $identity) => $identity->activate($this->activatedAt))
+            ->when(fn (Identity $identity) => $identity->activate($this->confirmationCode, $this->verifier, $this->activatedAt))
             ->then($this->activated());
     }
 
@@ -82,20 +89,8 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered(), $this->activated())
-            ->when(static fn (Identity $identity) => $identity->activate(IdentityBuilder::sample('activatedAt')))
+            ->when(fn (Identity $identity) => $identity->activate($this->confirmationCode, $this->verifier, IdentityBuilder::sample('activatedAt')))
             ->then();
-    }
-
-    #[Test]
-    public function itCannotActivateWhenSuspended(): void
-    {
-        $this
-            ->given(
-                $this->registered(),
-                $this->suspended(),
-            )
-            ->when(fn (Identity $identity) => $identity->activate($this->activatedAt))
-            ->expectsException(IdentityNotPendingException::class);
     }
 
     #[Test]
@@ -107,8 +102,29 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->erasureRequested(),
                 $this->erased(),
             )
-            ->when(fn (Identity $identity) => $identity->activate($this->activatedAt))
+            ->when(fn (Identity $identity) => $identity->activate($this->confirmationCode, $this->verifier, $this->activatedAt))
             ->expectsException(IdentityAlreadyErasedException::class);
+    }
+
+    #[Test]
+    public function itCannotActivateWhenSuspended(): void
+    {
+        $this
+            ->given(
+                $this->registered(),
+                $this->suspended(),
+            )
+            ->when(fn (Identity $identity) => $identity->activate($this->confirmationCode, $this->verifier, $this->activatedAt))
+            ->expectsException(IdentityNotPendingException::class);
+    }
+
+    #[Test]
+    public function itCannotActivateWithInvalidCode(): void
+    {
+        $this
+            ->given($this->registered())
+            ->when(fn (Identity $identity) => $identity->activate($this->confirmationCode, new StubVerificationCodeVerifier(valid: false), $this->activatedAt))
+            ->expectsException(InvalidConfirmationCodeException::class);
     }
 
     #[Test]

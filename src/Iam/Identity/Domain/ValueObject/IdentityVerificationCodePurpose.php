@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iam\Identity\Application;
+namespace Iam\Identity\Domain\ValueObject;
 
 enum IdentityVerificationCodePurpose: string
 {

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Application\Policy;
 
-use Iam\Identity\Application\IdentityVerificationCodePurpose;
 use Iam\Identity\Application\Notification\IdentityNotifierInterface;
 use Iam\Identity\Domain\Event\IdentityRegistered;
+use Iam\Identity\Domain\ValueObject\IdentityVerificationCodePurpose;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Policy;

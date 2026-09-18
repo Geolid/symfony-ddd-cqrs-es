@@ -2,11 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Shared\Application\VerificationCode\Exception;
+namespace Shared\Domain\Exception;
 
-use Shared\Application\Exception\ApplicationExceptionInterface;
-
-final class VerificationCodeAttemptsExceededException extends \RuntimeException implements ApplicationExceptionInterface
+final class VerificationCodeAttemptsExceededException extends \DomainException
 {
     public static function forSubject(\BackedEnum $purpose, string $subjectId): self
     {
