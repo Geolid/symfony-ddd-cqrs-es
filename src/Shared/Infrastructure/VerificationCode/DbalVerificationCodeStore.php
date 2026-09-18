@@ -11,10 +11,10 @@ use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Patchlevel\EventSourcing\Schema\DoctrineSchemaConfigurator;
+use Patchlevel\Hydrator\Hydrator;
 use Shared\Application\VerificationCode\VerificationCodeRecord;
 use Shared\Application\VerificationCode\VerificationCodeStoreInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
-use Webmozart\Assert\Assert;
 
 final readonly class DbalVerificationCodeStore implements VerificationCodeStoreInterface, DoctrineSchemaConfigurator
 {
@@ -23,6 +23,8 @@ final readonly class DbalVerificationCodeStore implements VerificationCodeStoreI
     public function __construct(
         #[Autowire(service: 'doctrine.dbal.event_store_connection')]
         private Connection $connection,
+        #[Autowire(service: 'shared.hydration.result_hydrator')]
+        private Hydrator $hydrator,
     ) {
     }
 
@@ -58,15 +60,7 @@ final readonly class DbalVerificationCodeStore implements VerificationCodeStoreI
             return null;
         }
 
-        Assert::string($row['code_hash']);
-        Assert::string($row['expires_at']);
-        Assert::numeric($row['attempts']);
-
-        return new VerificationCodeRecord(
-            codeHash: $row['code_hash'],
-            expiresAt: $this->denormalize($row['expires_at']),
-            attempts: (int) $row['attempts'],
-        );
+        return $this->hydrator->hydrate(VerificationCodeRecord::class, $row);
     }
 
     public function incrementAttempts(\BackedEnum $purpose, string $subjectId): void
@@ -101,10 +95,5 @@ final readonly class DbalVerificationCodeStore implements VerificationCodeStoreI
                 )
                 ->create(),
         );
-    }
-
-    private function denormalize(string $value): \DateTimeImmutable
-    {
-        return new \DateTimeImmutable($value, new \DateTimeZone('UTC'));
     }
 }
