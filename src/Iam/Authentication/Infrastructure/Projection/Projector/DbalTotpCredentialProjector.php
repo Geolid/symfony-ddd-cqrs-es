@@ -9,6 +9,7 @@ use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Iam\Authentication\Application\TotpCredentialStatus;
+use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialConfirmed;
 use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialEnrolled;
 use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialRevoked;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
