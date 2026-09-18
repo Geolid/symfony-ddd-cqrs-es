@@ -37,9 +37,11 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itAccepts(): void
     {
         // Given
-        $builder = ApiKeyCredentialBuilder::new()->withHasher($this->hasher);
+        $identity = IdentityBuilder::new()->activated()->create();
+        $builder = ApiKeyCredentialBuilder::new()
+            ->withIdentityId($identity->id->toString())
+            ->withHasher($this->hasher);
         $credential = $builder->create();
-        $identity = IdentityBuilder::new()->withId($builder['identityId'])->activated()->create();
         $this->store($credential, $identity);
 
         // When
@@ -53,9 +55,11 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itRefuses(): void
     {
         // Given
-        $builder = ApiKeyCredentialBuilder::new()->withHasher($this->hasher);
+        $identity = IdentityBuilder::new()->activated()->create();
+        $builder = ApiKeyCredentialBuilder::new()
+            ->withIdentityId($identity->id->toString())
+            ->withHasher($this->hasher);
         $credential = $builder->create();
-        $identity = IdentityBuilder::new()->withId($builder['identityId'])->activated()->create();
         $this->store($credential, $identity);
 
         // When

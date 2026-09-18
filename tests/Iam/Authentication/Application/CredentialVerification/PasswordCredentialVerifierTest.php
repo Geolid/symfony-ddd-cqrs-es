@@ -39,15 +39,16 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itAccepts(): void
     {
         // Given
+        $identity = IdentityBuilder::new()->activated()->create();
         $builder = PasswordCredentialBuilder::new()
+            ->withIdentityId($identity->id->toString())
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher);
         $credential = $builder->create();
-        $identity = IdentityBuilder::new()->withId($builder['identityId'])->activated()->create();
         $this->store($credential, $identity);
 
         // When
-        $verified = $this->verifier->verify($builder['identityId'], $builder['password']->value);
+        $verified = $this->verifier->verify($identity->id->toString(), $builder['password']->value);
 
         // Then
         self::assertTrue($verified);
@@ -57,15 +58,16 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itRefuses(): void
     {
         // Given
+        $identity = IdentityBuilder::new()->activated()->create();
         $builder = PasswordCredentialBuilder::new()
+            ->withIdentityId($identity->id->toString())
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher);
         $credential = $builder->create();
-        $identity = IdentityBuilder::new()->withId($builder['identityId'])->activated()->create();
         $this->store($credential, $identity);
 
         // When
-        $verified = $this->verifier->verify($builder['identityId'], 'WrongPassword456!');
+        $verified = $this->verifier->verify($identity->id->toString(), 'WrongPassword456!');
 
         // Then
         self::assertFalse($verified);

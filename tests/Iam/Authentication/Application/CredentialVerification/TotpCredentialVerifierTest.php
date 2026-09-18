@@ -42,19 +42,20 @@ final class TotpCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itAccepts(): void
     {
         // Given
+        $identity = IdentityBuilder::new()->activated()->create();
         $secret = TOTP::generate()->getSecret();
         $code = TOTP::createFromSecret($secret, Clock::get())->now();
-        $builder = TotpCredentialBuilder::new()
+        $credential = TotpCredentialBuilder::new()
+            ->withIdentityId($identity->id->toString())
             ->withCipher($this->cipher)
             ->withSecret($secret)
             ->withVerifier($this->verifier)
-            ->confirmed($code);
-        $credential = $builder->create();
-        $identity = IdentityBuilder::new()->withId($builder['identityId'])->activated()->create();
+            ->confirmed($code)
+            ->create();
         $this->store($credential, $identity);
 
         // When
-        $verified = $this->credentialVerifier->verify($builder['identityId'], $code);
+        $verified = $this->credentialVerifier->verify($identity->id->toString(), $code);
 
         // Then
         self::assertTrue($verified);
@@ -64,19 +65,20 @@ final class TotpCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itRefuses(): void
     {
         // Given
+        $identity = IdentityBuilder::new()->activated()->create();
         $secret = TOTP::generate()->getSecret();
         $code = TOTP::createFromSecret($secret, Clock::get())->now();
-        $builder = TotpCredentialBuilder::new()
+        $credential = TotpCredentialBuilder::new()
+            ->withIdentityId($identity->id->toString())
             ->withCipher($this->cipher)
             ->withSecret($secret)
             ->withVerifier($this->verifier)
-            ->confirmed($code);
-        $credential = $builder->create();
-        $identity = IdentityBuilder::new()->withId($builder['identityId'])->activated()->create();
+            ->confirmed($code)
+            ->create();
         $this->store($credential, $identity);
 
         // When
-        $verified = $this->credentialVerifier->verify($builder['identityId'], '000000');
+        $verified = $this->credentialVerifier->verify($identity->id->toString(), '000000');
 
         // Then
         self::assertFalse($verified);
