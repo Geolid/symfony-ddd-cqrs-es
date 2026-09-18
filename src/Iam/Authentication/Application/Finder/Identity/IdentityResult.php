@@ -17,4 +17,9 @@ final readonly class IdentityResult
         public IdentityModerationStatus $moderationStatus,
     ) {
     }
+
+    public function isAuthenticatable(): bool
+    {
+        return $this->verificationStatus->isConfirmed() && $this->moderationStatus->isActive();
+    }
 }

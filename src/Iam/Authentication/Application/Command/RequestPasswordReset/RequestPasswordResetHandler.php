@@ -36,7 +36,7 @@ final readonly class RequestPasswordResetHandler
     {
         $identity = $this->identityFinder->ofId($command->identityId);
 
-        if (!$identity->verificationStatus->isConfirmed() || !$identity->moderationStatus->isActive()) {
+        if (!$identity->isAuthenticatable()) {
             throw IdentityNotAuthenticatableException::forIdentity($command->identityId);
         }
 

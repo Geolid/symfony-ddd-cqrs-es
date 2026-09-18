@@ -35,7 +35,7 @@ final readonly class TotpCredentialVerifier implements TotpCredentialVerifierInt
 
         $identity = $this->identityFinder->ofId($identityId);
 
-        if (!$identity->verificationStatus->isConfirmed() || !$identity->moderationStatus->isActive()) {
+        if (!$identity->isAuthenticatable()) {
             throw IdentityNotAuthenticatableException::forIdentity($identityId);
         }
 
