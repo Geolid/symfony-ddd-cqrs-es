@@ -15,12 +15,12 @@ final readonly class NativeCodeChallenger implements CodeChallengerInterface
 {
     public function __construct(
         private VerificationCodeStoreInterface $store,
-        #[Autowire('%env(VERIFICATION_CODE_HASH_SECRET)%')]
+        #[Autowire('%env(CODE_CHALLENGER_HASH_SECRET)%')]
         #[\SensitiveParameter]
         private string $secret,
-        #[Autowire(param: 'verification_code.max_attempts')]
+        #[Autowire(param: 'code_challenger.max_attempts')]
         private int $maxAttempts,
-        #[Autowire(param: 'verification_code.expiry')]
+        #[Autowire(param: 'code_challenger.expiry')]
         private string $expiry,
     ) {
         Assert::positiveInteger($this->maxAttempts);

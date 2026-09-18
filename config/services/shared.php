@@ -25,8 +25,8 @@ use Symfony\Component\Lock\LockFactory;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return static function (ContainerConfigurator $container): void {
-    $container->parameters()->set('verification_code.max_attempts', 5);
-    $container->parameters()->set('verification_code.expiry', '+15 minutes');
+    $container->parameters()->set('code_challenger.max_attempts', 5);
+    $container->parameters()->set('code_challenger.expiry', '+15 minutes');
 
     $services = $container->services();
     $services->defaults()->autowire()->autoconfigure();
