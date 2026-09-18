@@ -7,6 +7,8 @@ namespace Iam\Tests\Authentication\Domain\PasswordCredential;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialChanged;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialDefined;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialRehashed;
+use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialResetRequested;
+use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordResetRequestedTooRecentlyException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\PasswordCredential;
@@ -25,6 +27,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     private Password $password;
     private FakePasswordHasher $hasher;
     private \DateTimeImmutable $definedAt;
+    private \DateTimeImmutable $requestedAt;
 
     protected function setUp(): void
     {
@@ -34,6 +37,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $this->id = PasswordCredentialId::forIdentity($this->identityId);
         $this->password = PasswordCredentialBuilder::sample('password');
         $this->definedAt = PasswordCredentialBuilder::sample('definedAt');
+        $this->requestedAt = PasswordCredentialBuilder::sample('requestedAt');
         $this->hasher = new FakePasswordHasher();
     }
 
@@ -119,6 +123,35 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     }
 
     #[Test]
+    public function itRequestsReset(): void
+    {
+        $this
+            ->given($this->defined())
+            ->when(fn (PasswordCredential $credential) => $credential->requestReset($this->identityId, $this->requestedAt))
+            ->then($this->resetRequested());
+    }
+
+    #[Test]
+    public function itCannotRequestResetTooSoon(): void
+    {
+        $this
+            ->given($this->defined(), $this->resetRequested())
+            ->when(fn (PasswordCredential $credential) => $credential->requestReset($this->identityId, $this->requestedAt->modify('+1 second')))
+            ->expectsException(PasswordResetRequestedTooRecentlyException::class);
+    }
+
+    #[Test]
+    public function itRequestsResetAtCooldownBoundary(): void
+    {
+        $boundary = $this->requestedAt->modify('+60 seconds');
+
+        $this
+            ->given($this->defined(), $this->resetRequested())
+            ->when(fn (PasswordCredential $credential) => $credential->requestReset($this->identityId, $boundary))
+            ->then(new PasswordCredentialResetRequested($this->id, $this->identityId, $boundary));
+    }
+
+    #[Test]
     public function itRehashes(): void
     {
         $rehashedAt = PasswordCredentialBuilder::sample('rehashedAt');
@@ -150,5 +183,10 @@ final class PasswordCredentialTest extends AggregateRootTestCase
             $this->hasher->hash($this->password->value),
             $this->definedAt,
         );
+    }
+
+    private function resetRequested(): PasswordCredentialResetRequested
+    {
+        return new PasswordCredentialResetRequested($this->id, $this->identityId, $this->requestedAt);
     }
 }

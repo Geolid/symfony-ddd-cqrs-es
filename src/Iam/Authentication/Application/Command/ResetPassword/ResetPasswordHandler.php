@@ -56,15 +56,16 @@ final readonly class ResetPasswordHandler
             throw InvalidPasswordResetCodeException::forIdentity($command->identityId);
         }
 
+        $identity = $this->identityFinder->ofId($command->identityId);
+
+        if (!$identity->status->isActive()) {
+            throw IdentityNotAuthenticatableException::forIdentity($command->identityId);
+        }
+
         $password = Password::fromString($command->newPassword);
 
         try {
             $credential = $this->repository->load(PasswordCredentialId::forIdentity($command->identityId));
-
-            if (!$this->identityFinder->ofId($command->identityId)->status->isActive()) {
-                throw IdentityNotAuthenticatableException::forIdentity($command->identityId);
-            }
-
             $credential->change($password, $this->passwordStrengthSpecification, $this->hasher, $now);
         } catch (PasswordCredentialNotFoundException) {
             $credential = PasswordCredential::define(

@@ -29,7 +29,9 @@ final readonly class PasswordCredentialVerifier implements PasswordCredentialVer
     {
         $credential = $this->passwordCredentialFinder->ofIdentity($identityId);
 
-        if (!$this->identityFinder->ofId($identityId)->status->isActive()) {
+        $identity = $this->identityFinder->ofId($identityId);
+
+        if (!$identity->status->isActive()) {
             throw IdentityNotAuthenticatableException::forIdentity($identityId);
         }
 

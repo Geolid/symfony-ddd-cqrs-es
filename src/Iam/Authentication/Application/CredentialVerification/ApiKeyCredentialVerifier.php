@@ -35,7 +35,9 @@ final readonly class ApiKeyCredentialVerifier implements ApiKeyCredentialVerifie
             throw ApiKeyCredentialRevokedException::forKeyId($keyId);
         }
 
-        if (!$this->identityFinder->ofId($credential->identityId)->status->isActive()) {
+        $identity = $this->identityFinder->ofId($credential->identityId);
+
+        if (!$identity->status->isActive()) {
             throw IdentityNotAuthenticatableException::forIdentity($credential->identityId);
         }
 

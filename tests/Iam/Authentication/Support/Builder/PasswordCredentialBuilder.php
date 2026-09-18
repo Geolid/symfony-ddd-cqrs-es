@@ -22,6 +22,7 @@ use Webmozart\Assert\Assert;
  *     definedAt: \DateTimeImmutable,
  *     changedAt: \DateTimeImmutable,
  *     rehashedAt: \DateTimeImmutable,
+ *     requestedAt: \DateTimeImmutable,
  *     passwordStrength?: PasswordStrengthSpecificationInterface,
  *     hasher?: PasswordHasherInterface,
  * }
@@ -77,6 +78,15 @@ final class PasswordCredentialBuilder extends AbstractAggregateBuilder
         );
     }
 
+    public function resetRequested(?\DateTimeImmutable $requestedAt = null): self
+    {
+        $builder = null !== $requestedAt ? $this->withAttributes(requestedAt: $requestedAt) : $this;
+
+        return $builder->withModifier(
+            static fn (PasswordCredential $credential, self $builder) => $credential->requestReset($builder['identityId'], $builder['requestedAt']),
+        );
+    }
+
     public function rehashed(
         string $plainPassword,
         ?PasswordHasherInterface $hasher = null,
@@ -109,6 +119,7 @@ final class PasswordCredentialBuilder extends AbstractAggregateBuilder
             'definedAt' => static fn (): \DateTimeImmutable => $now,
             'changedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
             'rehashedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 day'),
+            'requestedAt' => static fn (): \DateTimeImmutable => $now->modify('+3 day'),
         ];
     }
 

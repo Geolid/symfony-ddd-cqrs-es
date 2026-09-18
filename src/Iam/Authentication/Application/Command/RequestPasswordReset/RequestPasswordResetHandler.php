@@ -34,7 +34,9 @@ final readonly class RequestPasswordResetHandler
      */
     public function __invoke(RequestPasswordReset $command): void
     {
-        if (!$this->identityFinder->ofId($command->identityId)->status->isActive()) {
+        $identity = $this->identityFinder->ofId($command->identityId);
+
+        if (!$identity->status->isActive()) {
             throw IdentityNotAuthenticatableException::forIdentity($command->identityId);
         }
 
