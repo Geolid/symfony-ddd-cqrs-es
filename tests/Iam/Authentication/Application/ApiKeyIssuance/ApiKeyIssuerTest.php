@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Application\ApiKeyIssuance;
 
-use Iam\Authentication\Application\ApiKeyCredentialUniqueKey;
 use Iam\Authentication\Application\ApiKeyIssuance\ApiKeyIssuerInterface;
+use Iam\Authentication\Application\AuthenticationUniqueKey;
 use Iam\Authentication\Application\Command\IssueApiKeyCredential\Exception\ApiKeyCredentialLabelAlreadyInUseException;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
@@ -53,7 +53,7 @@ final class ApiKeyIssuerTest extends AbstractIntegrationTestCase
 
         $label = ApiKeyCredentialBuilder::sample('label')->value;
         $this->service(UniquenessRegistryInterface::class)->claim(
-            UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId),
+            UniqueKey::for(AuthenticationUniqueKey::API_KEY_CREDENTIAL_LABEL, $identityId),
             $label,
             Uuid::uuid7()->toString(),
         );

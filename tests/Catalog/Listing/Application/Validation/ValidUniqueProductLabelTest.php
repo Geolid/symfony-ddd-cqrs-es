@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Catalog\Tests\Listing\Application\Validation;
 
-use Catalog\Listing\Application\ProductUniqueKey;
+use Catalog\Listing\Application\ListingUniqueKey;
 use Catalog\Listing\Application\Validation\ValidUniqueProductLabel;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Uniqueness\UniqueKey;
@@ -45,14 +45,14 @@ final class ValidUniqueProductLabelTest extends CompoundConstraintTestCase
     public function itRefuses(): void
     {
         // Given
-        $this->uniqueness->claim(UniqueKey::for(ProductUniqueKey::LABEL), 'mug', 'owner-id');
+        $this->uniqueness->claim(UniqueKey::for(ListingUniqueKey::LABEL), 'mug', 'owner-id');
 
         // When
         $this->validateValue('mug');
 
         // Then
         $this->assertViolationsCount(1);
-        $this->assertViolationsRaisedByCompound([new ValidUniqueValue(ProductUniqueKey::LABEL)]);
+        $this->assertViolationsRaisedByCompound([new ValidUniqueValue(ListingUniqueKey::LABEL)]);
     }
 
     protected function createCompound(): ValidUniqueProductLabel

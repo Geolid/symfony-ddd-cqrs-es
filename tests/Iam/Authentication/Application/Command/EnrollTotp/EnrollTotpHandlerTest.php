@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Application\Command\EnrollTotp;
 
+use Iam\Authentication\Application\AuthenticationUniqueKey;
 use Iam\Authentication\Application\Command\EnrollTotp\EnrollTotp;
 use Iam\Authentication\Application\Command\EnrollTotp\Exception\TotpAlreadyEnrolledException;
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInterface;
 use Iam\Authentication\Application\TotpCredentialStatus;
-use Iam\Authentication\Application\TotpUniqueKey;
 use Iam\Tests\Authentication\Support\Builder\TotpCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -52,7 +52,7 @@ final class EnrollTotpHandlerTest extends AbstractIntegrationTestCase
         // Given
         $identityId = TotpCredentialBuilder::sample('identityId');
         $this->service(UniquenessRegistryInterface::class)->claim(
-            UniqueKey::for(TotpUniqueKey::IDENTITY),
+            UniqueKey::for(AuthenticationUniqueKey::TOTP_CREDENTIAL_IDENTITY),
             $identityId,
             Uuid::uuid7()->toString(),
         );

@@ -7,7 +7,7 @@ namespace Catalog\Tests\Listing\Application\Command\PublishProduct;
 use Catalog\Listing\Application\Command\PublishProduct\Exception\ProductLabelAlreadyInUseException;
 use Catalog\Listing\Application\Command\PublishProduct\PublishProduct;
 use Catalog\Listing\Application\Finder\Product\ProductFinderInterface;
-use Catalog\Listing\Application\ProductUniqueKey;
+use Catalog\Listing\Application\ListingUniqueKey;
 use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -41,7 +41,7 @@ final class PublishProductHandlerTest extends AbstractIntegrationTestCase
         // Given
         $label = ProductBuilder::sample('label')->value;
         $this->service(UniquenessRegistryInterface::class)->claim(
-            UniqueKey::for(ProductUniqueKey::LABEL),
+            UniqueKey::for(ListingUniqueKey::LABEL),
             $label,
             Uuid::uuid7()->toString(),
         );

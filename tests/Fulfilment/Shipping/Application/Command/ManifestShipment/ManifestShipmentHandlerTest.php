@@ -8,7 +8,7 @@ use Fulfilment\Shipping\Application\Command\ManifestShipment\Exception\ShipmentT
 use Fulfilment\Shipping\Application\Command\ManifestShipment\ManifestShipment;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\ShipmentStatus;
-use Fulfilment\Shipping\Application\ShipmentUniqueKey;
+use Fulfilment\Shipping\Application\ShippingUniqueKey;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentNotFoundException;
@@ -55,7 +55,7 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
         $trackingNumber = ShipmentBuilder::new()->manifested()['trackingNumber']->value;
         $shipment = ShipmentBuilder::new()->prepared()->manifested($trackingNumber)->create();
         $this->store($shipment);
-        $this->uniqueness->claim(UniqueKey::for(ShipmentUniqueKey::TRACKING_NUMBER), $trackingNumber, $shipment->id->toString());
+        $this->uniqueness->claim(UniqueKey::for(ShippingUniqueKey::TRACKING_NUMBER), $trackingNumber, $shipment->id->toString());
 
         // When
         $this->dispatch(new ManifestShipment($shipment->id->toString(), $trackingNumber));
@@ -111,7 +111,7 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $trackingNumber = ShipmentBuilder::new()->manifested()['trackingNumber']->value;
-        $this->uniqueness->claim(UniqueKey::for(ShipmentUniqueKey::TRACKING_NUMBER), $trackingNumber, ShipmentBuilder::new()->create()->id->toString());
+        $this->uniqueness->claim(UniqueKey::for(ShippingUniqueKey::TRACKING_NUMBER), $trackingNumber, ShipmentBuilder::new()->create()->id->toString());
         $shipment = ShipmentBuilder::new()->prepared()->create();
         $this->store($shipment);
 

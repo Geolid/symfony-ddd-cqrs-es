@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Catalog\Listing\Application\Validation;
 
-use Catalog\Listing\Application\ProductUniqueKey;
+use Catalog\Listing\Application\ListingUniqueKey;
 use Shared\Application\Validation\ValidUniqueValue;
 use Symfony\Component\Validator\Constraints\Compound;
 
@@ -14,7 +14,7 @@ final class ValidUniqueProductLabel extends Compound
     protected function getConstraints(array $options): array
     {
         return [
-            new ValidUniqueValue(ProductUniqueKey::LABEL),
+            new ValidUniqueValue(ListingUniqueKey::LABEL),
         ];
     }
 }

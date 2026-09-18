@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Application\Command\RevokeTotp;
 
-use Iam\Authentication\Application\TotpUniqueKey;
+use Iam\Authentication\Application\AuthenticationUniqueKey;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialAlreadyExistsException;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialNotFoundException;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialOwnedByAnotherIdentityException;
@@ -38,7 +38,7 @@ final readonly class RevokeTotpHandler
         $this->repository->save($credential);
 
         $this->uniqueness->release(
-            UniqueKey::for(TotpUniqueKey::IDENTITY),
+            UniqueKey::for(AuthenticationUniqueKey::TOTP_CREDENTIAL_IDENTITY),
             $credential->id->toString(),
         );
     }

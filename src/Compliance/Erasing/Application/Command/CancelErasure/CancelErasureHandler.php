@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Compliance\Erasing\Application\Command\CancelErasure;
 
-use Compliance\Erasing\Application\ErasureUniqueKey;
+use Compliance\Erasing\Application\ErasingUniqueKey;
 use Compliance\Erasing\Domain\Exception\ErasureAlreadyExistsException;
 use Compliance\Erasing\Domain\Exception\ErasureNotFoundException;
 use Compliance\Erasing\Domain\Repository\ErasureRepositoryInterface;
@@ -36,7 +36,7 @@ final readonly class CancelErasureHandler
         $this->repository->save($erasure);
 
         if ($erasure->state->isCancelled()) {
-            $this->uniqueness->release(UniqueKey::for(ErasureUniqueKey::IDENTITY), $erasure->id->toString());
+            $this->uniqueness->release(UniqueKey::for(ErasingUniqueKey::IDENTITY), $erasure->id->toString());
         }
     }
 }

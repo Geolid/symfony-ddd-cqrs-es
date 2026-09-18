@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Compliance\Tests\Erasing\Application\Command\CancelErasure;
 
 use Compliance\Erasing\Application\Command\CancelErasure\CancelErasure;
+use Compliance\Erasing\Application\ErasingUniqueKey;
 use Compliance\Erasing\Application\ErasureRequestStatus;
-use Compliance\Erasing\Application\ErasureUniqueKey;
 use Compliance\Erasing\Application\Finder\Erasure\ErasureFinderInterface;
 use Compliance\Erasing\Domain\Exception\ErasureNotFoundException;
 use Compliance\Tests\Erasing\Support\Builder\ErasureBuilder;
@@ -36,7 +36,7 @@ final class CancelErasureHandlerTest extends AbstractIntegrationTestCase
         $builder = ErasureBuilder::new();
         $erasure = $builder->create();
         $this->store($erasure);
-        $identityKey = UniqueKey::for(ErasureUniqueKey::IDENTITY);
+        $identityKey = UniqueKey::for(ErasingUniqueKey::IDENTITY);
         $this->uniqueness->claim($identityKey, $builder['identityId'], $erasure->id->toString());
 
         // When
@@ -55,7 +55,7 @@ final class CancelErasureHandlerTest extends AbstractIntegrationTestCase
         $builder = ErasureBuilder::new()->approved();
         $erasure = $builder->create();
         $this->store($erasure);
-        $identityKey = UniqueKey::for(ErasureUniqueKey::IDENTITY);
+        $identityKey = UniqueKey::for(ErasingUniqueKey::IDENTITY);
         $this->uniqueness->claim($identityKey, $builder['identityId'], $erasure->id->toString());
 
         // When

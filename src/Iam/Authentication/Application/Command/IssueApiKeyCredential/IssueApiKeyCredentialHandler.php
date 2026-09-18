@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Application\Command\IssueApiKeyCredential;
 
-use Iam\Authentication\Application\ApiKeyCredentialUniqueKey;
+use Iam\Authentication\Application\AuthenticationUniqueKey;
 use Iam\Authentication\Application\Command\IssueApiKeyCredential\Exception\ApiKeyCredentialLabelAlreadyInUseException;
 use Iam\Authentication\Domain\ApiKeyCredential\ApiKeyCredential;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialAlreadyExistsException;
@@ -40,7 +40,7 @@ final readonly class IssueApiKeyCredentialHandler
         $label = Label::fromString($command->label);
 
         try {
-            $this->uniqueness->claim(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $command->identityId), $label->value, $id->toString());
+            $this->uniqueness->claim(UniqueKey::for(AuthenticationUniqueKey::API_KEY_CREDENTIAL_LABEL, $command->identityId), $label->value, $id->toString());
         } catch (UniquenessViolatedException $e) {
             throw ApiKeyCredentialLabelAlreadyInUseException::forLabel($label->value, $e);
         }

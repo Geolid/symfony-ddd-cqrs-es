@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Application\Command\RevokeApiKey;
 
-use Iam\Authentication\Application\ApiKeyCredentialUniqueKey;
+use Iam\Authentication\Application\AuthenticationUniqueKey;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialAlreadyExistsException;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialNotFoundException;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialOwnedByAnotherIdentityException;
@@ -38,7 +38,7 @@ final readonly class RevokeApiKeyHandler
         $this->repository->save($credential);
 
         $this->uniqueness->release(
-            UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $command->identityId),
+            UniqueKey::for(AuthenticationUniqueKey::API_KEY_CREDENTIAL_LABEL, $command->identityId),
             $credential->id->toString(),
         );
     }
