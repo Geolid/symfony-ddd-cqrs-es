@@ -13,21 +13,8 @@ use Symfony\Component\Clock\Clock;
 final class CooldownElapsedSpecificationTest extends TestCase
 {
     #[Test]
-    public function itIsSatisfiedByNoPriorRequest(): void
-    {
-        // Given
-        $specification = new CooldownElapsedSpecification('+60 seconds', Clock::get()->now());
-
-        // When
-        $result = $specification->isSatisfiedBy(null);
-
-        // Then
-        self::assertTrue($result);
-    }
-
-    #[Test]
     #[DataProvider('provideThreshold')]
-    public function itIsSatisfiedBy(\DateTimeImmutable $lastRequestedAt, \DateTimeImmutable $now, bool $expected): void
+    public function itIsSatisfiedBy(?\DateTimeImmutable $lastRequestedAt, \DateTimeImmutable $now, bool $expected): void
     {
         // Given
         $specification = new CooldownElapsedSpecification('+60 seconds', $now);
@@ -40,12 +27,13 @@ final class CooldownElapsedSpecificationTest extends TestCase
     }
 
     /**
-     * @return iterable<string, array{\DateTimeImmutable, \DateTimeImmutable, bool}>
+     * @return iterable<string, array{?\DateTimeImmutable, \DateTimeImmutable, bool}>
      */
     public static function provideThreshold(): iterable
     {
         $now = Clock::get()->now();
 
+        yield 'no prior request' => [null, $now, true];
         yield 'within cooldown' => [$now->modify('-30 seconds'), $now, false];
         yield 'at cooldown boundary' => [$now->modify('-60 seconds'), $now, true];
         yield 'past cooldown' => [$now->modify('-90 seconds'), $now, true];
