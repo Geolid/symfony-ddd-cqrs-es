@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shared\Tests\Infrastructure\VerificationCode;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
 use Shared\Domain\Exception\VerificationCodeNotFoundException;
@@ -34,31 +35,30 @@ final class VerificationCodeTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itVerifies(): void
+    #[DataProvider('provideValidTiming')]
+    public function itAccepts(string $subjectId, \DateTimeImmutable $issuedAt, \DateTimeImmutable $verifiedAt): void
     {
         // Given
-        $now = Clock::get()->now();
-        $code = $this->verificationCode->issue(DummyVerificationCodePurpose::NAME, 'subject-1', $now);
+        $code = $this->verificationCode->issue(DummyVerificationCodePurpose::NAME, $subjectId, $issuedAt);
 
         // When
-        $result = $this->verificationCode->verify(DummyVerificationCodePurpose::NAME, 'subject-1', $code, $now);
+        $result = $this->verificationCode->verify(DummyVerificationCodePurpose::NAME, $subjectId, $code, $verifiedAt);
 
         // Then
         self::assertTrue($result);
     }
 
-    #[Test]
-    public function itVerifiesAtExpiryBoundary(): void
+    /**
+     * @return iterable<string, array{string, \DateTimeImmutable, \DateTimeImmutable}>
+     */
+    public static function provideValidTiming(): iterable
     {
-        // Given
+        // Truncated to whole seconds: expires_at loses microsecond precision through the DB round-trip.
         $now = Clock::get()->now();
-        $code = $this->verificationCode->issue(DummyVerificationCodePurpose::NAME, 'subject-1', $now);
+        $now = $now->setTime((int) $now->format('H'), (int) $now->format('i'), (int) $now->format('s'));
 
-        // When
-        $result = $this->verificationCode->verify(DummyVerificationCodePurpose::NAME, 'subject-1', $code, $now->modify('+15 minutes'));
-
-        // Then
-        self::assertTrue($result);
+        yield 'immediately' => ['subject-1', $now, $now];
+        yield 'at expiry boundary' => ['subject-2', $now, $now->modify('+15 minutes')];
     }
 
     #[Test]
@@ -77,7 +77,7 @@ final class VerificationCodeTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itReturnsFalseWhenCodeMismatch(): void
+    public function itRefuses(): void
     {
         // Given
         $now = Clock::get()->now();
