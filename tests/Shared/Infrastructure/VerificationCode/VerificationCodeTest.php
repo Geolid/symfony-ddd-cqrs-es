@@ -53,7 +53,7 @@ final class VerificationCodeTest extends AbstractIntegrationTestCase
      */
     public static function provideValidTiming(): iterable
     {
-        // Truncated to whole seconds: expires_at loses microsecond precision through the DB round-trip.
+        // Truncated to whole seconds: the store isn't guaranteed to preserve sub-second precision.
         $now = Clock::get()->now();
         $now = $now->setTime((int) $now->format('H'), (int) $now->format('i'), (int) $now->format('s'));
 
