@@ -9,25 +9,29 @@ use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
 use Shared\Domain\Exception\VerificationCodeNotFoundException;
 use Shared\Domain\Service\VerificationCodeInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Webmozart\Assert\Assert;
 
 final readonly class VerificationCode implements VerificationCodeInterface
 {
-    private const int MAX_ATTEMPTS = 5;
-    private const string EXPIRY = '+15 minutes';
-
     public function __construct(
         private VerificationCodeStoreInterface $store,
         #[Autowire('%env(VERIFICATION_CODE_HASH_SECRET)%')]
         #[\SensitiveParameter]
         private string $secret,
+        #[Autowire(param: 'verification_code.max_attempts')]
+        private int $maxAttempts,
+        #[Autowire(param: 'verification_code.expiry')]
+        private string $expiry,
     ) {
+        Assert::positiveInteger($this->maxAttempts);
+        Assert::stringNotEmpty($this->expiry);
     }
 
     public function issue(\BackedEnum $purpose, string $subjectId, \DateTimeImmutable $now): string
     {
         $code = \sprintf('%06d', random_int(0, 999999));
 
-        $this->store->save($purpose, $subjectId, $this->hash($code), $now->modify(self::EXPIRY));
+        $this->store->save($purpose, $subjectId, $this->hash($code), $now->modify($this->expiry));
 
         return $code;
     }
@@ -46,7 +50,7 @@ final readonly class VerificationCode implements VerificationCodeInterface
             throw VerificationCodeNotFoundException::forSubject($purpose, $subjectId);
         }
 
-        if ($record->attempts >= self::MAX_ATTEMPTS) {
+        if ($record->attempts >= $this->maxAttempts) {
             throw VerificationCodeAttemptsExceededException::forSubject($purpose, $subjectId);
         }
 
