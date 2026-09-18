@@ -35,6 +35,21 @@ final class VerificationCodeTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itInvalidatesPriorCodeWhenReissued(): void
+    {
+        // Given
+        $now = Clock::get()->now();
+        $firstCode = $this->verificationCode->issue(DummyVerificationCodePurpose::NAME, 'subject-1', $now);
+
+        // When
+        $secondCode = $this->verificationCode->issue(DummyVerificationCodePurpose::NAME, 'subject-1', $now);
+
+        // Then
+        self::assertFalse($this->verificationCode->verify(DummyVerificationCodePurpose::NAME, 'subject-1', $firstCode, $now));
+        self::assertTrue($this->verificationCode->verify(DummyVerificationCodePurpose::NAME, 'subject-1', $secondCode, $now));
+    }
+
+    #[Test]
     #[DataProvider('provideValidTiming')]
     public function itAccepts(string $subjectId, \DateTimeImmutable $issuedAt, \DateTimeImmutable $verifiedAt): void
     {
@@ -59,21 +74,6 @@ final class VerificationCodeTest extends AbstractIntegrationTestCase
 
         yield 'immediately' => ['subject-1', $now, $now];
         yield 'at expiry boundary' => ['subject-2', $now, $now->modify('+15 minutes')];
-    }
-
-    #[Test]
-    public function itInvalidatesPriorCodeWhenReissued(): void
-    {
-        // Given
-        $now = Clock::get()->now();
-        $firstCode = $this->verificationCode->issue(DummyVerificationCodePurpose::NAME, 'subject-1', $now);
-
-        // When
-        $secondCode = $this->verificationCode->issue(DummyVerificationCodePurpose::NAME, 'subject-1', $now);
-
-        // Then
-        self::assertFalse($this->verificationCode->verify(DummyVerificationCodePurpose::NAME, 'subject-1', $firstCode, $now));
-        self::assertTrue($this->verificationCode->verify(DummyVerificationCodePurpose::NAME, 'subject-1', $secondCode, $now));
     }
 
     #[Test]
