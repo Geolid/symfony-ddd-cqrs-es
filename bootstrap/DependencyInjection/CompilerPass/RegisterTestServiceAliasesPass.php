@@ -8,11 +8,9 @@ use Symfony\Component\DependencyInjection\Compiler\CompilerPassInterface;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
 
 /**
- * Symfony inlines/removes a private, singly-(or un-)referenced service at compile time — not
- * directly `get()`-able from a test afterward. Makes every own-code service's own implemented
- * interface public + aliased in test env so `$this->service(<X>Interface::class)` just works.
- * Scoped to our own top-level `src/` namespaces — never touches a vendor/Symfony/Doctrine
- * definition, which would disrupt the container's own internal decoration/inlining.
+ * Symfony inlines/removes a private service at compile time — not `get()`-able from a test
+ * afterward. Makes every own-code service's own implemented interface public + aliased in
+ * test env. Never touches a vendor definition.
  */
 final class RegisterTestServiceAliasesPass implements CompilerPassInterface
 {
