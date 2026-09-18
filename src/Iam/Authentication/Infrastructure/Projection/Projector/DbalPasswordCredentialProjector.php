@@ -11,6 +11,7 @@ use Doctrine\DBAL\Types\Types;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialChanged;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialDefined;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialRehashed;
+use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialReset;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Projection\Projector;
@@ -51,6 +52,17 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
     public function onPasswordCredentialRehashed(PasswordCredentialRehashed $event): void
     {
         $this->connection->update(self::TABLE, ['password_hash' => $event->passwordHash], ['id' => $event->id->toString()]);
+    }
+
+    #[Subscribe(PasswordCredentialReset::class)]
+    public function onPasswordCredentialReset(PasswordCredentialReset $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            ['password_hash' => $event->passwordHash, 'password_changed_at' => $event->resetAt],
+            ['id' => $event->id->toString()],
+            ['password_changed_at' => Types::DATETIME_IMMUTABLE],
+        );
     }
 
     #[Subscribe(IdentityErasedIntegrationEvent::class)]

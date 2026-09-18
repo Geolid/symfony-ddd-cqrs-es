@@ -117,6 +117,38 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
     }
 
     #[Test]
+    public function itProjectsOnPasswordCredentialReset(): void
+    {
+        // Given
+        $other = PasswordCredentialBuilder::new()
+            ->withPasswordStrength($this->passwordStrength)
+            ->withHasher($this->hasher)
+            ->create();
+        $this->store($other);
+
+        $newPassword = 'updated-password';
+        $builder = PasswordCredentialBuilder::new()
+            ->withPasswordStrength($this->passwordStrength)
+            ->withHasher($this->hasher)
+            ->reset($newPassword, $this->passwordStrength, $this->hasher);
+        $credential = $builder->create();
+
+        // When
+        $this->store($credential);
+
+        // Then
+        $row = $this->fetchRow($credential->id->toString());
+        self::assertNotFalse($row);
+        self::assertSame($this->hasher->hash($newPassword), $row['password_hash']);
+        self::assertSame($builder['definedAt']->format(self::DATE_FORMAT), $row['defined_at']);
+        self::assertSame($builder['resetAt']->format(self::DATE_FORMAT), $row['password_changed_at']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertNotSame($this->hasher->hash($newPassword), $otherRow['password_hash']);
+    }
+
+    #[Test]
     public function itRemovesOnIdentityErasedIntegrationEvent(): void
     {
         // Given

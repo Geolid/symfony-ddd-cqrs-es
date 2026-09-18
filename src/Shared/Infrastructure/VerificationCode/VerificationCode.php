@@ -7,12 +7,13 @@ namespace Shared\Infrastructure\VerificationCode;
 use Shared\Application\VerificationCode\VerificationCodeStoreInterface;
 use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
 use Shared\Domain\Exception\VerificationCodeNotFoundException;
-use Shared\Domain\Service\VerificationCodeVerifierInterface;
+use Shared\Domain\Service\VerificationCodeInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
-final readonly class VerificationCodeVerifier implements VerificationCodeVerifierInterface
+final readonly class VerificationCode implements VerificationCodeInterface
 {
     private const int MAX_ATTEMPTS = 5;
+    private const string EXPIRY = '+15 minutes';
 
     public function __construct(
         private VerificationCodeStoreInterface $store,
@@ -20,6 +21,15 @@ final readonly class VerificationCodeVerifier implements VerificationCodeVerifie
         #[\SensitiveParameter]
         private string $secret,
     ) {
+    }
+
+    public function issue(\BackedEnum $purpose, string $subjectId, \DateTimeImmutable $now): string
+    {
+        $code = \sprintf('%06d', random_int(0, 999999));
+
+        $this->store->save($purpose, $subjectId, $this->hash($code), $now->modify(self::EXPIRY));
+
+        return $code;
     }
 
     public function verify(\BackedEnum $purpose, string $subjectId, #[\SensitiveParameter] string $code, \DateTimeImmutable $now): bool

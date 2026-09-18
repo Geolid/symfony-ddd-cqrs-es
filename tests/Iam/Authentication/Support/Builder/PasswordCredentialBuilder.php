@@ -10,6 +10,7 @@ use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthS
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Ramsey\Uuid\Uuid;
+use Shared\Tests\Support\Double\FakeVerificationCode;
 use Support\Builder\AbstractAggregateBuilder;
 use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
@@ -23,6 +24,7 @@ use Webmozart\Assert\Assert;
  *     changedAt: \DateTimeImmutable,
  *     rehashedAt: \DateTimeImmutable,
  *     requestedAt: \DateTimeImmutable,
+ *     resetAt: \DateTimeImmutable,
  *     passwordStrength?: PasswordStrengthSpecificationInterface,
  *     hasher?: PasswordHasherInterface,
  * }
@@ -87,6 +89,31 @@ final class PasswordCredentialBuilder extends AbstractAggregateBuilder
         );
     }
 
+    public function reset(
+        string $newPassword,
+        ?PasswordStrengthSpecificationInterface $passwordStrength = null,
+        ?PasswordHasherInterface $hasher = null,
+        ?\DateTimeImmutable $resetAt = null,
+    ): self {
+        $builder = $this->withAttributes(...array_filter([
+            'passwordStrength' => $passwordStrength,
+            'hasher' => $hasher,
+            'resetAt' => $resetAt,
+        ]));
+
+        return $builder->withModifier(
+            static fn (PasswordCredential $credential, self $builder) => $credential->resetPassword(
+                $builder['identityId'],
+                FakeVerificationCode::CODE,
+                new FakeVerificationCode(),
+                Password::fromString($newPassword),
+                $builder->passwordStrength(),
+                $builder->hasher(),
+                $builder['resetAt'],
+            ),
+        );
+    }
+
     public function rehashed(
         string $plainPassword,
         ?PasswordHasherInterface $hasher = null,
@@ -120,6 +147,7 @@ final class PasswordCredentialBuilder extends AbstractAggregateBuilder
             'changedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
             'rehashedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 day'),
             'requestedAt' => static fn (): \DateTimeImmutable => $now->modify('+3 day'),
+            'resetAt' => static fn (): \DateTimeImmutable => $now->modify('+4 day'),
         ];
     }
 

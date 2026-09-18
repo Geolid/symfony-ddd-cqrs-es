@@ -21,7 +21,6 @@ use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
 use Iam\Authentication\Application\BreachDatabase\Exception\CompromisedPasswordException;
 use Iam\Authentication\Application\Command\IssueApiKeyCredential\Exception\ApiKeyCredentialLabelAlreadyInUseException;
-use Iam\Authentication\Application\Command\ResetPassword\Exception\InvalidPasswordResetCodeException;
 use Iam\Authentication\Application\CredentialVerification\Exception\ApiKeyCredentialRevokedException;
 use Iam\Authentication\Application\CredentialVerification\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialOwnedByAnotherIdentityException;
@@ -74,7 +73,6 @@ return static function (ContainerConfigurator $container): void {
             ApiKeyCredentialRevokedException::class => ['log_level' => 'info', 'status_code' => 409],
             ApiKeyCredentialOwnedByAnotherIdentityException::class => ['log_level' => 'info', 'status_code' => 403],
             ApiKeyCredentialLabelAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
-            InvalidPasswordResetCodeException::class => ['log_level' => 'info', 'status_code' => 422],
             PasswordResetRequestedTooRecentlyException::class => ['log_level' => 'info', 'status_code' => 429],
             SamePasswordException::class => ['log_level' => 'info', 'status_code' => 422],
             WeakPasswordException::class => ['log_level' => 'info', 'status_code' => 422],

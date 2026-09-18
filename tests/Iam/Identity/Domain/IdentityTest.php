@@ -26,8 +26,8 @@ use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Shared\Domain\Service\VerificationCodeVerifierInterface;
-use Shared\Tests\Support\Double\StubVerificationCodeVerifier;
+use Shared\Domain\Service\VerificationCodeInterface;
+use Shared\Tests\Support\Double\FakeVerificationCode;
 
 final class IdentityTest extends AggregateRootTestCase
 {
@@ -38,7 +38,7 @@ final class IdentityTest extends AggregateRootTestCase
     private \DateTimeImmutable $registeredAt;
     private \DateTimeImmutable $activatedAt;
     private string $confirmationCode;
-    private VerificationCodeVerifierInterface $verifier;
+    private VerificationCodeInterface $verifier;
     private \DateTimeImmutable $suspendedAt;
     private \DateTimeImmutable $reactivatedAt;
     private \DateTimeImmutable $requestedAt;
@@ -57,7 +57,7 @@ final class IdentityTest extends AggregateRootTestCase
         $this->registeredAt = IdentityBuilder::sample('registeredAt');
         $this->activatedAt = IdentityBuilder::sample('activatedAt');
         $this->confirmationCode = IdentityBuilder::sample('confirmationCode');
-        $this->verifier = new StubVerificationCodeVerifier();
+        $this->verifier = new FakeVerificationCode();
         $this->suspendedAt = IdentityBuilder::sample('suspendedAt');
         $this->reactivatedAt = IdentityBuilder::sample('reactivatedAt');
         $this->requestedAt = IdentityBuilder::sample('requestedAt');
@@ -123,7 +123,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered())
-            ->when(fn (Identity $identity) => $identity->activate($this->confirmationCode, new StubVerificationCodeVerifier(valid: false), $this->activatedAt))
+            ->when(fn (Identity $identity) => $identity->activate('wrong', new FakeVerificationCode(), $this->activatedAt))
             ->expectsException(InvalidConfirmationCodeException::class);
     }
 

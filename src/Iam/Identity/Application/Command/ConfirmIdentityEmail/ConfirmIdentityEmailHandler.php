@@ -15,14 +15,14 @@ use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
 use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
 use Shared\Domain\Exception\VerificationCodeNotFoundException;
-use Shared\Domain\Service\VerificationCodeVerifierInterface;
+use Shared\Domain\Service\VerificationCodeInterface;
 
 #[CommandHandler]
 final readonly class ConfirmIdentityEmailHandler
 {
     public function __construct(
         private IdentityRepositoryInterface $repository,
-        private VerificationCodeVerifierInterface $verifier,
+        private VerificationCodeInterface $verifier,
         private ClockInterface $clock,
     ) {
     }

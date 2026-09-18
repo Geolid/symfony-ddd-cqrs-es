@@ -32,7 +32,7 @@ use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
 use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
 use Shared\Domain\Exception\VerificationCodeNotFoundException;
-use Shared\Domain\Service\VerificationCodeVerifierInterface;
+use Shared\Domain\Service\VerificationCodeInterface;
 use Shared\Domain\Specification\CanTransitionToSpecification;
 use Shared\Domain\Specification\CooldownElapsedSpecification;
 use Shared\Domain\ValueObject\ErasureState;
@@ -85,7 +85,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
      * @throws VerificationCodeAttemptsExceededException
      * @throws InvalidConfirmationCodeException
      */
-    public function activate(#[\SensitiveParameter] string $code, VerificationCodeVerifierInterface $verifier, \DateTimeImmutable $activatedAt): void
+    public function activate(#[\SensitiveParameter] string $code, VerificationCodeInterface $verifier, \DateTimeImmutable $activatedAt): void
     {
         if ($this->erasureState->isErased()) {
             throw IdentityAlreadyErasedException::forId($this->id);

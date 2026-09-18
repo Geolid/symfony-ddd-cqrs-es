@@ -12,14 +12,14 @@ use Iam\Identity\Domain\ValueObject\IdentityVerificationCodePurpose;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Policy;
-use Shared\Application\VerificationCode\VerificationCode;
+use Shared\Domain\Service\VerificationCodeInterface;
 
 #[Policy('iam.identity.issue_email_confirmation_on_identity_email_confirmation_resend_requested')]
 final readonly class IssueEmailConfirmationOnIdentityEmailConfirmationResendRequested
 {
     public function __construct(
         private IdentityFinderInterface $identityFinder,
-        private VerificationCode $verificationCode,
+        private VerificationCodeInterface $verifier,
         private IdentityNotifierInterface $notifier,
         private ClockInterface $clock,
     ) {
@@ -32,7 +32,7 @@ final readonly class IssueEmailConfirmationOnIdentityEmailConfirmationResendRequ
     public function __invoke(IdentityEmailConfirmationResendRequested $event): void
     {
         $identity = $this->identityFinder->ofId($event->id->toString());
-        $code = $this->verificationCode->issue(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $event->id->toString(), $this->clock->now());
+        $code = $this->verifier->issue(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $event->id->toString(), $this->clock->now());
         $this->notifier->notifyEmailConfirmationCode($identity->email, $code);
     }
 }

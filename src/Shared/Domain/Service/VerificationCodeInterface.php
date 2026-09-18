@@ -7,8 +7,13 @@ namespace Shared\Domain\Service;
 use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
 use Shared\Domain\Exception\VerificationCodeNotFoundException;
 
-interface VerificationCodeVerifierInterface
+interface VerificationCodeInterface
 {
+    /**
+     * Issuing a new code for the same (purpose, subjectId) invalidates any prior one.
+     */
+    public function issue(\BackedEnum $purpose, string $subjectId, \DateTimeImmutable $now): string;
+
     /**
      * @throws VerificationCodeNotFoundException
      * @throws VerificationCodeAttemptsExceededException

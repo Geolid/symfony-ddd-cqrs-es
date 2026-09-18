@@ -7,7 +7,9 @@ namespace Iam\Tests\Authentication\Domain\PasswordCredential;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialChanged;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialDefined;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialRehashed;
+use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialReset;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialResetRequested;
+use Iam\Authentication\Domain\PasswordCredential\Exception\InvalidPasswordResetCodeException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordResetRequestedTooRecentlyException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
@@ -19,6 +21,8 @@ use Iam\Tests\Authentication\Support\Double\FakePasswordHasher;
 use Iam\Tests\Authentication\Support\Double\StubPasswordStrengthSpecification;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Domain\Service\VerificationCodeInterface;
+use Shared\Tests\Support\Double\FakeVerificationCode;
 
 final class PasswordCredentialTest extends AggregateRootTestCase
 {
@@ -26,6 +30,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     private string $identityId;
     private Password $password;
     private FakePasswordHasher $hasher;
+    private VerificationCodeInterface $verifier;
     private \DateTimeImmutable $definedAt;
     private \DateTimeImmutable $requestedAt;
 
@@ -39,6 +44,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $this->definedAt = PasswordCredentialBuilder::sample('definedAt');
         $this->requestedAt = PasswordCredentialBuilder::sample('requestedAt');
         $this->hasher = new FakePasswordHasher();
+        $this->verifier = new FakeVerificationCode();
     }
 
     #[Test]
@@ -138,6 +144,81 @@ final class PasswordCredentialTest extends AggregateRootTestCase
             ->given($this->defined(), $this->resetRequested())
             ->when(fn (PasswordCredential $credential) => $credential->requestReset($this->identityId, $this->requestedAt->modify('+1 second')))
             ->expectsException(PasswordResetRequestedTooRecentlyException::class);
+    }
+
+    #[Test]
+    public function itResets(): void
+    {
+        $resetAt = PasswordCredentialBuilder::sample('resetAt');
+        $newPassword = 'updated-password';
+
+        $this
+            ->given($this->defined())
+            ->when(fn (PasswordCredential $credential) => $credential->resetPassword(
+                $this->identityId,
+                FakeVerificationCode::CODE,
+                $this->verifier,
+                Password::fromString($newPassword),
+                new StubPasswordStrengthSpecification(),
+                $this->hasher,
+                $resetAt,
+            ))
+            ->then(new PasswordCredentialReset(
+                $this->id,
+                $this->hasher->hash($newPassword),
+                $resetAt,
+            ));
+    }
+
+    #[Test]
+    public function itCannotResetWithInvalidCode(): void
+    {
+        $this
+            ->given($this->defined())
+            ->when(fn (PasswordCredential $credential) => $credential->resetPassword(
+                $this->identityId,
+                'wrong',
+                $this->verifier,
+                Password::fromString('updated-password'),
+                new StubPasswordStrengthSpecification(),
+                $this->hasher,
+                PasswordCredentialBuilder::sample('resetAt'),
+            ))
+            ->expectsException(InvalidPasswordResetCodeException::class);
+    }
+
+    #[Test]
+    public function itCannotResetToWeakPassword(): void
+    {
+        $this
+            ->given($this->defined())
+            ->when(fn (PasswordCredential $credential) => $credential->resetPassword(
+                $this->identityId,
+                FakeVerificationCode::CODE,
+                $this->verifier,
+                Password::fromString('updated-password'),
+                new StubPasswordStrengthSpecification(sufficient: false),
+                $this->hasher,
+                PasswordCredentialBuilder::sample('resetAt'),
+            ))
+            ->expectsException(WeakPasswordException::class);
+    }
+
+    #[Test]
+    public function itCannotResetToSamePassword(): void
+    {
+        $this
+            ->given($this->defined())
+            ->when(fn (PasswordCredential $credential) => $credential->resetPassword(
+                $this->identityId,
+                FakeVerificationCode::CODE,
+                $this->verifier,
+                $this->password,
+                new StubPasswordStrengthSpecification(),
+                $this->hasher,
+                PasswordCredentialBuilder::sample('resetAt'),
+            ))
+            ->expectsException(SamePasswordException::class);
     }
 
     #[Test]

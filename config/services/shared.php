@@ -13,7 +13,6 @@ use Sentry\State\HubInterface;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\Query\QueryBusInterface;
-use Shared\Application\VerificationCode\VerificationCode;
 use Shared\Infrastructure\EventStore\PatchlevelIntegrationEventPublisher;
 use Shared\Infrastructure\Messaging\SymfonyCommandBus;
 use Shared\Infrastructure\Messaging\SymfonyQueryBus;
@@ -40,8 +39,6 @@ return static function (ContainerConfigurator $container): void {
 
     $services->set('shared.hydration.result_hydrator', StackHydrator::class)
         ->factory([service(HydratorFactory::class), 'create']);
-
-    $services->get(VerificationCode::class)->arg('$secret', '%env(VERIFICATION_CODE_HASH_SECRET)%');
 
     if ('test' === $container->env()) {
         // Fetched by type from the container; must be public for that.

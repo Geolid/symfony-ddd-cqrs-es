@@ -7,7 +7,9 @@ namespace Iam\Authentication\Domain\PasswordCredential;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialChanged;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialDefined;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialRehashed;
+use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialReset;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialResetRequested;
+use Iam\Authentication\Domain\PasswordCredential\Exception\InvalidPasswordResetCodeException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordResetRequestedTooRecentlyException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
@@ -15,12 +17,16 @@ use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface
 use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
+use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialVerificationCodePurpose;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootAttributeBehaviour;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
+use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
+use Shared\Domain\Exception\VerificationCodeNotFoundException;
+use Shared\Domain\Service\VerificationCodeInterface;
 use Shared\Domain\Specification\CooldownElapsedSpecification;
 
 #[Aggregate('iam.authentication.password_credential')]
@@ -99,6 +105,34 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
         ));
     }
 
+    /**
+     * @throws InvalidPasswordResetCodeException
+     * @throws VerificationCodeNotFoundException
+     * @throws VerificationCodeAttemptsExceededException
+     * @throws WeakPasswordException
+     * @throws SamePasswordException
+     */
+    public function resetPassword(string $identityId, #[\SensitiveParameter] string $code, VerificationCodeInterface $verifier, #[\SensitiveParameter] Password $newPassword, PasswordStrengthSpecificationInterface $passwordStrengthSpecification, PasswordHasherInterface $hasher, \DateTimeImmutable $resetAt): void
+    {
+        if (!$verifier->verify(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identityId, $code, $resetAt)) {
+            throw InvalidPasswordResetCodeException::forId($this->id);
+        }
+
+        if (!$passwordStrengthSpecification->isSatisfiedBy($newPassword)) {
+            throw WeakPasswordException::forPasswordCredential($this->id);
+        }
+
+        if ($hasher->verify($this->passwordHash, $newPassword->value)) {
+            throw SamePasswordException::forId($this->id);
+        }
+
+        $this->recordThat(new PasswordCredentialReset(
+            id: $this->id,
+            passwordHash: $hasher->hash($newPassword->value),
+            resetAt: $resetAt,
+        ));
+    }
+
     // Raw string, not Password: re-validating an already-accepted secret could fail if invariants tightened since.
     public function rehash(#[\SensitiveParameter] string $plainPassword, PasswordHasherInterface $hasher, \DateTimeImmutable $rehashedAt): void
     {
@@ -132,5 +166,11 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
     private function applyResetRequested(PasswordCredentialResetRequested $event): void
     {
         $this->resetRequestedAt = $event->requestedAt;
+    }
+
+    #[Apply]
+    private function applyReset(PasswordCredentialReset $event): void
+    {
+        $this->passwordHash = $event->passwordHash;
     }
 }

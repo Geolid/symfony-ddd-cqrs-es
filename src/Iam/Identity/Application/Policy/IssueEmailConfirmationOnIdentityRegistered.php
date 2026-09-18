@@ -10,13 +10,13 @@ use Iam\Identity\Domain\ValueObject\IdentityVerificationCodePurpose;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Policy;
-use Shared\Application\VerificationCode\VerificationCode;
+use Shared\Domain\Service\VerificationCodeInterface;
 
 #[Policy('iam.identity.issue_email_confirmation_on_identity_registered')]
 final readonly class IssueEmailConfirmationOnIdentityRegistered
 {
     public function __construct(
-        private VerificationCode $verificationCode,
+        private VerificationCodeInterface $verifier,
         private IdentityNotifierInterface $notifier,
         private ClockInterface $clock,
     ) {
@@ -25,7 +25,7 @@ final readonly class IssueEmailConfirmationOnIdentityRegistered
     #[Subscribe(IdentityRegistered::class)]
     public function __invoke(IdentityRegistered $event): void
     {
-        $code = $this->verificationCode->issue(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $event->id->toString(), $this->clock->now());
+        $code = $this->verifier->issue(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $event->id->toString(), $this->clock->now());
         $this->notifier->notifyEmailConfirmationCode($event->email->value, $code);
     }
 }

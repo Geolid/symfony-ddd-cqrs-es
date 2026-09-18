@@ -13,7 +13,7 @@ use Iam\Identity\Domain\ValueObject\IdentityVerificationCodePurpose;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Shared\Application\VerificationCode\VerificationCode;
+use Shared\Infrastructure\VerificationCode\VerificationCode;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
