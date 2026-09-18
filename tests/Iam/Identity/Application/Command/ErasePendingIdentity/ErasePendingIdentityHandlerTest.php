@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Identity\Application\Command\ErasePendingIdentity;
 
+use Iam\Identity\Application\Command\ErasePendingIdentity\ErasePendingIdentity;
 use Iam\Identity\Application\Finder\Identity\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;

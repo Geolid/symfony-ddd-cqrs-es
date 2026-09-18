@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Cron\Console;
 
+use Iam\Identity\Application\Command\ErasePendingIdentity\ErasePendingIdentity;
 use Iam\Identity\Application\Query\ListExpiredPendingIdentities\ListExpiredPendingIdentities;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
