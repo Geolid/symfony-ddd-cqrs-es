@@ -10,6 +10,7 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Iam\Identity\Application\IdentityStatus;
 use Iam\Identity\Domain\Event\IdentityActivated;
+use Iam\Identity\Domain\Event\IdentityEmailConfirmationResendRequested;
 use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\Event\IdentityErasureCancelled;
 use Iam\Identity\Domain\Event\IdentityErasureRequested;
@@ -52,6 +53,17 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
             self::TABLE,
             ['status' => IdentityStatus::ACTIVE->value],
             ['id' => $event->id->toString()],
+        );
+    }
+
+    #[Subscribe(IdentityEmailConfirmationResendRequested::class)]
+    public function onIdentityEmailConfirmationResendRequested(IdentityEmailConfirmationResendRequested $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            ['email_confirmation_resend_requested_at' => $event->requestedAt],
+            ['id' => $event->id->toString()],
+            ['email_confirmation_resend_requested_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -125,6 +137,7 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
         $table->addColumn('status', Types::STRING, ['length' => 20]);
         $table->addColumn('reason', Types::STRING, ['length' => Reason::MAX_LENGTH, 'notnull' => false]);
         $table->addColumn('registered_at', Types::DATETIME_IMMUTABLE);
+        $table->addColumn('email_confirmation_resend_requested_at', Types::DATETIME_IMMUTABLE, ['notnull' => false]);
         $table->addColumn('suspended_at', Types::DATETIME_IMMUTABLE, ['notnull' => false]);
         $table->addColumn('reactivated_at', Types::DATETIME_IMMUTABLE, ['notnull' => false]);
         $table->addColumn('erasure_status', Types::STRING, ['length' => 20]);

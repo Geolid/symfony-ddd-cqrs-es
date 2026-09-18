@@ -15,6 +15,7 @@ use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class ResendEmailConfirmationHandlerTest extends AbstractIntegrationTestCase
 {
@@ -31,6 +32,11 @@ final class ResendEmailConfirmationHandlerTest extends AbstractIntegrationTestCa
         // Then
         $result = $this->service(IdentityFinderInterface::class)->ofId($identity->id->toString());
         self::assertSame(IdentityStatus::PENDING, $result->status);
+        self::assertNotNull($result->emailConfirmationResendRequestedAt);
+        self::assertSame(
+            Clock::get()->now()->format(\DateTimeInterface::ATOM),
+            $result->emailConfirmationResendRequestedAt->format(\DateTimeInterface::ATOM),
+        );
     }
 
     #[Test]
@@ -75,9 +81,8 @@ final class ResendEmailConfirmationHandlerTest extends AbstractIntegrationTestCa
     public function itFailsWhenRequestedTooRecently(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->create();
+        $identity = IdentityBuilder::new()->emailConfirmationResendRequested()->create();
         $this->store($identity);
-        $this->dispatch(new ResendEmailConfirmation($identity->id->toString()));
 
         // Then
         $this->expectException(EmailConfirmationResendRequestedTooRecentlyException::class);

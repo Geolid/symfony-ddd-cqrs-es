@@ -51,7 +51,7 @@ final class DbalIdentityFinder extends AbstractPaginatableDbalFinder implements 
 
     protected function configureBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'full_name', 'email', 'status', 'reason', 'registered_at', 'suspended_at', 'reactivated_at', 'erasure_status')
+        $qb->select('id', 'full_name', 'email', 'status', 'reason', 'registered_at', 'email_confirmation_resend_requested_at', 'suspended_at', 'reactivated_at', 'erasure_status')
             ->from(DbalIdentityProjector::TABLE);
     }
 
