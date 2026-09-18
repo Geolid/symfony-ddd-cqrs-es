@@ -101,6 +101,21 @@ final class NativeCodeChallengerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itFailsWhenAlreadyUsed(): void
+    {
+        // Given
+        $now = Clock::get()->now();
+        $code = $this->codeChallenger->issue(DummyVerificationCodePurpose::NAME, 'subject-1', $now);
+        $this->codeChallenger->verify(DummyVerificationCodePurpose::NAME, 'subject-1', $code, $now);
+
+        // Then
+        $this->expectException(VerificationCodeNotFoundException::class);
+
+        // When
+        $this->codeChallenger->verify(DummyVerificationCodePurpose::NAME, 'subject-1', $code, $now);
+    }
+
+    #[Test]
     public function itFailsWhenExpired(): void
     {
         // Given

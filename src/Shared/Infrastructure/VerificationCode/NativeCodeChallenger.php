@@ -29,6 +29,12 @@ final readonly class NativeCodeChallenger implements CodeChallengerInterface
 
     public function issue(\BackedEnum $purpose, string $subjectId, \DateTimeImmutable $now): string
     {
+        /*
+         * A one-off shift of either bound can only be observed by a test if the draw happens
+         * to land on that exact edge value — no test can force that deterministically.
+         *
+         * @infection-ignore-all
+         */
         $code = \sprintf('%06d', random_int(0, 999999));
 
         $this->store->save($purpose, $subjectId, $this->hash($code), $now->modify($this->expiry));
@@ -45,8 +51,6 @@ final readonly class NativeCodeChallenger implements CodeChallengerInterface
         }
 
         if ($record->expiresAt < $now) {
-            $this->store->delete($purpose, $subjectId);
-
             throw VerificationCodeNotFoundException::forSubject($purpose, $subjectId);
         }
 
