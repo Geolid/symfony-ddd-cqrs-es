@@ -98,6 +98,20 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itFailsWhenIdentityNotFound(): void
+    {
+        // Given
+        $identityId = Uuid::uuid7()->toString();
+        $code = $this->verificationCode->issue(AuthenticationVerificationCodePurpose::PASSWORD_RESET, $identityId, Clock::get()->now());
+
+        // Then
+        $this->expectException(IdentityResultNotFoundException::class);
+
+        // When
+        $this->dispatch(new ResetPassword($identityId, $code, self::NEW_PASSWORD));
+    }
+
+    #[Test]
     public function itFailsWhenIdentityNotAuthenticatable(): void
     {
         // Given
@@ -111,19 +125,5 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new ResetPassword($identity->id->toString(), $code, self::NEW_PASSWORD));
-    }
-
-    #[Test]
-    public function itFailsWhenIdentityNotFound(): void
-    {
-        // Given
-        $identityId = Uuid::uuid7()->toString();
-        $code = $this->verificationCode->issue(AuthenticationVerificationCodePurpose::PASSWORD_RESET, $identityId, Clock::get()->now());
-
-        // Then
-        $this->expectException(IdentityResultNotFoundException::class);
-
-        // When
-        $this->dispatch(new ResetPassword($identityId, $code, self::NEW_PASSWORD));
     }
 }

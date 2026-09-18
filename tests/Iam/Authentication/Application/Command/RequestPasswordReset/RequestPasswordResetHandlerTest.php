@@ -53,6 +53,16 @@ final class RequestPasswordResetHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itFailsWhenIdentityNotFound(): void
+    {
+        // Then
+        $this->expectException(IdentityResultNotFoundException::class);
+
+        // When
+        $this->dispatch(new RequestPasswordReset(Uuid::uuid7()->toString()));
+    }
+
+    #[Test]
     public function itFailsWhenIdentityNotAuthenticatable(): void
     {
         // Given
@@ -69,16 +79,6 @@ final class RequestPasswordResetHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new RequestPasswordReset($identity->id->toString()));
-    }
-
-    #[Test]
-    public function itFailsWhenIdentityNotFound(): void
-    {
-        // Then
-        $this->expectException(IdentityResultNotFoundException::class);
-
-        // When
-        $this->dispatch(new RequestPasswordReset(Uuid::uuid7()->toString()));
     }
 
     #[Test]
