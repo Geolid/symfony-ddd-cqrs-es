@@ -10,7 +10,6 @@ use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Iam\Authentication\Application\TotpCredentialStatus;
 use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialEnrolled;
-use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialEnrollmentConfirmed;
 use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialRevoked;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
@@ -34,8 +33,8 @@ final readonly class DbalTotpCredentialProjector extends AbstractDbalProjector
         ], ['enrolled_at' => Types::DATETIME_IMMUTABLE]);
     }
 
-    #[Subscribe(TotpCredentialEnrollmentConfirmed::class)]
-    public function onTotpCredentialEnrollmentConfirmed(TotpCredentialEnrollmentConfirmed $event): void
+    #[Subscribe(TotpCredentialConfirmed::class)]
+    public function onTotpCredentialConfirmed(TotpCredentialConfirmed $event): void
     {
         $this->connection->update(
             self::TABLE,

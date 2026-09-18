@@ -52,7 +52,7 @@ final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsOnTotpCredentialEnrollmentConfirmed(): void
+    public function itProjectsOnTotpCredentialConfirmed(): void
     {
         // Given
         $other = TotpCredentialBuilder::new()->withCipher($this->cipher)->create();

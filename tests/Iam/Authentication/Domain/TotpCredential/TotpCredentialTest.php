@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Domain\TotpCredential;
 
 use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialEnrolled;
-use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialEnrollmentConfirmed;
 use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialRevoked;
 use Iam\Authentication\Domain\TotpCredential\Exception\InvalidTotpCodeException;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialNotConfirmableException;
@@ -66,7 +65,7 @@ final class TotpCredentialTest extends AggregateRootTestCase
         $this
             ->given($this->enrolled())
             ->when(fn (TotpCredential $credential) => $credential->confirm($this->identityId, $code, $this->cipher, $this->verifier, $confirmedAt))
-            ->then(new TotpCredentialEnrollmentConfirmed($this->id, $confirmedAt));
+            ->then(new TotpCredentialConfirmed($this->id, $confirmedAt));
     }
 
     #[Test]
@@ -78,7 +77,7 @@ final class TotpCredentialTest extends AggregateRootTestCase
         $this
             ->given(
                 $this->enrolled(),
-                new TotpCredentialEnrollmentConfirmed($this->id, $confirmedAt),
+                new TotpCredentialConfirmed($this->id, $confirmedAt),
             )
             ->when(fn (TotpCredential $credential) => $credential->confirm($this->identityId, $code, $this->cipher, $this->verifier, $confirmedAt))
             ->then();
