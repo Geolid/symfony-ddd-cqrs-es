@@ -2,9 +2,8 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Identity\Application\Command\EraseUnconfirmedIdentity;
+namespace Iam\Tests\Identity\Application\Command\ErasePendingIdentity;
 
-use Iam\Identity\Application\Command\EraseUnconfirmedIdentity\EraseUnconfirmedIdentity;
 use Iam\Identity\Application\Finder\Identity\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
@@ -14,7 +13,7 @@ use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
-final class EraseUnconfirmedIdentityHandlerTest extends AbstractIntegrationTestCase
+final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
 {
     private IdentityFinderInterface $identityFinder;
 
@@ -34,7 +33,7 @@ final class EraseUnconfirmedIdentityHandlerTest extends AbstractIntegrationTestC
         $this->store($identity);
 
         // When
-        $this->dispatch(new EraseUnconfirmedIdentity($identity->id->toString()));
+        $this->dispatch(new ErasePendingIdentity($identity->id->toString()));
 
         // Then
         $this->expectException(IdentityResultNotFoundException::class);
@@ -43,7 +42,7 @@ final class EraseUnconfirmedIdentityHandlerTest extends AbstractIntegrationTestC
     }
 
     #[Test]
-    public function itIgnoresWhenAlreadyConfirmed(): void
+    public function itIgnoresWhenActive(): void
     {
         // Given
         $now = Clock::get()->now();
@@ -51,7 +50,7 @@ final class EraseUnconfirmedIdentityHandlerTest extends AbstractIntegrationTestC
         $this->store($identity);
 
         // When
-        $this->dispatch(new EraseUnconfirmedIdentity($identity->id->toString()));
+        $this->dispatch(new ErasePendingIdentity($identity->id->toString()));
 
         // Then
         $result = $this->identityFinder->ofId($identity->id->toString());
@@ -67,7 +66,7 @@ final class EraseUnconfirmedIdentityHandlerTest extends AbstractIntegrationTestC
         $this->store($identity);
 
         // When
-        $this->dispatch(new EraseUnconfirmedIdentity($identity->id->toString()));
+        $this->dispatch(new ErasePendingIdentity($identity->id->toString()));
 
         // Then
         $result = $this->identityFinder->ofId($identity->id->toString());
@@ -87,7 +86,7 @@ final class EraseUnconfirmedIdentityHandlerTest extends AbstractIntegrationTestC
         $this->store($identity);
 
         // When
-        $this->dispatch(new EraseUnconfirmedIdentity($identity->id->toString()));
+        $this->dispatch(new ErasePendingIdentity($identity->id->toString()));
 
         // Then
         self::expectNotToPerformAssertions();
@@ -100,6 +99,6 @@ final class EraseUnconfirmedIdentityHandlerTest extends AbstractIntegrationTestC
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new EraseUnconfirmedIdentity(Uuid::uuid7()->toString()));
+        $this->dispatch(new ErasePendingIdentity(Uuid::uuid7()->toString()));
     }
 }

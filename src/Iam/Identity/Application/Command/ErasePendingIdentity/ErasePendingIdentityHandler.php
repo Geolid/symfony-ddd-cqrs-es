@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iam\Identity\Application\Command\EraseUnconfirmedIdentity;
+namespace Iam\Identity\Application\Command\ErasePendingIdentity;
 
 use Iam\Identity\Domain\Exception\IdentityAlreadyExistsException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
@@ -12,7 +12,7 @@ use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
 
 #[CommandHandler]
-final readonly class EraseUnconfirmedIdentityHandler
+final readonly class ErasePendingIdentityHandler
 {
     public function __construct(
         private IdentityRepositoryInterface $repository,
@@ -24,11 +24,11 @@ final readonly class EraseUnconfirmedIdentityHandler
      * @throws IdentityNotFoundException
      * @throws IdentityAlreadyExistsException
      */
-    public function __invoke(EraseUnconfirmedIdentity $command): void
+    public function __invoke(ErasePendingIdentity $command): void
     {
         $identity = $this->repository->load(IdentityId::fromString($command->id));
 
-        $identity->eraseUnconfirmed($this->clock->now());
+        $identity->erasePending($this->clock->now());
         $this->repository->save($identity);
     }
 }

@@ -215,7 +215,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    public function eraseUnconfirmed(\DateTimeImmutable $erasedAt): void
+    public function erasePending(\DateTimeImmutable $erasedAt): void
     {
         if (!$this->accessState->isPending()) {
             return;

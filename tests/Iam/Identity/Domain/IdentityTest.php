@@ -309,34 +309,34 @@ final class IdentityTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itErasesUnconfirmed(): void
+    public function itErasesPending(): void
     {
         $this
             ->given($this->registered())
-            ->when(fn (Identity $identity) => $identity->eraseUnconfirmed($this->erasedAt))
+            ->when(fn (Identity $identity) => $identity->erasePending($this->erasedAt))
             ->then(new IdentityErased($this->id, $this->erasedAt));
     }
 
     #[Test]
-    public function itDoesNotEraseUnconfirmedWhenActive(): void
+    public function itDoesNotErasePendingWhenActive(): void
     {
         $this
             ->given($this->registered(), $this->activated())
-            ->when(static fn (Identity $identity) => $identity->eraseUnconfirmed(IdentityBuilder::sample('erasedAt')))
+            ->when(static fn (Identity $identity) => $identity->erasePending(IdentityBuilder::sample('erasedAt')))
             ->then();
     }
 
     #[Test]
-    public function itDoesNotEraseUnconfirmedWhenNotExpired(): void
+    public function itDoesNotErasePendingWhenNotExpired(): void
     {
         $this
             ->given($this->registered())
-            ->when(fn (Identity $identity) => $identity->eraseUnconfirmed($this->registeredAt->modify('+1 hour')))
+            ->when(fn (Identity $identity) => $identity->erasePending($this->registeredAt->modify('+1 hour')))
             ->then();
     }
 
     #[Test]
-    public function itDoesNotEraseUnconfirmedWhenAlreadyErased(): void
+    public function itDoesNotErasePendingWhenAlreadyErased(): void
     {
         $this
             ->given(
@@ -344,7 +344,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->erasureRequested(),
                 $this->erased(),
             )
-            ->when(static fn (Identity $identity) => $identity->eraseUnconfirmed(IdentityBuilder::sample('erasedAt')))
+            ->when(static fn (Identity $identity) => $identity->erasePending(IdentityBuilder::sample('erasedAt')))
             ->then();
     }
 
