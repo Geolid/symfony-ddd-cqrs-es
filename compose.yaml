@@ -18,6 +18,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      valkey:
+        condition: service_healthy
     volumes:
       - ./:/srv/
     command: [ 'php-fpm' ]
@@ -30,6 +32,16 @@ services:
       - db-data:/var/lib/mysql
     healthcheck:
       test: [ 'CMD', 'healthcheck.sh', '--connect', '--innodb_initialized' ]
+      interval: 2s
+      timeout: 1s
+      retries: 30
+
+  valkey:
+    image: valkey/valkey:8.1-alpine
+    volumes:
+      - valkey-data:/data
+    healthcheck:
+      test: [ 'CMD', 'valkey-cli', 'ping' ]
       interval: 2s
       timeout: 1s
       retries: 30
@@ -51,3 +63,4 @@ services:
 
 volumes:
   db-data: ~
+  valkey-data: ~

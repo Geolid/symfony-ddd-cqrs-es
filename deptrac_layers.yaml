@@ -38,6 +38,7 @@ deptrac:
         - { type: classNameRegex, value: '#^OTPHP\\.*#' }
         - { type: classNameRegex, value: '#^Patchlevel\\EventSourcing\\(?!Aggregate|Attribute|Subscription\\RunMode$|Message\\Message$).*#' }
         - { type: classNameRegex, value: '#^Patchlevel\\Hydrator\\(?!(Extension\\)?Cryptography\\Attribute\\).*#' }
+        - { type: classNameRegex, value: '#^Predis\\.*#' }
         - { type: classNameRegex, value: '#^Sentry\\.*#' }
         - { type: classNameRegex, value: '#^Symfony\\(?!Component\\Validator\\).*#' }
 

@@ -16,8 +16,6 @@ final class NativeApiKeyHasherTest extends TestCase
 
     protected function setUp(): void
     {
-        parent::setUp();
-
         $this->hasher = new NativeApiKeyHasher();
         $this->hash = $this->hasher->hash('a-secret-value');
     }

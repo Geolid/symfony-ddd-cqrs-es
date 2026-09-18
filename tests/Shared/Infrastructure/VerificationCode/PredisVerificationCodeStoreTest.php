@@ -5,33 +5,33 @@ declare(strict_types=1);
 namespace Shared\Tests\Infrastructure\VerificationCode;
 
 use PHPUnit\Framework\Attributes\Test;
-use Shared\Infrastructure\VerificationCode\DbalVerificationCodeStore;
+use Shared\Infrastructure\VerificationCode\PredisVerificationCodeStore;
 use Shared\Tests\Support\Double\DummyVerificationCodePurpose;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
-final class DbalVerificationCodeStoreTest extends AbstractIntegrationTestCase
+final class PredisVerificationCodeStoreTest extends AbstractIntegrationTestCase
 {
-    private DbalVerificationCodeStore $store;
+    private PredisVerificationCodeStore $store;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->store = $this->service(DbalVerificationCodeStore::class);
+        $this->store = $this->service(PredisVerificationCodeStore::class);
     }
 
     #[Test]
-    public function itSaves(): void
+    public function itFinds(): void
     {
         // Given
         $expiresAt = Clock::get()->now()->modify('+15 minutes');
-
-        // When
         $this->store->save(DummyVerificationCodePurpose::NAME, 'subject-1', 'hash-1', $expiresAt);
 
-        // Then
+        // When
         $record = $this->store->find(DummyVerificationCodePurpose::NAME, 'subject-1');
+
+        // Then
         self::assertNotNull($record);
         self::assertSame('hash-1', $record->codeHash);
         self::assertSame($expiresAt->format(\DateTimeInterface::ATOM), $record->expiresAt->format(\DateTimeInterface::ATOM));
@@ -39,7 +39,7 @@ final class DbalVerificationCodeStoreTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFindsNothingWhenNeverSaved(): void
+    public function itFindsNothing(): void
     {
         // When
         $record = $this->store->find(DummyVerificationCodePurpose::NAME, 'subject-1');
@@ -49,7 +49,7 @@ final class DbalVerificationCodeStoreTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itReplacesPriorRecordOnReissue(): void
+    public function itReplacesPriorRecord(): void
     {
         // Given
         $now = Clock::get()->now();
@@ -86,6 +86,16 @@ final class DbalVerificationCodeStoreTest extends AbstractIntegrationTestCase
         $record = $this->store->find(DummyVerificationCodePurpose::NAME, 'subject-1');
         self::assertNotNull($record);
         self::assertSame(1, $record->attempts);
+    }
+
+    #[Test]
+    public function itIgnoresWhenNeverSaved(): void
+    {
+        // When
+        $this->store->incrementAttempts(DummyVerificationCodePurpose::NAME, 'subject-1');
+
+        // Then
+        self::assertNull($this->store->find(DummyVerificationCodePurpose::NAME, 'subject-1'));
     }
 
     #[Test]

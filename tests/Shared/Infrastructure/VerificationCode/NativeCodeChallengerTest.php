@@ -6,22 +6,24 @@ namespace Shared\Tests\Infrastructure\VerificationCode;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\TestCase;
 use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
 use Shared\Domain\Exception\VerificationCodeNotFoundException;
 use Shared\Infrastructure\VerificationCode\NativeCodeChallenger;
 use Shared\Tests\Support\Double\DummyVerificationCodePurpose;
-use Support\TestCase\AbstractIntegrationTestCase;
+use Shared\Tests\Support\Double\FakeVerificationCodeStore;
 use Symfony\Component\Clock\Clock;
 
-final class NativeCodeChallengerTest extends AbstractIntegrationTestCase
+final class NativeCodeChallengerTest extends TestCase
 {
+    private const int MAX_ATTEMPTS = 5;
+    private const int EXPIRY_MINUTES = 15;
+
     private NativeCodeChallenger $codeChallenger;
 
     protected function setUp(): void
     {
-        parent::setUp();
-
-        $this->codeChallenger = $this->service(NativeCodeChallenger::class);
+        $this->codeChallenger = new NativeCodeChallenger(new FakeVerificationCodeStore(), 'secret', self::MAX_ATTEMPTS, \sprintf('+%d minutes', self::EXPIRY_MINUTES));
     }
 
     #[Test]
@@ -68,12 +70,10 @@ final class NativeCodeChallengerTest extends AbstractIntegrationTestCase
      */
     public static function provideValidTiming(): iterable
     {
-        // Truncated to whole seconds: the store isn't guaranteed to preserve sub-second precision.
         $now = Clock::get()->now();
-        $now = $now->setTime((int) $now->format('H'), (int) $now->format('i'), (int) $now->format('s'));
 
         yield 'immediately' => ['subject-1', $now, $now];
-        yield 'at expiry boundary' => ['subject-2', $now, $now->modify('+15 minutes')];
+        yield 'at expiry boundary' => ['subject-2', $now, $now->modify(\sprintf('+%d minutes', self::EXPIRY_MINUTES))];
     }
 
     #[Test]
@@ -126,7 +126,7 @@ final class NativeCodeChallengerTest extends AbstractIntegrationTestCase
         $this->expectException(VerificationCodeNotFoundException::class);
 
         // When
-        $this->codeChallenger->verify(DummyVerificationCodePurpose::NAME, 'subject-1', $code, $now->modify('+16 minutes'));
+        $this->codeChallenger->verify(DummyVerificationCodePurpose::NAME, 'subject-1', $code, $now->modify(\sprintf('+%d minutes', self::EXPIRY_MINUTES + 1)));
     }
 
     #[Test]
@@ -135,7 +135,7 @@ final class NativeCodeChallengerTest extends AbstractIntegrationTestCase
         // Given
         $now = Clock::get()->now();
         $this->codeChallenger->issue(DummyVerificationCodePurpose::NAME, 'subject-1', $now);
-        for ($i = 0; $i < 5; ++$i) {
+        for ($i = 0; $i < self::MAX_ATTEMPTS; ++$i) {
             $this->codeChallenger->verify(DummyVerificationCodePurpose::NAME, 'subject-1', 'wrong', $now);
         }
 

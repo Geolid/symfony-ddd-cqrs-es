@@ -19,8 +19,6 @@ final class OtphpTotpVerifierTest extends TestCase
 
     protected function setUp(): void
     {
-        parent::setUp();
-
         $clock = Clock::get();
         $this->secret = TOTP::generate()->getSecret();
         $this->validCode = TOTP::createFromSecret($this->secret, $clock)->now();

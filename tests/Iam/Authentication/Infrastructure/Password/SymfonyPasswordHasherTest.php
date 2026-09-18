@@ -17,8 +17,6 @@ final class SymfonyPasswordHasherTest extends TestCase
 
     protected function setUp(): void
     {
-        parent::setUp();
-
         $this->hasher = new SymfonyPasswordHasher(new NativePasswordHasher());
         $this->hash = $this->hasher->hash('Marmoset-42-Zephyr!');
     }
