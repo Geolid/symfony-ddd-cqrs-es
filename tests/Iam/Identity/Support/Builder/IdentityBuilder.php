@@ -56,9 +56,12 @@ final class IdentityBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(registeredAt: $registeredAt);
     }
 
-    public function confirmed(?\DateTimeImmutable $confirmedAt = null): self
+    public function confirmed(?string $confirmationCode = null, ?\DateTimeImmutable $confirmedAt = null): self
     {
-        $builder = null !== $confirmedAt ? $this->withAttributes(confirmedAt: $confirmedAt) : $this;
+        $builder = $this->withAttributes(...array_filter([
+            'confirmationCode' => $confirmationCode,
+            'confirmedAt' => $confirmedAt,
+        ]));
 
         return $builder->withModifier(
             static fn (Identity $identity, self $builder) => $identity->confirm(
