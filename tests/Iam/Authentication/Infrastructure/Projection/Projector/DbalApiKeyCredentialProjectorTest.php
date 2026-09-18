@@ -13,7 +13,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{label: string, issued_at: string, revoked: bool, revoked_at: string|null, identity_authenticatable: bool}
+ * @phpstan-type Row array{label: string, issued_at: string, revoked: bool, revoked_at: string|null}
  */
 final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCase
 {
@@ -45,7 +45,6 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
         self::assertSame($builder['issuedAt']->format(self::DATE_FORMAT), $row['issued_at']);
         self::assertFalse((bool) $row['revoked']);
         self::assertNull($row['revoked_at']);
-        self::assertTrue((bool) $row['identity_authenticatable']);
     }
 
     #[Test]
@@ -73,61 +72,6 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
         self::assertNotFalse($otherRow);
         self::assertFalse((bool) $otherRow['revoked']);
         self::assertNull($otherRow['revoked_at']);
-    }
-
-    #[Test]
-    public function itProjectsOnIdentitySuspendedIntegrationEvent(): void
-    {
-        // Given
-        $other = ApiKeyCredentialBuilder::new()->withHasher($this->hasher)->create();
-        $this->store($other);
-
-        $identity = IdentityBuilder::new()->suspended()->create();
-        $credential = ApiKeyCredentialBuilder::new()
-            ->withIdentityId($identity->id->toString())
-            ->withHasher($this->hasher)
-            ->create();
-
-        // When
-        $this->store($credential, $identity);
-
-        // Then
-        $row = $this->fetchRow($credential->id->toString());
-        self::assertNotFalse($row);
-        self::assertFalse((bool) $row['identity_authenticatable']);
-
-        $otherRow = $this->fetchRow($other->id->toString());
-        self::assertNotFalse($otherRow);
-        self::assertTrue((bool) $otherRow['identity_authenticatable']);
-    }
-
-    #[Test]
-    public function itProjectsOnIdentityReactivatedIntegrationEvent(): void
-    {
-        // Given
-        $otherIdentity = IdentityBuilder::new()->suspended()->create();
-        $other = ApiKeyCredentialBuilder::new()
-            ->withIdentityId($otherIdentity->id->toString())
-            ->withHasher($this->hasher)
-            ->create();
-
-        $identity = IdentityBuilder::new()->suspended()->reactivated()->create();
-        $credential = ApiKeyCredentialBuilder::new()
-            ->withIdentityId($identity->id->toString())
-            ->withHasher($this->hasher)
-            ->create();
-
-        // When
-        $this->store($other, $otherIdentity, $credential, $identity);
-
-        // Then
-        $row = $this->fetchRow($credential->id->toString());
-        self::assertNotFalse($row);
-        self::assertTrue((bool) $row['identity_authenticatable']);
-
-        $otherRow = $this->fetchRow($other->id->toString());
-        self::assertNotFalse($otherRow);
-        self::assertFalse((bool) $otherRow['identity_authenticatable']);
     }
 
     #[Test]
@@ -160,7 +104,7 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
 
         /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT label, issued_at, revoked, revoked_at, identity_authenticatable FROM %s WHERE id = :id', DbalApiKeyCredentialProjector::TABLE),
+            \sprintf('SELECT label, issued_at, revoked, revoked_at FROM %s WHERE id = :id', DbalApiKeyCredentialProjector::TABLE),
             ['id' => $id],
         );
     }

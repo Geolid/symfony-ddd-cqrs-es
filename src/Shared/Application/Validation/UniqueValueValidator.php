@@ -34,14 +34,14 @@ final class UniqueValueValidator extends ConstraintValidator
 
         $key = UniqueKey::for($constraint->key, ...$constraint->scope);
 
-        $excludeOwnerId = null;
-        if (null !== $constraint->excludeOwnerIdPropertyPath) {
+        $excludeSubjectId = null;
+        if (null !== $constraint->excludeSubjectIdPropertyPath) {
             // ?? null: isset()-style access is exempt from PHP's uninitialized-typed-property error, plain access isn't.
-            $excludeOwnerId = $this->context->getObject()->{$constraint->excludeOwnerIdPropertyPath} ?? null;
-            Assert::string($excludeOwnerId);
+            $excludeSubjectId = $this->context->getObject()->{$constraint->excludeSubjectIdPropertyPath} ?? null;
+            Assert::string($excludeSubjectId);
         }
 
-        if ($this->uniqueness->isClaimed($key, (string) $value, $excludeOwnerId)) {
+        if ($this->uniqueness->isClaimed($key, (string) $value, $excludeSubjectId)) {
             $this->context->buildViolation($constraint->message)
                 ->setParameter('{{ value }}', (string) $value)
                 ->setParameter('{{ key }}', $key->discriminator->name)

@@ -155,5 +155,6 @@ final readonly class DbalPaymentProjector extends AbstractDbalProjector
         $table->addIndex(['checkout_session_id'], 'finance_payment_payment_checkout_session_id_idx');
         $table->addIndex(['order_id'], 'finance_payment_payment_order_id_idx');
         $table->addIndex(['reference'], 'finance_payment_payment_reference_idx');
+        $table->addIndex(['status', 'requested_at'], 'finance_payment_payment_status_requested_at_idx');
     }
 }

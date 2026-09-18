@@ -109,5 +109,6 @@ final readonly class DbalCheckoutSessionProjector extends AbstractDbalProjector
         );
         $table->addIndex(['cart_id'], 'shopping_checkout_checkout_session_cart_id_idx');
         $table->addIndex(['customer_id'], 'shopping_checkout_checkout_session_customer_id_idx');
+        $table->addIndex(['status', 'opened_at'], 'shopping_checkout_checkout_session_status_opened_at_idx');
     }
 }

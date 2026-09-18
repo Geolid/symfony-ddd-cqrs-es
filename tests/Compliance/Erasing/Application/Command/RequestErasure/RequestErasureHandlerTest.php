@@ -6,8 +6,8 @@ namespace Compliance\Tests\Erasing\Application\Command\RequestErasure;
 
 use Compliance\Erasing\Application\Command\RequestErasure\Exception\ErasureAlreadyClaimedException;
 use Compliance\Erasing\Application\Command\RequestErasure\RequestErasure;
+use Compliance\Erasing\Application\ErasingUniqueKey;
 use Compliance\Erasing\Application\ErasureRequestStatus;
-use Compliance\Erasing\Application\ErasureUniqueKey;
 use Compliance\Erasing\Application\Finder\Erasure\ErasureFinderInterface;
 use Compliance\Tests\Erasing\Support\Builder\ErasureBuilder;
 use PHPUnit\Framework\Attributes\Test;
@@ -68,7 +68,7 @@ final class RequestErasureHandlerTest extends AbstractIntegrationTestCase
         $builder = ErasureBuilder::new();
         $erasure = $builder->create();
         $this->store($erasure);
-        $this->uniqueness->claim(UniqueKey::for(ErasureUniqueKey::IDENTITY), $builder['identityId'], $erasure->id->toString());
+        $this->uniqueness->claim(UniqueKey::for(ErasingUniqueKey::IDENTITY), $builder['identityId'], $erasure->id->toString());
 
         // Then
         $this->expectException(ErasureAlreadyClaimedException::class);

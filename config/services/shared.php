@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-use Bootstrap\DependencyInjection\SubdomainServiceLoader;
+use Bootstrap\DependencyInjection\BoundedContextServiceLoader;
 use Itspire\MonologLoki\Handler\LokiHandler;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\InMemoryCipherKeyStore;
@@ -17,6 +17,7 @@ use Shared\Infrastructure\EventStore\PatchlevelIntegrationEventPublisher;
 use Shared\Infrastructure\Messaging\SymfonyCommandBus;
 use Shared\Infrastructure\Messaging\SymfonyQueryBus;
 use Shared\Infrastructure\Patchlevel\Hydrator\HydratorFactory;
+use Shared\Infrastructure\Projection\Finder\DbalPaginator;
 use Shared\Infrastructure\Sentry\AppIdTagger;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\Lock\LockFactory;
@@ -24,10 +25,16 @@ use Symfony\Component\Lock\LockFactory;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return static function (ContainerConfigurator $container): void {
+    $container->parameters()->set('code_challenger.max_attempts', 5);
+    $container->parameters()->set('code_challenger.expiry', '+15 minutes');
+
     $services = $container->services();
     $services->defaults()->autowire()->autoconfigure();
 
-    SubdomainServiceLoader::load($services, 'Shared');
+    BoundedContextServiceLoader::load($services, 'Shared');
+
+    // Always constructed directly with per-call closures, never resolved via the container.
+    $services->remove(DbalPaginator::class);
 
     $commandBusAlias = $services->alias(CommandBusInterface::class, SymfonyCommandBus::class);
     $queryBusAlias = $services->alias(QueryBusInterface::class, SymfonyQueryBus::class);

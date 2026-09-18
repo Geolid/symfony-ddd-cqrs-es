@@ -28,6 +28,10 @@ deptrac:
       collectors:
         - { type: directory, value: 'apps/es-dashboard/.*' }
 
+    - name: Cron
+      collectors:
+        - { type: directory, value: 'apps/cron/.*' }
+
     # Shared presentation (Twig Components) across DMs — never business logic.
     - name: Ui
       collectors:
@@ -40,6 +44,7 @@ deptrac:
     Cli:          [ Shopping.Checkout, Sales.Ordering, Fulfilment.Shipping, Finance.Payment, Iam.Identity, Iam.Authentication, Shared, Vendors ]
     Webhook:      [ Fulfilment.Shipping, Sales.Ordering, Finance.Payment, Shared, Vendors ]
     EsDashboard:  [ Shared, Vendors ]
+    Cron:         [ Iam.Identity, Shared, Vendors ]
 
     # A Twig Component is presentation-only — framework/vendor glue, never a BC.
     Ui:           [ Vendors ]

@@ -11,8 +11,6 @@ use Crm\Customer\Domain\Customer\Event\CustomerErasureRequested;
 use Crm\Customer\Domain\Customer\Event\CustomerRegistered;
 use Crm\Customer\Domain\Customer\Event\CustomerShippingAddressDefined;
 use Crm\Customer\Domain\Customer\ValueObject\CustomerId;
-use Crm\Customer\Domain\Customer\ValueObject\Email;
-use Crm\Customer\Domain\Customer\ValueObject\Name;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootAttributeBehaviour;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
@@ -40,19 +38,11 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
     public private(set) ?PostalAddress $billingAddress = null;
     private ErasureState $erasureState;
 
-    public static function register(
-        CustomerId $id,
-        Name $firstName,
-        Name $lastName,
-        Email $email,
-        \DateTimeImmutable $registeredAt,
-    ): self {
+    public static function register(CustomerId $id, \DateTimeImmutable $registeredAt): self
+    {
         $self = new self();
         $self->recordThat(new CustomerRegistered(
             id: $id,
-            firstName: $firstName,
-            lastName: $lastName,
-            email: $email,
             registeredAt: $registeredAt,
         ));
 

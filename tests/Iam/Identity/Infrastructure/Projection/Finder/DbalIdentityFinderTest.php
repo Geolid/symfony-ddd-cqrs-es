@@ -7,7 +7,8 @@ namespace Iam\Tests\Identity\Infrastructure\Projection\Finder;
 use Iam\Identity\Application\Finder\Identity\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Finder\Identity\IdentityResult;
-use Iam\Identity\Application\IdentityStatus;
+use Iam\Identity\Application\IdentityModerationStatus;
+use Iam\Identity\Application\IdentityVerificationStatus;
 use Iam\Identity\Domain\Identity;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
@@ -31,7 +32,7 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
     {
         // Given
         $other = IdentityBuilder::new()->create();
-        $builder = IdentityBuilder::new();
+        $builder = IdentityBuilder::new()->confirmed();
         $identity = $builder->create();
         $this->store($other, $identity);
 
@@ -40,11 +41,18 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
 
         // Then
         self::assertSame($identity->id->toString(), $result->id);
-        self::assertSame(IdentityStatus::ACTIVE, $result->status);
+        self::assertSame($builder['fullName']->value, $result->fullName);
+        self::assertSame($builder['email']->value, $result->email);
+        self::assertSame(IdentityVerificationStatus::CONFIRMED, $result->verificationStatus);
+        self::assertSame(IdentityModerationStatus::ACTIVE, $result->moderationStatus);
         self::assertNull($result->reason);
         self::assertSame(
             $builder['registeredAt']->format(\DateTimeInterface::ATOM),
             $result->registeredAt->format(\DateTimeInterface::ATOM),
+        );
+        self::assertSame(
+            $builder['registeredAt']->format(\DateTimeInterface::ATOM),
+            $result->confirmationRequestedAt->format(\DateTimeInterface::ATOM),
         );
         self::assertNull($result->suspendedAt);
         self::assertNull($result->reactivatedAt);

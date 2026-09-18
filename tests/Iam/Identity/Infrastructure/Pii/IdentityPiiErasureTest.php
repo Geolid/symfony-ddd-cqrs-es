@@ -30,7 +30,7 @@ final class IdentityPiiErasureTest extends AbstractIntegrationTestCase
     public function itCryptoShredsSuspensionReasonOnErasure(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->suspended()->create();
+        $identity = IdentityBuilder::new()->confirmed()->suspended()->create();
         $this->store($identity);
         $serialized = $this->serializedEventOf(
             IdentitySuspended::class,
@@ -50,7 +50,7 @@ final class IdentityPiiErasureTest extends AbstractIntegrationTestCase
     public function itCryptoShredsReactivationReasonOnErasure(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->suspended()->reactivated()->create();
+        $identity = IdentityBuilder::new()->confirmed()->suspended()->reactivated()->create();
         $this->store($identity);
         $serialized = $this->serializedEventOf(
             IdentityReactivated::class,

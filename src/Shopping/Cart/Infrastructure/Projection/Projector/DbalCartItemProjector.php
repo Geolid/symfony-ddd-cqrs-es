@@ -77,5 +77,6 @@ final readonly class DbalCartItemProjector extends AbstractDbalProjector
                 ->setColumnNames(UnqualifiedName::unquoted('cart_id'), UnqualifiedName::unquoted('product_id'))
                 ->create(),
         );
+        $table->addIndex(['product_id'], 'shopping_cart_cart_item_product_id_idx');
     }
 }

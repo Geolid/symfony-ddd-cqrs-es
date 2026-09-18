@@ -11,11 +11,11 @@ interface UniquenessRegistryInterface
     /**
      * @throws UniquenessViolatedException
      */
-    public function claim(UniqueKey $key, string $value, string $ownerId): void;
+    public function claim(UniqueKey $key, string $value, string $subjectId): void;
 
-    public function isClaimed(UniqueKey $key, string $value, ?string $excludeOwnerId = null): bool;
+    public function isClaimed(UniqueKey $key, string $value, ?string $excludeSubjectId = null): bool;
 
-    public function release(UniqueKey $key, string $ownerId): void;
+    public function release(UniqueKey $key, string $subjectId): void;
 
     public function releaseAll(UniqueKey $key): void;
 }

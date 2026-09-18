@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Domain\TotpCredential;
 
+use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialConfirmed;
 use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialEnrolled;
-use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialEnrollmentConfirmed;
 use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialRevoked;
 use Iam\Authentication\Domain\TotpCredential\Exception\InvalidTotpCodeException;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialNotConfirmableException;
@@ -82,7 +82,7 @@ final class TotpCredential implements AggregateRoot, AggregateRootMetadataAware
             throw InvalidTotpCodeException::forId($this->id);
         }
 
-        $this->recordThat(new TotpCredentialEnrollmentConfirmed(
+        $this->recordThat(new TotpCredentialConfirmed(
             id: $this->id,
             confirmedAt: $confirmedAt,
         ));
@@ -122,7 +122,7 @@ final class TotpCredential implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyEnrollmentConfirmed(TotpCredentialEnrollmentConfirmed $event): void
+    private function applyConfirmed(TotpCredentialConfirmed $event): void
     {
         $this->operationalState = TotpCredentialState::CONFIRMED;
     }

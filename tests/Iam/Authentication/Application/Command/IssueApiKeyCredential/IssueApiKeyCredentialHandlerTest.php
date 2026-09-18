@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Application\Command\IssueApiKeyCredential;
 
-use Iam\Authentication\Application\ApiKeyCredentialUniqueKey;
+use Iam\Authentication\Application\AuthenticationUniqueKey;
 use Iam\Authentication\Application\Command\IssueApiKeyCredential\Exception\ApiKeyCredentialLabelAlreadyInUseException;
 use Iam\Authentication\Application\Command\IssueApiKeyCredential\IssueApiKeyCredential;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
@@ -44,7 +44,6 @@ final class IssueApiKeyCredentialHandlerTest extends AbstractIntegrationTestCase
         );
         self::assertFalse($result->revoked);
         self::assertNull($result->revokedAt);
-        self::assertTrue($result->identityAuthenticatable);
 
         self::assertNotSame($secret, $result->secretHash);
     }
@@ -57,7 +56,7 @@ final class IssueApiKeyCredentialHandlerTest extends AbstractIntegrationTestCase
 
         $label = ApiKeyCredentialBuilder::sample('label')->value;
         $this->service(UniquenessRegistryInterface::class)->claim(
-            UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId),
+            UniqueKey::for(AuthenticationUniqueKey::API_KEY_CREDENTIAL_LABEL, $identityId),
             $label,
             Uuid::uuid7()->toString(),
         );

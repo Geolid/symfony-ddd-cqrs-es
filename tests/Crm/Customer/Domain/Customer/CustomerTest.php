@@ -12,8 +12,6 @@ use Crm\Customer\Domain\Customer\Event\CustomerErasureRequested;
 use Crm\Customer\Domain\Customer\Event\CustomerRegistered;
 use Crm\Customer\Domain\Customer\Event\CustomerShippingAddressDefined;
 use Crm\Customer\Domain\Customer\ValueObject\CustomerId;
-use Crm\Customer\Domain\Customer\ValueObject\Email;
-use Crm\Customer\Domain\Customer\ValueObject\Name;
 use Crm\Tests\Customer\Support\Builder\CustomerBuilder;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
@@ -22,9 +20,6 @@ use Ramsey\Uuid\Uuid;
 final class CustomerTest extends AggregateRootTestCase
 {
     private CustomerId $id;
-    private Name $firstName;
-    private Name $lastName;
-    private Email $email;
     private \DateTimeImmutable $registeredAt;
     private \DateTimeImmutable $requestedAt;
     private \DateTimeImmutable $cancelledAt;
@@ -35,9 +30,6 @@ final class CustomerTest extends AggregateRootTestCase
         parent::setUp();
 
         $this->id = CustomerId::fromString(Uuid::uuid7()->toString());
-        $this->firstName = CustomerBuilder::sample('firstName');
-        $this->lastName = CustomerBuilder::sample('lastName');
-        $this->email = CustomerBuilder::sample('email');
         $this->registeredAt = CustomerBuilder::sample('registeredAt');
         $this->requestedAt = CustomerBuilder::sample('requestedAt');
         $this->cancelledAt = CustomerBuilder::sample('cancelledAt');
@@ -49,13 +41,7 @@ final class CustomerTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Customer => Customer::register(
-                $this->id,
-                $this->firstName,
-                $this->lastName,
-                $this->email,
-                $this->registeredAt,
-            ))
+            ->when(fn (): Customer => Customer::register($this->id, $this->registeredAt))
             ->then($this->registered());
     }
 
@@ -193,9 +179,6 @@ final class CustomerTest extends AggregateRootTestCase
     {
         return new CustomerRegistered(
             id: $this->id,
-            firstName: $this->firstName,
-            lastName: $this->lastName,
-            email: $this->email,
             registeredAt: $this->registeredAt,
         );
     }

@@ -22,7 +22,7 @@ final readonly class RequestedPaymentReconciler implements PaymentStatusReconcil
 
     public function supports(PaymentStatus $status): bool
     {
-        return PaymentStatus::REQUESTED === $status;
+        return $status->isRequested();
     }
 
     /**

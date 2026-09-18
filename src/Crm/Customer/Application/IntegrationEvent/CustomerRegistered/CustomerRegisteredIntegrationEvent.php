@@ -6,9 +6,7 @@ namespace Crm\Customer\Application\IntegrationEvent\CustomerRegistered;
 
 use Patchlevel\EventSourcing\Attribute\Event;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\DataSubjectId;
-use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
-use Shared\Domain\Pii\ErasedFieldSentinel;
 
 #[Event('integration.crm.customer.customer.registered')]
 final readonly class CustomerRegisteredIntegrationEvent implements IntegrationEventInterface
@@ -16,12 +14,6 @@ final readonly class CustomerRegisteredIntegrationEvent implements IntegrationEv
     public function __construct(
         #[DataSubjectId]
         public string $customerId,
-        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('Erased'))]
-        public string $firstName,
-        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('Erased'))]
-        public string $lastName,
-        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel('%s@erased.invalid'))]
-        public string $email,
         public \DateTimeImmutable $registeredAt,
     ) {
     }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Catalog\Listing\Application\Command\DelistProduct;
 
-use Catalog\Listing\Application\ProductUniqueKey;
+use Catalog\Listing\Application\ListingUniqueKey;
 use Catalog\Listing\Domain\Exception\ProductAlreadyExistsException;
 use Catalog\Listing\Domain\Exception\ProductNotFoundException;
 use Catalog\Listing\Domain\Repository\ProductRepositoryInterface;
@@ -35,6 +35,6 @@ final readonly class DelistProductHandler
 
         $this->repository->save($product);
 
-        $this->uniqueness->release(UniqueKey::for(ProductUniqueKey::LABEL), $product->id->toString());
+        $this->uniqueness->release(UniqueKey::for(ListingUniqueKey::LABEL), $product->id->toString());
     }
 }

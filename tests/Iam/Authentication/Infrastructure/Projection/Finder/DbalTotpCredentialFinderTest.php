@@ -52,8 +52,6 @@ final class DbalTotpCredentialFinderTest extends AbstractIntegrationTestCase
         self::assertSame(TotpCredentialStatus::PENDING, $result->status);
         self::assertNull($result->confirmedAt);
         self::assertNull($result->revokedAt);
-        self::assertTrue($result->identityAuthenticatable);
-
         self::assertSame($this->cipher->encrypt($builder['secret']), $result->encryptedSecret);
     }
 

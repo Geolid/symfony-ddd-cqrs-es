@@ -79,5 +79,6 @@ final readonly class DbalErasureProjector extends AbstractDbalProjector
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
                 ->create(),
         );
+        $table->addIndex(['status', 'requested_at'], 'compliance_erasing_erasure_status_requested_at_idx');
     }
 }

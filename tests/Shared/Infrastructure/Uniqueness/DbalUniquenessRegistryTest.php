@@ -30,38 +30,38 @@ final class DbalUniquenessRegistryTest extends AbstractIntegrationTestCase
         $key = UniqueKey::for(DummyUniqueKey::NAME);
 
         // When
-        $this->registry->claim($key, 'value', 'owner-1');
+        $this->registry->claim($key, 'value', 'subject-1');
 
         // Then
         self::assertTrue($this->registry->isClaimed($key, 'value'));
     }
 
     #[Test]
-    public function itIgnoresWhenAlreadyClaimedBySameOwner(): void
+    public function itIgnoresWhenAlreadyClaimedBySameSubject(): void
     {
         // Given
         $key = UniqueKey::for(DummyUniqueKey::NAME);
-        $this->registry->claim($key, 'value', 'owner-1');
+        $this->registry->claim($key, 'value', 'subject-1');
 
         // When
-        $this->registry->claim($key, 'value', 'owner-1');
+        $this->registry->claim($key, 'value', 'subject-1');
 
         // Then
         self::assertTrue($this->registry->isClaimed($key, 'value'));
     }
 
     #[Test]
-    public function itThrowsWhenAlreadyClaimedByAnotherOwner(): void
+    public function itThrowsWhenAlreadyClaimedByAnotherSubject(): void
     {
         // Given
         $key = UniqueKey::for(DummyUniqueKey::NAME);
-        $this->registry->claim($key, 'value', 'owner-1');
+        $this->registry->claim($key, 'value', 'subject-1');
 
         // Then
         $this->expectException(UniquenessViolatedException::class);
 
         // When
-        $this->registry->claim($key, 'value', 'owner-2');
+        $this->registry->claim($key, 'value', 'subject-2');
     }
 
     #[Test]
@@ -72,7 +72,7 @@ final class DbalUniquenessRegistryTest extends AbstractIntegrationTestCase
         $otherScopeKey = UniqueKey::for(DummyUniqueKey::NAME, 'scope-2');
 
         // When
-        $this->registry->claim($key, 'value', 'owner-1');
+        $this->registry->claim($key, 'value', 'subject-1');
 
         // Then
         self::assertTrue($this->registry->isClaimed($key, 'value'));
@@ -81,14 +81,14 @@ final class DbalUniquenessRegistryTest extends AbstractIntegrationTestCase
 
     #[Test]
     #[DataProvider('provideExclusionOutcomes')]
-    public function itExcludesOnlyOwnClaim(string $excludeOwnerId, bool $expected): void
+    public function itExcludesOnlyOwnClaim(string $excludeSubjectId, bool $expected): void
     {
         // Given
         $key = UniqueKey::for(DummyUniqueKey::NAME);
-        $this->registry->claim($key, 'value', 'owner-1');
+        $this->registry->claim($key, 'value', 'subject-1');
 
         // When
-        $isClaimed = $this->registry->isClaimed($key, 'value', excludeOwnerId: $excludeOwnerId);
+        $isClaimed = $this->registry->isClaimed($key, 'value', excludeSubjectId: $excludeSubjectId);
 
         // Then
         self::assertSame($expected, $isClaimed);
@@ -99,8 +99,8 @@ final class DbalUniquenessRegistryTest extends AbstractIntegrationTestCase
      */
     public static function provideExclusionOutcomes(): iterable
     {
-        yield 'own claim' => ['owner-1', false];
-        yield 'another owner' => ['owner-2', true];
+        yield 'own claim' => ['subject-1', false];
+        yield 'another subject' => ['subject-2', true];
     }
 
     #[Test]
@@ -109,12 +109,12 @@ final class DbalUniquenessRegistryTest extends AbstractIntegrationTestCase
         // Given
         $key = UniqueKey::for(DummyUniqueKey::NAME);
         $otherKey = UniqueKey::for(DummyUniqueKey::CODE);
-        $this->registry->claim($key, 'value-1', 'owner-1');
-        $this->registry->claim($key, 'value-2', 'owner-2');
-        $this->registry->claim($otherKey, 'value-3', 'owner-1');
+        $this->registry->claim($key, 'value-1', 'subject-1');
+        $this->registry->claim($key, 'value-2', 'subject-2');
+        $this->registry->claim($otherKey, 'value-3', 'subject-1');
 
         // When
-        $this->registry->release($key, 'owner-1');
+        $this->registry->release($key, 'subject-1');
 
         // Then
         self::assertFalse($this->registry->isClaimed($key, 'value-1'));
@@ -129,10 +129,10 @@ final class DbalUniquenessRegistryTest extends AbstractIntegrationTestCase
         $key = UniqueKey::for(DummyUniqueKey::NAME, 'scope-1');
         $otherScopeKey = UniqueKey::for(DummyUniqueKey::NAME, 'scope-2');
         $otherKey = UniqueKey::for(DummyUniqueKey::CODE, 'scope-1');
-        $this->registry->claim($key, 'value-1', 'owner-1');
-        $this->registry->claim($key, 'value-2', 'owner-2');
-        $this->registry->claim($otherScopeKey, 'value-1', 'owner-1');
-        $this->registry->claim($otherKey, 'value-1', 'owner-1');
+        $this->registry->claim($key, 'value-1', 'subject-1');
+        $this->registry->claim($key, 'value-2', 'subject-2');
+        $this->registry->claim($otherScopeKey, 'value-1', 'subject-1');
+        $this->registry->claim($otherKey, 'value-1', 'subject-1');
 
         // When
         $this->registry->releaseAll($key);

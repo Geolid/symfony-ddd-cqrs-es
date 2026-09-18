@@ -48,8 +48,6 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIterableFinderTestCas
             $result->issuedAt->format(\DateTimeInterface::ATOM),
         );
         self::assertNull($result->revokedAt);
-        self::assertTrue($result->identityAuthenticatable);
-
         self::assertSame($hasher->hash($builder['secret']), $result->secretHash);
     }
 

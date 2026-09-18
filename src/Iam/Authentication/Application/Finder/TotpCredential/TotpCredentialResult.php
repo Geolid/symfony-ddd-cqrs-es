@@ -16,7 +16,6 @@ final readonly class TotpCredentialResult
         public TotpCredentialStatus $status,
         public ?\DateTimeImmutable $confirmedAt,
         public ?\DateTimeImmutable $revokedAt,
-        public bool $identityAuthenticatable,
     ) {
     }
 }

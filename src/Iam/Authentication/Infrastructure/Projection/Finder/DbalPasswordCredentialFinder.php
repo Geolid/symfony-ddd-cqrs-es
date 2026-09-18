@@ -16,15 +16,6 @@ use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
  */
 final class DbalPasswordCredentialFinder extends AbstractDbalFinder implements PasswordCredentialFinderInterface
 {
-    public function ofLogin(string $login): PasswordCredentialResult
-    {
-        return $this->filter(
-            static function (QueryBuilder $qb) use ($login): void {
-                $qb->andWhere('login = :login')->setParameter('login', $login);
-            },
-        )->one() ?? throw PasswordCredentialResultNotFoundException::forLogin($login);
-    }
-
     public function ofIdentity(string $identityId): PasswordCredentialResult
     {
         return $this->filter(
@@ -36,7 +27,7 @@ final class DbalPasswordCredentialFinder extends AbstractDbalFinder implements P
 
     protected function configureBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'identity_id', 'login', 'password_hash', 'defined_at', 'password_changed_at', 'identity_authenticatable')
+        $qb->select('id', 'identity_id', 'password_hash', 'defined_at', 'password_changed_at')
             ->from(DbalPasswordCredentialProjector::TABLE);
     }
 

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Infrastructure\Uniqueness;
 
-use Iam\Authentication\Application\ApiKeyCredentialUniqueKey;
+use Iam\Authentication\Application\AuthenticationUniqueKey;
 use Iam\Authentication\Infrastructure\Uniqueness\ReleaseApiKeyLabelsOnIdentityErased;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
@@ -44,8 +44,8 @@ final class ReleaseApiKeyLabelsOnIdentityErasedTest extends AbstractIntegrationT
         $this->trigger(ReleaseApiKeyLabelsOnIdentityErased::class, new IdentityErasedIntegrationEvent($identityId, Clock::get()->now()));
 
         // Then
-        $key = UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId);
-        $otherKey = UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $otherIdentityId);
+        $key = UniqueKey::for(AuthenticationUniqueKey::API_KEY_CREDENTIAL_LABEL, $identityId);
+        $otherKey = UniqueKey::for(AuthenticationUniqueKey::API_KEY_CREDENTIAL_LABEL, $otherIdentityId);
 
         self::assertFalse($this->uniqueness->isClaimed($key, $label));
         self::assertFalse($this->uniqueness->isClaimed($key, $otherLabel));
@@ -54,6 +54,6 @@ final class ReleaseApiKeyLabelsOnIdentityErasedTest extends AbstractIntegrationT
 
     private function claimLabel(string $identityId, string $label): void
     {
-        $this->uniqueness->claim(UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $identityId), $label, Uuid::uuid7()->toString());
+        $this->uniqueness->claim(UniqueKey::for(AuthenticationUniqueKey::API_KEY_CREDENTIAL_LABEL, $identityId), $label, Uuid::uuid7()->toString());
     }
 }

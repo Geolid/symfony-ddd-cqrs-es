@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Compliance\Erasing\Application\Command\RequestErasure;
 
 use Compliance\Erasing\Application\Command\RequestErasure\Exception\ErasureAlreadyClaimedException;
-use Compliance\Erasing\Application\ErasureUniqueKey;
+use Compliance\Erasing\Application\ErasingUniqueKey;
 use Compliance\Erasing\Domain\Erasure;
 use Compliance\Erasing\Domain\Exception\ErasureAlreadyExistsException;
 use Compliance\Erasing\Domain\Repository\ErasureRepositoryInterface;
@@ -35,7 +35,7 @@ final readonly class RequestErasureHandler
         $id = ErasureId::fromString($command->id);
 
         try {
-            $this->uniqueness->claim(UniqueKey::for(ErasureUniqueKey::IDENTITY), $command->identityId, $id->toString());
+            $this->uniqueness->claim(UniqueKey::for(ErasingUniqueKey::IDENTITY), $command->identityId, $id->toString());
         } catch (UniquenessViolatedException $e) {
             throw ErasureAlreadyClaimedException::forIdentity($command->identityId, $e);
         }

@@ -13,6 +13,11 @@ enum PaymentStatus: string
     case ABANDONED = 'abandoned';
     case VOIDED = 'voided';
 
+    public function isRequested(): bool
+    {
+        return self::REQUESTED === $this;
+    }
+
     public function isCaptured(): bool
     {
         return self::CAPTURED === $this;

@@ -31,7 +31,6 @@ final class GetApiKeyCredentialByKeyIdHandlerTest extends AbstractIntegrationTes
         self::assertSame($builder['label']->value, $result->label);
         self::assertSame($builder['keyId']->value, $result->keyId);
         self::assertFalse($result->revoked);
-        self::assertTrue($result->identityAuthenticatable);
 
         self::assertSame($hasher->hash($builder['secret']), $result->secretHash);
     }

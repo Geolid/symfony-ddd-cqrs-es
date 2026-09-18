@@ -6,8 +6,6 @@ namespace Crm\Tests\Customer\Support\Builder;
 
 use Crm\Customer\Domain\Customer\Customer;
 use Crm\Customer\Domain\Customer\ValueObject\CustomerId;
-use Crm\Customer\Domain\Customer\ValueObject\Email;
-use Crm\Customer\Domain\Customer\ValueObject\Name;
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
@@ -19,9 +17,6 @@ use Symfony\Component\Clock\Clock;
  * @phpstan-type Attributes = array{
  *     id: CustomerId,
  *     identityId: string,
- *     firstName: Name,
- *     lastName: Name,
- *     email: Email,
  *     registeredAt: \DateTimeImmutable,
  *     shippingAddress: PostalAddress,
  *     shippingAddressDefinedAt: \DateTimeImmutable,
@@ -36,21 +31,6 @@ use Symfony\Component\Clock\Clock;
  */
 final class CustomerBuilder extends AbstractAggregateBuilder
 {
-    public function withFirstName(string $firstName): self
-    {
-        return $this->withAttributes(firstName: Name::fromString($firstName));
-    }
-
-    public function withLastName(string $lastName): self
-    {
-        return $this->withAttributes(lastName: Name::fromString($lastName));
-    }
-
-    public function withEmail(string $email): self
-    {
-        return $this->withAttributes(email: Email::fromString($email));
-    }
-
     public function withRegisteredAt(\DateTimeImmutable $registeredAt): self
     {
         return $this->withAttributes(registeredAt: $registeredAt);
@@ -116,9 +96,6 @@ final class CustomerBuilder extends AbstractAggregateBuilder
                 null !== $builder ? $builder['identityId'] : self::sample('identityId'),
             ),
             'identityId' => static fn (): string => Uuid::uuid7()->toString(),
-            'firstName' => static fn (): Name => Name::fromString(SeededFaker::get()->firstName()),
-            'lastName' => static fn (): Name => Name::fromString(SeededFaker::get()->lastName()),
-            'email' => static fn (): Email => Email::fromString(SeededFaker::get()->email()),
             'registeredAt' => static fn (): \DateTimeImmutable => $now,
             'shippingAddress' => static fn (): PostalAddress => PostalAddress::of(
                 SeededFaker::get()->name(),
@@ -140,9 +117,6 @@ final class CustomerBuilder extends AbstractAggregateBuilder
     {
         return Customer::register(
             id: $this['id'],
-            firstName: $this['firstName'],
-            lastName: $this['lastName'],
-            email: $this['email'],
             registeredAt: $this['registeredAt'],
         );
     }

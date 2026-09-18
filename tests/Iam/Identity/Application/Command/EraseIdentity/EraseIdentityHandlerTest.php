@@ -15,6 +15,15 @@ use Support\TestCase\AbstractIntegrationTestCase;
 
 final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
 {
+    private IdentityFinderInterface $identityFinder;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->identityFinder = $this->service(IdentityFinderInterface::class);
+    }
+
     #[Test]
     public function itErases(): void
     {
@@ -28,7 +37,21 @@ final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
         // Then
         $this->expectException(IdentityResultNotFoundException::class);
 
-        $this->service(IdentityFinderInterface::class)->ofId($identity->id->toString());
+        $this->identityFinder->ofId($identity->id->toString());
+    }
+
+    #[Test]
+    public function itIgnoresWhenRetained(): void
+    {
+        // Given
+        $identity = IdentityBuilder::new()->create();
+        $this->store($identity);
+
+        // When
+        $this->dispatch(new EraseIdentity($identity->id->toString()));
+
+        // Then
+        self::expectNotToPerformAssertions();
     }
 
     #[Test]

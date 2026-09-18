@@ -7,12 +7,11 @@ namespace Iam\Tests\Authentication\Support\Builder;
 use Iam\Authentication\Domain\PasswordCredential\PasswordCredential;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
-use Iam\Authentication\Domain\PasswordCredential\ValueObject\Login;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Ramsey\Uuid\Uuid;
+use Shared\Tests\Support\Double\FakeCodeChallenger;
 use Support\Builder\AbstractAggregateBuilder;
-use Support\Faker\SeededFaker;
 use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
@@ -20,11 +19,12 @@ use Webmozart\Assert\Assert;
  * @phpstan-type Attributes = array{
  *     id: PasswordCredentialId,
  *     identityId: string,
- *     login: Login,
  *     password: Password,
  *     definedAt: \DateTimeImmutable,
  *     changedAt: \DateTimeImmutable,
  *     rehashedAt: \DateTimeImmutable,
+ *     requestedAt: \DateTimeImmutable,
+ *     resetAt: \DateTimeImmutable,
  *     passwordStrength?: PasswordStrengthSpecificationInterface,
  *     hasher?: PasswordHasherInterface,
  * }
@@ -36,11 +36,6 @@ final class PasswordCredentialBuilder extends AbstractAggregateBuilder
     public function withIdentityId(string $identityId): self
     {
         return $this->withAttributes(identityId: $identityId);
-    }
-
-    public function withLogin(string $login): self
-    {
-        return $this->withAttributes(login: Login::fromString($login));
     }
 
     public function withPassword(string $password): self
@@ -85,6 +80,39 @@ final class PasswordCredentialBuilder extends AbstractAggregateBuilder
         );
     }
 
+    public function resetRequested(?\DateTimeImmutable $requestedAt = null): self
+    {
+        $builder = null !== $requestedAt ? $this->withAttributes(requestedAt: $requestedAt) : $this;
+
+        return $builder->withModifier(
+            static fn (PasswordCredential $credential, self $builder) => $credential->requestReset($builder['requestedAt']),
+        );
+    }
+
+    public function reset(
+        string $newPassword,
+        ?PasswordStrengthSpecificationInterface $passwordStrength = null,
+        ?PasswordHasherInterface $hasher = null,
+        ?\DateTimeImmutable $resetAt = null,
+    ): self {
+        $builder = $this->withAttributes(...array_filter([
+            'passwordStrength' => $passwordStrength,
+            'hasher' => $hasher,
+            'resetAt' => $resetAt,
+        ]));
+
+        return $builder->withModifier(
+            static fn (PasswordCredential $credential, self $builder) => $credential->resetPassword(
+                FakeCodeChallenger::CODE,
+                new FakeCodeChallenger(),
+                Password::fromString($newPassword),
+                $builder->passwordStrength(),
+                $builder->hasher(),
+                $builder['resetAt'],
+            ),
+        );
+    }
+
     public function rehashed(
         string $plainPassword,
         ?PasswordHasherInterface $hasher = null,
@@ -113,11 +141,12 @@ final class PasswordCredentialBuilder extends AbstractAggregateBuilder
                 null !== $builder ? $builder['identityId'] : self::sample('identityId'),
             ),
             'identityId' => static fn (): string => Uuid::uuid7()->toString(),
-            'login' => static fn (): Login => Login::fromString(SeededFaker::get()->unique()->userName()),
             'password' => static fn (): Password => Password::fromString('Marmoset-42-Zephyr!'),
             'definedAt' => static fn (): \DateTimeImmutable => $now,
             'changedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
             'rehashedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 day'),
+            'requestedAt' => static fn (): \DateTimeImmutable => $now->modify('+3 day'),
+            'resetAt' => static fn (): \DateTimeImmutable => $now->modify('+4 day'),
         ];
     }
 
@@ -126,9 +155,8 @@ final class PasswordCredentialBuilder extends AbstractAggregateBuilder
         return PasswordCredential::define(
             id: $this['id'],
             identityId: $this['identityId'],
-            login: $this['login'],
             password: $this['password'],
-            passwordStrength: $this->passwordStrength(),
+            passwordStrengthSpecification: $this->passwordStrength(),
             hasher: $this->hasher(),
             definedAt: $this['definedAt'],
         );

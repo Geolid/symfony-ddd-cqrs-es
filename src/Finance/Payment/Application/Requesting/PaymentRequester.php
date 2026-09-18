@@ -65,7 +65,9 @@ final readonly class PaymentRequester implements PaymentRequesterInterface
         $checkoutSessionKey = UniqueKey::for(PaymentUniqueKey::CHECKOUT_SESSION);
 
         if ($this->uniqueness->isClaimed($checkoutSessionKey, $checkoutSessionId)) {
-            return $this->paymentFinder->ofCheckoutSession($checkoutSessionId)->hostedPageUrl;
+            $payment = $this->paymentFinder->ofCheckoutSession($checkoutSessionId);
+
+            return $payment->hostedPageUrl;
         }
 
         $paymentId = PaymentId::forCheckoutSession($checkoutSessionId);
@@ -87,7 +89,9 @@ final readonly class PaymentRequester implements PaymentRequesterInterface
                 hostedPageUrl: $session->hostedPageUrl,
             ));
         } catch (PaymentAlreadyClaimedException) {
-            return $this->paymentFinder->ofCheckoutSession($checkoutSessionId)->hostedPageUrl;
+            $payment = $this->paymentFinder->ofCheckoutSession($checkoutSessionId);
+
+            return $payment->hostedPageUrl;
         }
 
         return $session->hostedPageUrl;

@@ -22,9 +22,6 @@ final readonly class CustomerRegisteredPublisher
     {
         $this->publisher->publish(Customer::class, $event->id->toString(), new CustomerRegisteredIntegrationEvent(
             customerId: $event->id->toString(),
-            firstName: $event->firstName->value,
-            lastName: $event->lastName->value,
-            email: $event->email->value,
             registeredAt: $event->registeredAt,
         ));
     }

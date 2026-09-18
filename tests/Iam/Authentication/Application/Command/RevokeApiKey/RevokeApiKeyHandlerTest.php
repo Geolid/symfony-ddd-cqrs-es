@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Application\Command\RevokeApiKey;
 
-use Iam\Authentication\Application\ApiKeyCredentialUniqueKey;
+use Iam\Authentication\Application\AuthenticationUniqueKey;
 use Iam\Authentication\Application\Command\RevokeApiKey\RevokeApiKey;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialNotFoundException;
@@ -37,7 +37,7 @@ final class RevokeApiKeyHandlerTest extends AbstractIntegrationTestCase
         $builder = ApiKeyCredentialBuilder::new()->withHasher($this->hasher);
         $credential = $builder->create();
 
-        $labelKey = UniqueKey::for(ApiKeyCredentialUniqueKey::LABEL, $builder['identityId']);
+        $labelKey = UniqueKey::for(AuthenticationUniqueKey::API_KEY_CREDENTIAL_LABEL, $builder['identityId']);
         $this->uniqueness->claim($labelKey, $builder['label']->value, $credential->id->toString());
 
         $otherBuilder = ApiKeyCredentialBuilder::new()->withHasher($this->hasher)->withIdentityId($builder['identityId']);

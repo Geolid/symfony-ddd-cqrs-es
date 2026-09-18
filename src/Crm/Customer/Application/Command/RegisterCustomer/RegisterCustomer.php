@@ -8,11 +8,7 @@ use Shared\Application\Command\CommandInterface;
 
 final readonly class RegisterCustomer implements CommandInterface
 {
-    public function __construct(
-        public string $identityId,
-        public string $firstName,
-        public string $lastName,
-        public string $email,
-    ) {
+    public function __construct(public string $identityId)
+    {
     }
 }

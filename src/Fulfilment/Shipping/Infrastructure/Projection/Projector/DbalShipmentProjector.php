@@ -163,5 +163,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
         $table->addIndex(['order_id'], 'fulfilment_shipping_shipment_order_id_idx');
         $table->addIndex(['customer_id'], 'fulfilment_shipping_shipment_customer_id_idx');
         $table->addIndex(['tracking_number'], 'fulfilment_shipping_shipment_tracking_number_idx');
+        $table->addIndex(['status', 'manifested_at'], 'fulfilment_shipping_shipment_status_manifested_at_idx');
+        $table->addIndex(['status', 'dispatched_at'], 'fulfilment_shipping_shipment_status_dispatched_at_idx');
     }
 }

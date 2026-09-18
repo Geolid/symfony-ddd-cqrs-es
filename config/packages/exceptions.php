@@ -20,22 +20,28 @@ use Fulfilment\Shipping\Application\Manifesting\Exception\ManifestPostponedExcep
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
 use Iam\Authentication\Application\BreachDatabase\Exception\CompromisedPasswordException;
-use Iam\Authentication\Application\Command\DefinePasswordCredential\Exception\PasswordCredentialLoginAlreadyInUseException;
 use Iam\Authentication\Application\Command\IssueApiKeyCredential\Exception\ApiKeyCredentialLabelAlreadyInUseException;
 use Iam\Authentication\Application\CredentialVerification\Exception\ApiKeyCredentialRevokedException;
 use Iam\Authentication\Application\CredentialVerification\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialOwnedByAnotherIdentityException;
+use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordResetRequestedTooRecentlyException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
+use Iam\Identity\Application\Command\RegisterIdentity\Exception\IdentityEmailAlreadyInUseException;
+use Iam\Identity\Domain\Exception\ConfirmationRequestedTooRecentlyException;
+use Iam\Identity\Domain\Exception\IdentityAlreadyConfirmedException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Finder\Exception\ResultNotFoundException;
+use Shared\Application\Mailer\Exception\MailerException;
 use Shared\Application\Uniqueness\Exception\UniquenessViolatedException;
 use Shared\Domain\Exception\AggregateAlreadyExistsException;
 use Shared\Domain\Exception\AggregateNotFoundException;
+use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
+use Shared\Domain\Exception\VerificationCodeNotFoundException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerAddressesNotCompletedException as CheckoutCustomerAddressesNotCompletedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerErasureRequestedException as CheckoutCustomerErasureRequestedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerNotRegisteredException as CheckoutCustomerNotRegisteredException;
@@ -59,11 +65,14 @@ return static function (ContainerConfigurator $container): void {
 
             // Iam
             IdentityAlreadyErasedException::class => ['log_level' => 'info', 'status_code' => 409],
+            IdentityAlreadyConfirmedException::class => ['log_level' => 'info', 'status_code' => 409],
+            IdentityEmailAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
+            ConfirmationRequestedTooRecentlyException::class => ['log_level' => 'info', 'status_code' => 429],
             IdentityNotAuthenticatableException::class => ['log_level' => 'info', 'status_code' => 409],
             ApiKeyCredentialRevokedException::class => ['log_level' => 'info', 'status_code' => 409],
             ApiKeyCredentialOwnedByAnotherIdentityException::class => ['log_level' => 'info', 'status_code' => 403],
             ApiKeyCredentialLabelAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
-            PasswordCredentialLoginAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
+            PasswordResetRequestedTooRecentlyException::class => ['log_level' => 'info', 'status_code' => 429],
             SamePasswordException::class => ['log_level' => 'info', 'status_code' => 422],
             WeakPasswordException::class => ['log_level' => 'info', 'status_code' => 422],
             CompromisedPasswordException::class => ['log_level' => 'info', 'status_code' => 422],
@@ -92,6 +101,9 @@ return static function (ContainerConfigurator $container): void {
             AggregateAlreadyExistsException::class => ['log_level' => 'info', 'status_code' => 409],
             ResultNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],
             UniquenessViolatedException::class => ['log_level' => 'info', 'status_code' => 409],
+            MailerException::class => ['log_level' => 'error', 'status_code' => 502],
+            VerificationCodeNotFoundException::class => ['log_level' => 'info', 'status_code' => 404],
+            VerificationCodeAttemptsExceededException::class => ['log_level' => 'info', 'status_code' => 429],
             ApplicationExceptionInterface::class => ['log_level' => 'error', 'status_code' => 500],
 
             // WARNING: Must be the last entries. (Order matters: first match wins)

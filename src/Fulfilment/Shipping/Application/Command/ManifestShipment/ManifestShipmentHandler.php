@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fulfilment\Shipping\Application\Command\ManifestShipment;
 
 use Fulfilment\Shipping\Application\Command\ManifestShipment\Exception\ShipmentTrackingNumberAlreadyInUseException;
-use Fulfilment\Shipping\Application\ShipmentUniqueKey;
+use Fulfilment\Shipping\Application\ShippingUniqueKey;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyExistsException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
@@ -43,7 +43,7 @@ final readonly class ManifestShipmentHandler
         $shipment->manifest(TrackingNumber::fromString($command->trackingNumber), $this->clock->now());
 
         try {
-            $this->uniqueness->claim(UniqueKey::for(ShipmentUniqueKey::TRACKING_NUMBER), $command->trackingNumber, $command->id);
+            $this->uniqueness->claim(UniqueKey::for(ShippingUniqueKey::TRACKING_NUMBER), $command->trackingNumber, $command->id);
         } catch (UniquenessViolatedException $e) {
             throw ShipmentTrackingNumberAlreadyInUseException::forTrackingNumber($command->trackingNumber, $e);
         }

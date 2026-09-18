@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Compliance\Tests\Erasing\Application\Command\ApproveErasure;
 
 use Compliance\Erasing\Application\Command\ApproveErasure\ApproveErasure;
+use Compliance\Erasing\Application\ErasingUniqueKey;
 use Compliance\Erasing\Application\ErasureRequestStatus;
-use Compliance\Erasing\Application\ErasureUniqueKey;
 use Compliance\Erasing\Application\Finder\Erasure\ErasureFinderInterface;
 use Compliance\Erasing\Domain\Exception\ErasureNotFoundException;
 use Compliance\Tests\Erasing\Support\Builder\ErasureBuilder;
@@ -37,7 +37,7 @@ final class ApproveErasureHandlerTest extends AbstractIntegrationTestCase
         $builder = ErasureBuilder::new()->withRequestedAt(Clock::get()->now()->modify('-31 days'));
         $erasure = $builder->create();
         $this->store($erasure);
-        $identityKey = UniqueKey::for(ErasureUniqueKey::IDENTITY);
+        $identityKey = UniqueKey::for(ErasingUniqueKey::IDENTITY);
         $this->uniqueness->claim($identityKey, $builder['identityId'], $erasure->id->toString());
 
         // When
@@ -56,7 +56,7 @@ final class ApproveErasureHandlerTest extends AbstractIntegrationTestCase
         $builder = ErasureBuilder::new()->withRequestedAt(Clock::get()->now()->modify('-1 day'));
         $erasure = $builder->create();
         $this->store($erasure);
-        $identityKey = UniqueKey::for(ErasureUniqueKey::IDENTITY);
+        $identityKey = UniqueKey::for(ErasingUniqueKey::IDENTITY);
         $this->uniqueness->claim($identityKey, $builder['identityId'], $erasure->id->toString());
 
         // When

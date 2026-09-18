@@ -4,15 +4,25 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Domain;
 
+use Iam\Identity\Domain\Event\IdentityConfirmationRequested;
+use Iam\Identity\Domain\Event\IdentityConfirmed;
 use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\Event\IdentityErasureCancelled;
 use Iam\Identity\Domain\Event\IdentityErasureRequested;
 use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Identity\Domain\Event\IdentitySuspended;
+use Iam\Identity\Domain\Exception\ConfirmationRequestedTooRecentlyException;
+use Iam\Identity\Domain\Exception\IdentityAlreadyConfirmedException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
+use Iam\Identity\Domain\Exception\InvalidConfirmationCodeException;
+use Iam\Identity\Domain\Specification\PendingIdentityExpiredSpecification;
+use Iam\Identity\Domain\ValueObject\Email;
+use Iam\Identity\Domain\ValueObject\FullName;
 use Iam\Identity\Domain\ValueObject\IdentityId;
-use Iam\Identity\Domain\ValueObject\IdentityState;
+use Iam\Identity\Domain\ValueObject\IdentityModerationState;
+use Iam\Identity\Domain\ValueObject\IdentityVerificationCodePurpose;
+use Iam\Identity\Domain\ValueObject\IdentityVerificationState;
 use Iam\Identity\Domain\ValueObject\Reason;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootAttributeBehaviour;
@@ -20,7 +30,11 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
+use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
+use Shared\Domain\Exception\VerificationCodeNotFoundException;
+use Shared\Domain\Service\CodeChallengerInterface;
 use Shared\Domain\Specification\CanTransitionToSpecification;
+use Shared\Domain\Specification\CooldownElapsedSpecification;
 use Shared\Domain\ValueObject\ErasureState;
 
 #[Aggregate('iam.identity.identity')]
@@ -35,20 +49,53 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         ErasureState::ERASED->value => [],
     ];
 
+    private const string CONFIRMATION_COOLDOWN = '+60 seconds';
+
     #[Id]
     public private(set) IdentityId $id;
-    private IdentityState $accessState;
+    private IdentityVerificationState $verificationState;
+    private IdentityModerationState $moderationState;
     private ErasureState $erasureState;
+    private \DateTimeImmutable $registeredAt;
+    private \DateTimeImmutable $confirmationRequestedAt;
 
-    public static function register(IdentityId $id, \DateTimeImmutable $registeredAt): self
+    public static function register(IdentityId $id, FullName $fullName, Email $email, \DateTimeImmutable $registeredAt): self
     {
         $self = new self();
         $self->recordThat(new IdentityRegistered(
             id: $id,
+            fullName: $fullName,
+            email: $email,
             registeredAt: $registeredAt,
         ));
 
         return $self;
+    }
+
+    /**
+     * @throws IdentityAlreadyErasedException
+     * @throws VerificationCodeNotFoundException
+     * @throws VerificationCodeAttemptsExceededException
+     * @throws InvalidConfirmationCodeException
+     */
+    public function confirm(#[\SensitiveParameter] string $code, CodeChallengerInterface $codeChallenger, \DateTimeImmutable $confirmedAt): void
+    {
+        if ($this->erasureState->isErased()) {
+            throw IdentityAlreadyErasedException::forId($this->id);
+        }
+
+        if ($this->verificationState->isConfirmed()) {
+            return;
+        }
+
+        if (!$codeChallenger->verify(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $this->id->toString(), $code, $confirmedAt)) {
+            throw InvalidConfirmationCodeException::forId($this->id);
+        }
+
+        $this->recordThat(new IdentityConfirmed(
+            id: $this->id,
+            confirmedAt: $confirmedAt,
+        ));
     }
 
     /**
@@ -60,7 +107,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
             throw IdentityAlreadyErasedException::forId($this->id);
         }
 
-        if ($this->accessState->isSuspended()) {
+        if ($this->moderationState->isSuspended()) {
             return;
         }
 
@@ -80,7 +127,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
             throw IdentityAlreadyErasedException::forId($this->id);
         }
 
-        if ($this->accessState->isActive()) {
+        if ($this->moderationState->isActive()) {
             return;
         }
 
@@ -88,6 +135,31 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
             id: $this->id,
             reason: $reason,
             reactivatedAt: $reactivatedAt,
+        ));
+    }
+
+    /**
+     * @throws IdentityAlreadyErasedException
+     * @throws IdentityAlreadyConfirmedException
+     * @throws ConfirmationRequestedTooRecentlyException
+     */
+    public function requestConfirmation(\DateTimeImmutable $requestedAt): void
+    {
+        if ($this->erasureState->isErased()) {
+            throw IdentityAlreadyErasedException::forId($this->id);
+        }
+
+        if ($this->verificationState->isConfirmed()) {
+            throw IdentityAlreadyConfirmedException::forId($this->id);
+        }
+
+        if (!new CooldownElapsedSpecification(self::CONFIRMATION_COOLDOWN, $requestedAt)->isSatisfiedBy($this->confirmationRequestedAt)) {
+            throw ConfirmationRequestedTooRecentlyException::forId($this->id);
+        }
+
+        $this->recordThat(new IdentityConfirmationRequested(
+            id: $this->id,
+            requestedAt: $requestedAt,
         ));
     }
 
@@ -127,6 +199,26 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    public function erasePending(\DateTimeImmutable $erasedAt): void
+    {
+        if (!$this->verificationState->isPending()) {
+            return;
+        }
+
+        if (!new PendingIdentityExpiredSpecification($erasedAt)->isSatisfiedBy($this->registeredAt)) {
+            return;
+        }
+
+        if (!$this->erasureState->isRetained()) {
+            return;
+        }
+
+        $this->recordThat(new IdentityErased(
+            id: $this->id,
+            erasedAt: $erasedAt,
+        ));
+    }
+
     private function canTransitionErasureTo(ErasureState $target): bool
     {
         return new CanTransitionToSpecification(self::ERASURE_TRANSITIONS, $target)->isSatisfiedBy($this->erasureState);
@@ -136,8 +228,17 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     private function applyRegistered(IdentityRegistered $event): void
     {
         $this->id = $event->id;
-        $this->accessState = IdentityState::ACTIVE;
+        $this->verificationState = IdentityVerificationState::PENDING;
+        $this->moderationState = IdentityModerationState::ACTIVE;
         $this->erasureState = ErasureState::RETAINED;
+        $this->registeredAt = $event->registeredAt;
+        $this->confirmationRequestedAt = $event->registeredAt;
+    }
+
+    #[Apply]
+    private function applyConfirmed(IdentityConfirmed $event): void
+    {
+        $this->verificationState = IdentityVerificationState::CONFIRMED;
     }
 
     #[Apply]
@@ -161,12 +262,18 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     #[Apply]
     private function applySuspended(IdentitySuspended $event): void
     {
-        $this->accessState = IdentityState::SUSPENDED;
+        $this->moderationState = IdentityModerationState::SUSPENDED;
     }
 
     #[Apply]
     private function applyReactivated(IdentityReactivated $event): void
     {
-        $this->accessState = IdentityState::ACTIVE;
+        $this->moderationState = IdentityModerationState::ACTIVE;
+    }
+
+    #[Apply]
+    private function applyConfirmationRequested(IdentityConfirmationRequested $event): void
+    {
+        $this->confirmationRequestedAt = $event->requestedAt;
     }
 }

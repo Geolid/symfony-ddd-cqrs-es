@@ -22,7 +22,7 @@ Judge on DDD/CQRS/ES theory, never on existing code shape or a written conventio
 List `src/`; pick an existing Subdomain. A new Subdomain only if none fits:
 
 1. psr-4 entry (`autoload` + `autoload-dev`) in `composer.json`, then `composer dump-autoload`
-2. Create `config/services/<lowercase-subdomain>.php` (`SubdomainServiceLoader::load($services, '<Subdomain>')`)
+2. Create `config/services/<lowercase-subdomain>/<lowercase-bc>.php` (`BoundedContextServiceLoader::load($services, '<Subdomain>', '<BC>')`)
 3. Add `<testsuite name="<lowercase-subdomain>"><directory>tests/<Subdomain></directory></testsuite>` to `phpunit.dist.xml`
 
 If the BC will host 2+ aggregates, name it after the capability/process it serves — never after one of its own aggregates, and never a word that only stutters against an aggregate name it will contain.

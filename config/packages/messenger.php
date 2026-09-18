@@ -3,10 +3,12 @@
 declare(strict_types=1);
 
 use Fulfilment\Shipping\Application\Command\ApproveShipmentErasure\ApproveShipmentErasure;
+use Iam\Identity\Application\Command\EraseIdentity\EraseIdentity;
 use Sales\Ordering\Application\Command\ApproveOrderErasure\ApproveOrderErasure;
 use Shared\Infrastructure\Doctrine\Dbal\TransactionMessengerMiddleware;
 use Shared\Infrastructure\Sentry\ErrorContextMessengerMiddleware;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
+use Symfony\Component\Mailer\Messenger\SendEmailMessage;
 
 return static function (ContainerConfigurator $container): void {
     $container->extension('framework', [
@@ -24,6 +26,8 @@ return static function (ContainerConfigurator $container): void {
             'routing' => [
                 ApproveOrderErasure::class => 'async',
                 ApproveShipmentErasure::class => 'async',
+                EraseIdentity::class => 'async',
+                SendEmailMessage::class => 'async',
             ],
         ],
     ]);

@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Bootstrap;
 
 use Bootstrap\DependencyInjection\CompilerPass\RegisterDoctrineSchemaConfiguratorsPass;
-use Bootstrap\DependencyInjection\CompilerPass\RegisterDrivingPortAliasesPass;
 use Bootstrap\DependencyInjection\CompilerPass\RegisterEnvVarProcessorsPass;
 use Bootstrap\DependencyInjection\CompilerPass\RegisterMessageBusHandlersPass;
+use Bootstrap\DependencyInjection\CompilerPass\RegisterTestServiceAliasesPass;
 use Symfony\Bundle\FrameworkBundle\Kernel\MicroKernelTrait;
 use Symfony\Component\DependencyInjection\Compiler\PassConfig;
 use Symfony\Component\DependencyInjection\ContainerBuilder;
@@ -89,7 +89,7 @@ class Kernel extends BaseKernel
         $container->addCompilerPass(new RegisterMessageBusHandlersPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, 200);
         $container->addCompilerPass(new RegisterDoctrineSchemaConfiguratorsPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, 200);
         $container->addCompilerPass(new RegisterEnvVarProcessorsPass(), PassConfig::TYPE_BEFORE_OPTIMIZATION, 200);
-        $container->addCompilerPass(new RegisterDrivingPortAliasesPass(), PassConfig::TYPE_BEFORE_REMOVING);
+        $container->addCompilerPass(new RegisterTestServiceAliasesPass(), PassConfig::TYPE_BEFORE_REMOVING);
     }
 
     protected function configureContainer(ContainerConfigurator $container): void
@@ -115,7 +115,7 @@ class Kernel extends BaseKernel
     private function importConfigs(ContainerConfigurator $container, string $dir): void
     {
         $container->import($dir.'/{packages}/*.php');
-        $container->import($dir.'/{services}/*.php');
+        $container->import($dir.'/{services}/**/*.php');
 
         if (is_file($dir.'/services.php')) {
             $container->import($dir.'/services.php');

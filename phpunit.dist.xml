@@ -21,6 +21,9 @@
 
     <testsuites>
         <!-- DELIVERY MECHANISMS -->
+        <testsuite name="cron">
+            <directory>apps/cron/tests</directory>
+        </testsuite>
 
         <!-- SUBDOMAINS -->
         <testsuite name="catalog">

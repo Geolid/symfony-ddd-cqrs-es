@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Catalog\Listing\Application\Command\PublishProduct;
 
 use Catalog\Listing\Application\Command\PublishProduct\Exception\ProductLabelAlreadyInUseException;
-use Catalog\Listing\Application\ProductUniqueKey;
+use Catalog\Listing\Application\ListingUniqueKey;
 use Catalog\Listing\Domain\Exception\ProductAlreadyExistsException;
 use Catalog\Listing\Domain\Product;
 use Catalog\Listing\Domain\Repository\ProductRepositoryInterface;
@@ -37,7 +37,7 @@ final readonly class PublishProductHandler
         $label = Label::fromString($command->label);
 
         try {
-            $this->uniqueness->claim(UniqueKey::for(ProductUniqueKey::LABEL), $label->value, $command->id);
+            $this->uniqueness->claim(UniqueKey::for(ListingUniqueKey::LABEL), $label->value, $command->id);
         } catch (UniquenessViolatedException $e) {
             throw ProductLabelAlreadyInUseException::forLabel($label->value, $e);
         }
