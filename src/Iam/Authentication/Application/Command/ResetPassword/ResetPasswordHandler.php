@@ -57,7 +57,6 @@ final readonly class ResetPasswordHandler
 
         $credential = $this->repository->load(PasswordCredentialId::forIdentity($command->identityId));
         $credential->resetPassword(
-            $command->identityId,
             $command->code,
             $this->verificationCode,
             Password::fromString($command->newPassword),

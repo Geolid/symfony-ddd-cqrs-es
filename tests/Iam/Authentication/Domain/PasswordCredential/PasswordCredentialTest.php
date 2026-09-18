@@ -133,7 +133,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     {
         $this
             ->given($this->defined())
-            ->when(fn (PasswordCredential $credential) => $credential->requestReset($this->identityId, $this->requestedAt))
+            ->when(fn (PasswordCredential $credential) => $credential->requestReset($this->requestedAt))
             ->then($this->resetRequested());
     }
 
@@ -142,7 +142,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     {
         $this
             ->given($this->defined(), $this->resetRequested())
-            ->when(fn (PasswordCredential $credential) => $credential->requestReset($this->identityId, $this->requestedAt->modify('+1 second')))
+            ->when(fn (PasswordCredential $credential) => $credential->requestReset($this->requestedAt->modify('+1 second')))
             ->expectsException(PasswordResetRequestedTooRecentlyException::class);
     }
 
@@ -155,7 +155,6 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $this
             ->given($this->defined())
             ->when(fn (PasswordCredential $credential) => $credential->resetPassword(
-                $this->identityId,
                 FakeVerificationCode::CODE,
                 $this->verificationCode,
                 Password::fromString($newPassword),
@@ -176,7 +175,6 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $this
             ->given($this->defined())
             ->when(fn (PasswordCredential $credential) => $credential->resetPassword(
-                $this->identityId,
                 'wrong',
                 $this->verificationCode,
                 Password::fromString('updated-password'),
@@ -193,7 +191,6 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $this
             ->given($this->defined())
             ->when(fn (PasswordCredential $credential) => $credential->resetPassword(
-                $this->identityId,
                 FakeVerificationCode::CODE,
                 $this->verificationCode,
                 Password::fromString('updated-password'),
@@ -210,7 +207,6 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $this
             ->given($this->defined())
             ->when(fn (PasswordCredential $credential) => $credential->resetPassword(
-                $this->identityId,
                 FakeVerificationCode::CODE,
                 $this->verificationCode,
                 $this->password,

@@ -38,6 +38,7 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
 
     #[Id]
     public private(set) PasswordCredentialId $id;
+    private string $identityId;
     private string $passwordHash;
     private ?\DateTimeImmutable $resetRequestedAt = null;
 
@@ -92,7 +93,7 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
     /**
      * @throws PasswordResetRequestedTooRecentlyException
      */
-    public function requestReset(string $identityId, \DateTimeImmutable $requestedAt): void
+    public function requestReset(\DateTimeImmutable $requestedAt): void
     {
         if (!new CooldownElapsedSpecification(self::RESET_REQUEST_COOLDOWN, $requestedAt)->isSatisfiedBy($this->resetRequestedAt)) {
             throw PasswordResetRequestedTooRecentlyException::forId($this->id);
@@ -100,7 +101,7 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
 
         $this->recordThat(new PasswordCredentialResetRequested(
             id: $this->id,
-            identityId: $identityId,
+            identityId: $this->identityId,
             requestedAt: $requestedAt,
         ));
     }
@@ -112,9 +113,9 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
      * @throws WeakPasswordException
      * @throws SamePasswordException
      */
-    public function resetPassword(string $identityId, #[\SensitiveParameter] string $code, VerificationCodeInterface $verificationCode, #[\SensitiveParameter] Password $newPassword, PasswordStrengthSpecificationInterface $passwordStrengthSpecification, PasswordHasherInterface $hasher, \DateTimeImmutable $resetAt): void
+    public function resetPassword(#[\SensitiveParameter] string $code, VerificationCodeInterface $verificationCode, #[\SensitiveParameter] Password $newPassword, PasswordStrengthSpecificationInterface $passwordStrengthSpecification, PasswordHasherInterface $hasher, \DateTimeImmutable $resetAt): void
     {
-        if (!$verificationCode->verify(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identityId, $code, $resetAt)) {
+        if (!$verificationCode->verify(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $this->identityId, $code, $resetAt)) {
             throw InvalidPasswordResetCodeException::forId($this->id);
         }
 
@@ -147,6 +148,7 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
     private function applyDefined(PasswordCredentialDefined $event): void
     {
         $this->id = $event->id;
+        $this->identityId = $event->identityId;
         $this->passwordHash = $event->passwordHash;
     }
 

@@ -41,7 +41,7 @@ final readonly class RequestPasswordResetHandler
         }
 
         $credential = $this->repository->load(PasswordCredentialId::forIdentity($command->identityId));
-        $credential->requestReset($command->identityId, $this->clock->now());
+        $credential->requestReset($this->clock->now());
 
         $this->repository->save($credential);
     }

@@ -85,7 +85,7 @@ final class PasswordCredentialBuilder extends AbstractAggregateBuilder
         $builder = null !== $requestedAt ? $this->withAttributes(requestedAt: $requestedAt) : $this;
 
         return $builder->withModifier(
-            static fn (PasswordCredential $credential, self $builder) => $credential->requestReset($builder['identityId'], $builder['requestedAt']),
+            static fn (PasswordCredential $credential, self $builder) => $credential->requestReset($builder['requestedAt']),
         );
     }
 
@@ -103,7 +103,6 @@ final class PasswordCredentialBuilder extends AbstractAggregateBuilder
 
         return $builder->withModifier(
             static fn (PasswordCredential $credential, self $builder) => $credential->resetPassword(
-                $builder['identityId'],
                 FakeVerificationCode::CODE,
                 new FakeVerificationCode(),
                 Password::fromString($newPassword),
