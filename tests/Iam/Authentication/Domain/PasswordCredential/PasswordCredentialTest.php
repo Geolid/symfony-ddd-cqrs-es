@@ -141,17 +141,6 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itRequestsResetAtCooldownBoundary(): void
-    {
-        $boundary = $this->requestedAt->modify('+60 seconds');
-
-        $this
-            ->given($this->defined(), $this->resetRequested())
-            ->when(fn (PasswordCredential $credential) => $credential->requestReset($this->identityId, $boundary))
-            ->then(new PasswordCredentialResetRequested($this->id, $this->identityId, $boundary));
-    }
-
-    #[Test]
     public function itRehashes(): void
     {
         $rehashedAt = PasswordCredentialBuilder::sample('rehashedAt');

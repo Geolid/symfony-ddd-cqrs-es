@@ -21,6 +21,7 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
+use Shared\Domain\Specification\CooldownElapsedSpecification;
 
 #[Aggregate('iam.authentication.password_credential')]
 final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAware
@@ -87,7 +88,7 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
      */
     public function requestReset(string $identityId, \DateTimeImmutable $requestedAt): void
     {
-        if (null !== $this->resetRequestedAt && $requestedAt < $this->resetRequestedAt->modify(self::RESET_REQUEST_COOLDOWN)) {
+        if (!new CooldownElapsedSpecification(self::RESET_REQUEST_COOLDOWN, $requestedAt)->isSatisfiedBy($this->resetRequestedAt)) {
             throw PasswordResetRequestedTooRecentlyException::forId($this->id);
         }
 

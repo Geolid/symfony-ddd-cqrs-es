@@ -29,6 +29,7 @@ use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
 use Shared\Domain\Specification\CanTransitionToSpecification;
+use Shared\Domain\Specification\CooldownElapsedSpecification;
 use Shared\Domain\ValueObject\ErasureState;
 
 #[Aggregate('iam.identity.identity')]
@@ -156,8 +157,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
             throw IdentityNotPendingException::forId($this->id);
         }
 
-        if (null !== $this->emailConfirmationResendRequestedAt
-            && $requestedAt < $this->emailConfirmationResendRequestedAt->modify(self::EMAIL_CONFIRMATION_RESEND_COOLDOWN)) {
+        if (!new CooldownElapsedSpecification(self::EMAIL_CONFIRMATION_RESEND_COOLDOWN, $requestedAt)->isSatisfiedBy($this->emailConfirmationResendRequestedAt)) {
             throw EmailConfirmationResendRequestedTooRecentlyException::forId($this->id);
         }
 
