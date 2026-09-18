@@ -112,9 +112,9 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
      * @throws WeakPasswordException
      * @throws SamePasswordException
      */
-    public function resetPassword(string $identityId, #[\SensitiveParameter] string $code, VerificationCodeInterface $verifier, #[\SensitiveParameter] Password $newPassword, PasswordStrengthSpecificationInterface $passwordStrengthSpecification, PasswordHasherInterface $hasher, \DateTimeImmutable $resetAt): void
+    public function resetPassword(string $identityId, #[\SensitiveParameter] string $code, VerificationCodeInterface $verificationCode, #[\SensitiveParameter] Password $newPassword, PasswordStrengthSpecificationInterface $passwordStrengthSpecification, PasswordHasherInterface $hasher, \DateTimeImmutable $resetAt): void
     {
-        if (!$verifier->verify(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identityId, $code, $resetAt)) {
+        if (!$verificationCode->verify(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identityId, $code, $resetAt)) {
             throw InvalidPasswordResetCodeException::forId($this->id);
         }
 

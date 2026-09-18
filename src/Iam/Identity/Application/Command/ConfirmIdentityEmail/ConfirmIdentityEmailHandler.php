@@ -22,7 +22,7 @@ final readonly class ConfirmIdentityEmailHandler
 {
     public function __construct(
         private IdentityRepositoryInterface $repository,
-        private VerificationCodeInterface $verifier,
+        private VerificationCodeInterface $verificationCode,
         private ClockInterface $clock,
     ) {
     }
@@ -39,7 +39,7 @@ final readonly class ConfirmIdentityEmailHandler
     public function __invoke(ConfirmIdentityEmail $command): void
     {
         $identity = $this->repository->load(IdentityId::fromString($command->id));
-        $identity->activate($command->code, $this->verifier, $this->clock->now());
+        $identity->activate($command->code, $this->verificationCode, $this->clock->now());
 
         $this->repository->save($identity);
     }

@@ -30,7 +30,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     private string $identityId;
     private Password $password;
     private FakePasswordHasher $hasher;
-    private VerificationCodeInterface $verifier;
+    private VerificationCodeInterface $verificationCode;
     private \DateTimeImmutable $definedAt;
     private \DateTimeImmutable $requestedAt;
 
@@ -44,7 +44,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $this->definedAt = PasswordCredentialBuilder::sample('definedAt');
         $this->requestedAt = PasswordCredentialBuilder::sample('requestedAt');
         $this->hasher = new FakePasswordHasher();
-        $this->verifier = new FakeVerificationCode();
+        $this->verificationCode = new FakeVerificationCode();
     }
 
     #[Test]
@@ -157,7 +157,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
             ->when(fn (PasswordCredential $credential) => $credential->resetPassword(
                 $this->identityId,
                 FakeVerificationCode::CODE,
-                $this->verifier,
+                $this->verificationCode,
                 Password::fromString($newPassword),
                 new StubPasswordStrengthSpecification(),
                 $this->hasher,
@@ -178,7 +178,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
             ->when(fn (PasswordCredential $credential) => $credential->resetPassword(
                 $this->identityId,
                 'wrong',
-                $this->verifier,
+                $this->verificationCode,
                 Password::fromString('updated-password'),
                 new StubPasswordStrengthSpecification(),
                 $this->hasher,
@@ -195,7 +195,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
             ->when(fn (PasswordCredential $credential) => $credential->resetPassword(
                 $this->identityId,
                 FakeVerificationCode::CODE,
-                $this->verifier,
+                $this->verificationCode,
                 Password::fromString('updated-password'),
                 new StubPasswordStrengthSpecification(sufficient: false),
                 $this->hasher,
@@ -212,7 +212,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
             ->when(fn (PasswordCredential $credential) => $credential->resetPassword(
                 $this->identityId,
                 FakeVerificationCode::CODE,
-                $this->verifier,
+                $this->verificationCode,
                 $this->password,
                 new StubPasswordStrengthSpecification(),
                 $this->hasher,

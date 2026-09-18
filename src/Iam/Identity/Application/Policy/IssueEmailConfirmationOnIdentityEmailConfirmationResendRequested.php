@@ -19,7 +19,7 @@ final readonly class IssueEmailConfirmationOnIdentityEmailConfirmationResendRequ
 {
     public function __construct(
         private IdentityFinderInterface $identityFinder,
-        private VerificationCodeInterface $verifier,
+        private VerificationCodeInterface $verificationCode,
         private IdentityNotifierInterface $notifier,
         private ClockInterface $clock,
     ) {
@@ -32,7 +32,7 @@ final readonly class IssueEmailConfirmationOnIdentityEmailConfirmationResendRequ
     public function __invoke(IdentityEmailConfirmationResendRequested $event): void
     {
         $identity = $this->identityFinder->ofId($event->id->toString());
-        $code = $this->verifier->issue(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $event->id->toString(), $this->clock->now());
+        $code = $this->verificationCode->issue(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $event->id->toString(), $this->clock->now());
         $this->notifier->notifyEmailConfirmationCode($identity->email, $code);
     }
 }

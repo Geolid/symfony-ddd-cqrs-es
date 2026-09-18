@@ -19,7 +19,7 @@ final readonly class IssuePasswordResetOnPasswordCredentialResetRequested
 {
     public function __construct(
         private IdentityFinderInterface $identityFinder,
-        private VerificationCodeInterface $verifier,
+        private VerificationCodeInterface $verificationCode,
         private AuthenticationNotifierInterface $notifier,
         private ClockInterface $clock,
     ) {
@@ -32,7 +32,7 @@ final readonly class IssuePasswordResetOnPasswordCredentialResetRequested
     public function __invoke(PasswordCredentialResetRequested $event): void
     {
         $identity = $this->identityFinder->ofId($event->identityId);
-        $code = $this->verifier->issue(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $event->identityId, $this->clock->now());
+        $code = $this->verificationCode->issue(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $event->identityId, $this->clock->now());
         $this->notifier->notifyPasswordResetCode($identity->email, $code);
     }
 }

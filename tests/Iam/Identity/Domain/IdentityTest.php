@@ -38,7 +38,7 @@ final class IdentityTest extends AggregateRootTestCase
     private \DateTimeImmutable $registeredAt;
     private \DateTimeImmutable $activatedAt;
     private string $confirmationCode;
-    private VerificationCodeInterface $verifier;
+    private VerificationCodeInterface $verificationCode;
     private \DateTimeImmutable $suspendedAt;
     private \DateTimeImmutable $reactivatedAt;
     private \DateTimeImmutable $requestedAt;
@@ -57,7 +57,7 @@ final class IdentityTest extends AggregateRootTestCase
         $this->registeredAt = IdentityBuilder::sample('registeredAt');
         $this->activatedAt = IdentityBuilder::sample('activatedAt');
         $this->confirmationCode = IdentityBuilder::sample('confirmationCode');
-        $this->verifier = new FakeVerificationCode();
+        $this->verificationCode = new FakeVerificationCode();
         $this->suspendedAt = IdentityBuilder::sample('suspendedAt');
         $this->reactivatedAt = IdentityBuilder::sample('reactivatedAt');
         $this->requestedAt = IdentityBuilder::sample('requestedAt');
@@ -80,7 +80,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered())
-            ->when(fn (Identity $identity) => $identity->activate($this->confirmationCode, $this->verifier, $this->activatedAt))
+            ->when(fn (Identity $identity) => $identity->activate($this->confirmationCode, $this->verificationCode, $this->activatedAt))
             ->then($this->activated());
     }
 
@@ -89,7 +89,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered(), $this->activated())
-            ->when(fn (Identity $identity) => $identity->activate($this->confirmationCode, $this->verifier, IdentityBuilder::sample('activatedAt')))
+            ->when(fn (Identity $identity) => $identity->activate($this->confirmationCode, $this->verificationCode, IdentityBuilder::sample('activatedAt')))
             ->then();
     }
 
@@ -102,7 +102,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->erasureRequested(),
                 $this->erased(),
             )
-            ->when(fn (Identity $identity) => $identity->activate($this->confirmationCode, $this->verifier, $this->activatedAt))
+            ->when(fn (Identity $identity) => $identity->activate($this->confirmationCode, $this->verificationCode, $this->activatedAt))
             ->expectsException(IdentityAlreadyErasedException::class);
     }
 
@@ -114,7 +114,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->registered(),
                 $this->suspended(),
             )
-            ->when(fn (Identity $identity) => $identity->activate($this->confirmationCode, $this->verifier, $this->activatedAt))
+            ->when(fn (Identity $identity) => $identity->activate($this->confirmationCode, $this->verificationCode, $this->activatedAt))
             ->expectsException(IdentityNotPendingException::class);
     }
 

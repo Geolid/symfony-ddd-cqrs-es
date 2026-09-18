@@ -16,7 +16,7 @@ use Shared\Domain\Service\VerificationCodeInterface;
 final readonly class IssueEmailConfirmationOnIdentityRegistered
 {
     public function __construct(
-        private VerificationCodeInterface $verifier,
+        private VerificationCodeInterface $verificationCode,
         private IdentityNotifierInterface $notifier,
         private ClockInterface $clock,
     ) {
@@ -25,7 +25,7 @@ final readonly class IssueEmailConfirmationOnIdentityRegistered
     #[Subscribe(IdentityRegistered::class)]
     public function __invoke(IdentityRegistered $event): void
     {
-        $code = $this->verifier->issue(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $event->id->toString(), $this->clock->now());
+        $code = $this->verificationCode->issue(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $event->id->toString(), $this->clock->now());
         $this->notifier->notifyEmailConfirmationCode($event->email->value, $code);
     }
 }

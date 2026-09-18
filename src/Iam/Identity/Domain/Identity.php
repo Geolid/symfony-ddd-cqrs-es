@@ -85,7 +85,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
      * @throws VerificationCodeAttemptsExceededException
      * @throws InvalidConfirmationCodeException
      */
-    public function activate(#[\SensitiveParameter] string $code, VerificationCodeInterface $verifier, \DateTimeImmutable $activatedAt): void
+    public function activate(#[\SensitiveParameter] string $code, VerificationCodeInterface $verificationCode, \DateTimeImmutable $activatedAt): void
     {
         if ($this->erasureState->isErased()) {
             throw IdentityAlreadyErasedException::forId($this->id);
@@ -99,7 +99,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
             throw IdentityNotPendingException::forId($this->id);
         }
 
-        if (!$verifier->verify(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $this->id->toString(), $code, $activatedAt)) {
+        if (!$verificationCode->verify(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $this->id->toString(), $code, $activatedAt)) {
             throw InvalidConfirmationCodeException::forId($this->id);
         }
 

@@ -29,7 +29,7 @@ final readonly class ResetPasswordHandler
     public function __construct(
         private PasswordCredentialRepositoryInterface $repository,
         private IdentityFinderInterface $identityFinder,
-        private VerificationCodeInterface $verifier,
+        private VerificationCodeInterface $verificationCode,
         private PasswordStrengthSpecificationInterface $passwordStrengthSpecification,
         private PasswordHasherInterface $hasher,
         private ClockInterface $clock,
@@ -59,7 +59,7 @@ final readonly class ResetPasswordHandler
         $credential->resetPassword(
             $command->identityId,
             $command->code,
-            $this->verifier,
+            $this->verificationCode,
             Password::fromString($command->newPassword),
             $this->passwordStrengthSpecification,
             $this->hasher,
