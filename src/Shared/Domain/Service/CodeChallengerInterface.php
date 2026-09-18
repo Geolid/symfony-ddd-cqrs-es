@@ -7,7 +7,7 @@ namespace Shared\Domain\Service;
 use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
 use Shared\Domain\Exception\VerificationCodeNotFoundException;
 
-interface VerificationCodeInterface
+interface CodeChallengerInterface
 {
     /**
      * Issuing a new code for the same (purpose, subjectId) invalidates any prior one.

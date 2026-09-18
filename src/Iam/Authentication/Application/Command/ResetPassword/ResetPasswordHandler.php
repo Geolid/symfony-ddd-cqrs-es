@@ -21,7 +21,7 @@ use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
 use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
 use Shared\Domain\Exception\VerificationCodeNotFoundException;
-use Shared\Domain\Service\VerificationCodeInterface;
+use Shared\Domain\Service\CodeChallengerInterface;
 
 #[CommandHandler]
 final readonly class ResetPasswordHandler
@@ -29,7 +29,7 @@ final readonly class ResetPasswordHandler
     public function __construct(
         private PasswordCredentialRepositoryInterface $repository,
         private IdentityFinderInterface $identityFinder,
-        private VerificationCodeInterface $verificationCode,
+        private CodeChallengerInterface $codeChallenger,
         private PasswordStrengthSpecificationInterface $passwordStrengthSpecification,
         private PasswordHasherInterface $hasher,
         private ClockInterface $clock,
@@ -58,7 +58,7 @@ final readonly class ResetPasswordHandler
         $credential = $this->repository->load(PasswordCredentialId::forIdentity($command->identityId));
         $credential->resetPassword(
             $command->code,
-            $this->verificationCode,
+            $this->codeChallenger,
             Password::fromString($command->newPassword),
             $this->passwordStrengthSpecification,
             $this->hasher,

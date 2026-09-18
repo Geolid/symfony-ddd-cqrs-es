@@ -13,19 +13,19 @@ use Iam\Identity\Domain\ValueObject\IdentityVerificationCodePurpose;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Shared\Infrastructure\VerificationCode\VerificationCode;
+use Shared\Infrastructure\VerificationCode\NativeCodeChallenger;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
 final class ConfirmIdentityEmailHandlerTest extends AbstractIntegrationTestCase
 {
-    private VerificationCode $verificationCode;
+    private NativeCodeChallenger $codeChallenger;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->verificationCode = $this->service(VerificationCode::class);
+        $this->codeChallenger = $this->service(NativeCodeChallenger::class);
     }
 
     #[Test]
@@ -34,7 +34,7 @@ final class ConfirmIdentityEmailHandlerTest extends AbstractIntegrationTestCase
         // Given
         $identity = IdentityBuilder::new()->create();
         $this->store($identity);
-        $code = $this->verificationCode->issue(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $identity->id->toString(), Clock::get()->now());
+        $code = $this->codeChallenger->issue(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $identity->id->toString(), Clock::get()->now());
 
         // When
         $this->dispatch(new ConfirmIdentityEmail($identity->id->toString(), $code));
@@ -50,7 +50,7 @@ final class ConfirmIdentityEmailHandlerTest extends AbstractIntegrationTestCase
         // Given
         $identity = IdentityBuilder::new()->activated()->create();
         $this->store($identity);
-        $code = $this->verificationCode->issue(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $identity->id->toString(), Clock::get()->now());
+        $code = $this->codeChallenger->issue(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $identity->id->toString(), Clock::get()->now());
 
         // When
         $this->dispatch(new ConfirmIdentityEmail($identity->id->toString(), $code));
@@ -75,7 +75,7 @@ final class ConfirmIdentityEmailHandlerTest extends AbstractIntegrationTestCase
         // Given
         $identity = IdentityBuilder::new()->create();
         $this->store($identity);
-        $this->verificationCode->issue(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $identity->id->toString(), Clock::get()->now());
+        $this->codeChallenger->issue(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $identity->id->toString(), Clock::get()->now());
 
         // Then
         $this->expectException(InvalidConfirmationCodeException::class);

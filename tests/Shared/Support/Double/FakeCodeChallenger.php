@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Shared\Tests\Support\Double;
 
-use Shared\Domain\Service\VerificationCodeInterface;
+use Shared\Domain\Service\CodeChallengerInterface;
 
-final readonly class FakeVerificationCode implements VerificationCodeInterface
+final readonly class FakeCodeChallenger implements CodeChallengerInterface
 {
     public const string CODE = '123456';
 

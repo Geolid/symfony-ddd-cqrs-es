@@ -8,27 +8,27 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
 use Shared\Domain\Exception\VerificationCodeNotFoundException;
-use Shared\Infrastructure\VerificationCode\VerificationCode;
+use Shared\Infrastructure\VerificationCode\NativeCodeChallenger;
 use Shared\Tests\Support\Double\DummyVerificationCodePurpose;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
-final class VerificationCodeTest extends AbstractIntegrationTestCase
+final class NativeCodeChallengerTest extends AbstractIntegrationTestCase
 {
-    private VerificationCode $verificationCode;
+    private NativeCodeChallenger $codeChallenger;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->verificationCode = $this->service(VerificationCode::class);
+        $this->codeChallenger = $this->service(NativeCodeChallenger::class);
     }
 
     #[Test]
     public function itIssues(): void
     {
         // When
-        $code = $this->verificationCode->issue(DummyVerificationCodePurpose::NAME, 'subject-1', Clock::get()->now());
+        $code = $this->codeChallenger->issue(DummyVerificationCodePurpose::NAME, 'subject-1', Clock::get()->now());
 
         // Then
         self::assertMatchesRegularExpression('/^\d{6}$/', $code);
@@ -39,14 +39,14 @@ final class VerificationCodeTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $firstCode = $this->verificationCode->issue(DummyVerificationCodePurpose::NAME, 'subject-1', $now);
+        $firstCode = $this->codeChallenger->issue(DummyVerificationCodePurpose::NAME, 'subject-1', $now);
 
         // When
-        $secondCode = $this->verificationCode->issue(DummyVerificationCodePurpose::NAME, 'subject-1', $now);
+        $secondCode = $this->codeChallenger->issue(DummyVerificationCodePurpose::NAME, 'subject-1', $now);
 
         // Then
-        self::assertFalse($this->verificationCode->verify(DummyVerificationCodePurpose::NAME, 'subject-1', $firstCode, $now));
-        self::assertTrue($this->verificationCode->verify(DummyVerificationCodePurpose::NAME, 'subject-1', $secondCode, $now));
+        self::assertFalse($this->codeChallenger->verify(DummyVerificationCodePurpose::NAME, 'subject-1', $firstCode, $now));
+        self::assertTrue($this->codeChallenger->verify(DummyVerificationCodePurpose::NAME, 'subject-1', $secondCode, $now));
     }
 
     #[Test]
@@ -54,10 +54,10 @@ final class VerificationCodeTest extends AbstractIntegrationTestCase
     public function itAccepts(string $subjectId, \DateTimeImmutable $issuedAt, \DateTimeImmutable $verifiedAt): void
     {
         // Given
-        $code = $this->verificationCode->issue(DummyVerificationCodePurpose::NAME, $subjectId, $issuedAt);
+        $code = $this->codeChallenger->issue(DummyVerificationCodePurpose::NAME, $subjectId, $issuedAt);
 
         // When
-        $result = $this->verificationCode->verify(DummyVerificationCodePurpose::NAME, $subjectId, $code, $verifiedAt);
+        $result = $this->codeChallenger->verify(DummyVerificationCodePurpose::NAME, $subjectId, $code, $verifiedAt);
 
         // Then
         self::assertTrue($result);
@@ -81,10 +81,10 @@ final class VerificationCodeTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $this->verificationCode->issue(DummyVerificationCodePurpose::NAME, 'subject-1', $now);
+        $this->codeChallenger->issue(DummyVerificationCodePurpose::NAME, 'subject-1', $now);
 
         // When
-        $result = $this->verificationCode->verify(DummyVerificationCodePurpose::NAME, 'subject-1', 'wrong', $now);
+        $result = $this->codeChallenger->verify(DummyVerificationCodePurpose::NAME, 'subject-1', 'wrong', $now);
 
         // Then
         self::assertFalse($result);
@@ -97,7 +97,7 @@ final class VerificationCodeTest extends AbstractIntegrationTestCase
         $this->expectException(VerificationCodeNotFoundException::class);
 
         // When
-        $this->verificationCode->verify(DummyVerificationCodePurpose::NAME, 'subject-1', '123456', Clock::get()->now());
+        $this->codeChallenger->verify(DummyVerificationCodePurpose::NAME, 'subject-1', '123456', Clock::get()->now());
     }
 
     #[Test]
@@ -105,13 +105,13 @@ final class VerificationCodeTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $code = $this->verificationCode->issue(DummyVerificationCodePurpose::NAME, 'subject-1', $now);
+        $code = $this->codeChallenger->issue(DummyVerificationCodePurpose::NAME, 'subject-1', $now);
 
         // Then
         $this->expectException(VerificationCodeNotFoundException::class);
 
         // When
-        $this->verificationCode->verify(DummyVerificationCodePurpose::NAME, 'subject-1', $code, $now->modify('+16 minutes'));
+        $this->codeChallenger->verify(DummyVerificationCodePurpose::NAME, 'subject-1', $code, $now->modify('+16 minutes'));
     }
 
     #[Test]
@@ -119,15 +119,15 @@ final class VerificationCodeTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $this->verificationCode->issue(DummyVerificationCodePurpose::NAME, 'subject-1', $now);
+        $this->codeChallenger->issue(DummyVerificationCodePurpose::NAME, 'subject-1', $now);
         for ($i = 0; $i < 5; ++$i) {
-            $this->verificationCode->verify(DummyVerificationCodePurpose::NAME, 'subject-1', 'wrong', $now);
+            $this->codeChallenger->verify(DummyVerificationCodePurpose::NAME, 'subject-1', 'wrong', $now);
         }
 
         // Then
         $this->expectException(VerificationCodeAttemptsExceededException::class);
 
         // When
-        $this->verificationCode->verify(DummyVerificationCodePurpose::NAME, 'subject-1', 'wrong', $now);
+        $this->codeChallenger->verify(DummyVerificationCodePurpose::NAME, 'subject-1', 'wrong', $now);
     }
 }

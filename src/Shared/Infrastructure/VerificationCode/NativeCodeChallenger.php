@@ -7,11 +7,11 @@ namespace Shared\Infrastructure\VerificationCode;
 use Shared\Application\VerificationCode\VerificationCodeStoreInterface;
 use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
 use Shared\Domain\Exception\VerificationCodeNotFoundException;
-use Shared\Domain\Service\VerificationCodeInterface;
+use Shared\Domain\Service\CodeChallengerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Webmozart\Assert\Assert;
 
-final readonly class VerificationCode implements VerificationCodeInterface
+final readonly class NativeCodeChallenger implements CodeChallengerInterface
 {
     public function __construct(
         private VerificationCodeStoreInterface $store,

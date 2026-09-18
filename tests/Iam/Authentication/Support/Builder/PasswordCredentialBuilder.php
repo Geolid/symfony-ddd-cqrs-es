@@ -10,7 +10,7 @@ use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthS
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Ramsey\Uuid\Uuid;
-use Shared\Tests\Support\Double\FakeVerificationCode;
+use Shared\Tests\Support\Double\FakeCodeChallenger;
 use Support\Builder\AbstractAggregateBuilder;
 use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
@@ -103,8 +103,8 @@ final class PasswordCredentialBuilder extends AbstractAggregateBuilder
 
         return $builder->withModifier(
             static fn (PasswordCredential $credential, self $builder) => $credential->resetPassword(
-                FakeVerificationCode::CODE,
-                new FakeVerificationCode(),
+                FakeCodeChallenger::CODE,
+                new FakeCodeChallenger(),
                 Password::fromString($newPassword),
                 $builder->passwordStrength(),
                 $builder->hasher(),

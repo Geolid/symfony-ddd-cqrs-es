@@ -17,7 +17,7 @@ use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Shared\Infrastructure\VerificationCode\VerificationCode;
+use Shared\Infrastructure\VerificationCode\NativeCodeChallenger;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -29,7 +29,7 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
 
     private PasswordHasherInterface $hasher;
 
-    private VerificationCode $verificationCode;
+    private NativeCodeChallenger $codeChallenger;
 
     private PasswordCredentialFinderInterface $passwordCredentialFinder;
 
@@ -39,7 +39,7 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
 
         $this->passwordStrength = $this->service(PasswordStrengthSpecificationInterface::class);
         $this->hasher = $this->service(PasswordHasherInterface::class);
-        $this->verificationCode = $this->service(VerificationCode::class);
+        $this->codeChallenger = $this->service(NativeCodeChallenger::class);
         $this->passwordCredentialFinder = $this->service(PasswordCredentialFinderInterface::class);
     }
 
@@ -55,7 +55,7 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
             ->create();
         $this->store($identity, $credential);
 
-        $code = $this->verificationCode->issue(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identity->id->toString(), Clock::get()->now());
+        $code = $this->codeChallenger->issue(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identity->id->toString(), Clock::get()->now());
 
         // When
         $this->dispatch(new ResetPassword($identity->id->toString(), $code, self::NEW_PASSWORD));
@@ -70,7 +70,7 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
-        $code = $this->verificationCode->issue(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identityId, Clock::get()->now());
+        $code = $this->codeChallenger->issue(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identityId, Clock::get()->now());
 
         // Then
         $this->expectException(IdentityResultNotFoundException::class);
@@ -86,7 +86,7 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
         $identity = IdentityBuilder::new()->create();
         $this->store($identity);
 
-        $code = $this->verificationCode->issue(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identity->id->toString(), Clock::get()->now());
+        $code = $this->codeChallenger->issue(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identity->id->toString(), Clock::get()->now());
 
         // Then
         $this->expectException(IdentityNotAuthenticatableException::class);
@@ -102,7 +102,7 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
         $identity = IdentityBuilder::new()->activated()->create();
         $this->store($identity);
 
-        $code = $this->verificationCode->issue(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identity->id->toString(), Clock::get()->now());
+        $code = $this->codeChallenger->issue(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identity->id->toString(), Clock::get()->now());
 
         // Then
         $this->expectException(PasswordCredentialNotFoundException::class);
@@ -123,7 +123,7 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
             ->create();
         $this->store($identity, $credential);
 
-        $this->verificationCode->issue(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identity->id->toString(), Clock::get()->now());
+        $this->codeChallenger->issue(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identity->id->toString(), Clock::get()->now());
 
         // Then
         $this->expectException(InvalidPasswordResetCodeException::class);

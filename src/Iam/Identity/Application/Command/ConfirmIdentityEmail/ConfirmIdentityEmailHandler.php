@@ -15,14 +15,14 @@ use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
 use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
 use Shared\Domain\Exception\VerificationCodeNotFoundException;
-use Shared\Domain\Service\VerificationCodeInterface;
+use Shared\Domain\Service\CodeChallengerInterface;
 
 #[CommandHandler]
 final readonly class ConfirmIdentityEmailHandler
 {
     public function __construct(
         private IdentityRepositoryInterface $repository,
-        private VerificationCodeInterface $verificationCode,
+        private CodeChallengerInterface $codeChallenger,
         private ClockInterface $clock,
     ) {
     }
@@ -39,7 +39,7 @@ final readonly class ConfirmIdentityEmailHandler
     public function __invoke(ConfirmIdentityEmail $command): void
     {
         $identity = $this->repository->load(IdentityId::fromString($command->id));
-        $identity->activate($command->code, $this->verificationCode, $this->clock->now());
+        $identity->activate($command->code, $this->codeChallenger, $this->clock->now());
 
         $this->repository->save($identity);
     }

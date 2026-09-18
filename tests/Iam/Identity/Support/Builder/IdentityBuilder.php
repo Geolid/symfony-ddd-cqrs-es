@@ -10,7 +10,7 @@ use Iam\Identity\Domain\ValueObject\FullName;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Reason;
 use Ramsey\Uuid\Uuid;
-use Shared\Tests\Support\Double\FakeVerificationCode;
+use Shared\Tests\Support\Double\FakeCodeChallenger;
 use Support\Builder\AbstractAggregateBuilder;
 use Support\Faker\SeededFaker;
 use Symfony\Component\Clock\Clock;
@@ -63,7 +63,7 @@ final class IdentityBuilder extends AbstractAggregateBuilder
         return $builder->withModifier(
             static fn (Identity $identity, self $builder) => $identity->activate(
                 $builder['confirmationCode'],
-                new FakeVerificationCode(),
+                new FakeCodeChallenger(),
                 $builder['activatedAt'],
             ),
         );
@@ -139,7 +139,7 @@ final class IdentityBuilder extends AbstractAggregateBuilder
             'email' => static fn (): Email => Email::fromString(SeededFaker::get()->unique()->safeEmail()),
             'registeredAt' => static fn (): \DateTimeImmutable => $now,
             'activatedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 hour'),
-            'confirmationCode' => static fn (): string => FakeVerificationCode::CODE,
+            'confirmationCode' => static fn (): string => FakeCodeChallenger::CODE,
             'emailConfirmationResendRequestedAt' => static fn (): \DateTimeImmutable => $now->modify('+30 minutes'),
             'reason' => static fn (): Reason => Reason::fromString(SeededFaker::get()->sentence(4)),
             'suspendedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),

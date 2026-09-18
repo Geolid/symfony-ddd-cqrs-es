@@ -13,14 +13,14 @@ use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Mailer\Exception\MailerException;
 use Shared\Application\Policy;
-use Shared\Domain\Service\VerificationCodeInterface;
+use Shared\Domain\Service\CodeChallengerInterface;
 
 #[Policy('iam.authentication.issue_password_reset_on_password_credential_reset_requested')]
 final readonly class IssuePasswordResetOnPasswordCredentialResetRequested
 {
     public function __construct(
         private IdentityFinderInterface $identityFinder,
-        private VerificationCodeInterface $verificationCode,
+        private CodeChallengerInterface $codeChallenger,
         private AuthenticationNotifierInterface $notifier,
         private ClockInterface $clock,
     ) {
@@ -34,7 +34,7 @@ final readonly class IssuePasswordResetOnPasswordCredentialResetRequested
     public function __invoke(PasswordCredentialResetRequested $event): void
     {
         $identity = $this->identityFinder->ofId($event->identityId);
-        $code = $this->verificationCode->issue(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $event->identityId, $this->clock->now());
+        $code = $this->codeChallenger->issue(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $event->identityId, $this->clock->now());
         $this->notifier->notifyPasswordResetCode($identity->email, $code);
     }
 }
