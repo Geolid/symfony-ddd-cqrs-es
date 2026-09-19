@@ -41,7 +41,7 @@ final class PredisVerificationCodeStoreTest extends AbstractIntegrationTestCase
         $this->store->save($this->key, 'hash-1', $expiresAt);
 
         // Then
-        $raw = $this->fetchRecord($this->key);
+        $raw = $this->fetchRaw($this->key);
         self::assertSame('hash-1', $raw['code_hash']);
         self::assertSame(
             $expiresAt->format(\DateTimeInterface::ATOM),
@@ -160,7 +160,7 @@ final class PredisVerificationCodeStoreTest extends AbstractIntegrationTestCase
     /**
      * @return array<string, string>
      */
-    private function fetchRecord(VerificationCodeKey $key): array
+    private function fetchRaw(VerificationCodeKey $key): array
     {
         return $this->client->hgetall($this->prefixedKey($key));
     }
