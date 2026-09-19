@@ -47,19 +47,30 @@ final class VerificationCodeKeyTest extends TestCase
     }
 
     #[Test]
-    public function itDiffers(): void
+    public function itDiffersOnPurpose(): void
     {
         // Given
         $a = VerificationCodeKey::for(DummyVerificationCodePurpose::NAME, 'subject-1');
-        $differentSubject = VerificationCodeKey::for(DummyVerificationCodePurpose::NAME, 'subject-2');
-        $differentPurpose = VerificationCodeKey::for(DummyVerificationCodePurpose::OTHER, 'subject-1');
+        $b = VerificationCodeKey::for(DummyVerificationCodePurpose::OTHER, 'subject-1');
 
         // When
-        $differsOnSubject = $a->equals($differentSubject);
-        $differsOnPurpose = $a->equals($differentPurpose);
+        $equals = $a->equals($b);
 
         // Then
-        self::assertFalse($differsOnSubject);
-        self::assertFalse($differsOnPurpose);
+        self::assertFalse($equals);
+    }
+
+    #[Test]
+    public function itDiffersOnSubjectId(): void
+    {
+        // Given
+        $a = VerificationCodeKey::for(DummyVerificationCodePurpose::NAME, 'subject-1');
+        $b = VerificationCodeKey::for(DummyVerificationCodePurpose::NAME, 'subject-2');
+
+        // When
+        $equals = $a->equals($b);
+
+        // Then
+        self::assertFalse($equals);
     }
 }

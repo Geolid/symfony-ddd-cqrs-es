@@ -28,25 +28,25 @@ final readonly class PredisVerificationCodeStore implements VerificationCodeStor
 
     public function save(VerificationCodeKey $key, string $codeHash, \DateTimeImmutable $expiresAt): void
     {
-        $redisKey = $this->redisKey($key);
+        $prefixedKey = $this->prefixKey($key);
         $ttl = $expiresAt->getTimestamp() - $this->clock->now()->getTimestamp();
         $record = $this->hydrator->extract(new VerificationCodeRecord($codeHash, $expiresAt, 0));
 
-        $this->client->transaction(static function (MultiExec $tx) use ($redisKey, $record, $ttl): void {
-            $tx->hmset($redisKey, $record);
-            $tx->expire($redisKey, max($ttl, 1));
+        $this->client->transaction(static function (MultiExec $tx) use ($prefixedKey, $record, $ttl): void {
+            $tx->hmset($prefixedKey, $record);
+            $tx->expire($prefixedKey, max($ttl, 1));
         });
     }
 
     public function find(VerificationCodeKey $key): ?VerificationCodeRecord
     {
-        $row = $this->client->hgetall($this->redisKey($key));
+        $raw = $this->client->hgetall($this->prefixKey($key));
 
-        if ([] === $row) {
+        if ([] === $raw) {
             return null;
         }
 
-        return $this->hydrator->hydrate(VerificationCodeRecord::class, $row);
+        return $this->hydrator->hydrate(VerificationCodeRecord::class, $raw);
     }
 
     public function incrementAttempts(VerificationCodeKey $key): void
@@ -58,17 +58,17 @@ final readonly class PredisVerificationCodeStore implements VerificationCodeStor
             end
             LUA,
             1,
-            $this->redisKey($key),
+            $this->prefixKey($key),
             'attempts',
         );
     }
 
     public function delete(VerificationCodeKey $key): void
     {
-        $this->client->del([$this->redisKey($key)]);
+        $this->client->del([$this->prefixKey($key)]);
     }
 
-    private function redisKey(VerificationCodeKey $key): string
+    private function prefixKey(VerificationCodeKey $key): string
     {
         return $this->keyPrefix.$key->toString();
     }

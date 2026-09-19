@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shared\Tests\Infrastructure\VerificationCode;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Predis\Client;
 use Shared\Domain\ValueObject\VerificationCodeKey;
@@ -28,6 +29,29 @@ final class PredisVerificationCodeStoreTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    #[DataProvider('provideExpiry')]
+    public function itSetsExpiry(string $modifier, int $expectedTtl): void
+    {
+        // Given
+        $expiresAt = Clock::get()->now()->modify($modifier);
+
+        // When
+        $this->store->save($this->key, 'hash-1', $expiresAt);
+
+        // Then
+        self::assertSame($expectedTtl, $this->ttl($this->key));
+    }
+
+    /**
+     * @return iterable<string, array{string, int}>
+     */
+    public static function provideExpiry(): iterable
+    {
+        yield 'normal' => ['+15 minutes', 900];
+        yield 'at boundary, floored to one second' => ['+0 seconds', 1];
+    }
+
+    #[Test]
     public function itFinds(): void
     {
         // Given
@@ -42,32 +66,6 @@ final class PredisVerificationCodeStoreTest extends AbstractIntegrationTestCase
         self::assertSame('hash-1', $record->codeHash);
         self::assertSame($expiresAt->format(\DateTimeInterface::ATOM), $record->expiresAt->format(\DateTimeInterface::ATOM));
         self::assertSame(0, $record->attempts);
-    }
-
-    #[Test]
-    public function itSetsExpiry(): void
-    {
-        // Given
-        $expiresAt = Clock::get()->now()->modify('+15 minutes');
-
-        // When
-        $this->store->save($this->key, 'hash-1', $expiresAt);
-
-        // Then
-        self::assertSame(900, $this->ttl($this->key));
-    }
-
-    #[Test]
-    public function itFloorsExpiryAtOneSecond(): void
-    {
-        // Given
-        $now = Clock::get()->now();
-
-        // When
-        $this->store->save($this->key, 'hash-1', $now);
-
-        // Then
-        self::assertSame(1, $this->ttl($this->key));
     }
 
     #[Test]
