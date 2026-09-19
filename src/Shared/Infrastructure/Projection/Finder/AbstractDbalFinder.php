@@ -20,7 +20,7 @@ abstract class AbstractDbalFinder
 
     public function __construct(
         protected readonly Connection $connection,
-        #[Autowire(service: 'shared.hydration.result_hydrator')]
+        #[Autowire(service: 'shared.hydration.hydrator')]
         private readonly Hydrator $hydrator,
     ) {
     }

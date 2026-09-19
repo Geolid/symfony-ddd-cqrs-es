@@ -6,17 +6,18 @@ namespace Shared\Domain\Service;
 
 use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
 use Shared\Domain\Exception\VerificationCodeNotFoundException;
+use Shared\Domain\ValueObject\VerificationCodeKey;
 
 interface CodeChallengerInterface
 {
     /**
-     * Issuing a new code for the same (purpose, subjectId) invalidates any prior one.
+     * Issuing a new code for the same key invalidates any prior one.
      */
-    public function issue(\BackedEnum $purpose, string $subjectId, \DateTimeImmutable $now): string;
+    public function issue(VerificationCodeKey $key, \DateTimeImmutable $now): string;
 
     /**
      * @throws VerificationCodeNotFoundException
      * @throws VerificationCodeAttemptsExceededException
      */
-    public function verify(\BackedEnum $purpose, string $subjectId, #[\SensitiveParameter] string $code, \DateTimeImmutable $now): bool;
+    public function verify(VerificationCodeKey $key, #[\SensitiveParameter] string $code, \DateTimeImmutable $now): bool;
 }

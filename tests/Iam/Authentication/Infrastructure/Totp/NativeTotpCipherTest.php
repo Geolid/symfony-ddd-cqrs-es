@@ -16,8 +16,6 @@ final class NativeTotpCipherTest extends TestCase
 
     protected function setUp(): void
     {
-        parent::setUp();
-
         $this->cipher = new NativeTotpCipher('fake-encryption-secret');
     }
 

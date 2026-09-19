@@ -7,6 +7,7 @@ use Itspire\MonologLoki\Handler\LokiHandler;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\InMemoryCipherKeyStore;
 use Patchlevel\Hydrator\StackHydrator;
+use Predis\Client as PredisClient;
 use Psr\Log\LogLevel;
 use Sentry\Monolog\ExceptionToSentryIssueHandler;
 use Sentry\State\HubInterface;
@@ -27,6 +28,7 @@ use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 return static function (ContainerConfigurator $container): void {
     $container->parameters()->set('code_challenger.max_attempts', 5);
     $container->parameters()->set('code_challenger.expiry', '+15 minutes');
+    $container->parameters()->set('valkey.key_prefix', '');
 
     $services = $container->services();
     $services->defaults()->autowire()->autoconfigure();
@@ -40,14 +42,21 @@ return static function (ContainerConfigurator $container): void {
     $queryBusAlias = $services->alias(QueryBusInterface::class, SymfonyQueryBus::class);
     $services->alias(IntegrationEventPublisherInterface::class, PatchlevelIntegrationEventPublisher::class);
 
-    $services->set('shared.hydration.result_hydrator', StackHydrator::class)
+    $services->set('shared.hydration.hydrator', StackHydrator::class)
         ->factory([service(HydratorFactory::class), 'create']);
 
+    $services->set('shared.valkey.client', PredisClient::class)
+        ->arg('$parameters', '%env(VALKEY_URL)%')
+        ->arg('$options', ['prefix' => '%valkey.key_prefix%']);
+
     if ('test' === $container->env()) {
+        $container->parameters()->set('valkey.key_prefix', 'test%env(default::TEST_TOKEN)%:');
+
         // Fetched by type from the container; must be public for that.
         $commandBusAlias->public();
         $queryBusAlias->public();
         $services->alias(LockFactory::class, 'lock.factory')->public();
+        $services->get('shared.valkey.client')->public();
 
         $services->set(InMemoryCipherKeyStore::class)->public();
         $services->alias(CipherKeyStore::class, InMemoryCipherKeyStore::class);

@@ -6,29 +6,34 @@ namespace Shared\Tests\Infrastructure\VerificationCode;
 
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\TestCase;
 use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
 use Shared\Domain\Exception\VerificationCodeNotFoundException;
+use Shared\Domain\ValueObject\VerificationCodeKey;
 use Shared\Infrastructure\VerificationCode\NativeCodeChallenger;
 use Shared\Tests\Support\Double\DummyVerificationCodePurpose;
-use Support\TestCase\AbstractIntegrationTestCase;
+use Shared\Tests\Support\Double\FakeVerificationCodeStore;
 use Symfony\Component\Clock\Clock;
 
-final class NativeCodeChallengerTest extends AbstractIntegrationTestCase
+final class NativeCodeChallengerTest extends TestCase
 {
+    private const int MAX_ATTEMPTS = 5;
+    private const int EXPIRY_MINUTES = 15;
+
     private NativeCodeChallenger $codeChallenger;
+    private VerificationCodeKey $key;
 
     protected function setUp(): void
     {
-        parent::setUp();
-
-        $this->codeChallenger = $this->service(NativeCodeChallenger::class);
+        $this->codeChallenger = new NativeCodeChallenger(new FakeVerificationCodeStore(), 'secret', self::MAX_ATTEMPTS, \sprintf('+%d minutes', self::EXPIRY_MINUTES));
+        $this->key = VerificationCodeKey::for(DummyVerificationCodePurpose::NAME, 'subject-1');
     }
 
     #[Test]
     public function itIssues(): void
     {
         // When
-        $code = $this->codeChallenger->issue(DummyVerificationCodePurpose::NAME, 'subject-1', Clock::get()->now());
+        $code = $this->codeChallenger->issue($this->key, Clock::get()->now());
 
         // Then
         self::assertMatchesRegularExpression('/^\d{6}$/', $code);
@@ -39,14 +44,14 @@ final class NativeCodeChallengerTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $firstCode = $this->codeChallenger->issue(DummyVerificationCodePurpose::NAME, 'subject-1', $now);
+        $firstCode = $this->codeChallenger->issue($this->key, $now);
 
         // When
-        $secondCode = $this->codeChallenger->issue(DummyVerificationCodePurpose::NAME, 'subject-1', $now);
+        $secondCode = $this->codeChallenger->issue($this->key, $now);
 
         // Then
-        self::assertFalse($this->codeChallenger->verify(DummyVerificationCodePurpose::NAME, 'subject-1', $firstCode, $now));
-        self::assertTrue($this->codeChallenger->verify(DummyVerificationCodePurpose::NAME, 'subject-1', $secondCode, $now));
+        self::assertFalse($this->codeChallenger->verify($this->key, $firstCode, $now));
+        self::assertTrue($this->codeChallenger->verify($this->key, $secondCode, $now));
     }
 
     #[Test]
@@ -54,10 +59,11 @@ final class NativeCodeChallengerTest extends AbstractIntegrationTestCase
     public function itAccepts(string $subjectId, \DateTimeImmutable $issuedAt, \DateTimeImmutable $verifiedAt): void
     {
         // Given
-        $code = $this->codeChallenger->issue(DummyVerificationCodePurpose::NAME, $subjectId, $issuedAt);
+        $key = VerificationCodeKey::for(DummyVerificationCodePurpose::NAME, $subjectId);
+        $code = $this->codeChallenger->issue($key, $issuedAt);
 
         // When
-        $result = $this->codeChallenger->verify(DummyVerificationCodePurpose::NAME, $subjectId, $code, $verifiedAt);
+        $result = $this->codeChallenger->verify($key, $code, $verifiedAt);
 
         // Then
         self::assertTrue($result);
@@ -68,12 +74,10 @@ final class NativeCodeChallengerTest extends AbstractIntegrationTestCase
      */
     public static function provideValidTiming(): iterable
     {
-        // Truncated to whole seconds: the store isn't guaranteed to preserve sub-second precision.
         $now = Clock::get()->now();
-        $now = $now->setTime((int) $now->format('H'), (int) $now->format('i'), (int) $now->format('s'));
 
         yield 'immediately' => ['subject-1', $now, $now];
-        yield 'at expiry boundary' => ['subject-2', $now, $now->modify('+15 minutes')];
+        yield 'at expiry boundary' => ['subject-2', $now, $now->modify(\sprintf('+%d minutes', self::EXPIRY_MINUTES))];
     }
 
     #[Test]
@@ -81,10 +85,10 @@ final class NativeCodeChallengerTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $this->codeChallenger->issue(DummyVerificationCodePurpose::NAME, 'subject-1', $now);
+        $this->codeChallenger->issue($this->key, $now);
 
         // When
-        $result = $this->codeChallenger->verify(DummyVerificationCodePurpose::NAME, 'subject-1', 'wrong', $now);
+        $result = $this->codeChallenger->verify($this->key, 'wrong', $now);
 
         // Then
         self::assertFalse($result);
@@ -97,7 +101,7 @@ final class NativeCodeChallengerTest extends AbstractIntegrationTestCase
         $this->expectException(VerificationCodeNotFoundException::class);
 
         // When
-        $this->codeChallenger->verify(DummyVerificationCodePurpose::NAME, 'subject-1', '123456', Clock::get()->now());
+        $this->codeChallenger->verify($this->key, '123456', Clock::get()->now());
     }
 
     #[Test]
@@ -105,14 +109,14 @@ final class NativeCodeChallengerTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $code = $this->codeChallenger->issue(DummyVerificationCodePurpose::NAME, 'subject-1', $now);
-        $this->codeChallenger->verify(DummyVerificationCodePurpose::NAME, 'subject-1', $code, $now);
+        $code = $this->codeChallenger->issue($this->key, $now);
+        $this->codeChallenger->verify($this->key, $code, $now);
 
         // Then
         $this->expectException(VerificationCodeNotFoundException::class);
 
         // When
-        $this->codeChallenger->verify(DummyVerificationCodePurpose::NAME, 'subject-1', $code, $now);
+        $this->codeChallenger->verify($this->key, $code, $now);
     }
 
     #[Test]
@@ -120,13 +124,13 @@ final class NativeCodeChallengerTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $code = $this->codeChallenger->issue(DummyVerificationCodePurpose::NAME, 'subject-1', $now);
+        $code = $this->codeChallenger->issue($this->key, $now);
 
         // Then
         $this->expectException(VerificationCodeNotFoundException::class);
 
         // When
-        $this->codeChallenger->verify(DummyVerificationCodePurpose::NAME, 'subject-1', $code, $now->modify('+16 minutes'));
+        $this->codeChallenger->verify($this->key, $code, $now->modify(\sprintf('+%d minutes', self::EXPIRY_MINUTES + 1)));
     }
 
     #[Test]
@@ -134,15 +138,15 @@ final class NativeCodeChallengerTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $this->codeChallenger->issue(DummyVerificationCodePurpose::NAME, 'subject-1', $now);
-        for ($i = 0; $i < 5; ++$i) {
-            $this->codeChallenger->verify(DummyVerificationCodePurpose::NAME, 'subject-1', 'wrong', $now);
+        $this->codeChallenger->issue($this->key, $now);
+        for ($i = 0; $i < self::MAX_ATTEMPTS; ++$i) {
+            $this->codeChallenger->verify($this->key, 'wrong', $now);
         }
 
         // Then
         $this->expectException(VerificationCodeAttemptsExceededException::class);
 
         // When
-        $this->codeChallenger->verify(DummyVerificationCodePurpose::NAME, 'subject-1', 'wrong', $now);
+        $this->codeChallenger->verify($this->key, 'wrong', $now);
     }
 }

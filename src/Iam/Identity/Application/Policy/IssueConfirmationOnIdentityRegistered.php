@@ -12,6 +12,7 @@ use Psr\Clock\ClockInterface;
 use Shared\Application\Mailer\Exception\MailerException;
 use Shared\Application\Policy;
 use Shared\Domain\Service\CodeChallengerInterface;
+use Shared\Domain\ValueObject\VerificationCodeKey;
 
 #[Policy('iam.identity.issue_confirmation_on_identity_registered')]
 final readonly class IssueConfirmationOnIdentityRegistered
@@ -29,7 +30,7 @@ final readonly class IssueConfirmationOnIdentityRegistered
     #[Subscribe(IdentityRegistered::class)]
     public function __invoke(IdentityRegistered $event): void
     {
-        $code = $this->codeChallenger->issue(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $event->id->toString(), $this->clock->now());
+        $code = $this->codeChallenger->issue(VerificationCodeKey::for(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $event->id->toString()), $this->clock->now());
         $this->notifier->notifyEmailConfirmationCode($event->email->value, $code);
     }
 }
