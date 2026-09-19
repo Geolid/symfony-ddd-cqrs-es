@@ -32,10 +32,11 @@ final class FlushKeysOnPreparationStarted implements PreparationStartedSubscribe
             $prefix = $container->getParameter('valkey.key_prefix');
             \assert(\is_string($prefix));
 
-            $keys = $client->keys($prefix.'*');
+            // `keys()` returns names already carrying the client's own `prefix` option, which `del()` would reapply.
+            $keys = $client->keys('*');
 
             if ([] !== $keys) {
-                $client->del($keys);
+                $client->del(array_map(static fn (string $key): string => substr($key, \strlen($prefix)), $keys));
             }
         } finally {
             KernelTestCaseHelper::ensureKernelShutdown($test->className());

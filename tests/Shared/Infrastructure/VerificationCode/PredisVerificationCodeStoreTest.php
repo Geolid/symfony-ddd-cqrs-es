@@ -162,20 +162,12 @@ final class PredisVerificationCodeStoreTest extends AbstractIntegrationTestCase
      */
     private function fetchRaw(VerificationCodeKey $key): array
     {
-        return $this->client->hgetall($this->prefixedKey($key));
+        return $this->client->hgetall($key->toString());
     }
 
     private function ttl(VerificationCodeKey $key): int
     {
-        return $this->client->ttl($this->prefixedKey($key));
-    }
-
-    private function prefixedKey(VerificationCodeKey $key): string
-    {
-        $prefix = self::getContainer()->getParameter('valkey.key_prefix');
-        \assert(\is_string($prefix));
-
-        return $prefix.$key->toString();
+        return $this->client->ttl($key->toString());
     }
 
     private function denormalize(string $value): \DateTimeImmutable

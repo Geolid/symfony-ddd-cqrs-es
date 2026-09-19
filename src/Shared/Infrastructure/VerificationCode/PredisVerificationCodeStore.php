@@ -20,27 +20,24 @@ final readonly class PredisVerificationCodeStore implements VerificationCodeStor
         private Client $client,
         #[Autowire(service: 'shared.hydration.hydrator')]
         private Hydrator $hydrator,
-        #[Autowire(param: 'valkey.key_prefix')]
-        private string $keyPrefix,
         private ClockInterface $clock,
     ) {
     }
 
     public function save(VerificationCodeKey $key, string $codeHash, \DateTimeImmutable $expiresAt): void
     {
-        $prefixedKey = $this->prefixKey($key);
         $ttl = $expiresAt->getTimestamp() - $this->clock->now()->getTimestamp();
         $record = $this->hydrator->extract(new VerificationCodeRecord($codeHash, $expiresAt, 0));
 
-        $this->client->transaction(static function (MultiExec $tx) use ($prefixedKey, $record, $ttl): void {
-            $tx->hmset($prefixedKey, $record);
-            $tx->expire($prefixedKey, max($ttl, 1));
+        $this->client->transaction(static function (MultiExec $tx) use ($key, $record, $ttl): void {
+            $tx->hmset($key->toString(), $record);
+            $tx->expire($key->toString(), max($ttl, 1));
         });
     }
 
     public function find(VerificationCodeKey $key): ?VerificationCodeRecord
     {
-        $raw = $this->client->hgetall($this->prefixKey($key));
+        $raw = $this->client->hgetall($key->toString());
 
         if ([] === $raw) {
             return null;
@@ -58,18 +55,13 @@ final readonly class PredisVerificationCodeStore implements VerificationCodeStor
             end
             LUA,
             1,
-            $this->prefixKey($key),
+            $key->toString(),
             'attempts',
         );
     }
 
     public function delete(VerificationCodeKey $key): void
     {
-        $this->client->del([$this->prefixKey($key)]);
-    }
-
-    private function prefixKey(VerificationCodeKey $key): string
-    {
-        return $this->keyPrefix.$key->toString();
+        $this->client->del([$key->toString()]);
     }
 }

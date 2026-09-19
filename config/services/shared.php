@@ -46,7 +46,8 @@ return static function (ContainerConfigurator $container): void {
         ->factory([service(HydratorFactory::class), 'create']);
 
     $services->set('shared.valkey.client', PredisClient::class)
-        ->arg('$parameters', '%env(VALKEY_URL)%');
+        ->arg('$parameters', '%env(VALKEY_URL)%')
+        ->arg('$options', ['prefix' => '%valkey.key_prefix%']);
 
     if ('test' === $container->env()) {
         $container->parameters()->set('valkey.key_prefix', 'test%env(default::TEST_TOKEN)%:');
