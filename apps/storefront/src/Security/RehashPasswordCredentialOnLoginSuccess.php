@@ -29,7 +29,7 @@ final readonly class RehashPasswordCredentialOnLoginSuccess
             return;
         }
 
-        $password = $event->getPassport()->getBadge(PlainSecretBadge::class)?->secret();
+        $password = $event->getPassport()->getBadge(PlainPasswordBadge::class)?->plainPassword();
 
         if (null === $password) {
             return;

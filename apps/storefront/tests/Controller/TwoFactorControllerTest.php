@@ -18,16 +18,14 @@ final class TwoFactorControllerTest extends AbstractStorefrontTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityBuilder::new()->create();
-        $this->store($identity);
-        $this->loginAs($client, $identity);
+        $this->loginAs($client, IdentityBuilder::new()->confirmed());
 
         // When
         $client->request('GET', $this->path('storefront_two_factor_enroll'));
 
         // Then
         self::assertResponseIsSuccessful();
-        self::assertGreaterThan(0, $client->getCrawler()->filter('[data-testid="two-factor-provisioning-uri"]')->count());
+        self::assertGreaterThan(0, $client->getCrawler()->filter('[data-testid="two-factor-secret"]')->count());
     }
 
     #[Test]
@@ -35,11 +33,10 @@ final class TwoFactorControllerTest extends AbstractStorefrontTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityBuilder::new()->create();
-        $this->store($identity);
-        $this->loginAs($client, $identity);
+        $this->loginAs($client, IdentityBuilder::new()->confirmed());
         $crawler = $client->request('GET', $this->path('storefront_two_factor_enroll'));
-        $secret = $this->secretFromProvisioningUri($crawler->filter('[data-testid="two-factor-provisioning-uri"]')->text());
+        $secret = $crawler->filter('[data-testid="two-factor-secret"]')->text();
+        Assert::stringNotEmpty($secret);
         $form = $crawler->filter('[data-testid="two-factor-confirm-form"]')->form();
 
         // When
@@ -55,9 +52,7 @@ final class TwoFactorControllerTest extends AbstractStorefrontTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityBuilder::new()->create();
-        $this->store($identity);
-        $this->loginAs($client, $identity);
+        $this->loginAs($client, IdentityBuilder::new()->confirmed());
         $crawler = $client->request('GET', $this->path('storefront_two_factor_enroll'));
         $form = $crawler->filter('[data-testid="two-factor-confirm-form"]')->form();
 
@@ -79,16 +74,5 @@ final class TwoFactorControllerTest extends AbstractStorefrontTestCase
 
         // Then
         self::assertResponseRedirects($this->path('security_login'));
-    }
-
-    /**
-     * @return non-empty-string
-     */
-    private function secretFromProvisioningUri(string $provisioningUri): string
-    {
-        parse_str((string) parse_url($provisioningUri, \PHP_URL_QUERY), $query);
-        Assert::stringNotEmpty($query['secret']);
-
-        return $query['secret'];
     }
 }

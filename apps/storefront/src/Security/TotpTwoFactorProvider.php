@@ -6,6 +6,7 @@ namespace Storefront\Security;
 
 use Iam\Authentication\Application\CredentialVerification\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Application\CredentialVerification\TotpCredentialVerifierInterface;
+use Iam\Authentication\Application\Finder\Identity\Exception\IdentityResultNotFoundException;
 use Iam\Authentication\Application\Query\GetTotpCredentialByIdentity\GetTotpCredentialByIdentity;
 use Scheb\TwoFactorBundle\Security\TwoFactor\AuthenticationContextInterface;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\DefaultTwoFactorFormRenderer;
@@ -39,10 +40,10 @@ final readonly class TotpTwoFactorProvider implements TwoFactorProviderInterface
 
     public function prepareAuthentication(object $user): void
     {
-        // Nothing to prepare: unlike an email OTP, a TOTP code needs no server-side send step.
     }
 
     /**
+     * @throws IdentityResultNotFoundException
      * @throws IdentityNotAuthenticatableException
      */
     public function validateAuthenticationCode(object $user, string $authenticationCode): bool

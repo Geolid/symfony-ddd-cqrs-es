@@ -11,7 +11,17 @@
 
     <form method="post" action="{{ checkPathUrl ?? path(checkPathRoute) }}" data-testid="two-factor-form">
         <label for="two-factor-code">Code à 6 chiffres</label>
-        <input type="text" id="two-factor-code" name="{{ authCodeParameterName }}" autocomplete="one-time-code" required autofocus>
+        <input
+            type="text"
+            id="two-factor-code"
+            name="{{ authCodeParameterName }}"
+            autocomplete="one-time-code"
+            inputmode="numeric"
+            pattern="\d{6}"
+            maxlength="6"
+            required
+            autofocus
+        >
 
         {% if isCsrfProtectionEnabled %}
             <input type="hidden" name="{{ csrfParameterName }}" value="{{ csrf_token(csrfTokenId) }}">

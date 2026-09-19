@@ -6,15 +6,15 @@ namespace Storefront\Security;
 
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\BadgeInterface;
 
-final readonly class PlainSecretBadge implements BadgeInterface
+final readonly class PlainPasswordBadge implements BadgeInterface
 {
-    public function __construct(#[\SensitiveParameter] private string $secret)
+    public function __construct(#[\SensitiveParameter] private string $plainPassword)
     {
     }
 
-    public function secret(): string
+    public function plainPassword(): string
     {
-        return $this->secret;
+        return $this->plainPassword;
     }
 
     public function isResolved(): bool

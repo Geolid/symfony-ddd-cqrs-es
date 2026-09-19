@@ -20,7 +20,8 @@ final class TwoFactorAuthenticationTest extends AbstractStorefrontTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityBuilder::new()->create();
+        $builder = IdentityBuilder::new()->confirmed();
+        $identity = $builder->create();
         $secret = TOTP::generate()->getSecret();
         $code = TOTP::createFromSecret($secret, Clock::get())->now();
         $totpCredential = TotpCredentialBuilder::new()
@@ -31,10 +32,10 @@ final class TwoFactorAuthenticationTest extends AbstractStorefrontTestCase
             ->confirmed($code)
             ->create();
         $this->store($identity, $totpCredential);
-        $login = $this->givenPasswordCredential($identity->id->toString());
+        $this->givenPasswordCredential($identity->id->toString());
 
         // When
-        $this->logIn($client, $login, 'MyStr0ngP@ssw0rd123!');
+        $this->logIn($client, $builder['email']->value, 'MyStr0ngP@ssw0rd123!');
 
         // Then
         self::assertResponseRedirects($this->path('storefront_two_factor_challenge'));
@@ -54,7 +55,8 @@ final class TwoFactorAuthenticationTest extends AbstractStorefrontTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityBuilder::new()->create();
+        $builder = IdentityBuilder::new()->confirmed();
+        $identity = $builder->create();
         $secret = TOTP::generate()->getSecret();
         $totpCredential = TotpCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
@@ -64,8 +66,8 @@ final class TwoFactorAuthenticationTest extends AbstractStorefrontTestCase
             ->confirmed(TOTP::createFromSecret($secret, Clock::get())->now())
             ->create();
         $this->store($identity, $totpCredential);
-        $login = $this->givenPasswordCredential($identity->id->toString());
-        $this->logIn($client, $login, 'MyStr0ngP@ssw0rd123!');
+        $this->givenPasswordCredential($identity->id->toString());
+        $this->logIn($client, $builder['email']->value, 'MyStr0ngP@ssw0rd123!');
         $crawler = $client->followRedirect();
         $form = $crawler->filter('[data-testid="two-factor-form"]')->form();
 

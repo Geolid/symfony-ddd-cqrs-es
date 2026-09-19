@@ -19,7 +19,8 @@ final class RegisterType extends AbstractType
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('login', TextType::class, ['attr' => ['data-testid' => 'register-login']])
+            ->add('email', TextType::class, ['attr' => ['data-testid' => 'register-email', 'readonly' => 'readonly']])
+            ->add('fullName', TextType::class, ['attr' => ['data-testid' => 'register-full-name']])
             ->add('password', PasswordType::class, ['attr' => ['data-testid' => 'register-password']]);
     }
 

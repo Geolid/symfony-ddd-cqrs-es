@@ -1,0 +1,19 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}Confirmation{% endblock %}
+
+{% block body %}
+    <h1>Confirmez votre email</h1>
+
+    <p>Saisissez le code reçu par email.</p>
+
+    {{ form_start(form, {attr: {'data-testid': 'confirmation-form'}}) }}
+        {{ form_widget(form) }}
+        <button type="submit" data-testid="confirmation-submit">Confirmer</button>
+    {{ form_end(form) }}
+
+    <form method="post" action="{{ path('storefront_register_confirm_resend', {id: id}) }}" data-testid="confirmation-resend-form">
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('confirmation_resend') }}">
+        <button type="submit" data-testid="confirmation-resend-submit">Renvoyer le code</button>
+    </form>
+{% endblock %}

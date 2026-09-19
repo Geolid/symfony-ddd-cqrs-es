@@ -11,7 +11,7 @@ use Storefront\Tests\Support\AbstractStorefrontTestCase;
 final class SecurityControllerTest extends AbstractStorefrontTestCase
 {
     #[Test]
-    public function itShowsTheLoginForm(): void
+    public function itShowsTheIdentifyForm(): void
     {
         // When
         $client = self::browser();
@@ -19,7 +19,55 @@ final class SecurityControllerTest extends AbstractStorefrontTestCase
 
         // Then
         self::assertResponseIsSuccessful();
-        self::assertGreaterThan(0, $client->getCrawler()->filter('[data-testid="login-form"]')->count());
+        self::assertGreaterThan(0, $client->getCrawler()->filter('[data-testid="identify-form"]')->count());
+    }
+
+    #[Test]
+    public function itShowsTheUnknownEmailScreen(): void
+    {
+        // Given
+        $builder = IdentityBuilder::new();
+
+        // When
+        $client = self::browser();
+        $client->request('GET', $this->path('security_login', ['email' => $builder['email']->value]));
+
+        // Then
+        self::assertResponseIsSuccessful();
+        self::assertGreaterThan(0, $client->getCrawler()->filter('[data-testid="identify-unknown"]')->count());
+    }
+
+    #[Test]
+    public function itShowsThePasswordForm(): void
+    {
+        // Given
+        $client = self::browser();
+        $builder = IdentityBuilder::new()->confirmed();
+        $identity = $builder->create();
+        $this->store($identity);
+
+        // When
+        $client->request('GET', $this->path('security_login', ['email' => $builder['email']->value]));
+
+        // Then
+        self::assertResponseIsSuccessful();
+        self::assertGreaterThan(0, $client->getCrawler()->filter('[data-testid="password-form"]')->count());
+    }
+
+    #[Test]
+    public function itRedirectsToConfirmationWhenPending(): void
+    {
+        // Given
+        $client = self::browser();
+        $builder = IdentityBuilder::new();
+        $identity = $builder->create();
+        $this->store($identity);
+
+        // When
+        $client->request('GET', $this->path('security_login', ['email' => $builder['email']->value]));
+
+        // Then
+        self::assertResponseRedirects($this->path('storefront_register_confirm', ['id' => $identity->id->toString()]));
     }
 
     #[Test]
@@ -27,12 +75,13 @@ final class SecurityControllerTest extends AbstractStorefrontTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityBuilder::new()->create();
+        $builder = IdentityBuilder::new()->confirmed();
+        $identity = $builder->create();
         $this->store($identity);
-        $login = $this->givenPasswordCredential($identity->id->toString());
+        $this->givenPasswordCredential($identity->id->toString());
 
         // When
-        $this->logIn($client, $login, 'MyStr0ngP@ssw0rd123!');
+        $this->logIn($client, $builder['email']->value, 'MyStr0ngP@ssw0rd123!');
 
         // Then
         self::assertResponseRedirects($this->path('storefront_account_show'));
@@ -43,15 +92,16 @@ final class SecurityControllerTest extends AbstractStorefrontTestCase
     {
         // Given
         $client = self::browser();
-        $identity = IdentityBuilder::new()->create();
+        $builder = IdentityBuilder::new()->confirmed();
+        $identity = $builder->create();
         $this->store($identity);
-        $login = $this->givenPasswordCredential($identity->id->toString());
+        $this->givenPasswordCredential($identity->id->toString());
 
         // When
-        $this->logIn($client, $login, 'WrongPassword123!');
+        $this->logIn($client, $builder['email']->value, 'WrongPassword123!');
 
         // Then
-        self::assertResponseRedirects($this->path('security_login'));
+        self::assertResponseRedirects($this->path('security_login', ['email' => $builder['email']->value]));
         $client->followRedirect();
         self::assertGreaterThan(0, $client->getCrawler()->filter('[data-testid="login-error"]')->count());
     }

@@ -1,0 +1,11 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}Connexion{% endblock %}
+
+{% block body %}
+    <h1>Connexion</h1>
+
+    <p data-testid="identify-unknown">Aucun compte n'est associé à l'adresse {{ email }}.</p>
+
+    <a href="{{ path('storefront_register', {email: email}) }}" data-testid="nav-register-from-unknown">Créer un compte avec cet email</a>
+{% endblock %}

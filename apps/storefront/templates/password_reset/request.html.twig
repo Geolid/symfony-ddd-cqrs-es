@@ -1,0 +1,12 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}Mot de passe oublié{% endblock %}
+
+{% block body %}
+    <h1>Mot de passe oublié</h1>
+
+    {{ form_start(form, {attr: {'data-testid': 'password-reset-request-form'}}) }}
+        {{ form_widget(form) }}
+        <button type="submit" data-testid="password-reset-request-submit">Envoyer un code</button>
+    {{ form_end(form) }}
+{% endblock %}

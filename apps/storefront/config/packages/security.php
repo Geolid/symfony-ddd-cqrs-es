@@ -22,6 +22,7 @@ return static function (ContainerConfigurator $container): void {
                 'custom_authenticators' => [PasswordCredentialAuthenticator::class],
                 'login_throttling' => [
                     'max_attempts' => 3,
+                    'interval' => '15 minutes',
                 ],
                 'remember_me' => [
                     'secret' => '%kernel.secret%',

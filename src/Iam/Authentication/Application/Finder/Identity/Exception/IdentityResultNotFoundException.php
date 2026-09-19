@@ -12,4 +12,9 @@ final class IdentityResultNotFoundException extends ResultNotFoundException
     {
         return new self(\sprintf('Identity "%s" not found.', $identityId));
     }
+
+    public static function forEmail(string $email): self
+    {
+        return new self(\sprintf('Identity of email "%s" not found.', $email));
+    }
 }

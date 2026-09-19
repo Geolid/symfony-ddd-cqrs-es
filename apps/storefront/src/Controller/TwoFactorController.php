@@ -8,9 +8,9 @@ use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\SvgWriter;
 use Iam\Authentication\Application\Command\ConfirmTotpEnrollment\ConfirmTotpEnrollment;
 use Iam\Authentication\Application\Command\EnrollTotp\EnrollTotp;
+use Iam\Authentication\Application\Command\RevokeTotp\RevokeTotp;
 use Iam\Authentication\Application\TotpProvisioning\TotpProvisioningInterface;
 use Iam\Authentication\Domain\TotpCredential\Exception\InvalidTotpCodeException;
-use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialNotConfirmableException;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -27,7 +27,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 
 final class TwoFactorController extends AbstractController
 {
-    private const string SESSION_KEY = 'storefront.two_factor_enrollment_pending';
+    private const string SESSION_KEY = 'storefront.two_factor_enrollment_secret';
     private const string ISSUER = 'Storefront';
 
     public function __construct(
@@ -45,30 +45,31 @@ final class TwoFactorController extends AbstractController
     public function enroll(Request $request, #[CurrentUser] PasswordUser $user): Response
     {
         $session = $request->getSession();
-        /** @var array{id: non-empty-string, secret: non-empty-string}|null $pending */
-        $pending = $session->get(self::SESSION_KEY);
+        /** @var non-empty-string|null $secret */
+        $secret = $session->get(self::SESSION_KEY);
 
-        if (null === $pending) {
-            $pending = ['id' => Uuid::uuid7()->toString(), 'secret' => $this->provisioning->generateSecret()];
-            $this->commandBus->dispatch(new EnrollTotp($pending['id'], $user->identityId(), $pending['secret']));
-            $session->set(self::SESSION_KEY, $pending);
+        if (null === $secret) {
+            $secret = $this->provisioning->generateSecret();
+            $session->set(self::SESSION_KEY, $secret);
         }
 
-        $provisioningUri = $this->provisioning->provisioningUri($pending['secret'], $user->getUserIdentifier(), self::ISSUER);
+        $provisioningUri = $this->provisioning->provisioningUri($secret, $user->getUserIdentifier(), self::ISSUER);
 
         $formData = new TwoFactorConfirmFormData();
         $form = $this->createForm(TwoFactorConfirmType::class, $formData);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
+            $id = Uuid::uuid7()->toString();
+            $this->commandBus->dispatch(new EnrollTotp($id, $user->identityId(), $secret));
+
             try {
-                $this->commandBus->dispatch(new ConfirmTotpEnrollment($pending['id'], $user->identityId(), (string) $formData->code));
+                $this->commandBus->dispatch(new ConfirmTotpEnrollment($id, $user->identityId(), (string) $formData->code));
             } catch (InvalidTotpCodeException) {
+                $this->commandBus->dispatch(new RevokeTotp($id, $user->identityId()));
                 $this->addFlash('error', 'Code invalide, réessayez.');
 
-                return $this->renderEnrollForm($form, $provisioningUri);
-            } catch (TotpCredentialNotConfirmableException) {
-                // Already confirmed by an earlier, concurrent submission — nothing left to do.
+                return $this->renderEnrollForm($form, $secret, $provisioningUri);
             }
 
             $session->remove(self::SESSION_KEY);
@@ -77,19 +78,19 @@ final class TwoFactorController extends AbstractController
             return $this->redirectToRoute('storefront_account_show');
         }
 
-        return $this->renderEnrollForm($form, $provisioningUri);
+        return $this->renderEnrollForm($form, $secret, $provisioningUri);
     }
 
     /**
      * @param FormInterface<TwoFactorConfirmFormData> $form
      */
-    private function renderEnrollForm(FormInterface $form, string $provisioningUri): Response
+    private function renderEnrollForm(FormInterface $form, string $secret, string $provisioningUri): Response
     {
         $qrCode = new Builder()->build(writer: new SvgWriter(), data: $provisioningUri);
 
         return $this->render('two_factor/enroll.html.twig', [
             'form' => $form,
-            'provisioningUri' => $provisioningUri,
+            'secret' => $secret,
             'qrCodeDataUri' => $qrCode->getDataUri(),
         ]);
     }

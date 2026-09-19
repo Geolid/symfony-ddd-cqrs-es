@@ -11,13 +11,11 @@ use Storefront\Tests\Support\AbstractStorefrontTestCase;
 final class AccountControllerTest extends AbstractStorefrontTestCase
 {
     #[Test]
-    public function itShowsTheAccount(): void
+    public function itShows(): void
     {
         // Given
         $client = self::browser();
-        $identity = IdentityBuilder::new()->create();
-        $this->store($identity);
-        $this->loginAs($client, $identity);
+        $identity = $this->loginAs($client, IdentityBuilder::new()->confirmed());
 
         // When
         $client->request('GET', $this->path('storefront_account_show'));

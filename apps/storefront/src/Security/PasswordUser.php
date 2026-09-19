@@ -10,7 +10,7 @@ final readonly class PasswordUser implements UserInterface
 {
     public function __construct(
         private string $identityId,
-        private string $login,
+        private string $email,
         public bool $authenticatable,
         public string $passwordChangedAt,
     ) {
@@ -23,9 +23,9 @@ final readonly class PasswordUser implements UserInterface
 
     public function getUserIdentifier(): string
     {
-        \assert('' !== $this->login);
+        \assert('' !== $this->email);
 
-        return $this->login;
+        return $this->email;
     }
 
     public function identityId(): string

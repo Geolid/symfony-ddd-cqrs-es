@@ -33,11 +33,11 @@ final class PasswordCredentialAuthenticator extends AbstractLoginFormAuthenticat
 
     public function authenticate(Request $request): Passport
     {
-        $login = (string) $request->request->get('login', '');
+        $email = (string) $request->request->get('email', '');
         $password = (string) $request->request->get('password', '');
 
         return new Passport(
-            new UserBadge($login),
+            new UserBadge($email),
             new CustomCredentials(
                 function (mixed $password, UserInterface $user): bool {
                     \assert(\is_string($password));
@@ -53,7 +53,7 @@ final class PasswordCredentialAuthenticator extends AbstractLoginFormAuthenticat
             ),
             [
                 new CsrfTokenBadge('authenticate', (string) $request->request->get('_csrf_token')),
-                new PlainSecretBadge($password),
+                new PlainPasswordBadge($password),
                 new RememberMeBadge(),
             ],
         );
@@ -68,13 +68,18 @@ final class PasswordCredentialAuthenticator extends AbstractLoginFormAuthenticat
         return new RedirectResponse($this->urlGenerator->generate('storefront_account_show'));
     }
 
-    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): Response
+    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): \Symfony\Component\HttpFoundation\RedirectResponse
     {
+        $email = (string) $request->request->get('email', '');
+
         if ($request->hasSession()) {
-            $request->getSession()->set(SecurityRequestAttributes::LAST_USERNAME, (string) $request->request->get('login', ''));
+            $request->getSession()->set(SecurityRequestAttributes::AUTHENTICATION_ERROR, $exception);
+            $request->getSession()->set(SecurityRequestAttributes::LAST_USERNAME, $email);
         }
 
-        return parent::onAuthenticationFailure($request, $exception);
+        // Redirects with the email carried over: the bare getLoginUrl() must stay a plain
+        // path for supports() to keep matching, so it can't carry the email itself.
+        return new RedirectResponse($this->urlGenerator->generate('security_login', ['email' => $email]));
     }
 
     protected function getLoginUrl(Request $request): string

@@ -9,6 +9,7 @@ use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface
 use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
 use Iam\Identity\Domain\Identity;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
+use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Storefront\Security\PasswordUserProvider;
 use Support\TestCase\EventSourcingTrait;
@@ -51,46 +52,42 @@ abstract class AbstractStorefrontTestCase extends WebTestCase
         return $this->service(UrlGeneratorInterface::class)->generate($route, $params);
     }
 
-    protected function logIn(KernelBrowser $client, string $login, string $password): void
+    protected function logIn(KernelBrowser $client, string $email, string $password): void
     {
-        $crawler = $client->request('GET', $this->path('security_login'));
-        $form = $crawler->filter('[data-testid="login-form"]')->form();
-        $form->setValues(['login' => $login, 'password' => $password]);
+        $crawler = $client->request('GET', $this->path('security_login', ['email' => $email]));
+        $form = $crawler->filter('[data-testid="password-form"]')->form();
+        $form->setValues(['password' => $password]);
         $client->submit($form);
     }
 
     /**
      * @throws ApplicationExceptionInterface
      */
-    protected function givenPasswordCredential(string $identityId, ?string $login = null, ?string $password = null): string
+    protected function givenPasswordCredential(string $identityId, ?string $password = null): void
     {
-        $login ??= \sprintf('test-%s', $identityId);
-        $password ??= 'MyStr0ngP@ssw0rd123!';
-
         $credential = PasswordCredentialBuilder::new()
             ->withIdentityId($identityId)
-            ->withLogin($login)
-            ->withPassword($password)
+            ->withPassword($password ?? 'MyStr0ngP@ssw0rd123!')
             ->withHasher($this->service(PasswordHasherInterface::class))
             ->withPasswordStrength($this->service(PasswordStrengthSpecificationInterface::class))
             ->create();
         $this->store($credential);
-
-        return $login;
     }
 
     /**
      * @throws ApplicationExceptionInterface
      */
-    protected function loginAs(KernelBrowser $client, Identity $identity, ?string $login = null): void
+    protected function loginAs(KernelBrowser $client, IdentityBuilder $builder): Identity
     {
-        $identityId = $identity->id->toString();
-        $login ??= \sprintf('test-%s', $identityId);
+        $identity = $builder->create();
+        $this->store($identity);
 
         // A lazy firewall re-resolves the user (refreshUser()) on any request that actually
-        // touches security — a real PasswordCredential must exist or that refresh deauthenticates.
-        $this->givenPasswordCredential($identityId, $login);
+        // touches security — a real, authenticatable PasswordCredential must exist or that refresh deauthenticates.
+        $this->givenPasswordCredential($identity->id->toString());
 
-        $client->loginUser($this->service(PasswordUserProvider::class)->loadUserByIdentifier($login));
+        $client->loginUser($this->service(PasswordUserProvider::class)->loadUserByIdentifier($builder['email']->value));
+
+        return $identity;
     }
 }
