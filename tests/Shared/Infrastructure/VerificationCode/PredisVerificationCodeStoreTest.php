@@ -30,7 +30,7 @@ final class PredisVerificationCodeStoreTest extends AbstractIntegrationTestCase
 
     #[Test]
     #[DataProvider('provideExpiry')]
-    public function itSavesExpiryAsTtl(string $modifier, int $expectedTtl): void
+    public function itSavesTtl(string $modifier, int $expectedTtl): void
     {
         // Given
         $expiresAt = Clock::get()->now()->modify($modifier);
