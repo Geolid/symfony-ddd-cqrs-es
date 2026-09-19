@@ -4,16 +4,18 @@ declare(strict_types=1);
 
 namespace Shared\Application\VerificationCode;
 
+use Shared\Domain\ValueObject\VerificationCodeKey;
+
 interface VerificationCodeStoreInterface
 {
     /**
-     * Replaces any prior record for the same (purpose, subjectId).
+     * Replaces any prior record for the same key.
      */
-    public function save(\BackedEnum $purpose, string $subjectId, string $codeHash, \DateTimeImmutable $expiresAt): void;
+    public function save(VerificationCodeKey $key, string $codeHash, \DateTimeImmutable $expiresAt): void;
 
-    public function find(\BackedEnum $purpose, string $subjectId): ?VerificationCodeRecord;
+    public function find(VerificationCodeKey $key): ?VerificationCodeRecord;
 
-    public function incrementAttempts(\BackedEnum $purpose, string $subjectId): void;
+    public function incrementAttempts(VerificationCodeKey $key): void;
 
-    public function delete(\BackedEnum $purpose, string $subjectId): void;
+    public function delete(VerificationCodeKey $key): void;
 }

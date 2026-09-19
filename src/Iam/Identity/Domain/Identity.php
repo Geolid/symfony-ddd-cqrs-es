@@ -36,6 +36,7 @@ use Shared\Domain\Service\CodeChallengerInterface;
 use Shared\Domain\Specification\CanTransitionToSpecification;
 use Shared\Domain\Specification\CooldownElapsedSpecification;
 use Shared\Domain\ValueObject\ErasureState;
+use Shared\Domain\ValueObject\VerificationCodeKey;
 
 #[Aggregate('iam.identity.identity')]
 final class Identity implements AggregateRoot, AggregateRootMetadataAware
@@ -88,7 +89,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
             return;
         }
 
-        if (!$codeChallenger->verify(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $this->id->toString(), $code, $confirmedAt)) {
+        if (!$codeChallenger->verify(VerificationCodeKey::for(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $this->id->toString()), $code, $confirmedAt)) {
             throw InvalidConfirmationCodeException::forId($this->id);
         }
 
