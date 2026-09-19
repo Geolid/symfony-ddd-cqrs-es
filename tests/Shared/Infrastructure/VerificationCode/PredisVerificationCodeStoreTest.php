@@ -129,7 +129,7 @@ final class PredisVerificationCodeStoreTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresIncrementWhenNeverSaved(): void
+    public function itIgnoresIncrementWhenUnknown(): void
     {
         // When
         $this->store->incrementAttempts($this->key);
