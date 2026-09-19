@@ -30,7 +30,7 @@ final class PredisVerificationCodeStoreTest extends AbstractIntegrationTestCase
 
     #[Test]
     #[DataProvider('provideExpiry')]
-    public function itSaves(string $modifier, int $expectedTtl): void
+    public function itSavesExpiryAsTtl(string $modifier, int $expectedTtl): void
     {
         // Given
         $expiresAt = Clock::get()->now()->modify($modifier);
@@ -119,7 +119,7 @@ final class PredisVerificationCodeStoreTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresWhenNeverSaved(): void
+    public function itIgnoresIncrementWhenNeverSaved(): void
     {
         // When
         $this->store->incrementAttempts($this->key);
