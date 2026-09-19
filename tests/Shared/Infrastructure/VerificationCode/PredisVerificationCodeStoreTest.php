@@ -16,6 +16,7 @@ use Symfony\Component\Clock\Clock;
 final class PredisVerificationCodeStoreTest extends AbstractIntegrationTestCase
 {
     private PredisVerificationCodeStore $store;
+    private Client $client;
     private VerificationCodeKey $key;
     private VerificationCodeKey $otherKey;
 
@@ -24,13 +25,14 @@ final class PredisVerificationCodeStoreTest extends AbstractIntegrationTestCase
         parent::setUp();
 
         $this->store = $this->service(PredisVerificationCodeStore::class);
+        $this->client = $this->serviceAs('shared.valkey.client', Client::class);
         $this->key = VerificationCodeKey::for(DummyVerificationCodePurpose::NAME, 'subject-1');
         $this->otherKey = VerificationCodeKey::for(DummyVerificationCodePurpose::OTHER, 'subject-1');
     }
 
     #[Test]
     #[DataProvider('provideExpiry')]
-    public function itSavesTtl(string $modifier, int $expectedTtl): void
+    public function itSaves(string $modifier, int $expectedTtl): void
     {
         // Given
         $expiresAt = Clock::get()->now()->modify($modifier);
@@ -39,6 +41,14 @@ final class PredisVerificationCodeStoreTest extends AbstractIntegrationTestCase
         $this->store->save($this->key, 'hash-1', $expiresAt);
 
         // Then
+        $raw = $this->fetchRecord($this->key);
+        self::assertSame('hash-1', $raw['code_hash']);
+        self::assertSame(
+            $expiresAt->format(\DateTimeInterface::ATOM),
+            $this->denormalize($raw['expires_at'])->format(\DateTimeInterface::ATOM),
+        );
+        self::assertSame('0', $raw['attempts']);
+
         self::assertSame($expectedTtl, $this->ttl($this->key));
     }
 
@@ -147,12 +157,29 @@ final class PredisVerificationCodeStoreTest extends AbstractIntegrationTestCase
         self::assertSame('other-hash', $otherRecord->codeHash);
     }
 
+    /**
+     * @return array<string, string>
+     */
+    private function fetchRecord(VerificationCodeKey $key): array
+    {
+        return $this->client->hgetall($this->prefixedKey($key));
+    }
+
     private function ttl(VerificationCodeKey $key): int
     {
-        $client = $this->serviceAs('shared.valkey.client', Client::class);
+        return $this->client->ttl($this->prefixedKey($key));
+    }
+
+    private function prefixedKey(VerificationCodeKey $key): string
+    {
         $prefix = self::getContainer()->getParameter('valkey.key_prefix');
         \assert(\is_string($prefix));
 
-        return $client->ttl($prefix.$key->toString());
+        return $prefix.$key->toString();
+    }
+
+    private function denormalize(string $value): \DateTimeImmutable
+    {
+        return new \DateTimeImmutable($value, new \DateTimeZone('UTC'));
     }
 }
