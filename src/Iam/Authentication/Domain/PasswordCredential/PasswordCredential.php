@@ -28,6 +28,7 @@ use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
 use Shared\Domain\Exception\VerificationCodeNotFoundException;
 use Shared\Domain\Service\CodeChallengerInterface;
 use Shared\Domain\Specification\CooldownElapsedSpecification;
+use Shared\Domain\ValueObject\VerificationCodeKey;
 
 #[Aggregate('iam.authentication.password_credential')]
 final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAware
@@ -115,7 +116,7 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
      */
     public function resetPassword(#[\SensitiveParameter] string $code, CodeChallengerInterface $codeChallenger, #[\SensitiveParameter] Password $newPassword, PasswordStrengthSpecificationInterface $passwordStrengthSpecification, PasswordHasherInterface $hasher, \DateTimeImmutable $resetAt): void
     {
-        if (!$codeChallenger->verify(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $this->identityId, $code, $resetAt)) {
+        if (!$codeChallenger->verify(VerificationCodeKey::for(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $this->identityId), $code, $resetAt)) {
             throw InvalidPasswordResetCodeException::forId($this->id);
         }
 

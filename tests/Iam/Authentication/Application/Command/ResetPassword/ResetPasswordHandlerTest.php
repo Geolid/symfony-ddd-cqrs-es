@@ -17,6 +17,7 @@ use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Shared\Domain\ValueObject\VerificationCodeKey;
 use Shared\Infrastructure\VerificationCode\NativeCodeChallenger;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
@@ -55,7 +56,7 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
             ->create();
         $this->store($identity, $credential);
 
-        $code = $this->codeChallenger->issue(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identity->id->toString(), Clock::get()->now());
+        $code = $this->codeChallenger->issue(VerificationCodeKey::for(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identity->id->toString()), Clock::get()->now());
 
         // When
         $this->dispatch(new ResetPassword($identity->id->toString(), $code, self::NEW_PASSWORD));
@@ -70,7 +71,7 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
-        $code = $this->codeChallenger->issue(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identityId, Clock::get()->now());
+        $code = $this->codeChallenger->issue(VerificationCodeKey::for(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identityId), Clock::get()->now());
 
         // Then
         $this->expectException(IdentityResultNotFoundException::class);
@@ -86,7 +87,7 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
         $identity = IdentityBuilder::new()->create();
         $this->store($identity);
 
-        $code = $this->codeChallenger->issue(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identity->id->toString(), Clock::get()->now());
+        $code = $this->codeChallenger->issue(VerificationCodeKey::for(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identity->id->toString()), Clock::get()->now());
 
         // Then
         $this->expectException(IdentityNotAuthenticatableException::class);
@@ -102,7 +103,7 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
         $identity = IdentityBuilder::new()->confirmed()->create();
         $this->store($identity);
 
-        $code = $this->codeChallenger->issue(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identity->id->toString(), Clock::get()->now());
+        $code = $this->codeChallenger->issue(VerificationCodeKey::for(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identity->id->toString()), Clock::get()->now());
 
         // Then
         $this->expectException(PasswordCredentialNotFoundException::class);
@@ -123,7 +124,7 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
             ->create();
         $this->store($identity, $credential);
 
-        $this->codeChallenger->issue(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identity->id->toString(), Clock::get()->now());
+        $this->codeChallenger->issue(VerificationCodeKey::for(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identity->id->toString()), Clock::get()->now());
 
         // Then
         $this->expectException(InvalidPasswordResetCodeException::class);

@@ -13,6 +13,7 @@ use Iam\Identity\Domain\ValueObject\IdentityVerificationCodePurpose;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Shared\Domain\ValueObject\VerificationCodeKey;
 use Shared\Infrastructure\VerificationCode\NativeCodeChallenger;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
@@ -34,7 +35,7 @@ final class ConfirmIdentityHandlerTest extends AbstractIntegrationTestCase
         // Given
         $identity = IdentityBuilder::new()->create();
         $this->store($identity);
-        $code = $this->codeChallenger->issue(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $identity->id->toString(), Clock::get()->now());
+        $code = $this->codeChallenger->issue(VerificationCodeKey::for(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $identity->id->toString()), Clock::get()->now());
 
         // When
         $this->dispatch(new ConfirmIdentity($identity->id->toString(), $code));
@@ -50,7 +51,7 @@ final class ConfirmIdentityHandlerTest extends AbstractIntegrationTestCase
         // Given
         $identity = IdentityBuilder::new()->confirmed()->create();
         $this->store($identity);
-        $code = $this->codeChallenger->issue(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $identity->id->toString(), Clock::get()->now());
+        $code = $this->codeChallenger->issue(VerificationCodeKey::for(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $identity->id->toString()), Clock::get()->now());
 
         // When
         $this->dispatch(new ConfirmIdentity($identity->id->toString(), $code));
@@ -75,7 +76,7 @@ final class ConfirmIdentityHandlerTest extends AbstractIntegrationTestCase
         // Given
         $identity = IdentityBuilder::new()->create();
         $this->store($identity);
-        $this->codeChallenger->issue(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $identity->id->toString(), Clock::get()->now());
+        $this->codeChallenger->issue(VerificationCodeKey::for(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $identity->id->toString()), Clock::get()->now());
 
         // Then
         $this->expectException(InvalidConfirmationCodeException::class);

@@ -8,6 +8,7 @@ use Shared\Application\VerificationCode\VerificationCodeStoreInterface;
 use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
 use Shared\Domain\Exception\VerificationCodeNotFoundException;
 use Shared\Domain\Service\CodeChallengerInterface;
+use Shared\Domain\ValueObject\VerificationCodeKey;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Webmozart\Assert\Assert;
 
@@ -27,7 +28,7 @@ final readonly class NativeCodeChallenger implements CodeChallengerInterface
         Assert::stringNotEmpty($this->expiry);
     }
 
-    public function issue(\BackedEnum $purpose, string $subjectId, \DateTimeImmutable $now): string
+    public function issue(VerificationCodeKey $key, \DateTimeImmutable $now): string
     {
         /*
          * A one-off shift of either bound can only be observed by a test if the draw happens
@@ -37,34 +38,34 @@ final readonly class NativeCodeChallenger implements CodeChallengerInterface
          */
         $code = \sprintf('%06d', random_int(0, 999999));
 
-        $this->store->save($purpose, $subjectId, $this->hash($code), $now->modify($this->expiry));
+        $this->store->save($key, $this->hash($code), $now->modify($this->expiry));
 
         return $code;
     }
 
-    public function verify(\BackedEnum $purpose, string $subjectId, #[\SensitiveParameter] string $code, \DateTimeImmutable $now): bool
+    public function verify(VerificationCodeKey $key, #[\SensitiveParameter] string $code, \DateTimeImmutable $now): bool
     {
-        $record = $this->store->find($purpose, $subjectId);
+        $record = $this->store->find($key);
 
         if (null === $record) {
-            throw VerificationCodeNotFoundException::forSubject($purpose, $subjectId);
+            throw VerificationCodeNotFoundException::forSubject($key->purpose, $key->subjectId);
         }
 
         if ($record->expiresAt < $now) {
-            throw VerificationCodeNotFoundException::forSubject($purpose, $subjectId);
+            throw VerificationCodeNotFoundException::forSubject($key->purpose, $key->subjectId);
         }
 
         if ($record->attempts >= $this->maxAttempts) {
-            throw VerificationCodeAttemptsExceededException::forSubject($purpose, $subjectId);
+            throw VerificationCodeAttemptsExceededException::forSubject($key->purpose, $key->subjectId);
         }
 
         if (!hash_equals($record->codeHash, $this->hash($code))) {
-            $this->store->incrementAttempts($purpose, $subjectId);
+            $this->store->incrementAttempts($key);
 
             return false;
         }
 
-        $this->store->delete($purpose, $subjectId);
+        $this->store->delete($key);
 
         return true;
     }

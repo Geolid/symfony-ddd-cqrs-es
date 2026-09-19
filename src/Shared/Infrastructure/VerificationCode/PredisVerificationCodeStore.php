@@ -10,6 +10,7 @@ use Predis\Transaction\MultiExec;
 use Psr\Clock\ClockInterface;
 use Shared\Application\VerificationCode\VerificationCodeRecord;
 use Shared\Application\VerificationCode\VerificationCodeStoreInterface;
+use Shared\Domain\ValueObject\VerificationCodeKey;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 
 final readonly class PredisVerificationCodeStore implements VerificationCodeStoreInterface
@@ -25,21 +26,21 @@ final readonly class PredisVerificationCodeStore implements VerificationCodeStor
     ) {
     }
 
-    public function save(\BackedEnum $purpose, string $subjectId, string $codeHash, \DateTimeImmutable $expiresAt): void
+    public function save(VerificationCodeKey $key, string $codeHash, \DateTimeImmutable $expiresAt): void
     {
-        $key = $this->key($purpose, $subjectId);
+        $redisKey = $this->redisKey($key);
         $ttl = $expiresAt->getTimestamp() - $this->clock->now()->getTimestamp();
         $record = $this->hydrator->extract(new VerificationCodeRecord($codeHash, $expiresAt, 0));
 
-        $this->client->transaction(static function (MultiExec $tx) use ($key, $record, $ttl): void {
-            $tx->hmset($key, $record);
-            $tx->expire($key, max($ttl, 1));
+        $this->client->transaction(static function (MultiExec $tx) use ($redisKey, $record, $ttl): void {
+            $tx->hmset($redisKey, $record);
+            $tx->expire($redisKey, max($ttl, 1));
         });
     }
 
-    public function find(\BackedEnum $purpose, string $subjectId): ?VerificationCodeRecord
+    public function find(VerificationCodeKey $key): ?VerificationCodeRecord
     {
-        $row = $this->client->hgetall($this->key($purpose, $subjectId));
+        $row = $this->client->hgetall($this->redisKey($key));
 
         if ([] === $row) {
             return null;
@@ -48,7 +49,7 @@ final readonly class PredisVerificationCodeStore implements VerificationCodeStor
         return $this->hydrator->hydrate(VerificationCodeRecord::class, $row);
     }
 
-    public function incrementAttempts(\BackedEnum $purpose, string $subjectId): void
+    public function incrementAttempts(VerificationCodeKey $key): void
     {
         $this->client->eval(
             <<<'LUA'
@@ -57,18 +58,18 @@ final readonly class PredisVerificationCodeStore implements VerificationCodeStor
             end
             LUA,
             1,
-            $this->key($purpose, $subjectId),
+            $this->redisKey($key),
             'attempts',
         );
     }
 
-    public function delete(\BackedEnum $purpose, string $subjectId): void
+    public function delete(VerificationCodeKey $key): void
     {
-        $this->client->del([$this->key($purpose, $subjectId)]);
+        $this->client->del([$this->redisKey($key)]);
     }
 
-    private function key(\BackedEnum $purpose, string $subjectId): string
+    private function redisKey(VerificationCodeKey $key): string
     {
-        return \sprintf('%s%s:%s', $this->keyPrefix, $purpose->value, $subjectId);
+        return $this->keyPrefix.$key->toString();
     }
 }
