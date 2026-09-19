@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shared\Tests\Infrastructure\VerificationCode;
 
 use PHPUnit\Framework\Attributes\Test;
+use Predis\Client;
 use Shared\Infrastructure\VerificationCode\PredisVerificationCodeStore;
 use Shared\Tests\Support\Double\DummyVerificationCodePurpose;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -36,6 +37,32 @@ final class PredisVerificationCodeStoreTest extends AbstractIntegrationTestCase
         self::assertSame('hash-1', $record->codeHash);
         self::assertSame($expiresAt->format(\DateTimeInterface::ATOM), $record->expiresAt->format(\DateTimeInterface::ATOM));
         self::assertSame(0, $record->attempts);
+    }
+
+    #[Test]
+    public function itSetsExpiry(): void
+    {
+        // Given
+        $expiresAt = Clock::get()->now()->modify('+15 minutes');
+
+        // When
+        $this->store->save(DummyVerificationCodePurpose::NAME, 'subject-1', 'hash-1', $expiresAt);
+
+        // Then
+        self::assertSame(900, $this->ttl(DummyVerificationCodePurpose::NAME, 'subject-1'));
+    }
+
+    #[Test]
+    public function itFloorsExpiryAtOneSecond(): void
+    {
+        // Given
+        $now = Clock::get()->now();
+
+        // When
+        $this->store->save(DummyVerificationCodePurpose::NAME, 'subject-1', 'hash-1', $now);
+
+        // Then
+        self::assertSame(1, $this->ttl(DummyVerificationCodePurpose::NAME, 'subject-1'));
     }
 
     #[Test]
@@ -115,5 +142,14 @@ final class PredisVerificationCodeStoreTest extends AbstractIntegrationTestCase
         $otherRecord = $this->store->find(DummyVerificationCodePurpose::OTHER, 'subject-1');
         self::assertNotNull($otherRecord);
         self::assertSame('other-hash', $otherRecord->codeHash);
+    }
+
+    private function ttl(\BackedEnum $purpose, string $subjectId): int
+    {
+        $client = $this->serviceAs('shared.valkey.client', Client::class);
+        $prefix = self::getContainer()->getParameter('valkey.key_prefix');
+        \assert(\is_string($prefix));
+
+        return $client->ttl(\sprintf('%s%s:%s', $prefix, $purpose->value, $subjectId));
     }
 }
