@@ -52,7 +52,11 @@ final class RegistrationControllerTest extends AbstractStorefrontTestCase
         $form = $crawler->filter('[data-testid="register-form"]')->form();
 
         // When
-        $form->setValues(['register[fullName]' => 'Jane Doe', 'register[password]' => 'MyStr0ngP@ssw0rd123!']);
+        $form->setValues([
+            'register[fullName]' => 'Jane Doe',
+            'register[password][first]' => 'MyStr0ngP@ssw0rd123!',
+            'register[password][second]' => 'MyStr0ngP@ssw0rd123!',
+        ]);
         $client->submit($form);
         $crawler = $client->followRedirect();
 
@@ -73,6 +77,27 @@ final class RegistrationControllerTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    public function itRefusesWhenPasswordsMismatch(): void
+    {
+        // Given
+        $client = self::browser();
+        $crawler = $client->request('GET', $this->path('storefront_register', ['email' => SeededFaker::get()->unique()->safeEmail()]));
+        $form = $crawler->filter('[data-testid="register-form"]')->form();
+
+        // When
+        $form->setValues([
+            'register[fullName]' => 'Jane Doe',
+            'register[password][first]' => 'MyStr0ngP@ssw0rd123!',
+            'register[password][second]' => 'AnotherStr0ngP@ss1!',
+        ]);
+        $client->submit($form);
+
+        // Then
+        self::assertResponseStatusCodeSame(422);
+        self::assertGreaterThan(0, $client->getCrawler()->filter('[data-testid="register-password"][aria-invalid="true"]')->count());
+    }
+
+    #[Test]
     public function itRefusesWhenEmailAlreadyTaken(): void
     {
         // Given
@@ -83,7 +108,11 @@ final class RegistrationControllerTest extends AbstractStorefrontTestCase
         $form = $crawler->filter('[data-testid="register-form"]')->form();
 
         // When
-        $form->setValues(['register[fullName]' => 'Jane Doe', 'register[password]' => 'AnotherStr0ngP@ss1!']);
+        $form->setValues([
+            'register[fullName]' => 'Jane Doe',
+            'register[password][first]' => 'AnotherStr0ngP@ss1!',
+            'register[password][second]' => 'AnotherStr0ngP@ss1!',
+        ]);
         $client->submit($form);
 
         // Then

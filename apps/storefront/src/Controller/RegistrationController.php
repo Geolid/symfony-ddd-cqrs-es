@@ -41,7 +41,7 @@ final class RegistrationController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route(path: '/inscription', name: 'storefront_register', methods: ['GET', 'POST'])]
+    #[Route(path: '/register', name: 'storefront_register', methods: ['GET', 'POST'])]
     public function register(Request $request, #[MapQueryString] RegisterQueryString $query): Response
     {
         if (null === $query->email || '' === $query->email) {
@@ -76,6 +76,8 @@ final class RegistrationController extends AbstractController
                 return $this->render('registration/register.html.twig', ['form' => $form]);
             }
 
+            $this->addFlash('success', 'Un code de confirmation vous a été envoyé par email.');
+
             return $this->redirectToRoute('storefront_register_confirm', ['id' => $id]);
         }
 
@@ -86,7 +88,7 @@ final class RegistrationController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route(path: '/inscription/{id}/confirmation', name: 'storefront_register_confirm', methods: ['GET', 'POST'])]
+    #[Route(path: '/register/{id}/confirm', name: 'storefront_register_confirm', methods: ['GET', 'POST'])]
     public function confirm(Request $request, string $id): Response
     {
         $formData = new ConfirmationFormData();
@@ -114,7 +116,7 @@ final class RegistrationController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route(path: '/inscription/{id}/confirmation/renvoyer', name: 'storefront_register_confirm_resend', methods: ['POST'])]
+    #[Route(path: '/register/{id}/confirm/resend', name: 'storefront_register_confirm_resend', methods: ['POST'])]
     public function confirmResend(Request $request, string $id): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('confirmation_resend', (string) $request->request->get('_csrf_token'))) {

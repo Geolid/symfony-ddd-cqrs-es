@@ -7,6 +7,7 @@ namespace Storefront\Form;
 use Storefront\Form\FormData\PasswordResetFormData;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -26,7 +27,12 @@ final class PasswordResetType extends AbstractType
                 'maxlength' => 6,
                 'autocomplete' => 'one-time-code',
             ]])
-            ->add('newPassword', PasswordType::class, ['attr' => ['data-testid' => 'password-reset-new-password']]);
+            ->add('newPassword', RepeatedType::class, [
+                'type' => PasswordType::class,
+                'invalid_message' => 'Les mots de passe doivent correspondre.',
+                'first_options' => ['attr' => ['data-testid' => 'password-reset-new-password']],
+                'second_options' => ['attr' => ['data-testid' => 'password-reset-new-password-confirm']],
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

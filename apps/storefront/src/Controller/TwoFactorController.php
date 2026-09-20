@@ -25,6 +25,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[IsGranted('IS_AUTHENTICATED_FULLY')]
 final class TwoFactorController extends AbstractController
 {
     private const string SESSION_KEY = 'storefront.two_factor_enrollment_secret';
@@ -40,8 +41,7 @@ final class TwoFactorController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route(path: '/compte/2fa/activer', name: 'storefront_two_factor_enroll', methods: ['GET', 'POST'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    #[Route(path: '/account/2fa/enable', name: 'storefront_two_factor_enroll', methods: ['GET', 'POST'])]
     public function enroll(Request $request, #[CurrentUser] PasswordUser $user): Response
     {
         $session = $request->getSession();

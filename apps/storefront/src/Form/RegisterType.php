@@ -7,6 +7,7 @@ namespace Storefront\Form;
 use Storefront\Form\FormData\RegisterFormData;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\RepeatedType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
@@ -21,7 +22,12 @@ final class RegisterType extends AbstractType
         $builder
             ->add('email', TextType::class, ['attr' => ['data-testid' => 'register-email', 'readonly' => 'readonly']])
             ->add('fullName', TextType::class, ['attr' => ['data-testid' => 'register-full-name']])
-            ->add('password', PasswordType::class, ['attr' => ['data-testid' => 'register-password']]);
+            ->add('password', RepeatedType::class, [
+                'type' => PasswordType::class,
+                'invalid_message' => 'Les mots de passe doivent correspondre.',
+                'first_options' => ['attr' => ['data-testid' => 'register-password']],
+                'second_options' => ['attr' => ['data-testid' => 'register-password-confirm']],
+            ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

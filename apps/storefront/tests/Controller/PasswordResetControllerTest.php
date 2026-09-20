@@ -69,7 +69,11 @@ final class PasswordResetControllerTest extends AbstractStorefrontTestCase
             Clock::get()->now(),
         );
         $form = $crawler->filter('[data-testid="password-reset-form"]')->form();
-        $form->setValues(['password_reset[code]' => $code, 'password_reset[newPassword]' => 'ANewStr0ngP@ssw0rd1!']);
+        $form->setValues([
+            'password_reset[code]' => $code,
+            'password_reset[newPassword][first]' => 'ANewStr0ngP@ssw0rd1!',
+            'password_reset[newPassword][second]' => 'ANewStr0ngP@ssw0rd1!',
+        ]);
         $client->submit($form);
 
         self::assertResponseRedirects($this->path('security_login'));

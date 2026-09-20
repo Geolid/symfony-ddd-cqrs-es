@@ -23,7 +23,7 @@ final class SecurityController extends AbstractController
     /**
      * @throws ApplicationExceptionInterface
      */
-    #[Route(path: '/connexion', name: 'security_login', methods: ['GET', 'POST'])]
+    #[Route(path: '/login', name: 'security_login', methods: ['GET', 'POST'])]
     public function login(#[MapQueryString] LoginQueryString $query, AuthenticationUtils $authenticationUtils): Response
     {
         if (null === $query->email || '' === $query->email) {

@@ -14,6 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[IsGranted('IS_AUTHENTICATED_FULLY')]
 final class AccountController extends AbstractController
 {
     public function __construct(private readonly QueryBusInterface $queryBus)
@@ -23,8 +24,7 @@ final class AccountController extends AbstractController
     /**
      * @throws ApplicationExceptionInterface
      */
-    #[Route(path: '/compte', name: 'storefront_account_show', methods: ['GET'])]
-    #[IsGranted('IS_AUTHENTICATED_FULLY')]
+    #[Route(path: '/account', name: 'storefront_account_show', methods: ['GET'])]
     public function show(#[CurrentUser] PasswordUser $user): Response
     {
         $totpCredential = $this->queryBus->ask(new GetTotpCredentialByIdentity($user->identityId()));

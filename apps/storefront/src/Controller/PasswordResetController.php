@@ -41,7 +41,7 @@ final class PasswordResetController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route(path: '/mot-de-passe-oublie', name: 'storefront_password_reset_request', methods: ['GET', 'POST'])]
+    #[Route(path: '/forgot-password', name: 'storefront_password_reset_request', methods: ['GET', 'POST'])]
     public function request(Request $request, #[MapQueryString] RequestQueryString $query): Response
     {
         $formData = new PasswordResetRequestFormData();
@@ -64,8 +64,9 @@ final class PasswordResetController extends AbstractController
 
             try {
                 $this->commandBus->dispatch(new RequestPasswordReset($identity->id));
+                $this->addFlash('success', 'Un code vous a été envoyé par email.');
             } catch (PasswordResetRequestedTooRecentlyException) {
-                // A reset code is already pending for this identity — proceed to the reset screen as-is.
+                $this->addFlash('success', 'Un code vous a déjà été envoyé récemment, vérifiez votre boîte mail.');
             }
 
             return $this->redirectToRoute('storefront_password_reset', ['identityId' => $identity->id]);
@@ -78,7 +79,7 @@ final class PasswordResetController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route(path: '/mot-de-passe-oublie/{identityId}', name: 'storefront_password_reset', methods: ['GET', 'POST'])]
+    #[Route(path: '/reset-password/{identityId}', name: 'storefront_password_reset', methods: ['GET', 'POST'])]
     public function reset(Request $request, string $identityId): Response
     {
         $formData = new PasswordResetFormData();
@@ -110,7 +111,7 @@ final class PasswordResetController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route(path: '/mot-de-passe-oublie/{identityId}/renvoyer', name: 'storefront_password_reset_resend', methods: ['POST'])]
+    #[Route(path: '/reset-password/{identityId}/resend', name: 'storefront_password_reset_resend', methods: ['POST'])]
     public function resend(Request $request, string $identityId): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('password_reset_resend', (string) $request->request->get('_csrf_token'))) {
