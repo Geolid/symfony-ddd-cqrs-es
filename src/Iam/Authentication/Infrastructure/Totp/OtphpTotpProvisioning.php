@@ -10,13 +10,17 @@ use Psr\Clock\ClockInterface;
 
 final readonly class OtphpTotpProvisioning implements TotpProvisioningInterface
 {
+    // 20 bytes (160 bits): the RFC 4226/6238 baseline, encoding to a 32-character Base32 key
+    // short enough for manual entry — OTPHP's own default (64 bytes) is unusable typed by hand.
+    private const int SECRET_SIZE = 20;
+
     public function __construct(private ClockInterface $clock)
     {
     }
 
     public function generateSecret(): string
     {
-        $secret = TOTP::generate($this->clock)->getSecret();
+        $secret = TOTP::generate($this->clock, self::SECRET_SIZE)->getSecret();
         \assert('' !== $secret);
 
         return $secret;

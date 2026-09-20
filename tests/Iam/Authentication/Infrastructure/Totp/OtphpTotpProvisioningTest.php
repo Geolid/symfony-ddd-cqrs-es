@@ -30,6 +30,7 @@ final class OtphpTotpProvisioningTest extends TestCase
 
         // Then
         self::assertNotSame('', $secret);
+        self::assertSame(32, \strlen($secret));
         self::assertNotSame($secret, $this->provisioning->generateSecret());
     }
 
