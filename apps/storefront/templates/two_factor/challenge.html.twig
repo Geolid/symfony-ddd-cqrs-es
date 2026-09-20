@@ -1,34 +1,40 @@
 {% extends 'layout.html.twig' %}
 
-{% block title %}Vérification à deux facteurs{% endblock %}
+{% block importmap %}{{ importmap(['shared', 'auth']) }}{% endblock %}
 
-{% block body %}
-    <h1>Vérification à deux facteurs</h1>
+{% block title %}{{ 'title'|trans({}, 'two_factor_challenge') }}{% endblock %}
 
-    {% if authenticationError %}
-        <p data-testid="two-factor-error">{{ authenticationError|trans(authenticationErrorData, 'security') }}</p>
-    {% endif %}
+{% block content %}
+    <article>
+        <h1>{{ 'title'|trans({}, 'two_factor_challenge') }}</h1>
 
-    <form method="post" action="{{ checkPathUrl ?? path(checkPathRoute) }}" data-testid="two-factor-form">
-        <label for="two-factor-code">Code à 6 chiffres</label>
-        <input
-            type="text"
-            id="two-factor-code"
-            name="{{ authCodeParameterName }}"
-            autocomplete="one-time-code"
-            inputmode="numeric"
-            pattern="\d{6}"
-            maxlength="6"
-            required
-            autofocus
-        >
-
-        {% if isCsrfProtectionEnabled %}
-            <input type="hidden" name="{{ csrfParameterName }}" value="{{ csrf_token(csrfTokenId) }}">
+        {% if authenticationError %}
+            <twig:ui:Alert variant="error">
+                {{- authenticationError|trans(authenticationErrorData, 'security') -}}
+            </twig:ui:Alert>
         {% endif %}
 
-        <button type="submit" data-testid="two-factor-submit">Valider</button>
-    </form>
+        <form method="post" action="{{ checkPathUrl ?? path(checkPathRoute) }}">
+            <label for="two-factor-code">{{ 'label_code'|trans({}, 'two_factor_challenge') }}</label>
+            <input
+                type="text"
+                id="two-factor-code"
+                name="{{ authCodeParameterName }}"
+                autocomplete="one-time-code"
+                inputmode="numeric"
+                pattern="\d{6}"
+                maxlength="6"
+                required
+                autofocus
+            >
 
-    <p><a href="{{ logoutPath }}" data-testid="two-factor-logout">Se déconnecter</a></p>
+            {% if isCsrfProtectionEnabled %}
+                <input type="hidden" name="{{ csrfParameterName }}" value="{{ csrf_token(csrfTokenId) }}">
+            {% endif %}
+
+            <button type="submit">{{ 'button_submit'|trans({}, 'two_factor_challenge') }}</button>
+        </form>
+
+        <p><a href="{{ logoutPath }}">{{ 'link_logout'|trans({}, 'two_factor_challenge') }}</a></p>
+    </article>
 {% endblock %}

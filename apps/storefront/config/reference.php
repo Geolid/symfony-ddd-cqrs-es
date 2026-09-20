@@ -1606,6 +1606,10 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     }>,
  *     role_hierarchy?: array<string, Param|string|list<scalar|Param|null>>,
  * }
+ * @psalm-type StimulusConfig = array{
+ *     controller_paths?: list<scalar|Param|null>,
+ *     controllers_json?: scalar|Param|null, // Default: "%kernel.project_dir%/assets/controllers.json"
+ * }
  * @psalm-type TwigConfig = array{
  *     form_themes?: list<scalar|Param|null>,
  *     globals?: array<string, array{ // Default: []
@@ -1639,6 +1643,37 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         html_to_text_converter?: scalar|Param|null, // A service implementing the "Symfony\Component\Mime\HtmlToTextConverter\HtmlToTextConverterInterface". // Default: null
  *     },
  * }
+ * @psalm-type TwigComponentConfig = array{
+ *     defaults?: array<string, Param|string|array{ // Default: []
+ *         template_directory?: scalar|Param|null, // Default: "components"
+ *         name_prefix?: scalar|Param|null, // Default: ""
+ *     }>,
+ *     anonymous_template_directory?: scalar|Param|null, // Defaults to `components`
+ *     profiler?: bool|array{ // Enables the profiler for Twig Component
+ *         enabled?: bool|Param, // Default: "%kernel.debug%"
+ *         collect_components?: bool|Param, // Collect components instances // Default: true
+ *     },
+ * }
+ * @psalm-type UxIconsConfig = array{
+ *     icon_dir?: scalar|Param|null, // The local directory where icons are stored. // Default: "%kernel.project_dir%/assets/icons"
+ *     default_icon_attributes?: array<string, scalar|Param|null>,
+ *     icon_sets?: array<string, array{ // the icon set prefix (e.g. "acme") // Default: []
+ *         path?: scalar|Param|null, // The local icon set directory path. (cannot be used with 'alias')
+ *         alias?: scalar|Param|null, // The remote icon set identifier. (cannot be used with 'path')
+ *         icon_attributes?: array<string, scalar|Param|null>,
+ *         suffixes?: array<string, array{ // The suffix name (e.g. "solid", "20-solid") // Default: []
+ *             icon_attributes?: array<string, scalar|Param|null>,
+ *         }>,
+ *     }>,
+ *     aliases?: array<string, string|Param>,
+ *     iconify?: bool|array{ // Configuration for the remote icon service.
+ *         enabled?: bool|Param, // Default: true
+ *         on_demand?: bool|Param, // Whether to download icons "on demand". // Default: true
+ *         auto_lock?: bool|Param, // Persist "on demand" icons to the local icon directory (see "icon_dir"). Recommended in dev only. Requires "on_demand" to be enabled. // Default: false
+ *         endpoint?: scalar|Param|null, // The endpoint for the Iconify icons API. // Default: "https://api.iconify.design"
+ *     },
+ *     ignore_not_found?: bool|Param, // Ignore error when an icon is not found. Set to 'true' to fail silently. // Default: false
+ * }
  * @psalm-type ConfigType = array{
  *     imports?: ImportsConfig,
  *     parameters?: ParametersConfig,
@@ -1649,7 +1684,10 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     patchlevel_event_sourcing?: PatchlevelEventSourcingConfig,
  *     scheb_two_factor?: SchebTwoFactorConfig,
  *     security?: SecurityConfig,
+ *     stimulus?: StimulusConfig,
  *     twig?: TwigConfig,
+ *     twig_component?: TwigComponentConfig,
+ *     ux_icons?: UxIconsConfig,
  *     "when@dev"?: array{
  *         imports?: ImportsConfig,
  *         parameters?: ParametersConfig,

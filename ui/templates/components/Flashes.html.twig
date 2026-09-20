@@ -7,8 +7,7 @@
                 <twig:ui:Alert
                     :variant="label"
                     data-controller="flash"
-                    data-action="click->flash#dismiss"
-                    data-testid="flash-{{ label }}">
+                    data-action="click->flash#dismiss">
                     {{ message }}
                 </twig:ui:Alert>
             {% endfor %}

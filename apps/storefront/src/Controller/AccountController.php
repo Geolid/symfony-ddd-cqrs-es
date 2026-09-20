@@ -21,15 +21,21 @@ final class AccountController extends AbstractController
     {
     }
 
+    #[Route(path: ['en' => '/account', 'fr' => '/compte'], name: 'storefront_account_show', methods: ['GET'])]
+    public function show(): Response
+    {
+        return $this->render('account/show.html.twig');
+    }
+
     /**
      * @throws ApplicationExceptionInterface
      */
-    #[Route(path: '/account', name: 'storefront_account_show', methods: ['GET'])]
-    public function show(#[CurrentUser] PasswordUser $user): Response
+    #[Route(path: ['en' => '/account/security', 'fr' => '/compte/connexion-securite'], name: 'storefront_account_security', methods: ['GET'])]
+    public function security(#[CurrentUser] PasswordUser $user): Response
     {
         $totpCredential = $this->queryBus->ask(new GetTotpCredentialByIdentity($user->identityId()));
 
-        return $this->render('account/show.html.twig', [
+        return $this->render('account/security.html.twig', [
             'user' => $user,
             'totpEnrolled' => null !== $totpCredential,
         ]);

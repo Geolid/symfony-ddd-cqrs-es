@@ -17,7 +17,7 @@ final class TwoFactorConfirmType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder->add('code', TextType::class, ['attr' => ['data-testid' => 'two-factor-confirm-code']]);
+        $builder->add('code', TextType::class);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

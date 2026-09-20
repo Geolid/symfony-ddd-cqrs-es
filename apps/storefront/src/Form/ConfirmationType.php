@@ -17,13 +17,15 @@ final class ConfirmationType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder->add('code', TextType::class, ['attr' => [
-            'data-testid' => 'confirmation-code',
-            'inputmode' => 'numeric',
-            'pattern' => '\d{6}',
-            'maxlength' => 6,
-            'autocomplete' => 'one-time-code',
-        ]]);
+        $builder->add('code', TextType::class, [
+            'label' => 'label_code',
+            'attr' => [
+                'inputmode' => 'numeric',
+                'pattern' => '\d{6}',
+                'maxlength' => 6,
+                'autocomplete' => 'one-time-code',
+            ],
+        ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
@@ -31,6 +33,7 @@ final class ConfirmationType extends AbstractType
         $resolver->setDefaults([
             'data_class' => ConfirmationFormData::class,
             'csrf_token_id' => 'confirmation',
+            'translation_domain' => 'confirm',
         ]);
     }
 }

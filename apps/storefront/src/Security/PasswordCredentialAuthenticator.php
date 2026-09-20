@@ -21,13 +21,14 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Badge\RememberMeBadge
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\CustomCredentials;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
-use Symfony\Component\Security\Http\SecurityRequestAttributes;
+use Twig\Environment;
 
 final class PasswordCredentialAuthenticator extends AbstractLoginFormAuthenticator
 {
     public function __construct(
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly PasswordCredentialVerifierInterface $verifier,
+        private readonly Environment $twig,
     ) {
     }
 
@@ -68,22 +69,25 @@ final class PasswordCredentialAuthenticator extends AbstractLoginFormAuthenticat
         return new RedirectResponse($this->urlGenerator->generate('storefront_account_show'));
     }
 
-    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): \Symfony\Component\HttpFoundation\RedirectResponse
+    // Renders the password screen directly instead of redirecting: the account is already
+    // known and confirmed at this point, re-running the identify step would gain nothing.
+    public function onAuthenticationFailure(Request $request, AuthenticationException $exception): Response
     {
         $email = (string) $request->request->get('email', '');
 
-        if ($request->hasSession()) {
-            $request->getSession()->set(SecurityRequestAttributes::AUTHENTICATION_ERROR, $exception);
-            $request->getSession()->set(SecurityRequestAttributes::LAST_USERNAME, $email);
-        }
+        return new Response($this->twig->render('security/password.html.twig', [
+            'email' => $email,
+            'error' => $exception,
+        ]));
+    }
 
-        // Redirects with the email carried over: the bare getLoginUrl() must stay a plain
-        // path for supports() to keep matching, so it can't carry the email itself.
-        return new RedirectResponse($this->urlGenerator->generate('security_login', ['email' => $email]));
+    public function start(Request $request, ?AuthenticationException $authException = null): RedirectResponse
+    {
+        return new RedirectResponse($this->urlGenerator->generate('storefront_signin'));
     }
 
     protected function getLoginUrl(Request $request): string
     {
-        return $this->urlGenerator->generate('security_login');
+        return $this->urlGenerator->generate('storefront_signin_verify');
     }
 }

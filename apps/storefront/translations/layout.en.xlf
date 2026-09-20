@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" target-language="en" datatype="plaintext" original="layout">
+    <header>
+      <tool tool-id="symfony" tool-name="Symfony"/>
+    </header>
+    <body>
+      <trans-unit id="greeting_anonymous">
+        <source>greeting_anonymous</source>
+        <target>Hello, sign in</target>
+      </trans-unit>
+      <trans-unit id="greeting">
+        <source>greeting</source>
+        <target>Hello %fullName%</target>
+      </trans-unit>
+      <trans-unit id="link_logout">
+        <source>link_logout</source>
+        <target>Log out</target>
+      </trans-unit>
+      <trans-unit id="link_security">
+        <source>link_security</source>
+        <target>Login &amp; Security</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

@@ -1,15 +1,42 @@
-<!doctype html>
-<html lang="fr">
-<head>
-    <meta charset="utf-8">
-    <title>{% block title %}Storefront{% endblock %}</title>
-</head>
-<body>
-{% for label, messages in app.flashes %}
-    {% for message in messages %}
-        <p data-testid="flash-{{ label }}">{{ message }}</p>
-    {% endfor %}
-{% endfor %}
-{% block body %}{% endblock %}
-</body>
-</html>
+{% extends '@ui/base.html.twig' %}
+
+{% block javascripts %}
+    {% block importmap %}{{ importmap('shared') }}{% endblock %}
+{% endblock %}
+
+{% block body %}
+    {% set current_route = app.request.attributes.get('_route') %}
+    {% set current_route_params = app.request.attributes.get('_route_params')|default({}) %}
+
+    <header class="container">
+        <nav>
+            <ul>
+                <li><a href="{{ path('storefront_home') }}"><strong>Showcase</strong></a></li>
+            </ul>
+            <ul>
+                <li>
+                    <a href="{{ path(current_route, current_route_params|merge({_locale: 'fr'})) }}">🇫🇷 FR</a>
+                    <a href="{{ path(current_route, current_route_params|merge({_locale: 'en'})) }}">🇬🇧 EN</a>
+                </li>
+                <li>
+                    {% if is_granted('IS_AUTHENTICATED_FULLY') %}
+                        <details class="dropdown">
+                            <summary>{{ 'greeting'|trans({'%fullName%': app.user.fullName}, 'layout') }}</summary>
+                            <ul>
+                                <li><a href="{{ logout_path() }}">{{ 'link_logout'|trans({}, 'layout') }}</a></li>
+                                <li><a href="{{ path('storefront_account_security') }}">{{ 'link_security'|trans({}, 'layout') }}</a></li>
+                            </ul>
+                        </details>
+                    {% else %}
+                        <a href="{{ path('storefront_signin') }}">{{ 'greeting_anonymous'|trans({}, 'layout') }}</a>
+                    {% endif %}
+                </li>
+            </ul>
+        </nav>
+    </header>
+
+    <main class="container">
+        <twig:ui:Flashes :flashes="app.flashes" />
+        {% block content %}{% endblock %}
+    </main>
+{% endblock %}

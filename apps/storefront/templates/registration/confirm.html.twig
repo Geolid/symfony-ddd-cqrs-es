@@ -1,19 +1,24 @@
 {% extends 'layout.html.twig' %}
 
-{% block title %}Confirmation{% endblock %}
+{% block importmap %}{{ importmap(['shared', 'auth']) }}{% endblock %}
 
-{% block body %}
-    <h1>Confirmez votre email</h1>
+{% block title %}{{ 'title'|trans({}, 'confirm') }}{% endblock %}
 
-    <p>Saisissez le code reçu par email.</p>
+{% block content %}
+    <article>
+        <h1>{{ 'title'|trans({}, 'confirm') }}</h1>
 
-    {{ form_start(form, {attr: {'data-testid': 'confirmation-form'}}) }}
-        {{ form_widget(form) }}
-        <button type="submit" data-testid="confirmation-submit">Confirmer</button>
-    {{ form_end(form) }}
+        <p>{{ 'message_sent'|trans({'%email%': email}, 'confirm') }} (<a href="{{ path('storefront_signin', {email: email}) }}">{{ 'link_modify'|trans }}</a>)</p>
 
-    <form method="post" action="{{ path('storefront_register_confirm_resend', {id: id}) }}" data-testid="confirmation-resend-form">
-        <input type="hidden" name="_csrf_token" value="{{ csrf_token('confirmation_resend') }}">
-        <button type="submit" data-testid="confirmation-resend-submit">Renvoyer le code</button>
-    </form>
+        {{ form_start(form) }}
+            {{ form_row(form.code) }}
+            <button type="submit">{{ 'button_submit'|trans({}, 'confirm') }}</button>
+        {{ form_end(form) }}
+
+        <twig:ui:SubmitLink
+            actionUrl="{{ path('storefront_register_confirm_resend', {id: id, email: email}) }}"
+            csrfId="confirmation_resend"
+            label="{{ 'button_resend'|trans }}"
+        />
+    </article>
 {% endblock %}

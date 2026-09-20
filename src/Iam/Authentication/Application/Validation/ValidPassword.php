@@ -15,6 +15,8 @@ use Symfony\Component\Validator\Constraints\PasswordStrength;
 #[\Attribute(\Attribute::TARGET_PROPERTY | \Attribute::TARGET_METHOD)]
 final class ValidPassword extends Compound
 {
+    public const int MIN_LENGTH = Password::MIN_LENGTH;
+
     protected function getConstraints(array $options): array
     {
         return [

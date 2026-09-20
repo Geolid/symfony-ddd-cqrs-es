@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" target-language="fr" datatype="plaintext" original="messages">
+    <header>
+      <tool tool-id="symfony" tool-name="Symfony"/>
+    </header>
+    <body>
+      <trans-unit id="link_modify">
+        <source>link_modify</source>
+        <target>Modifier</target>
+      </trans-unit>
+      <trans-unit id="button_resend">
+        <source>button_resend</source>
+        <target>Renvoyer le code</target>
+      </trans-unit>
+      <trans-unit id="flash_resent">
+        <source>flash_resent</source>
+        <target>Un nouveau code a été envoyé.</target>
+      </trans-unit>
+      <trans-unit id="flash_invalid_code">
+        <source>flash_invalid_code</source>
+        <target>Code invalide ou expiré.</target>
+      </trans-unit>
+      <trans-unit id="flash_too_recent">
+        <source>flash_too_recent</source>
+        <target>Veuillez patienter avant de redemander un code.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

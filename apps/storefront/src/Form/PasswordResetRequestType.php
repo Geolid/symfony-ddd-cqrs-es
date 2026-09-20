@@ -17,7 +17,9 @@ final class PasswordResetRequestType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder->add('email', TextType::class, ['attr' => ['data-testid' => 'password-reset-request-email']]);
+        $builder->add('email', TextType::class, [
+            'label' => 'label_email',
+        ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
@@ -25,6 +27,7 @@ final class PasswordResetRequestType extends AbstractType
         $resolver->setDefaults([
             'data_class' => PasswordResetRequestFormData::class,
             'csrf_token_id' => 'password_reset_request',
+            'translation_domain' => 'password_reset_request',
         ]);
     }
 }

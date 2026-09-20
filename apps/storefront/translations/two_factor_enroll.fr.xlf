@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" target-language="fr" datatype="plaintext" original="two_factor_enroll">
+    <header>
+      <tool tool-id="symfony" tool-name="Symfony"/>
+    </header>
+    <body>
+      <trans-unit id="title">
+        <source>title</source>
+        <target>Activer la double authentification</target>
+      </trans-unit>
+      <trans-unit id="instructions_qr">
+        <source>instructions_qr</source>
+        <target>Scannez ce QR code avec votre application d'authentification (Google Authenticator, etc.) :</target>
+      </trans-unit>
+      <trans-unit id="instructions_manual">
+        <source>instructions_manual</source>
+        <target>Ou saisissez cette clé manuellement :</target>
+      </trans-unit>
+      <trans-unit id="instructions_confirm">
+        <source>instructions_confirm</source>
+        <target>Puis saisissez le code affiché pour confirmer :</target>
+      </trans-unit>
+      <trans-unit id="button_submit">
+        <source>button_submit</source>
+        <target>Confirmer</target>
+      </trans-unit>
+      <trans-unit id="flash_invalid_code">
+        <source>flash_invalid_code</source>
+        <target>Code invalide, réessayez.</target>
+      </trans-unit>
+      <trans-unit id="flash_enabled">
+        <source>flash_enabled</source>
+        <target>Authentification à deux facteurs activée.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

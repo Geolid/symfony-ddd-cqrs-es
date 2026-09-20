@@ -1,0 +1,35 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}{{ 'link_security'|trans({}, 'account') }}{% endblock %}
+
+{% block content %}
+    <nav aria-label="breadcrumb">
+        <ul>
+            <li><a href="{{ path('storefront_account_show') }}">{{ 'title'|trans({}, 'account') }}</a></li>
+            <li>›</li>
+            <li>{{ 'link_security'|trans({}, 'account') }}</li>
+        </ul>
+    </nav>
+
+    <h1>{{ 'link_security'|trans({}, 'account') }}</h1>
+
+    <dl>
+        <dt>{{ 'label_name'|trans({}, 'account') }}</dt>
+        <dd>{{ user.fullName }}</dd>
+
+        <dt>{{ 'label_email'|trans({}, 'account') }}</dt>
+        <dd>{{ user.getUserIdentifier() }}</dd>
+
+        <dt>{{ 'label_password'|trans({}, 'account') }}</dt>
+        <dd>••••••••</dd>
+
+        <dt>{{ 'label_two_factor'|trans({}, 'account') }}</dt>
+        <dd>
+            {% if totpEnrolled %}
+                {{ 'status_enabled'|trans({}, 'account') }}
+            {% else %}
+                <a href="{{ path('storefront_two_factor_enroll') }}" role="button">{{ 'link_enable_two_factor'|trans({}, 'account') }}</a>
+            {% endif %}
+        </dd>
+    </dl>
+{% endblock %}

@@ -25,15 +25,6 @@ final class DbalIdentityFinder extends AbstractDbalFinder implements IdentityFin
         )->one() ?? throw IdentityResultNotFoundException::forId($identityId);
     }
 
-    public function ofEmail(string $email): IdentityResult
-    {
-        return $this->filter(
-            static function (QueryBuilder $qb) use ($email): void {
-                $qb->andWhere('email = :email')->setParameter('email', $email);
-            },
-        )->one() ?? throw IdentityResultNotFoundException::forEmail($email);
-    }
-
     protected function configureBaseQuery(QueryBuilder $qb): void
     {
         $qb->select('identity_id', 'full_name', 'email', 'verification_status', 'moderation_status')->from(DbalIdentityProjector::TABLE);

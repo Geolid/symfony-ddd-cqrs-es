@@ -36,7 +36,7 @@ return static function (ContainerConfigurator $container): void {
                     'default_target_path' => 'storefront_account_show',
                     'enable_csrf' => true,
                 ],
-                'logout' => ['path' => '/logout', 'target' => 'security_login'],
+                'logout' => ['path' => '/logout', 'target' => 'storefront_signin'],
             ],
         ],
     ]);

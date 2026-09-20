@@ -24,6 +24,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
 final class TwoFactorController extends AbstractController
@@ -34,6 +35,7 @@ final class TwoFactorController extends AbstractController
     public function __construct(
         private readonly CommandBusInterface $commandBus,
         private readonly TotpProvisioningInterface $provisioning,
+        private readonly TranslatorInterface $translator,
     ) {
     }
 
@@ -41,7 +43,7 @@ final class TwoFactorController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route(path: '/account/2fa/enable', name: 'storefront_two_factor_enroll', methods: ['GET', 'POST'])]
+    #[Route(path: ['en' => '/account/2fa/enable', 'fr' => '/compte/2fa/activer'], name: 'storefront_two_factor_enroll', methods: ['GET', 'POST'])]
     public function enroll(Request $request, #[CurrentUser] PasswordUser $user): Response
     {
         $session = $request->getSession();
@@ -67,13 +69,13 @@ final class TwoFactorController extends AbstractController
                 $this->commandBus->dispatch(new ConfirmTotpEnrollment($id, $user->identityId(), (string) $formData->code));
             } catch (InvalidTotpCodeException) {
                 $this->commandBus->dispatch(new RevokeTotp($id, $user->identityId()));
-                $this->addFlash('error', 'Code invalide, réessayez.');
+                $this->addFlash('error', $this->translator->trans('flash_invalid_code', domain: 'two_factor_enroll'));
 
                 return $this->renderEnrollForm($form, $secret, $provisioningUri);
             }
 
             $session->remove(self::SESSION_KEY);
-            $this->addFlash('success', 'Authentification à deux facteurs activée.');
+            $this->addFlash('success', $this->translator->trans('flash_enabled', domain: 'two_factor_enroll'));
 
             return $this->redirectToRoute('storefront_account_show');
         }

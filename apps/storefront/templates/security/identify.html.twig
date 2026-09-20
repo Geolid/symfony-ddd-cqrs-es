@@ -1,14 +1,16 @@
 {% extends 'layout.html.twig' %}
 
-{% block title %}Connexion{% endblock %}
+{% block importmap %}{{ importmap(['shared', 'auth']) }}{% endblock %}
 
-{% block body %}
-    <h1>Connexion</h1>
+{% block title %}{{ 'title'|trans({}, 'signin') }}{% endblock %}
 
-    <form method="get" action="{{ path('security_login') }}" data-testid="identify-form">
-        <label for="identify-email">Email</label>
-        <input type="email" id="identify-email" name="email" data-testid="identify-email" required autofocus>
+{% block content %}
+    <article>
+        <h1>{{ 'title'|trans({}, 'signin') }}</h1>
 
-        <button type="submit" data-testid="identify-submit">Continuer</button>
-    </form>
+        {{ form_start(form) }}
+            {{ form_row(form.email) }}
+            <button type="submit">{{ 'button_submit'|trans({}, 'signin') }}</button>
+        {{ form_end(form) }}
+    </article>
 {% endblock %}

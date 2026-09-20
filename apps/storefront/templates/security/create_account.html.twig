@@ -1,0 +1,17 @@
+{% extends 'layout.html.twig' %}
+
+{% block importmap %}{{ importmap(['shared', 'auth']) }}{% endblock %}
+
+{% block title %}{{ 'title'|trans({}, 'create_account') }}{% endblock %}
+
+{% block content %}
+    <article>
+        <h1>{{ 'heading'|trans({}, 'create_account') }}</h1>
+
+        <p>{{ 'subtitle'|trans({}, 'create_account') }}</p>
+
+        <p>{{ email }} <a href="{{ path('storefront_signin', {email: email}) }}">{{ 'link_modify'|trans }}</a></p>
+
+        <a href="{{ path('storefront_register', {email: email}) }}" role="button">{{ 'button_create'|trans({}, 'create_account') }}</a>
+    </article>
+{% endblock %}

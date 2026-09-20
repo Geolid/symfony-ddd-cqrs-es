@@ -10,6 +10,8 @@ return static function (ContainerConfigurator $container): void {
         'form' => true,
         'csrf_protection' => true,
         'property_access' => true,
+        'assets' => true,
+        'asset_mapper' => true,
     ]);
 
     if ('test' === $container->env()) {

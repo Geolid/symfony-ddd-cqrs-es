@@ -1,12 +1,18 @@
 {% extends 'layout.html.twig' %}
 
-{% block title %}Mot de passe oublié{% endblock %}
+{% block importmap %}{{ importmap(['shared', 'auth']) }}{% endblock %}
 
-{% block body %}
-    <h1>Mot de passe oublié</h1>
+{% block title %}{{ 'title'|trans({}, 'password_reset_request') }}{% endblock %}
 
-    {{ form_start(form, {attr: {'data-testid': 'password-reset-request-form'}}) }}
-        {{ form_widget(form) }}
-        <button type="submit" data-testid="password-reset-request-submit">Envoyer un code</button>
-    {{ form_end(form) }}
+{% block content %}
+    <article>
+        <h1>{{ 'title'|trans({}, 'password_reset_request') }}</h1>
+
+        <p>{{ 'subtitle'|trans({}, 'password_reset_request') }}</p>
+
+        {{ form_start(form) }}
+            {{ form_row(form.email) }}
+            <button type="submit">{{ 'button_submit'|trans({}, 'password_reset_request') }}</button>
+        {{ form_end(form) }}
+    </article>
 {% endblock %}

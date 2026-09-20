@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" target-language="en" datatype="plaintext" original="account">
+    <header>
+      <tool tool-id="symfony" tool-name="Symfony"/>
+    </header>
+    <body>
+      <trans-unit id="title">
+        <source>title</source>
+        <target>Your account</target>
+      </trans-unit>
+      <trans-unit id="link_security">
+        <source>link_security</source>
+        <target>Login &amp; Security</target>
+      </trans-unit>
+      <trans-unit id="label_name">
+        <source>label_name</source>
+        <target>Name</target>
+      </trans-unit>
+      <trans-unit id="label_email">
+        <source>label_email</source>
+        <target>Email</target>
+      </trans-unit>
+      <trans-unit id="label_password">
+        <source>label_password</source>
+        <target>Password</target>
+      </trans-unit>
+      <trans-unit id="label_two_factor">
+        <source>label_two_factor</source>
+        <target>Two-step verification</target>
+      </trans-unit>
+      <trans-unit id="status_enabled">
+        <source>status_enabled</source>
+        <target>Two-factor authentication enabled.</target>
+      </trans-unit>
+      <trans-unit id="link_enable_two_factor">
+        <source>link_enable_two_factor</source>
+        <target>Enable</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

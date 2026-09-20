@@ -19,7 +19,6 @@ use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
 use Shared\Domain\Exception\VerificationCodeNotFoundException;
-use Storefront\Controller\QueryString\RegisterQueryString;
 use Storefront\Form\ConfirmationType;
 use Storefront\Form\FormData\ConfirmationFormData;
 use Storefront\Form\FormData\RegisterFormData;
@@ -28,28 +27,31 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpKernel\Attribute\MapQueryString;
+use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 final class RegistrationController extends AbstractController
 {
-    public function __construct(private readonly CommandBusInterface $commandBus)
-    {
+    public function __construct(
+        private readonly CommandBusInterface $commandBus,
+        private readonly TranslatorInterface $translator,
+    ) {
     }
 
     /**
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route(path: '/register', name: 'storefront_register', methods: ['GET', 'POST'])]
-    public function register(Request $request, #[MapQueryString] RegisterQueryString $query): Response
+    #[Route(path: ['en' => '/register', 'fr' => '/inscription'], name: 'storefront_register', methods: ['GET', 'POST'])]
+    public function register(Request $request, #[MapQueryParameter] ?string $email = null): Response
     {
-        if (null === $query->email || '' === $query->email) {
-            return $this->redirectToRoute('security_login');
+        if (null === $email || '' === $email) {
+            return $this->redirectToRoute('storefront_signin');
         }
 
         $formData = new RegisterFormData();
-        $formData->email = $query->email;
+        $formData->email = $email;
         $form = $this->createForm(RegisterType::class, $formData);
         $form->handleRequest($request);
 
@@ -60,7 +62,7 @@ final class RegistrationController extends AbstractController
             try {
                 $this->commandBus->dispatch(new RegisterIdentity($id, (string) $formData->fullName, $formData->email));
             } catch (IdentityEmailAlreadyInUseException) {
-                $this->addFlash('error', 'Cet email est déjà utilisé.');
+                $this->addFlash('error', $this->translator->trans('flash_email_taken', domain: 'register'));
 
                 return $this->render('registration/register.html.twig', ['form' => $form]);
             }
@@ -71,14 +73,12 @@ final class RegistrationController extends AbstractController
             try {
                 $this->commandBus->dispatch(new DefinePasswordCredential($id, (string) $formData->password));
             } catch (WeakPasswordException|CompromisedPasswordException) {
-                $this->addFlash('error', 'Ce mot de passe est trop faible ou a été compromis.');
+                $this->addFlash('error', $this->translator->trans('flash_weak_password', domain: 'register'));
 
                 return $this->render('registration/register.html.twig', ['form' => $form]);
             }
 
-            $this->addFlash('success', 'Un code de confirmation vous a été envoyé par email.');
-
-            return $this->redirectToRoute('storefront_register_confirm', ['id' => $id]);
+            return $this->redirectToRoute('storefront_register_confirm', ['id' => $id, 'email' => $formData->email]);
         }
 
         return $this->render('registration/register.html.twig', ['form' => $form]);
@@ -88,8 +88,8 @@ final class RegistrationController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route(path: '/register/{id}/confirm', name: 'storefront_register_confirm', methods: ['GET', 'POST'])]
-    public function confirm(Request $request, string $id): Response
+    #[Route(path: ['en' => '/register/{id}/confirm', 'fr' => '/inscription/{id}/confirmation'], name: 'storefront_register_confirm', methods: ['GET', 'POST'])]
+    public function confirm(Request $request, string $id, #[MapQueryParameter] ?string $email = null): Response
     {
         $formData = new ConfirmationFormData();
         $form = $this->createForm(ConfirmationType::class, $formData);
@@ -99,39 +99,39 @@ final class RegistrationController extends AbstractController
             try {
                 $this->commandBus->dispatch(new ConfirmIdentity($id, (string) $formData->code));
             } catch (InvalidConfirmationCodeException|VerificationCodeNotFoundException|VerificationCodeAttemptsExceededException) {
-                $this->addFlash('error', 'Code invalide ou expiré.');
+                $this->addFlash('error', $this->translator->trans('flash_invalid_code'));
 
-                return $this->render('registration/confirm.html.twig', ['form' => $form, 'id' => $id]);
+                return $this->render('registration/confirm.html.twig', ['form' => $form, 'id' => $id, 'email' => $email]);
             }
 
-            $this->addFlash('success', 'Compte confirmé, vous pouvez vous connecter.');
+            $this->addFlash('success', $this->translator->trans('flash_confirmed', domain: 'confirm'));
 
-            return $this->redirectToRoute('security_login');
+            return $this->redirectToRoute('storefront_signin');
         }
 
-        return $this->render('registration/confirm.html.twig', ['form' => $form, 'id' => $id]);
+        return $this->render('registration/confirm.html.twig', ['form' => $form, 'id' => $id, 'email' => $email]);
     }
 
     /**
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route(path: '/register/{id}/confirm/resend', name: 'storefront_register_confirm_resend', methods: ['POST'])]
-    public function confirmResend(Request $request, string $id): RedirectResponse
+    #[Route(path: ['en' => '/register/{id}/confirm/resend', 'fr' => '/inscription/{id}/confirmation/renvoyer'], name: 'storefront_register_confirm_resend', methods: ['POST'])]
+    public function confirmResend(Request $request, string $id, #[MapQueryParameter] ?string $email = null): RedirectResponse
     {
-        if (!$this->isCsrfTokenValid('confirmation_resend', (string) $request->request->get('_csrf_token'))) {
-            return $this->redirectToRoute('storefront_register_confirm', ['id' => $id]);
+        if (!$this->isCsrfTokenValid('confirmation_resend', (string) $request->request->get('_token'))) {
+            return $this->redirectToRoute('storefront_register_confirm', ['id' => $id, 'email' => $email]);
         }
 
         try {
             $this->commandBus->dispatch(new RequestConfirmation($id));
-            $this->addFlash('success', 'Un nouveau code a été envoyé.');
+            $this->addFlash('success', $this->translator->trans('flash_resent'));
         } catch (ConfirmationRequestedTooRecentlyException) {
-            $this->addFlash('error', 'Veuillez patienter avant de redemander un code.');
+            $this->addFlash('error', $this->translator->trans('flash_too_recent'));
         } catch (IdentityAlreadyConfirmedException) {
-            return $this->redirectToRoute('security_login');
+            return $this->redirectToRoute('storefront_signin');
         }
 
-        return $this->redirectToRoute('storefront_register_confirm', ['id' => $id]);
+        return $this->redirectToRoute('storefront_register_confirm', ['id' => $id, 'email' => $email]);
     }
 }

@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" target-language="fr" datatype="plaintext" original="register">
+    <header>
+      <tool tool-id="symfony" tool-name="Symfony"/>
+    </header>
+    <body>
+      <trans-unit id="title">
+        <source>title</source>
+        <target>Créer un compte</target>
+      </trans-unit>
+      <trans-unit id="subtitle">
+        <source>subtitle</source>
+        <target>Tous les champs sont obligatoires</target>
+      </trans-unit>
+      <trans-unit id="label_email">
+        <source>label_email</source>
+        <target>E-mail</target>
+      </trans-unit>
+      <trans-unit id="label_full_name">
+        <source>label_full_name</source>
+        <target>Votre nom</target>
+      </trans-unit>
+      <trans-unit id="placeholder_full_name">
+        <source>placeholder_full_name</source>
+        <target>Prénom et nom</target>
+      </trans-unit>
+      <trans-unit id="label_password">
+        <source>label_password</source>
+        <target>Mot de passe (au moins %min% caractères)</target>
+      </trans-unit>
+      <trans-unit id="help_password">
+        <source>help_password</source>
+        <target>Les mots de passe doivent au moins avoir %min% caractères.</target>
+      </trans-unit>
+      <trans-unit id="label_password_confirm">
+        <source>label_password_confirm</source>
+        <target>Entrez le mot de passe à nouveau</target>
+      </trans-unit>
+      <trans-unit id="button_submit">
+        <source>button_submit</source>
+        <target>Continuer</target>
+      </trans-unit>
+      <trans-unit id="already_customer">
+        <source>already_customer</source>
+        <target>Déjà client(e) ?</target>
+      </trans-unit>
+      <trans-unit id="link_identify_instead">
+        <source>link_identify_instead</source>
+        <target>Identifiez-vous à la place</target>
+      </trans-unit>
+      <trans-unit id="flash_email_taken">
+        <source>flash_email_taken</source>
+        <target>Cet email est déjà utilisé.</target>
+      </trans-unit>
+      <trans-unit id="flash_weak_password">
+        <source>flash_weak_password</source>
+        <target>Ce mot de passe est trop faible ou a été compromis.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

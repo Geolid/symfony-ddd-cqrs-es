@@ -8,4 +8,8 @@ return static function (ContainerConfigurator $container): void {
     $container->services()
         ->defaults()->autowire()->autoconfigure()
         ->load('Storefront\\', '../src/');
+
+    $container->services()
+        ->defaults()->autowire()->autoconfigure()
+        ->load('Ui\\', '%kernel.project_dir%/ui/src/');
 };

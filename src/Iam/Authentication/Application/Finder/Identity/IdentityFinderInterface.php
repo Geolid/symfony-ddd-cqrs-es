@@ -12,9 +12,4 @@ interface IdentityFinderInterface
      * @throws IdentityResultNotFoundException
      */
     public function ofId(string $identityId): IdentityResult;
-
-    /**
-     * @throws IdentityResultNotFoundException
-     */
-    public function ofEmail(string $email): IdentityResult;
 }

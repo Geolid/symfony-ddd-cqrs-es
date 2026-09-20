@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" target-language="fr" datatype="plaintext" original="confirm">
+    <header>
+      <tool tool-id="symfony" tool-name="Symfony"/>
+    </header>
+    <body>
+      <trans-unit id="title">
+        <source>title</source>
+        <target>Vérifiez l'adresse e-mail</target>
+      </trans-unit>
+      <trans-unit id="message_sent">
+        <source>message_sent</source>
+        <target>Pour vérifier votre e-mail, nous avons envoyé un code à %email%</target>
+      </trans-unit>
+      <trans-unit id="label_code">
+        <source>label_code</source>
+        <target>Saisissez le code de sécurité</target>
+      </trans-unit>
+      <trans-unit id="button_submit">
+        <source>button_submit</source>
+        <target>Créez votre compte</target>
+      </trans-unit>
+      <trans-unit id="flash_confirmed">
+        <source>flash_confirmed</source>
+        <target>Compte créé, vous pouvez vous identifier.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

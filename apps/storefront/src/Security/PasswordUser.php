@@ -11,6 +11,7 @@ final readonly class PasswordUser implements UserInterface
     public function __construct(
         private string $identityId,
         private string $email,
+        public string $fullName,
         public bool $authenticatable,
         public string $passwordChangedAt,
     ) {

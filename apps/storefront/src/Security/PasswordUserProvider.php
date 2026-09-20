@@ -4,10 +4,12 @@ declare(strict_types=1);
 
 namespace Storefront\Security;
 
+use Iam\Authentication\Application\CredentialVerification\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Application\Finder\Identity\Exception\IdentityResultNotFoundException;
 use Iam\Authentication\Application\Finder\PasswordCredential\Exception\PasswordCredentialResultNotFoundException;
-use Iam\Authentication\Application\Query\GetPasswordCredentialByEmail\GetPasswordCredentialByEmail;
-use Iam\Authentication\Application\Query\GetPasswordCredentialByEmail\IdentityCredentialResult;
+use Iam\Authentication\Application\Query\GetPasswordCredentialByIdentity\GetPasswordCredentialByIdentity;
+use Iam\Identity\Application\Finder\Identity\IdentityResult;
+use Iam\Identity\Application\Query\GetIdentityByEmail\GetIdentityByEmail;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
 use Symfony\Component\Security\Core\Exception\DisabledException;
@@ -30,7 +32,10 @@ final readonly class PasswordUserProvider implements UserProviderInterface
      */
     public function loadUserByIdentifier(string $identifier): PasswordUser
     {
-        return $this->toPasswordUser($this->credentialOf($identifier));
+        $identity = $this->identityOf($identifier);
+        $passwordChangedAt = $this->passwordChangedAtOf($identity->id);
+
+        return new PasswordUser($identity->id, $identifier, $identity->fullName, $identity->i, $passwordChangedAt);
     }
 
     /**
@@ -42,13 +47,10 @@ final readonly class PasswordUserProvider implements UserProviderInterface
             throw new UnsupportedUserException(\sprintf('Instances of "%s" are not supported.', $user::class));
         }
 
-        $credential = $this->credentialOf($user->getUserIdentifier());
+        $identity = $this->identityOf($user->getUserIdentifier());
+        $passwordChangedAt = $this->passwordChangedAtOf($user->identityId());
 
-        if (!$credential->identityAuthenticatable) {
-            throw new DisabledException(\sprintf('Identity "%s" is not authenticatable.', $credential->identityId));
-        }
-
-        return $this->toPasswordUser($credential);
+        return new PasswordUser($user->identityId(), $user->getUserIdentifier(), $identity->fullName, true, $passwordChangedAt);
     }
 
     public function supportsClass(string $class): bool
@@ -59,17 +61,30 @@ final readonly class PasswordUserProvider implements UserProviderInterface
     /**
      * @throws ApplicationExceptionInterface
      */
-    private function credentialOf(string $email): IdentityCredentialResult
+    private function identityOf(string $email): IdentityResult
     {
-        try {
-            return $this->queryBus->ask(new GetPasswordCredentialByEmail($email));
-        } catch (IdentityResultNotFoundException|PasswordCredentialResultNotFoundException $e) {
-            throw new UserNotFoundException($e->getMessage(), $e->getCode(), previous: $e);
+        $identity = $this->queryBus->ask(new GetIdentityByEmail($email));
+
+        if (null === $identity) {
+            throw new UserNotFoundException(\sprintf('No identity for email "%s".', $email));
         }
+
+        return $identity;
     }
 
-    private function toPasswordUser(IdentityCredentialResult $credential): PasswordUser
+    /**
+     * @throws ApplicationExceptionInterface
+     */
+    private function passwordChangedAtOf(string $identityId): string
     {
-        return new PasswordUser($credential->identityId, $credential->email, $credential->identityAuthenticatable, $credential->passwordChangedAt->format(\DateTimeInterface::ATOM));
+        try {
+            $credential = $this->queryBus->ask(new GetPasswordCredentialByIdentity($identityId));
+        } catch (IdentityResultNotFoundException|IdentityNotAuthenticatableException $e) {
+            throw new DisabledException(\sprintf('Identity "%s" is not authenticatable.', $identityId), $e->getCode(), previous: $e);
+        } catch (PasswordCredentialResultNotFoundException $e) {
+            throw new UserNotFoundException($e->getMessage(), $e->getCode(), previous: $e);
+        }
+
+        return $credential->passwordChangedAt->format(\DateTimeInterface::ATOM);
     }
 }
