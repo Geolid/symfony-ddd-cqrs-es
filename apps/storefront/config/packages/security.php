@@ -2,8 +2,9 @@
 
 declare(strict_types=1);
 
-use Storefront\Security\PasswordCredentialAuthenticator;
-use Storefront\Security\PasswordUserProvider;
+use Storefront\Security\Authenticator\PasswordCredentialAuthenticator;
+use Storefront\Security\Provider\PasswordUserProvider;
+use Storefront\Security\UserChecker\PasswordUserChecker;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 return static function (ContainerConfigurator $container): void {
@@ -19,6 +20,7 @@ return static function (ContainerConfigurator $container): void {
             'main' => [
                 'lazy' => true,
                 'provider' => 'password_users',
+                'user_checker' => PasswordUserChecker::class,
                 'custom_authenticators' => [PasswordCredentialAuthenticator::class],
                 'login_throttling' => [
                     'max_attempts' => 3,
@@ -28,7 +30,8 @@ return static function (ContainerConfigurator $container): void {
                     'secret' => '%kernel.secret%',
                     'lifetime' => 604800,
                     'path' => '/',
-                    'signature_properties' => ['authenticatable', 'passwordChangedAt'],
+                    'always_remember_me' => true,
+                    'signature_properties' => ['passwordChangedAt'],
                 ],
                 'two_factor' => [
                     'auth_form_path' => 'storefront_two_factor_challenge',

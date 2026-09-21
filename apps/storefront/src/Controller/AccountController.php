@@ -14,13 +14,13 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\CurrentUser;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[IsGranted('IS_AUTHENTICATED_FULLY')]
 final class AccountController extends AbstractController
 {
     public function __construct(private readonly QueryBusInterface $queryBus)
     {
     }
 
+    #[IsGranted('IS_AUTHENTICATED_REMEMBERED')]
     #[Route(path: ['en' => '/account', 'fr' => '/compte'], name: 'storefront_account_show', methods: ['GET'])]
     public function show(): Response
     {
@@ -30,6 +30,7 @@ final class AccountController extends AbstractController
     /**
      * @throws ApplicationExceptionInterface
      */
+    #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[Route(path: ['en' => '/account/security', 'fr' => '/compte/connexion-securite'], name: 'storefront_account_security', methods: ['GET'])]
     public function security(#[CurrentUser] PasswordUser $user): Response
     {

@@ -4,15 +4,11 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Application\CredentialVerification;
 
-use Iam\Authentication\Application\CredentialVerification\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Application\CredentialVerification\TotpCredentialVerifier;
-use Iam\Authentication\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInterface;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpCipherInterface;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpVerifierInterface;
 use Iam\Tests\Authentication\Support\Builder\TotpCredentialBuilder;
-use Iam\Tests\Authentication\Support\Double\FakeTotpVerifier;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use OTPHP\TOTP;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -32,7 +28,6 @@ final class TotpCredentialVerifierTest extends AbstractIntegrationTestCase
         $this->verifier = $this->service(TotpVerifierInterface::class);
         $this->credentialVerifier = new TotpCredentialVerifier(
             $this->service(TotpCredentialFinderInterface::class),
-            $this->service(IdentityFinderInterface::class),
             $this->cipher,
             $this->verifier,
         );
@@ -42,20 +37,18 @@ final class TotpCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itAccepts(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->confirmed()->create();
         $secret = TOTP::generate()->getSecret();
         $code = TOTP::createFromSecret($secret, Clock::get())->now();
-        $credential = TotpCredentialBuilder::new()
-            ->withIdentityId($identity->id->toString())
+        $builder = TotpCredentialBuilder::new()
             ->withCipher($this->cipher)
             ->withSecret($secret)
             ->withVerifier($this->verifier)
-            ->confirmed($code)
-            ->create();
-        $this->store($credential, $identity);
+            ->confirmed($code);
+        $credential = $builder->create();
+        $this->store($credential);
 
         // When
-        $verified = $this->credentialVerifier->verify($identity->id->toString(), $code);
+        $verified = $this->credentialVerifier->verify($builder['identityId'], $code);
 
         // Then
         self::assertTrue($verified);
@@ -65,20 +58,18 @@ final class TotpCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itRefuses(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->confirmed()->create();
         $secret = TOTP::generate()->getSecret();
         $code = TOTP::createFromSecret($secret, Clock::get())->now();
-        $credential = TotpCredentialBuilder::new()
-            ->withIdentityId($identity->id->toString())
+        $builder = TotpCredentialBuilder::new()
             ->withCipher($this->cipher)
             ->withSecret($secret)
             ->withVerifier($this->verifier)
-            ->confirmed($code)
-            ->create();
-        $this->store($credential, $identity);
+            ->confirmed($code);
+        $credential = $builder->create();
+        $this->store($credential);
 
         // When
-        $verified = $this->credentialVerifier->verify($identity->id->toString(), '000000');
+        $verified = $this->credentialVerifier->verify($builder['identityId'], '000000');
 
         // Then
         self::assertFalse($verified);
@@ -107,26 +98,5 @@ final class TotpCredentialVerifierTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertFalse($verified);
-    }
-
-    #[Test]
-    public function itFailsWhenIdentityNotAuthenticatable(): void
-    {
-        // Given
-        $identity = IdentityBuilder::new()->confirmed()->suspended()->create();
-
-        $credential = TotpCredentialBuilder::new()
-            ->withIdentityId($identity->id->toString())
-            ->withCipher($this->cipher)
-            ->withVerifier(new FakeTotpVerifier())
-            ->confirmed()
-            ->create();
-        $this->store($credential, $identity);
-
-        // Then
-        $this->expectException(IdentityNotAuthenticatableException::class);
-
-        // When
-        $this->credentialVerifier->verify($identity->id->toString(), '000000');
     }
 }

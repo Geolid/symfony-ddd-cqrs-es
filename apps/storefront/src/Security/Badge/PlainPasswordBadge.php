@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Storefront\Security;
+namespace Storefront\Security\Badge;
 
 use Symfony\Component\Security\Http\Authenticator\Passport\Badge\BadgeInterface;
 

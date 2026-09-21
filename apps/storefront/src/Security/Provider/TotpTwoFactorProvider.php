@@ -2,11 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Storefront\Security;
+namespace Storefront\Security\Provider;
 
-use Iam\Authentication\Application\CredentialVerification\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Application\CredentialVerification\TotpCredentialVerifierInterface;
-use Iam\Authentication\Application\Finder\Identity\Exception\IdentityResultNotFoundException;
 use Iam\Authentication\Application\Query\GetTotpCredentialByIdentity\GetTotpCredentialByIdentity;
 use Scheb\TwoFactorBundle\Security\TwoFactor\AuthenticationContextInterface;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\DefaultTwoFactorFormRenderer;
@@ -14,6 +12,7 @@ use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\TwoFactorFormRendererInter
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\TwoFactorProviderInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
+use Storefront\Security\PasswordUser;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Twig\Environment;
 
@@ -42,10 +41,6 @@ final readonly class TotpTwoFactorProvider implements TwoFactorProviderInterface
     {
     }
 
-    /**
-     * @throws IdentityResultNotFoundException
-     * @throws IdentityNotAuthenticatableException
-     */
     public function validateAuthenticationCode(object $user, string $authenticationCode): bool
     {
         if (!$user instanceof PasswordUser) {

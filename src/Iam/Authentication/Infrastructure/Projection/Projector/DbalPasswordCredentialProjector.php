@@ -30,10 +30,10 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
             'identity_id' => $event->identityId,
             'password_hash' => $event->passwordHash,
             'defined_at' => $event->definedAt,
-            'password_changed_at' => $event->definedAt,
+            'changed_at' => $event->definedAt,
         ], [
             'defined_at' => Types::DATETIME_IMMUTABLE,
-            'password_changed_at' => Types::DATETIME_IMMUTABLE,
+            'changed_at' => Types::DATETIME_IMMUTABLE,
         ]);
     }
 
@@ -42,9 +42,9 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
     {
         $this->connection->update(
             self::TABLE,
-            ['password_hash' => $event->passwordHash, 'password_changed_at' => $event->changedAt],
+            ['password_hash' => $event->passwordHash, 'changed_at' => $event->changedAt],
             ['id' => $event->id->toString()],
-            ['password_changed_at' => Types::DATETIME_IMMUTABLE],
+            ['changed_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -59,9 +59,9 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
     {
         $this->connection->update(
             self::TABLE,
-            ['password_hash' => $event->passwordHash, 'password_changed_at' => $event->resetAt],
+            ['password_hash' => $event->passwordHash, 'changed_at' => $event->resetAt],
             ['id' => $event->id->toString()],
-            ['password_changed_at' => Types::DATETIME_IMMUTABLE],
+            ['changed_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -81,7 +81,7 @@ final readonly class DbalPasswordCredentialProjector extends AbstractDbalProject
         $table->addColumn('identity_id', Types::STRING, ['length' => 36]);
         $table->addColumn('password_hash', Types::STRING, ['length' => 255]);
         $table->addColumn('defined_at', Types::DATETIME_IMMUTABLE);
-        $table->addColumn('password_changed_at', Types::DATETIME_IMMUTABLE);
+        $table->addColumn('changed_at', Types::DATETIME_IMMUTABLE);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))

@@ -15,8 +15,8 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Attribute\MapQueryParameter;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Authentication\AuthenticationUtils;
+use Symfony\Component\Security\Http\SecurityRequestAttributes;
 
-#[Route(path: ['en' => '/signin', 'fr' => '/connexion'], name: 'storefront_signin', methods: ['GET', 'POST'])]
 final class SignInController extends AbstractController
 {
     public function __construct(private readonly QueryBusInterface $queryBus)
@@ -26,7 +26,8 @@ final class SignInController extends AbstractController
     /**
      * @throws ApplicationExceptionInterface
      */
-    public function __invoke(Request $request, #[MapQueryParameter] ?string $email, AuthenticationUtils $authenticationUtils): Response
+    #[Route(path: ['en' => '/signin', 'fr' => '/connexion'], name: 'storefront_signin', methods: ['GET', 'POST'])]
+    public function identity(Request $request, #[MapQueryParameter] ?string $email): Response
     {
         $formData = new IdentifyFormData();
         $formData->email = $email;
@@ -34,21 +35,35 @@ final class SignInController extends AbstractController
         $form->handleRequest($request);
 
         if (!$form->isSubmitted() || !$form->isValid()) {
-            return $this->render('security/identify.html.twig', ['form' => $form]);
+            return $this->render('signin/identify.html.twig', ['form' => $form]);
         }
 
         $identity = $this->queryBus->ask(new GetIdentityByEmail((string) $formData->email));
 
         if (null === $identity) {
-            return $this->render('security/create_account.html.twig', ['email' => $formData->email]);
+            return $this->render('signin/create_account.html.twig', ['email' => $formData->email]);
         }
 
         if (!$identity->verificationStatus->isConfirmed()) {
             return $this->redirectToRoute('storefront_register_confirm', ['id' => $identity->id, 'email' => $formData->email]);
         }
 
-        return $this->render('security/password.html.twig', [
-            'email' => $formData->email,
+        $request->getSession()->set(SecurityRequestAttributes::LAST_USERNAME, (string) $formData->email);
+
+        return $this->redirectToRoute('storefront_signin_verify');
+    }
+
+    #[Route(path: ['en' => '/signin/verify', 'fr' => '/connexion/verifier'], name: 'storefront_signin_verify', methods: ['GET', 'POST'])]
+    public function verify(AuthenticationUtils $authenticationUtils): Response
+    {
+        $email = $authenticationUtils->getLastUsername();
+
+        if ('' === $email) {
+            return $this->redirectToRoute('storefront_signin');
+        }
+
+        return $this->render('signin/password.html.twig', [
+            'email' => $email,
             'error' => $authenticationUtils->getLastAuthenticationError(),
         ]);
     }

@@ -2,11 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Storefront\Security;
+namespace Storefront\Security\EventListener;
 
 use Iam\Authentication\Application\Command\RehashPassword\RehashPassword;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
+use Storefront\Security\Badge\PlainPasswordBadge;
+use Storefront\Security\PasswordUser;
 use Symfony\Component\EventDispatcher\Attribute\AsEventListener;
 use Symfony\Component\Security\Http\Event\LoginSuccessEvent;
 

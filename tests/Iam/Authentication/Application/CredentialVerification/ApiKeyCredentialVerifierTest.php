@@ -6,13 +6,10 @@ namespace Iam\Tests\Authentication\Application\CredentialVerification;
 
 use Iam\Authentication\Application\CredentialVerification\ApiKeyCredentialVerifier;
 use Iam\Authentication\Application\CredentialVerification\Exception\ApiKeyCredentialRevokedException;
-use Iam\Authentication\Application\CredentialVerification\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\Exception\ApiKeyCredentialResultNotFoundException;
-use Iam\Authentication\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyHasherInterface;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -28,7 +25,6 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
         $this->hasher = $this->service(ApiKeyHasherInterface::class);
         $this->verifier = new ApiKeyCredentialVerifier(
             $this->service(ApiKeyCredentialFinderInterface::class),
-            $this->service(IdentityFinderInterface::class),
             $this->hasher,
         );
     }
@@ -37,12 +33,9 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itAccepts(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->confirmed()->create();
-        $builder = ApiKeyCredentialBuilder::new()
-            ->withIdentityId($identity->id->toString())
-            ->withHasher($this->hasher);
+        $builder = ApiKeyCredentialBuilder::new()->withHasher($this->hasher);
         $credential = $builder->create();
-        $this->store($credential, $identity);
+        $this->store($credential);
 
         // When
         $verified = $this->verifier->verify($builder['keyId']->value, $builder['secret']);
@@ -55,12 +48,9 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itRefuses(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->confirmed()->create();
-        $builder = ApiKeyCredentialBuilder::new()
-            ->withIdentityId($identity->id->toString())
-            ->withHasher($this->hasher);
+        $builder = ApiKeyCredentialBuilder::new()->withHasher($this->hasher);
         $credential = $builder->create();
-        $this->store($credential, $identity);
+        $this->store($credential);
 
         // When
         $verified = $this->verifier->verify($builder['keyId']->value, 'wrong-secret');
@@ -92,25 +82,6 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
 
         // Then
         $this->expectException(ApiKeyCredentialRevokedException::class);
-
-        // When
-        $this->verifier->verify($builder['keyId']->value, $builder['secret']);
-    }
-
-    #[Test]
-    public function itFailsWhenIdentityNotAuthenticatable(): void
-    {
-        // Given
-        $identity = IdentityBuilder::new()->confirmed()->suspended()->create();
-
-        $builder = ApiKeyCredentialBuilder::new()
-            ->withIdentityId($identity->id->toString())
-            ->withHasher($this->hasher);
-        $credential = $builder->create();
-        $this->store($credential, $identity);
-
-        // Then
-        $this->expectException(IdentityNotAuthenticatableException::class);
 
         // When
         $this->verifier->verify($builder['keyId']->value, $builder['secret']);
