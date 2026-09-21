@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Application\Command\EnrollTotp;
+namespace Iam\Authentication\Application\Command\IssueTotpCredential;
 
 use Iam\Authentication\Application\AuthenticationUniqueKey;
-use Iam\Authentication\Application\Command\EnrollTotp\Exception\TotpAlreadyEnrolledException;
+use Iam\Authentication\Application\Command\IssueTotpCredential\Exception\TotpAlreadyEnrolledException;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialAlreadyExistsException;
 use Iam\Authentication\Domain\TotpCredential\Repository\TotpCredentialRepositoryInterface;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpCipherInterface;
@@ -18,7 +18,7 @@ use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 
 #[CommandHandler]
-final readonly class EnrollTotpHandler
+final readonly class IssueTotpCredentialHandler
 {
     public function __construct(
         private TotpCredentialRepositoryInterface $repository,
@@ -32,7 +32,7 @@ final readonly class EnrollTotpHandler
      * @throws TotpAlreadyEnrolledException
      * @throws TotpCredentialAlreadyExistsException
      */
-    public function __invoke(EnrollTotp $command): void
+    public function __invoke(IssueTotpCredential $command): void
     {
         try {
             $this->uniqueness->claim(UniqueKey::for(AuthenticationUniqueKey::TOTP_CREDENTIAL_IDENTITY), $command->identityId, $command->id);
@@ -40,12 +40,12 @@ final readonly class EnrollTotpHandler
             throw TotpAlreadyEnrolledException::forIdentity($command->identityId, $e);
         }
 
-        $credential = TotpCredential::enroll(
+        $credential = TotpCredential::issue(
             id: TotpCredentialId::fromString($command->id),
             identityId: $command->identityId,
             secret: $command->secret,
             cipher: $this->cipher,
-            enrolledAt: $this->clock->now(),
+            issuedAt: $this->clock->now(),
         );
 
         $this->repository->save($credential);

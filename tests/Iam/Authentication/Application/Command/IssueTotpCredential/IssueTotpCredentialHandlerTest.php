@@ -2,13 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Authentication\Application\Command\EnrollTotp;
+namespace Iam\Tests\Authentication\Application\Command\IssueTotpCredential;
 
 use Iam\Authentication\Application\AuthenticationUniqueKey;
-use Iam\Authentication\Application\Command\EnrollTotp\EnrollTotp;
-use Iam\Authentication\Application\Command\EnrollTotp\Exception\TotpAlreadyEnrolledException;
+use Iam\Authentication\Application\Command\IssueTotpCredential\Exception\TotpAlreadyEnrolledException;
+use Iam\Authentication\Application\Command\IssueTotpCredential\IssueTotpCredential;
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInterface;
-use Iam\Authentication\Application\TotpCredentialStatus;
 use Iam\Tests\Authentication\Support\Builder\TotpCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -17,10 +16,10 @@ use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
-final class EnrollTotpHandlerTest extends AbstractIntegrationTestCase
+final class IssueTotpCredentialHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itEnrolls(): void
+    public function itIssues(): void
     {
         // Given
         $id = Uuid::uuid7()->toString();
@@ -29,7 +28,7 @@ final class EnrollTotpHandlerTest extends AbstractIntegrationTestCase
         $now = Clock::get()->now();
 
         // When
-        $this->dispatch(new EnrollTotp($id, $identityId, $secret));
+        $this->dispatch(new IssueTotpCredential($id, $identityId, $secret));
 
         // Then
         $result = $this->service(TotpCredentialFinderInterface::class)->ofId($id);
@@ -37,10 +36,9 @@ final class EnrollTotpHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($identityId, $result->identityId);
         self::assertSame(
             $now->format(\DateTimeInterface::ATOM),
-            $result->enrolledAt->format(\DateTimeInterface::ATOM),
+            $result->issuedAt->format(\DateTimeInterface::ATOM),
         );
-        self::assertSame(TotpCredentialStatus::PENDING, $result->status);
-        self::assertNull($result->confirmedAt);
+        self::assertFalse($result->revoked);
         self::assertNull($result->revokedAt);
 
         self::assertNotSame($secret, $result->encryptedSecret);
@@ -61,7 +59,7 @@ final class EnrollTotpHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(TotpAlreadyEnrolledException::class);
 
         // When
-        $this->dispatch(new EnrollTotp(
+        $this->dispatch(new IssueTotpCredential(
             Uuid::uuid7()->toString(),
             $identityId,
             TotpCredentialBuilder::sample('secret'),

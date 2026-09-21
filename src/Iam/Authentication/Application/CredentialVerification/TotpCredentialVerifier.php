@@ -19,7 +19,7 @@ final readonly class TotpCredentialVerifier implements TotpCredentialVerifierInt
 
     public function verify(string $identityId, #[\SensitiveParameter] string $code): bool
     {
-        $credential = $this->totpCredentialFinder->confirmedOfIdentityOrNull($identityId);
+        $credential = $this->totpCredentialFinder->activeOfIdentityOrNull($identityId);
 
         if (null === $credential) {
             return false;

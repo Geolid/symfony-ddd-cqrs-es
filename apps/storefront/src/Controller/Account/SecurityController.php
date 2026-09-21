@@ -6,14 +6,10 @@ namespace Storefront\Controller\Account;
 
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\SvgWriter;
-use Iam\Authentication\Application\Command\ConfirmTotpEnrollment\ConfirmTotpEnrollment;
-use Iam\Authentication\Application\Command\EnrollTotp\EnrollTotp;
-use Iam\Authentication\Application\Command\RevokeTotp\RevokeTotp;
 use Iam\Authentication\Application\Query\GetTotpCredentialByIdentity\GetTotpCredentialByIdentity;
+use Iam\Authentication\Application\TotpIssuance\TotpIssuerInterface;
 use Iam\Authentication\Application\TotpProvisioning\TotpProvisioningInterface;
 use Iam\Authentication\Domain\TotpCredential\Exception\InvalidTotpCodeException;
-use Ramsey\Uuid\Uuid;
-use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
 use Storefront\Form\TwoFactorConfirm\TwoFactorConfirmFormData;
@@ -37,8 +33,8 @@ final class SecurityController extends AbstractController
 
     public function __construct(
         private readonly QueryBusInterface $queryBus,
-        private readonly CommandBusInterface $commandBus,
         private readonly TotpProvisioningInterface $provisioning,
+        private readonly TotpIssuerInterface $totpIssuer,
         private readonly TranslatorInterface $translator,
     ) {
     }
@@ -79,13 +75,9 @@ final class SecurityController extends AbstractController
         $form = $this->createForm(TwoFactorConfirmType::class, $formData)->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $id = Uuid::uuid7()->toString();
-            $this->commandBus->dispatch(new EnrollTotp($id, $user->identityId(), $secret));
-
             try {
-                $this->commandBus->dispatch(new ConfirmTotpEnrollment($id, $user->identityId(), (string) $formData->code));
+                $this->totpIssuer->issueFor($user->identityId(), $secret, (string) $formData->code);
             } catch (InvalidTotpCodeException) {
-                $this->commandBus->dispatch(new RevokeTotp($id, $user->identityId()));
                 $this->addFlash('error', $this->translator->trans('enroll_two_factor_flash_invalid_code', domain: 'account_security'));
 
                 return $this->renderEnrollTwoFactorForm($form, $secret, $provisioningUri);

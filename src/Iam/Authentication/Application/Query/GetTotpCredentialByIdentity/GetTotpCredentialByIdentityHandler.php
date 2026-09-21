@@ -17,6 +17,6 @@ final readonly class GetTotpCredentialByIdentityHandler
 
     public function __invoke(GetTotpCredentialByIdentity $query): ?TotpCredentialResult
     {
-        return $this->totpCredentialFinder->confirmedOfIdentityOrNull($query->identityId);
+        return $this->totpCredentialFinder->activeOfIdentityOrNull($query->identityId);
     }
 }
