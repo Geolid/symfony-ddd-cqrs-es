@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" target-language="en" datatype="plaintext" original="verification_code">
+    <header>
+      <tool tool-id="symfony" tool-name="Symfony"/>
+    </header>
+    <body>
+      <trans-unit id="label_code">
+        <source>label_code</source>
+        <target>Enter the security code</target>
+      </trans-unit>
+      <trans-unit id="error_invalid">
+        <source>error_invalid</source>
+        <target>Incorrect code.</target>
+      </trans-unit>
+      <trans-unit id="error_not_found">
+        <source>error_not_found</source>
+        <target>This code has expired. Request a new one below.</target>
+      </trans-unit>
+      <trans-unit id="error_attempts_exceeded">
+        <source>error_attempts_exceeded</source>
+        <target>Too many attempts. Request a new code below.</target>
+      </trans-unit>
+      <trans-unit id="flash_sent">
+        <source>flash_sent</source>
+        <target>A code has been sent.</target>
+      </trans-unit>
+      <trans-unit id="flash_too_recent">
+        <source>flash_too_recent</source>
+        <target>Please wait before requesting another code.</target>
+      </trans-unit>
+      <trans-unit id="button_resend">
+        <source>button_resend</source>
+        <target>Resend code</target>
+      </trans-unit>
+      <trans-unit id="flash_failed">
+        <source>flash_failed</source>
+        <target>Something went wrong. Please try again.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

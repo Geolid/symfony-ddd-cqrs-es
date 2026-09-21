@@ -1,16 +1,15 @@
-{% extends 'layout.html.twig' %}
+{% extends 'layout_auth.html.twig' %}
+{% trans_default_domain 'signin' %}
 
-{% block importmap %}{{ importmap(['shared', 'auth']) }}{% endblock %}
-
-{% block title %}{{ 'title'|trans({}, 'signin') }}{% endblock %}
+{% block title %}{{ 'identify_title'|trans }}{% endblock %}
 
 {% block content %}
     <article>
-        <h1>{{ 'title'|trans({}, 'signin') }}</h1>
+        <h1>{{ 'identify_title'|trans }}</h1>
 
         {{ form_start(form) }}
             {{ form_row(form.email) }}
-            <button type="submit">{{ 'button_submit'|trans({}, 'signin') }}</button>
+            <button type="submit">{{ 'identify_button_submit'|trans }}</button>
         {{ form_end(form) }}
     </article>
 {% endblock %}

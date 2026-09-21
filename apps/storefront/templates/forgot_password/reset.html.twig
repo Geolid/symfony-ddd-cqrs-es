@@ -1,0 +1,28 @@
+{% extends 'layout_auth.html.twig' %}
+{% trans_default_domain 'forgot_password' %}
+
+{% block importmap %}{{ importmap(['shared', 'auth']) }}{% endblock %}
+
+{% block title %}{{ 'reset_title'|trans }}{% endblock %}
+
+{% block content %}
+    <article>
+        <h1>{{ 'reset_title'|trans }}</h1>
+
+        <p>{{ 'reset_subtitle'|trans({'%email%': email}) }}</p>
+
+        {{ form_start(form) }}
+            {{ form_errors(form) }}
+            {{ form_row(form.code) }}
+            {{ form_row(form.newPassword.first) }}
+            {{ form_row(form.newPassword.second) }}
+            <button type="submit">{{ 'reset_button_submit'|trans }}</button>
+        {{ form_end(form) }}
+
+        <twig:ui:SubmitLink
+            actionUrl="{{ path('storefront_forgot_password_reset_resend', {identityId: identityId}) }}"
+            csrfId="password_reset_resend"
+            label="{{ 'button_resend'|trans({}, 'verification_code') }}"
+        />
+    </article>
+{% endblock %}

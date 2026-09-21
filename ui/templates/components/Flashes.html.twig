@@ -4,12 +4,12 @@
     <div class="flash-container">
         {% for label, messages in flashes %}
             {% for message in messages %}
-                <twig:ui:Alert
+                <twig:ui:Toast
                     :variant="label"
                     data-controller="flash"
                     data-action="click->flash#dismiss">
                     {{ message }}
-                </twig:ui:Alert>
+                </twig:ui:Toast>
             {% endfor %}
         {% endfor %}
     </div>

@@ -24,11 +24,11 @@
                             <summary>{{ 'greeting'|trans({'%fullName%': app.user.fullName}, 'layout') }}</summary>
                             <ul>
                                 <li><a href="{{ logout_path() }}">{{ 'link_logout'|trans({}, 'layout') }}</a></li>
-                                <li><a href="{{ path('storefront_account_security') }}">{{ 'link_security'|trans({}, 'layout') }}</a></li>
+                                <li><a href="{{ path('storefront_account_security_show') }}">{{ 'link_security'|trans({}, 'layout') }}</a></li>
                             </ul>
                         </details>
                     {% else %}
-                        <a href="{{ path('storefront_signin') }}">{{ 'greeting_anonymous'|trans({}, 'layout') }}</a>
+                        <a href="{{ path('storefront_signin_identify') }}">{{ 'greeting_anonymous'|trans({}, 'layout') }}</a>
                     {% endif %}
                 </li>
             </ul>

@@ -1,0 +1,36 @@
+{% extends 'layout.html.twig' %}
+{% trans_default_domain 'account_security' %}
+
+{% block title %}{{ 'show_title'|trans }}{% endblock %}
+
+{% block content %}
+    <nav aria-label="breadcrumb">
+        <ul>
+            <li><a href="{{ path('storefront_account_show') }}">{{ 'title'|trans({}, 'account_show') }}</a></li>
+            <li>›</li>
+            <li>{{ 'show_title'|trans }}</li>
+        </ul>
+    </nav>
+
+    <h1>{{ 'show_title'|trans }}</h1>
+
+    <dl>
+        <dt>{{ 'show_label_name'|trans }}</dt>
+        <dd>{{ user.fullName }}</dd>
+
+        <dt>{{ 'show_label_email'|trans }}</dt>
+        <dd>{{ user.getUserIdentifier() }}</dd>
+
+        <dt>{{ 'show_label_password'|trans }}</dt>
+        <dd>••••••••</dd>
+
+        <dt>{{ 'show_label_two_factor'|trans }}</dt>
+        <dd>
+            {% if totpEnrolled %}
+                {{ 'show_status_enabled'|trans }}
+            {% else %}
+                <a href="{{ path('storefront_account_security_enroll_two_factor') }}" role="button">{{ 'show_link_enable_two_factor'|trans }}</a>
+            {% endif %}
+        </dd>
+    </dl>
+{% endblock %}

@@ -68,7 +68,7 @@ final class PasswordCredentialAuthenticator extends AbstractLoginFormAuthenticat
 
     public function start(Request $request, ?AuthenticationException $authException = null): RedirectResponse
     {
-        return new RedirectResponse($this->urlGenerator->generate('storefront_signin'));
+        return new RedirectResponse($this->urlGenerator->generate('storefront_signin_identify'));
     }
 
     protected function getLoginUrl(Request $request): string

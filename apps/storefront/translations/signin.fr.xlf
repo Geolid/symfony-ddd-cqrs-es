@@ -5,17 +5,49 @@
       <tool tool-id="symfony" tool-name="Symfony"/>
     </header>
     <body>
-      <trans-unit id="title">
-        <source>title</source>
+      <trans-unit id="identify_title">
+        <source>identify_title</source>
         <target>Identifiez-vous ou créez un compte</target>
       </trans-unit>
-      <trans-unit id="label_email">
-        <source>label_email</source>
+      <trans-unit id="identify_label_email">
+        <source>identify_label_email</source>
         <target>Saisissez votre adresse e-mail</target>
       </trans-unit>
-      <trans-unit id="button_submit">
-        <source>button_submit</source>
+      <trans-unit id="identify_button_submit">
+        <source>identify_button_submit</source>
         <target>Continuer</target>
+      </trans-unit>
+      <trans-unit id="verify_title">
+        <source>verify_title</source>
+        <target>S'identifier</target>
+      </trans-unit>
+      <trans-unit id="verify_label_password">
+        <source>verify_label_password</source>
+        <target>Mot de passe</target>
+      </trans-unit>
+      <trans-unit id="verify_link_forgot">
+        <source>verify_link_forgot</source>
+        <target>Mot de passe oublié ?</target>
+      </trans-unit>
+      <trans-unit id="verify_button_submit">
+        <source>verify_button_submit</source>
+        <target>S'identifier</target>
+      </trans-unit>
+      <trans-unit id="create_account_title">
+        <source>create_account_title</source>
+        <target>Créer un compte</target>
+      </trans-unit>
+      <trans-unit id="create_account_heading">
+        <source>create_account_heading</source>
+        <target>Cet e-mail est nouveau pour nous</target>
+      </trans-unit>
+      <trans-unit id="create_account_subtitle">
+        <source>create_account_subtitle</source>
+        <target>Commencez avec un nouveau compte.</target>
+      </trans-unit>
+      <trans-unit id="create_account_button_create">
+        <source>create_account_button_create</source>
+        <target>Créer votre compte</target>
       </trans-unit>
     </body>
   </file>

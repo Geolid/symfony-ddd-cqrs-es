@@ -1,25 +1,24 @@
-{% extends 'layout.html.twig' %}
+{% extends 'layout_auth.html.twig' %}
+{% trans_default_domain 'registration' %}
 
-{% block importmap %}{{ importmap(['shared', 'auth']) }}{% endblock %}
-
-{% block title %}{{ 'title'|trans({}, 'register') }}{% endblock %}
+{% block title %}{{ 'register_title'|trans }}{% endblock %}
 
 {% block content %}
     <article>
-        <h1>{{ 'title'|trans({}, 'register') }}</h1>
+        <h1>{{ 'register_title'|trans }}</h1>
 
-        <p>{{ 'subtitle'|trans({}, 'register') }}</p>
+        <p>{{ 'register_subtitle'|trans }}</p>
 
         {{ form_start(form) }}
             {{ form_widget(form.email) }}
-            <label for="{{ form.email.vars.id }}">{{ 'label_email'|trans({}, 'register') }}</label>
-            <p>{{ form.email.vars.value }} <a href="{{ path('storefront_signin', {email: form.email.vars.value}) }}">{{ 'link_modify'|trans }}</a></p>
+            <label for="{{ form.email.vars.id }}">{{ 'register_label_email'|trans }}</label>
+            <p>{{ form.email.vars.value }} <a href="{{ path('storefront_signin_identify') }}">{{ 'link_modify'|trans({}, 'messages') }}</a></p>
             {{ form_row(form.fullName) }}
             {{ form_row(form.password.first) }}
             {{ form_row(form.password.second) }}
-            <button type="submit">{{ 'button_submit'|trans({}, 'register') }}</button>
+            <button type="submit">{{ 'register_button_submit'|trans }}</button>
         {{ form_end(form) }}
 
-        <p><strong>{{ 'already_customer'|trans({}, 'register') }}</strong><br><a href="{{ path('storefront_signin', {email: form.email.vars.value}) }}">{{ 'link_identify_instead'|trans({}, 'register') }}</a></p>
+        <p><strong>{{ 'register_text_already_customer'|trans }}</strong><br><a href="{{ path('storefront_signin_identify') }}">{{ 'register_link_identify_instead'|trans }}</a></p>
     </article>
 {% endblock %}

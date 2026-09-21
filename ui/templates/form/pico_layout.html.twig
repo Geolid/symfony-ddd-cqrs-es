@@ -20,12 +20,21 @@
 
 {%- block form_errors -%}
     {%- if errors|length > 0 -%}
-        <small id="{{ id }}_error">
-            {%- for error in errors -%}
-                {{- error.message -}}
-                {%- if not loop.last %}<br>{% endif -%}
-            {%- endfor -%}
-        </small>
+        {%- if form.parent is null -%}
+            <div class="form-error" id="{{ id }}_error">
+                {%- for error in errors -%}
+                    {{- error.message -}}
+                    {%- if not loop.last %}<br>{% endif -%}
+                {%- endfor -%}
+            </div>
+        {%- else -%}
+            <small id="{{ id }}_error">
+                {%- for error in errors -%}
+                    {{- error.message -}}
+                    {%- if not loop.last %}<br>{% endif -%}
+                {%- endfor -%}
+            </small>
+        {%- endif -%}
     {%- endif -%}
 {%- endblock form_errors -%}
 

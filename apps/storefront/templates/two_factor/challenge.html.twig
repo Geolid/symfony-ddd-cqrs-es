@@ -8,13 +8,11 @@
     <article>
         <h1>{{ 'title'|trans({}, 'two_factor_challenge') }}</h1>
 
-        {% if authenticationError %}
-            <twig:ui:Alert variant="error">
-                {{- authenticationError|trans(authenticationErrorData, 'security') -}}
-            </twig:ui:Alert>
-        {% endif %}
-
         <form method="post" action="{{ checkPathUrl ?? path(checkPathRoute) }}">
+            {% if authenticationError %}
+                <div class="form-error">{{- authenticationError|trans(authenticationErrorData, 'security') -}}</div>
+            {% endif %}
+
             <label for="two-factor-code">{{ 'label_code'|trans({}, 'two_factor_challenge') }}</label>
             <input
                 type="text"

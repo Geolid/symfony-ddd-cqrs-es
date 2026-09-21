@@ -1,24 +1,24 @@
-{% extends 'layout.html.twig' %}
+{% extends 'layout_auth.html.twig' %}
+{% trans_default_domain 'registration' %}
 
-{% block importmap %}{{ importmap(['shared', 'auth']) }}{% endblock %}
-
-{% block title %}{{ 'title'|trans({}, 'confirm') }}{% endblock %}
+{% block title %}{{ 'confirm_title'|trans }}{% endblock %}
 
 {% block content %}
     <article>
-        <h1>{{ 'title'|trans({}, 'confirm') }}</h1>
+        <h1>{{ 'confirm_title'|trans }}</h1>
 
-        <p>{{ 'message_sent'|trans({'%email%': email}, 'confirm') }} (<a href="{{ path('storefront_signin', {email: email}) }}">{{ 'link_modify'|trans }}</a>)</p>
+        <p>{{ 'confirm_message_sent'|trans({'%email%': email}) }} (<a href="{{ path('storefront_signin_identify') }}">{{ 'link_modify'|trans({}, 'messages') }}</a>)</p>
 
         {{ form_start(form) }}
-            {{ form_row(form.code) }}
-            <button type="submit">{{ 'button_submit'|trans({}, 'confirm') }}</button>
+            {{ form_errors(form) }}
+            {{ form_widget(form) }}
+            <button type="submit">{{ 'confirm_button_submit'|trans }}</button>
         {{ form_end(form) }}
 
         <twig:ui:SubmitLink
-            actionUrl="{{ path('storefront_register_confirm_resend', {id: id, email: email}) }}"
+            actionUrl="{{ path('storefront_registration_confirm_resend', {identityId: identityId}) }}"
             csrfId="confirmation_resend"
-            label="{{ 'button_resend'|trans }}"
+            label="{{ 'button_resend'|trans({}, 'verification_code') }}"
         />
     </article>
 {% endblock %}

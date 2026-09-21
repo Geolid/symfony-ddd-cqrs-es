@@ -9,22 +9,6 @@
         <source>link_modify</source>
         <target>Edit</target>
       </trans-unit>
-      <trans-unit id="button_resend">
-        <source>button_resend</source>
-        <target>Resend code</target>
-      </trans-unit>
-      <trans-unit id="flash_resent">
-        <source>flash_resent</source>
-        <target>A new code has been sent.</target>
-      </trans-unit>
-      <trans-unit id="flash_invalid_code">
-        <source>flash_invalid_code</source>
-        <target>Invalid or expired code.</target>
-      </trans-unit>
-      <trans-unit id="flash_too_recent">
-        <source>flash_too_recent</source>
-        <target>Please wait before requesting another code.</target>
-      </trans-unit>
     </body>
   </file>
 </xliff>

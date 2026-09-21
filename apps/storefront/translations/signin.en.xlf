@@ -5,17 +5,49 @@
       <tool tool-id="symfony" tool-name="Symfony"/>
     </header>
     <body>
-      <trans-unit id="title">
-        <source>title</source>
+      <trans-unit id="identify_title">
+        <source>identify_title</source>
         <target>Sign in or create an account</target>
       </trans-unit>
-      <trans-unit id="label_email">
-        <source>label_email</source>
+      <trans-unit id="identify_label_email">
+        <source>identify_label_email</source>
         <target>Enter your email address</target>
       </trans-unit>
-      <trans-unit id="button_submit">
-        <source>button_submit</source>
+      <trans-unit id="identify_button_submit">
+        <source>identify_button_submit</source>
         <target>Continue</target>
+      </trans-unit>
+      <trans-unit id="verify_title">
+        <source>verify_title</source>
+        <target>Sign in</target>
+      </trans-unit>
+      <trans-unit id="verify_label_password">
+        <source>verify_label_password</source>
+        <target>Password</target>
+      </trans-unit>
+      <trans-unit id="verify_link_forgot">
+        <source>verify_link_forgot</source>
+        <target>Forgot password?</target>
+      </trans-unit>
+      <trans-unit id="verify_button_submit">
+        <source>verify_button_submit</source>
+        <target>Sign in</target>
+      </trans-unit>
+      <trans-unit id="create_account_title">
+        <source>create_account_title</source>
+        <target>Create account</target>
+      </trans-unit>
+      <trans-unit id="create_account_heading">
+        <source>create_account_heading</source>
+        <target>This email is new to us</target>
+      </trans-unit>
+      <trans-unit id="create_account_subtitle">
+        <source>create_account_subtitle</source>
+        <target>Start with a new account.</target>
+      </trans-unit>
+      <trans-unit id="create_account_button_create">
+        <source>create_account_button_create</source>
+        <target>Create your account</target>
       </trans-unit>
     </body>
   </file>
