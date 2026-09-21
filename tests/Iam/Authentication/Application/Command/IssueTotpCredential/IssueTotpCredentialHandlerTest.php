@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Application\Command\IssueTotpCredential;
 
 use Iam\Authentication\Application\AuthenticationUniqueKey;
-use Iam\Authentication\Application\Command\IssueTotpCredential\Exception\TotpAlreadyEnrolledException;
+use Iam\Authentication\Application\Command\IssueTotpCredential\Exception\TotpAlreadyIssuedException;
 use Iam\Authentication\Application\Command\IssueTotpCredential\IssueTotpCredential;
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInterface;
 use Iam\Tests\Authentication\Support\Builder\TotpCredentialBuilder;
@@ -25,10 +25,11 @@ final class IssueTotpCredentialHandlerTest extends AbstractIntegrationTestCase
         $id = Uuid::uuid7()->toString();
         $identityId = TotpCredentialBuilder::sample('identityId');
         $secret = TotpCredentialBuilder::sample('secret');
+        $backupCodes = TotpCredentialBuilder::sample('plainBackupCodes');
         $now = Clock::get()->now();
 
         // When
-        $this->dispatch(new IssueTotpCredential($id, $identityId, $secret));
+        $this->dispatch(new IssueTotpCredential($id, $identityId, $secret, $backupCodes));
 
         // Then
         $result = $this->service(TotpCredentialFinderInterface::class)->ofId($id);
@@ -45,7 +46,7 @@ final class IssueTotpCredentialHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenIdentityAlreadyEnrolled(): void
+    public function itFailsWhenIdentityAlreadyIssued(): void
     {
         // Given
         $identityId = TotpCredentialBuilder::sample('identityId');
@@ -56,13 +57,14 @@ final class IssueTotpCredentialHandlerTest extends AbstractIntegrationTestCase
         );
 
         // Then
-        $this->expectException(TotpAlreadyEnrolledException::class);
+        $this->expectException(TotpAlreadyIssuedException::class);
 
         // When
         $this->dispatch(new IssueTotpCredential(
             Uuid::uuid7()->toString(),
             $identityId,
             TotpCredentialBuilder::sample('secret'),
+            TotpCredentialBuilder::sample('plainBackupCodes'),
         ));
     }
 }

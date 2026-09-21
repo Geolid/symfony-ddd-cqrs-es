@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Application\CredentialVerification;
 
+use Iam\Authentication\Application\Command\ConsumeBackupCode\ConsumeBackupCode;
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInterface;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpCipherInterface;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpVerifierInterface;
+use Shared\Application\Command\CommandBusInterface;
+use Shared\Application\Exception\ApplicationExceptionInterface;
 
 final readonly class TotpCredentialVerifier implements TotpCredentialVerifierInterface
 {
@@ -14,6 +17,7 @@ final readonly class TotpCredentialVerifier implements TotpCredentialVerifierInt
         private TotpCredentialFinderInterface $totpCredentialFinder,
         private TotpCipherInterface $cipher,
         private TotpVerifierInterface $verifier,
+        private CommandBusInterface $commandBus,
     ) {
     }
 
@@ -25,6 +29,16 @@ final readonly class TotpCredentialVerifier implements TotpCredentialVerifierInt
             return false;
         }
 
-        return $this->verifier->verify($this->cipher->decrypt($credential->encryptedSecret), $code);
+        if ($this->verifier->verify($this->cipher->decrypt($credential->encryptedSecret), $code)) {
+            return true;
+        }
+
+        try {
+            $this->commandBus->dispatch(new ConsumeBackupCode($credential->id, $code));
+
+            return true;
+        } catch (ApplicationExceptionInterface|\DomainException) {
+            return false;
+        }
     }
 }

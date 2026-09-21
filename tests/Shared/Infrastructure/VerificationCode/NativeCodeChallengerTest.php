@@ -10,6 +10,7 @@ use PHPUnit\Framework\TestCase;
 use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
 use Shared\Domain\Exception\VerificationCodeNotFoundException;
 use Shared\Domain\ValueObject\VerificationCodeKey;
+use Shared\Infrastructure\Random\NativeNumericCodeGenerator;
 use Shared\Infrastructure\VerificationCode\NativeCodeChallenger;
 use Shared\Tests\Support\Double\DummyVerificationCodePurpose;
 use Shared\Tests\Support\Double\FakeVerificationCodeStore;
@@ -25,7 +26,13 @@ final class NativeCodeChallengerTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->codeChallenger = new NativeCodeChallenger(new FakeVerificationCodeStore(), 'secret', self::MAX_ATTEMPTS, \sprintf('+%d minutes', self::EXPIRY_MINUTES));
+        $this->codeChallenger = new NativeCodeChallenger(
+            new FakeVerificationCodeStore(),
+            new NativeNumericCodeGenerator(),
+            'secret',
+            self::MAX_ATTEMPTS,
+            \sprintf('+%d minutes', self::EXPIRY_MINUTES),
+        );
         $this->key = VerificationCodeKey::for(DummyVerificationCodePurpose::NAME, 'subject-1');
     }
 

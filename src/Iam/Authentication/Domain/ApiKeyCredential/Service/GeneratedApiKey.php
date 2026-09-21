@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Application\ApiKeyIssuance;
+namespace Iam\Authentication\Domain\ApiKeyCredential\Service;
 
 final readonly class GeneratedApiKey
 {

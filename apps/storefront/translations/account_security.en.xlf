@@ -33,33 +33,45 @@
         <source>show_link_enable_two_factor</source>
         <target>Enable</target>
       </trans-unit>
-      <trans-unit id="enroll_two_factor_title">
-        <source>enroll_two_factor_title</source>
+      <trans-unit id="issue_totp_title">
+        <source>issue_totp_title</source>
         <target>Enable two-factor authentication</target>
       </trans-unit>
-      <trans-unit id="enroll_two_factor_instructions_qr">
-        <source>enroll_two_factor_instructions_qr</source>
+      <trans-unit id="issue_totp_instructions_qr">
+        <source>issue_totp_instructions_qr</source>
         <target>Scan this QR code with your authenticator app (Google Authenticator, etc.):</target>
       </trans-unit>
-      <trans-unit id="enroll_two_factor_instructions_manual">
-        <source>enroll_two_factor_instructions_manual</source>
+      <trans-unit id="issue_totp_instructions_manual">
+        <source>issue_totp_instructions_manual</source>
         <target>Or enter this key manually:</target>
       </trans-unit>
-      <trans-unit id="enroll_two_factor_instructions_confirm">
-        <source>enroll_two_factor_instructions_confirm</source>
+      <trans-unit id="issue_totp_instructions_confirm">
+        <source>issue_totp_instructions_confirm</source>
         <target>Then enter the displayed code to confirm:</target>
       </trans-unit>
-      <trans-unit id="enroll_two_factor_button_submit">
-        <source>enroll_two_factor_button_submit</source>
+      <trans-unit id="issue_totp_button_submit">
+        <source>issue_totp_button_submit</source>
         <target>Confirm</target>
       </trans-unit>
-      <trans-unit id="enroll_two_factor_flash_invalid_code">
-        <source>enroll_two_factor_flash_invalid_code</source>
+      <trans-unit id="issue_totp_flash_invalid_code">
+        <source>issue_totp_flash_invalid_code</source>
         <target>Invalid code, try again.</target>
       </trans-unit>
-      <trans-unit id="enroll_two_factor_flash_enabled">
-        <source>enroll_two_factor_flash_enabled</source>
+      <trans-unit id="issue_totp_flash_issued">
+        <source>issue_totp_flash_issued</source>
         <target>Two-factor authentication enabled.</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_backup_codes_title">
+        <source>issue_totp_backup_codes_title</source>
+        <target>Your backup codes</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_backup_codes_instructions">
+        <source>issue_totp_backup_codes_instructions</source>
+        <target>Store these codes somewhere safe. Each one can only be used once to sign in if you lose access to your authenticator app. They will never be shown again.</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_backup_codes_button_continue">
+        <source>issue_totp_backup_codes_button_continue</source>
+        <target>I've saved my codes</target>
       </trans-unit>
     </body>
   </file>

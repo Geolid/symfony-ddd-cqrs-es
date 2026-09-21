@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Application\TotpProvisioning;
+namespace Iam\Authentication\Application\TotpIssuance;
 
 use Shared\Application\DrivingPort;
 

@@ -12,9 +12,11 @@ use Shared\Application\Exception\ApplicationExceptionInterface;
 interface TotpIssuerInterface
 {
     /**
+     * @return list<non-empty-string>
+     *
      * @throws InvalidTotpCodeException
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    public function issueFor(string $identityId, #[\SensitiveParameter] string $secret, #[\SensitiveParameter] string $code): void;
+    public function issueFor(string $identityId, #[\SensitiveParameter] string $secret, #[\SensitiveParameter] string $code): array;
 }

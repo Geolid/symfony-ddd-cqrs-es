@@ -8,7 +8,7 @@ use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\SvgWriter;
 use Iam\Authentication\Application\Query\GetTotpCredentialByIdentity\GetTotpCredentialByIdentity;
 use Iam\Authentication\Application\TotpIssuance\TotpIssuerInterface;
-use Iam\Authentication\Application\TotpProvisioning\TotpProvisioningInterface;
+use Iam\Authentication\Application\TotpIssuance\TotpProvisioningInterface;
 use Iam\Authentication\Domain\TotpCredential\Exception\InvalidTotpCodeException;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
@@ -28,7 +28,7 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[Route(path: ['en' => '/account/security', 'fr' => '/compte/connexion-securite'], name: 'storefront_account_security_')]
 final class SecurityController extends AbstractController
 {
-    private const string SESSION_KEY = 'storefront.two_factor_enrollment_secret';
+    private const string SESSION_KEY = 'storefront.totp_issuance_secret';
     private const string ISSUER = 'Storefront';
 
     public function __construct(
@@ -49,7 +49,7 @@ final class SecurityController extends AbstractController
 
         return $this->render('account/security/show.html.twig', [
             'user' => $user,
-            'totpEnrolled' => null !== $totpCredential,
+            'totpIssued' => null !== $totpCredential,
         ]);
     }
 
@@ -57,8 +57,8 @@ final class SecurityController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route(path: ['en' => '/2fa/enable', 'fr' => '/2fa/activer'], name: 'enroll_two_factor', methods: ['GET', 'POST'])]
-    public function enrollTwoFactor(Request $request, #[CurrentUser] PasswordUser $user): Response
+    #[Route(path: ['en' => '/2fa/enable', 'fr' => '/2fa/activer'], name: 'issue_totp', methods: ['GET', 'POST'])]
+    public function issueTotp(Request $request, #[CurrentUser] PasswordUser $user): Response
     {
         $session = $request->getSession();
         /** @var non-empty-string|null $secret */
@@ -76,30 +76,30 @@ final class SecurityController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             try {
-                $this->totpIssuer->issueFor($user->identityId(), $secret, (string) $formData->code);
+                $backupCodes = $this->totpIssuer->issueFor($user->identityId(), $secret, (string) $formData->code);
             } catch (InvalidTotpCodeException) {
-                $this->addFlash('error', $this->translator->trans('enroll_two_factor_flash_invalid_code', domain: 'account_security'));
+                $this->addFlash('error', $this->translator->trans('issue_totp_flash_invalid_code', domain: 'account_security'));
 
-                return $this->renderEnrollTwoFactorForm($form, $secret, $provisioningUri);
+                return $this->renderIssueTotpForm($form, $secret, $provisioningUri);
             }
 
             $session->remove(self::SESSION_KEY);
-            $this->addFlash('success', $this->translator->trans('enroll_two_factor_flash_enabled', domain: 'account_security'));
+            $this->addFlash('success', $this->translator->trans('issue_totp_flash_issued', domain: 'account_security'));
 
-            return $this->redirectToRoute('storefront_account_show');
+            return $this->render('account/security/issue_totp_backup_codes.html.twig', ['backupCodes' => $backupCodes]);
         }
 
-        return $this->renderEnrollTwoFactorForm($form, $secret, $provisioningUri);
+        return $this->renderIssueTotpForm($form, $secret, $provisioningUri);
     }
 
     /**
      * @param FormInterface<TwoFactorConfirmFormData> $form
      */
-    private function renderEnrollTwoFactorForm(FormInterface $form, string $secret, string $provisioningUri): Response
+    private function renderIssueTotpForm(FormInterface $form, string $secret, string $provisioningUri): Response
     {
         $qrCode = new Builder()->build(writer: new SvgWriter(), data: $provisioningUri);
 
-        return $this->render('account/security/enroll_two_factor.html.twig', [
+        return $this->render('account/security/issue_totp.html.twig', [
             'form' => $form,
             'secret' => $secret,
             'qrCodeDataUri' => $qrCode->getDataUri(),

@@ -1,0 +1,25 @@
+{% extends 'layout.html.twig' %}
+{% trans_default_domain 'account_security' %}
+
+{% block importmap %}{{ importmap(['shared', 'auth']) }}{% endblock %}
+
+{% block title %}{{ 'issue_totp_title'|trans }}{% endblock %}
+
+{% block content %}
+    <article>
+        <h1>{{ 'issue_totp_title'|trans }}</h1>
+
+        <p>{{ 'issue_totp_instructions_qr'|trans }}</p>
+        <img src="{{ qrCodeDataUri }}" alt="{{ 'issue_totp_title'|trans }}">
+
+        <p>{{ 'issue_totp_instructions_manual'|trans }}</p>
+        <p>{{ secret }}</p>
+
+        <p>{{ 'issue_totp_instructions_confirm'|trans }}</p>
+
+        {{ form_start(form) }}
+            {{ form_row(form.code) }}
+            <button type="submit">{{ 'issue_totp_button_submit'|trans }}</button>
+        {{ form_end(form) }}
+    </article>
+{% endblock %}

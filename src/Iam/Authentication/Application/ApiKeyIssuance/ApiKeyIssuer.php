@@ -5,6 +5,8 @@ declare(strict_types=1);
 namespace Iam\Authentication\Application\ApiKeyIssuance;
 
 use Iam\Authentication\Application\Command\IssueApiKeyCredential\IssueApiKeyCredential;
+use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyGeneratorInterface;
+use Iam\Authentication\Domain\ApiKeyCredential\Service\GeneratedApiKey;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -12,7 +14,7 @@ use Shared\Application\Exception\ApplicationExceptionInterface;
 final readonly class ApiKeyIssuer implements ApiKeyIssuerInterface
 {
     public function __construct(
-        private ApiKeyGenerator $apiKeyGenerator,
+        private ApiKeyGeneratorInterface $apiKeyGenerator,
         private CommandBusInterface $commandBus,
     ) {
     }

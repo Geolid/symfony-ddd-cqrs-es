@@ -1,0 +1,22 @@
+{% extends 'layout.html.twig' %}
+{% trans_default_domain 'account_security' %}
+
+{% block title %}{{ 'issue_totp_backup_codes_title'|trans }}{% endblock %}
+
+{% block content %}
+    <article>
+        <h1>{{ 'issue_totp_backup_codes_title'|trans }}</h1>
+
+        <p>{{ 'issue_totp_backup_codes_instructions'|trans }}</p>
+
+        <ul data-testid="backup-codes-list">
+            {% for backupCode in backupCodes %}
+                <li>{{ backupCode }}</li>
+            {% endfor %}
+        </ul>
+
+        <a data-testid="backup-codes-continue" href="{{ path('storefront_account_show') }}">
+            {{ 'issue_totp_backup_codes_button_continue'|trans }}
+        </a>
+    </article>
+{% endblock %}

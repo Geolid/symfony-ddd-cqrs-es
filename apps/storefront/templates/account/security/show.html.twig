@@ -26,10 +26,10 @@
 
         <dt>{{ 'show_label_two_factor'|trans }}</dt>
         <dd>
-            {% if totpEnrolled %}
+            {% if totpIssued %}
                 {{ 'show_status_enabled'|trans }}
             {% else %}
-                <a href="{{ path('storefront_account_security_enroll_two_factor') }}" role="button">{{ 'show_link_enable_two_factor'|trans }}</a>
+                <a href="{{ path('storefront_account_security_issue_totp') }}" role="button">{{ 'show_link_enable_two_factor'|trans }}</a>
             {% endif %}
         </dd>
     </dl>

@@ -11,7 +11,11 @@
       </trans-unit>
       <trans-unit id="label_code">
         <source>label_code</source>
-        <target>6-digit code</target>
+        <target>Authentication code</target>
+      </trans-unit>
+      <trans-unit id="hint_backup_code">
+        <source>hint_backup_code</source>
+        <target>Enter your 6-digit code, or one of your 8-digit backup codes if you've lost access to your authenticator app.</target>
       </trans-unit>
       <trans-unit id="button_submit">
         <source>button_submit</source>

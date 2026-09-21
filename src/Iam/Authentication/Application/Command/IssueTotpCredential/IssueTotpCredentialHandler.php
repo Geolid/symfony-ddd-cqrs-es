@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Iam\Authentication\Application\Command\IssueTotpCredential;
 
 use Iam\Authentication\Application\AuthenticationUniqueKey;
-use Iam\Authentication\Application\Command\IssueTotpCredential\Exception\TotpAlreadyEnrolledException;
+use Iam\Authentication\Application\Command\IssueTotpCredential\Exception\TotpAlreadyIssuedException;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialAlreadyExistsException;
 use Iam\Authentication\Domain\TotpCredential\Repository\TotpCredentialRepositoryInterface;
+use Iam\Authentication\Domain\TotpCredential\Service\TotpBackupCodeHasherInterface;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpCipherInterface;
 use Iam\Authentication\Domain\TotpCredential\TotpCredential;
 use Iam\Authentication\Domain\TotpCredential\ValueObject\TotpCredentialId;
@@ -24,12 +25,13 @@ final readonly class IssueTotpCredentialHandler
         private TotpCredentialRepositoryInterface $repository,
         private UniquenessRegistryInterface $uniqueness,
         private TotpCipherInterface $cipher,
+        private TotpBackupCodeHasherInterface $backupCodeHasher,
         private ClockInterface $clock,
     ) {
     }
 
     /**
-     * @throws TotpAlreadyEnrolledException
+     * @throws TotpAlreadyIssuedException
      * @throws TotpCredentialAlreadyExistsException
      */
     public function __invoke(IssueTotpCredential $command): void
@@ -37,7 +39,7 @@ final readonly class IssueTotpCredentialHandler
         try {
             $this->uniqueness->claim(UniqueKey::for(AuthenticationUniqueKey::TOTP_CREDENTIAL_IDENTITY), $command->identityId, $command->id);
         } catch (UniquenessViolatedException $e) {
-            throw TotpAlreadyEnrolledException::forIdentity($command->identityId, $e);
+            throw TotpAlreadyIssuedException::forIdentity($command->identityId, $e);
         }
 
         $credential = TotpCredential::issue(
@@ -45,6 +47,8 @@ final readonly class IssueTotpCredentialHandler
             identityId: $command->identityId,
             secret: $command->secret,
             cipher: $this->cipher,
+            plainBackupCodes: $command->backupCodes,
+            backupCodeHasher: $this->backupCodeHasher,
             issuedAt: $this->clock->now(),
         );
 

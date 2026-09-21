@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Authentication\Application\ApiKeyIssuance;
+namespace Iam\Tests\Authentication\Infrastructure\ApiKey;
 
-use Iam\Authentication\Application\ApiKeyIssuance\ApiKeyGenerator;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\KeyId;
+use Iam\Authentication\Infrastructure\ApiKey\NativeApiKeyGenerator;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 
-final class ApiKeyGeneratorTest extends TestCase
+final class NativeApiKeyGeneratorTest extends TestCase
 {
-    private ApiKeyGenerator $generator;
+    private NativeApiKeyGenerator $generator;
 
     protected function setUp(): void
     {
-        $this->generator = new ApiKeyGenerator();
+        $this->generator = new NativeApiKeyGenerator();
     }
 
     #[Test]

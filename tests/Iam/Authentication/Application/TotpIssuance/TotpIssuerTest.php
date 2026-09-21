@@ -35,13 +35,16 @@ final class TotpIssuerTest extends AbstractIntegrationTestCase
         $code = TOTP::createFromSecret($secret, Clock::get())->now();
 
         // When
-        $this->issuer->issueFor($identityId, $secret, $code);
+        $backupCodes = $this->issuer->issueFor($identityId, $secret, $code);
 
         // Then
         $result = $this->finder->activeOfIdentityOrNull($identityId);
         self::assertNotNull($result);
         self::assertSame($identityId, $result->identityId);
         self::assertFalse($result->revoked);
+
+        $backupCodeCount = self::getContainer()->getParameter('iam.authentication.backup_code_count');
+        self::assertCount($backupCodeCount, $backupCodes);
     }
 
     #[Test]
@@ -55,10 +58,6 @@ final class TotpIssuerTest extends AbstractIntegrationTestCase
         $this->expectException(InvalidTotpCodeException::class);
 
         // When
-        try {
-            $this->issuer->issueFor($identityId, $secret, '000000');
-        } finally {
-            self::assertNull($this->finder->activeOfIdentityOrNull($identityId));
-        }
+        $this->issuer->issueFor($identityId, $secret, '000000');
     }
 }

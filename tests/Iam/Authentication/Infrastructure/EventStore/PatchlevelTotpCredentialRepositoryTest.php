@@ -8,6 +8,7 @@ use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialNotFoundExc
 use Iam\Authentication\Domain\TotpCredential\Repository\TotpCredentialRepositoryInterface;
 use Iam\Authentication\Domain\TotpCredential\ValueObject\TotpCredentialId;
 use Iam\Tests\Authentication\Support\Builder\TotpCredentialBuilder;
+use Iam\Tests\Authentication\Support\Double\FakeTotpBackupCodeHasher;
 use Iam\Tests\Authentication\Support\Double\FakeTotpCipher;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -17,6 +18,7 @@ final class PatchlevelTotpCredentialRepositoryTest extends AbstractIntegrationTe
 {
     private TotpCredentialRepositoryInterface $repository;
     private FakeTotpCipher $cipher;
+    private FakeTotpBackupCodeHasher $backupCodeHasher;
 
     protected function setUp(): void
     {
@@ -24,13 +26,14 @@ final class PatchlevelTotpCredentialRepositoryTest extends AbstractIntegrationTe
 
         $this->repository = $this->service(TotpCredentialRepositoryInterface::class);
         $this->cipher = new FakeTotpCipher();
+        $this->backupCodeHasher = new FakeTotpBackupCodeHasher();
     }
 
     #[Test]
     public function itSavesAndLoads(): void
     {
         // Given
-        $credential = TotpCredentialBuilder::new()->withCipher($this->cipher)->create();
+        $credential = TotpCredentialBuilder::new()->withCipher($this->cipher)->withBackupCodeHasher($this->backupCodeHasher)->create();
 
         // When
         $this->repository->save($credential);
@@ -54,7 +57,7 @@ final class PatchlevelTotpCredentialRepositoryTest extends AbstractIntegrationTe
     public function itHas(): void
     {
         // Given
-        $credential = TotpCredentialBuilder::new()->withCipher($this->cipher)->create();
+        $credential = TotpCredentialBuilder::new()->withCipher($this->cipher)->withBackupCodeHasher($this->backupCodeHasher)->create();
         $this->repository->save($credential);
 
         // When
