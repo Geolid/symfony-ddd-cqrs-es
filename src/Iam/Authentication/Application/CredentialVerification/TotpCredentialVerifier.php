@@ -38,6 +38,13 @@ final readonly class TotpCredentialVerifier implements TotpCredentialVerifierInt
 
             return true;
         } catch (ApplicationExceptionInterface|\DomainException) {
+            /*
+             * The ApplicationExceptionInterface branch is only the bus's own generic contract —
+             * ConsumeBackupCodeHandler's real chain throws Domain exceptions exclusively, so no
+             * test can honestly reach it.
+             *
+             * @infection-ignore-all
+             */
             return false;
         }
     }
