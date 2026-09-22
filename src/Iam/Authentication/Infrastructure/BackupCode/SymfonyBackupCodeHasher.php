@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Infrastructure\Totp;
+namespace Iam\Authentication\Infrastructure\BackupCode;
 
-use Iam\Authentication\Domain\TotpCredential\Service\TotpBackupCodeHasherInterface;
+use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeHasherInterface;
 use Symfony\Component\PasswordHasher\Hasher\NativePasswordHasher;
 
-final readonly class SymfonyTotpBackupCodeHasher implements TotpBackupCodeHasherInterface
+final readonly class SymfonyBackupCodeHasher implements BackupCodeHasherInterface
 {
     public function __construct(private NativePasswordHasher $hasher)
     {

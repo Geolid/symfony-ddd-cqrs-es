@@ -24,7 +24,21 @@
                 required
                 autofocus
             >
-            <small>{{ 'hint_backup_code'|trans({}, 'two_factor_challenge') }}</small>
+            {% if 'backup_code' != twoFactorProvider %}
+                <small>{{ 'hint_backup_code'|trans({}, 'two_factor_challenge') }}</small>
+            {% endif %}
+
+            {% if availableTwoFactorProviders|length > 1 %}
+                <ul data-testid="two-factor-switch-provider">
+                    {% for provider in availableTwoFactorProviders if provider != twoFactorProvider %}
+                        <li>
+                            <a href="{{ path('storefront_two_factor_challenge', {preferProvider: provider}) }}">
+                                {{ ('switch_provider_' ~ provider)|trans({}, 'two_factor_challenge') }}
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
 
             <label for="two-factor-trusted">
                 <input type="checkbox" id="two-factor-trusted" name="_trusted" value="1">

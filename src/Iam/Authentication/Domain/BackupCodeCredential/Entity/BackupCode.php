@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Domain\TotpCredential\Entity;
+namespace Iam\Authentication\Domain\BackupCodeCredential\Entity;
 
 final readonly class BackupCode
 {

@@ -6,7 +6,9 @@ namespace Iam\Tests\Authentication\Application\TotpIssuance;
 
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInterface;
 use Iam\Authentication\Application\TotpIssuance\TotpIssuerInterface;
+use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeHasherInterface;
 use Iam\Authentication\Domain\TotpCredential\Exception\InvalidTotpCodeException;
+use Iam\Tests\Authentication\Support\Builder\BackupCodeCredentialBuilder;
 use Iam\Tests\Authentication\Support\Builder\TotpCredentialBuilder;
 use OTPHP\TOTP;
 use PHPUnit\Framework\Attributes\Test;
@@ -45,6 +47,24 @@ final class TotpIssuerTest extends AbstractIntegrationTestCase
 
         $backupCodeCount = self::getContainer()->getParameter('iam.authentication.backup_code_count');
         self::assertCount($backupCodeCount, $backupCodes);
+    }
+
+    #[Test]
+    public function itIssuesWithoutNewBackupCodesWhenAlreadyIssued(): void
+    {
+        // Given
+        $backupCodeBuilder = BackupCodeCredentialBuilder::new()->withBackupCodeHasher($this->service(BackupCodeHasherInterface::class));
+        $backupCodeCredential = $backupCodeBuilder->create();
+        $this->store($backupCodeCredential);
+
+        $secret = TOTP::generate()->getSecret();
+        $code = TOTP::createFromSecret($secret, Clock::get())->now();
+
+        // When
+        $backupCodes = $this->issuer->issueFor($backupCodeBuilder['identityId'], $secret, $code);
+
+        // Then
+        self::assertSame([], $backupCodes);
     }
 
     #[Test]

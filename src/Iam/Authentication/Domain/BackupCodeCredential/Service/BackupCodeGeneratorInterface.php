@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Domain\TotpCredential\Service;
+namespace Iam\Authentication\Domain\BackupCodeCredential\Service;
 
-interface TotpBackupCodeGeneratorInterface
+interface BackupCodeGeneratorInterface
 {
     public const int DIGITS = 8;
 

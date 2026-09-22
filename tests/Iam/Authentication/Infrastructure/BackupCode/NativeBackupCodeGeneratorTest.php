@@ -2,20 +2,20 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Authentication\Infrastructure\Totp;
+namespace Iam\Tests\Authentication\Infrastructure\BackupCode;
 
-use Iam\Authentication\Infrastructure\Totp\NativeTotpBackupCodeGenerator;
+use Iam\Authentication\Infrastructure\BackupCode\NativeBackupCodeGenerator;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Shared\Infrastructure\Random\NativeNumericCodeGenerator;
 
-final class NativeTotpBackupCodeGeneratorTest extends TestCase
+final class NativeBackupCodeGeneratorTest extends TestCase
 {
-    private NativeTotpBackupCodeGenerator $generator;
+    private NativeBackupCodeGenerator $generator;
 
     protected function setUp(): void
     {
-        $this->generator = new NativeTotpBackupCodeGenerator(new NativeNumericCodeGenerator());
+        $this->generator = new NativeBackupCodeGenerator(new NativeNumericCodeGenerator());
     }
 
     #[Test]

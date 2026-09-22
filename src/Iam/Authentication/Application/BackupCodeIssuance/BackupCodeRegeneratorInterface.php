@@ -2,19 +2,19 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Application\TotpIssuance;
+namespace Iam\Authentication\Application\BackupCodeIssuance;
 
-use Iam\Authentication\Application\TotpIssuance\Exception\TotpNotIssuedException;
+use Iam\Authentication\Application\BackupCodeIssuance\Exception\BackupCodeCredentialNotIssuedException;
 use Shared\Application\DrivingPort;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
 #[DrivingPort]
-interface TotpBackupCodeRegeneratorInterface
+interface BackupCodeRegeneratorInterface
 {
     /**
      * @return list<non-empty-string>
      *
-     * @throws TotpNotIssuedException
+     * @throws BackupCodeCredentialNotIssuedException
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */

@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Support\Double;
 
-use Iam\Authentication\Domain\TotpCredential\Service\TotpBackupCodeHasherInterface;
+use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeHasherInterface;
 
-final class FakeTotpBackupCodeHasher implements TotpBackupCodeHasherInterface
+final class FakeBackupCodeHasher implements BackupCodeHasherInterface
 {
     private const string PREFIX = 'hashed:';
 

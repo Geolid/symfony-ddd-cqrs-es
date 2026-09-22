@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Infrastructure\Totp;
+namespace Iam\Authentication\Infrastructure\BackupCode;
 
-use Iam\Authentication\Domain\TotpCredential\Service\TotpBackupCodeGeneratorInterface;
+use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeGeneratorInterface;
 use Shared\Domain\Service\NumericCodeGeneratorInterface;
 
-final readonly class NativeTotpBackupCodeGenerator implements TotpBackupCodeGeneratorInterface
+final readonly class NativeBackupCodeGenerator implements BackupCodeGeneratorInterface
 {
     public function __construct(private NumericCodeGeneratorInterface $numericCodeGenerator)
     {
