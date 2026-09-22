@@ -12,7 +12,7 @@ final readonly class NativeApiKeyGenerator implements ApiKeyGeneratorInterface
 {
     public function generate(): GeneratedApiKey
     {
-        $keyIdRandomBytes = (int) ((KeyId::LENGTH - \strlen(KeyId::PREFIX)) / 2);
+        $keyIdRandomBytes = (KeyId::LENGTH - \strlen(KeyId::PREFIX)) / 2;
 
         return new GeneratedApiKey(
             keyId: KeyId::PREFIX.bin2hex(random_bytes($keyIdRandomBytes)),
