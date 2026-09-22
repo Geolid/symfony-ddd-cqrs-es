@@ -17,6 +17,10 @@
         <source>hint_backup_code</source>
         <target>Enter your 6-digit code, or one of your 8-digit backup codes if you've lost access to your authenticator app.</target>
       </trans-unit>
+      <trans-unit id="label_trust_device">
+        <source>label_trust_device</source>
+        <target>Remember this device for 30 days</target>
+      </trans-unit>
       <trans-unit id="button_submit">
         <source>button_submit</source>
         <target>Verify</target>

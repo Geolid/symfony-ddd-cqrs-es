@@ -73,6 +73,18 @@
         <source>issue_totp_backup_codes_button_continue</source>
         <target>J'ai sauvegardé mes codes</target>
       </trans-unit>
+      <trans-unit id="show_label_trusted_devices">
+        <source>show_label_trusted_devices</source>
+        <target>Appareils mémorisés</target>
+      </trans-unit>
+      <trans-unit id="show_button_revoke_device_trust">
+        <source>show_button_revoke_device_trust</source>
+        <target>Se déconnecter de tous les appareils</target>
+      </trans-unit>
+      <trans-unit id="revoke_device_trust_flash_success">
+        <source>revoke_device_trust_flash_success</source>
+        <target>Vous avez été déconnecté de tous les appareils mémorisés. Un code vous sera de nouveau demandé à leur prochaine connexion.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

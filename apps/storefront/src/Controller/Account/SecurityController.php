@@ -6,10 +6,12 @@ namespace Storefront\Controller\Account;
 
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\SvgWriter;
+use Iam\Authentication\Application\Command\RevokeDeviceTrust\RevokeDeviceTrust;
 use Iam\Authentication\Application\Query\GetTotpCredentialByIdentity\GetTotpCredentialByIdentity;
 use Iam\Authentication\Application\TotpIssuance\TotpIssuerInterface;
 use Iam\Authentication\Application\TotpIssuance\TotpProvisioningInterface;
 use Iam\Authentication\Domain\TotpCredential\Exception\InvalidTotpCodeException;
+use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
 use Storefront\Form\TwoFactorConfirm\TwoFactorConfirmFormData;
@@ -17,6 +19,7 @@ use Storefront\Form\TwoFactorConfirm\TwoFactorConfirmType;
 use Storefront\Security\PasswordUser;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormInterface;
+use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -33,10 +36,29 @@ final class SecurityController extends AbstractController
 
     public function __construct(
         private readonly QueryBusInterface $queryBus,
+        private readonly CommandBusInterface $commandBus,
         private readonly TotpProvisioningInterface $provisioning,
         private readonly TotpIssuerInterface $totpIssuer,
         private readonly TranslatorInterface $translator,
     ) {
+    }
+
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
+    #[Route(path: ['en' => '/devices/revoke', 'fr' => '/appareils/revoquer'], name: 'revoke_device_trust', methods: ['POST'])]
+    public function revokeDeviceTrust(Request $request, #[CurrentUser] PasswordUser $user): RedirectResponse
+    {
+        if (!$this->isCsrfTokenValid('revoke_device_trust', (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $this->commandBus->dispatch(new RevokeDeviceTrust($user->identityId()));
+
+        $this->addFlash('success', $this->translator->trans('revoke_device_trust_flash_success', domain: 'account_security'));
+
+        return $this->redirectToRoute('storefront_account_security_show');
     }
 
     /**

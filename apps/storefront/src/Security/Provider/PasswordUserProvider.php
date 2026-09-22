@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Storefront\Security\Provider;
 
+use Iam\Authentication\Application\Query\GetDeviceTrustByIdentity\GetDeviceTrustByIdentity;
 use Iam\Authentication\Application\Query\GetPasswordCredentialByIdentity\GetPasswordCredentialByIdentity;
 use Iam\Identity\Application\Query\GetIdentityByEmail\GetIdentityByEmail;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -40,7 +41,9 @@ final readonly class PasswordUserProvider implements UserProviderInterface
             throw new UserNotFoundException(\sprintf('No password credential for identity "%s".', $identity->id));
         }
 
-        return new PasswordUser($identity->id, $identifier, $identity->fullName, $identity->verificationStatus, $identity->moderationStatus, $credential->changedAt);
+        $deviceTrust = $this->queryBus->ask(new GetDeviceTrustByIdentity($identity->id));
+
+        return new PasswordUser($identity->id, $identifier, $identity->fullName, $identity->verificationStatus, $identity->moderationStatus, $credential->changedAt, $deviceTrust?->revokedAt);
     }
 
     /**

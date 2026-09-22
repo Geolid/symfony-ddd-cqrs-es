@@ -14,7 +14,6 @@
             {% endif %}
 
             <label for="two-factor-code">{{ 'label_code'|trans({}, 'two_factor_challenge') }}</label>
-            <small>{{ 'hint_backup_code'|trans({}, 'two_factor_challenge') }}</small>
             <input
                 type="text"
                 id="two-factor-code"
@@ -25,6 +24,12 @@
                 required
                 autofocus
             >
+            <small>{{ 'hint_backup_code'|trans({}, 'two_factor_challenge') }}</small>
+
+            <label for="two-factor-trusted">
+                <input type="checkbox" id="two-factor-trusted" name="_trusted" value="1">
+                {{ 'label_trust_device'|trans({}, 'two_factor_challenge') }}
+            </label>
 
             {% if isCsrfProtectionEnabled %}
                 <input type="hidden" name="{{ csrfParameterName }}" value="{{ csrf_token(csrfTokenId) }}">

@@ -73,6 +73,18 @@
         <source>issue_totp_backup_codes_button_continue</source>
         <target>I've saved my codes</target>
       </trans-unit>
+      <trans-unit id="show_label_trusted_devices">
+        <source>show_label_trusted_devices</source>
+        <target>Remembered devices</target>
+      </trans-unit>
+      <trans-unit id="show_button_revoke_device_trust">
+        <source>show_button_revoke_device_trust</source>
+        <target>Sign out of all devices</target>
+      </trans-unit>
+      <trans-unit id="revoke_device_trust_flash_success">
+        <source>revoke_device_trust_flash_success</source>
+        <target>You've been signed out of all remembered devices. You'll be asked for a code again next time you sign in from them.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

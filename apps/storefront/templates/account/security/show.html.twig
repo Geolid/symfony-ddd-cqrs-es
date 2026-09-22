@@ -32,5 +32,13 @@
                 <a href="{{ path('storefront_account_security_issue_totp') }}" role="button">{{ 'show_link_enable_two_factor'|trans }}</a>
             {% endif %}
         </dd>
+
+        <dt>{{ 'show_label_trusted_devices'|trans }}</dt>
+        <dd>
+            <form method="post" action="{{ path('storefront_account_security_revoke_device_trust') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('revoke_device_trust') }}">
+                <button type="submit">{{ 'show_button_revoke_device_trust'|trans }}</button>
+            </form>
+        </dd>
     </dl>
 {% endblock %}
