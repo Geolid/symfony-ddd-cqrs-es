@@ -7,7 +7,7 @@
     <body>
       <trans-unit id="show_title">
         <source>show_title</source>
-        <target>Login &amp; Security</target>
+        <target>Sign in &amp; Security</target>
       </trans-unit>
       <trans-unit id="show_label_name">
         <source>show_label_name</source>
@@ -27,39 +27,111 @@
       </trans-unit>
       <trans-unit id="show_status_enabled">
         <source>show_status_enabled</source>
-        <target>Two-factor authentication enabled.</target>
+        <target>Two-step verification enabled.</target>
       </trans-unit>
       <trans-unit id="show_link_enable_two_factor">
         <source>show_link_enable_two_factor</source>
         <target>Enable</target>
       </trans-unit>
+      <trans-unit id="show_label_backup_codes">
+        <source>show_label_backup_codes</source>
+        <target>Backup codes</target>
+      </trans-unit>
+      <trans-unit id="show_backup_codes_issued_at">
+        <source>show_backup_codes_issued_at</source>
+        <target>Issued on %date%.</target>
+      </trans-unit>
+      <trans-unit id="show_backup_codes_regenerated_at">
+        <source>show_backup_codes_regenerated_at</source>
+        <target>Last regenerated on %date%.</target>
+      </trans-unit>
+      <trans-unit id="show_backup_codes_remaining">
+        <source>show_backup_codes_remaining</source>
+        <target>%count% codes remaining.</target>
+      </trans-unit>
       <trans-unit id="issue_totp_title">
         <source>issue_totp_title</source>
-        <target>Enable two-factor authentication</target>
+        <target>Enable two-step verification</target>
       </trans-unit>
-      <trans-unit id="issue_totp_instructions_qr">
-        <source>issue_totp_instructions_qr</source>
-        <target>Scan this QR code with your authenticator app (Google Authenticator, etc.):</target>
+      <trans-unit id="issue_totp_heading">
+        <source>issue_totp_heading</source>
+        <target>Enroll a two-step verification authenticator</target>
       </trans-unit>
-      <trans-unit id="issue_totp_instructions_manual">
-        <source>issue_totp_instructions_manual</source>
-        <target>Or enter this key manually:</target>
+      <trans-unit id="issue_totp_step_indicator">
+        <source>issue_totp_step_indicator</source>
+        <target>Step 1 of 2</target>
       </trans-unit>
-      <trans-unit id="issue_totp_instructions_confirm">
-        <source>issue_totp_instructions_confirm</source>
-        <target>Then enter the displayed code to confirm:</target>
+      <trans-unit id="issue_totp_note_label">
+        <source>issue_totp_note_label</source>
+        <target>Note:</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_note">
+        <source>issue_totp_note</source>
+        <target>For all future sign-ins after you turn on two-step verification, you'll enter a security code you generated using an authenticator app.</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_step_open_verb">
+        <source>issue_totp_step_open_verb</source>
+        <target>Open</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_step_open_rest">
+        <source>issue_totp_step_open_rest</source>
+        <target>your authenticator app.</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_step_add_verb">
+        <source>issue_totp_step_add_verb</source>
+        <target>Add</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_step_add_rest">
+        <source>issue_totp_step_add_rest</source>
+        <target>an account within the app and scan the QR code below:</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_instructions_manual_toggle">
+        <source>issue_totp_instructions_manual_toggle</source>
+        <target>Can't scan the QR code?</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_manual_step1">
+        <source>issue_totp_manual_step1</source>
+        <target>Open your authenticator app and select "Add account manually" from the menu.</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_manual_step2">
+        <source>issue_totp_manual_step2</source>
+        <target>In "Account name", type your full email address.</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_manual_step3">
+        <source>issue_totp_manual_step3</source>
+        <target>In "Key", type the following key (spaces not required):</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_manual_step4">
+        <source>issue_totp_manual_step4</source>
+        <target>Set the key type to "Time-based", then tap Add.</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_step_enter_verb">
+        <source>issue_totp_step_enter_verb</source>
+        <target>Enter code.</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_step_enter_rest">
+        <source>issue_totp_step_enter_rest</source>
+        <target>After you've scanned the QR code, enter the code generated by the app:</target>
       </trans-unit>
       <trans-unit id="issue_totp_button_submit">
         <source>issue_totp_button_submit</source>
-        <target>Confirm</target>
+        <target>Verify code and continue</target>
       </trans-unit>
       <trans-unit id="issue_totp_flash_invalid_code">
         <source>issue_totp_flash_invalid_code</source>
-        <target>Invalid code, try again.</target>
+        <target>Invalid code.</target>
       </trans-unit>
       <trans-unit id="issue_totp_flash_issued">
         <source>issue_totp_flash_issued</source>
-        <target>Two-factor authentication enabled.</target>
+        <target>Two-step verification enabled.</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_flash_issued_codes_kept">
+        <source>issue_totp_flash_issued_codes_kept</source>
+        <target>Two-step verification enabled. Your existing backup codes are still valid.</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_backup_codes_step_indicator">
+        <source>issue_totp_backup_codes_step_indicator</source>
+        <target>Step 2 of 2</target>
       </trans-unit>
       <trans-unit id="issue_totp_backup_codes_title">
         <source>issue_totp_backup_codes_title</source>

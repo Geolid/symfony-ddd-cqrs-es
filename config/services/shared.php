@@ -26,7 +26,7 @@ use Symfony\Component\Lock\LockFactory;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return static function (ContainerConfigurator $container): void {
-    $container->parameters()->set('code_challenger.max_attempts', 5);
+    $container->parameters()->set('code_challenger.max_attempts', 3);
     $container->parameters()->set('code_challenger.expiry', '+15 minutes');
     $container->parameters()->set('valkey.key_prefix', '');
 

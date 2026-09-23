@@ -26,7 +26,7 @@ final class DbalBackupCodeCredentialFinder extends AbstractDbalFinder implements
 
     protected function configureBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('identity_id')->from(DbalBackupCodeCredentialProjector::TABLE);
+        $qb->select('identity_id', 'issued_at', 'regenerated_at', 'remaining_count')->from(DbalBackupCodeCredentialProjector::TABLE);
     }
 
     protected function resultClass(): string

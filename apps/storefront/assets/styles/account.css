@@ -1,0 +1,5 @@
+.totp-qr {
+  display: block;
+  max-width: 12rem;
+  margin-inline: auto;
+}

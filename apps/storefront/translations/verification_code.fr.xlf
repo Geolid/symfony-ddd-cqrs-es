@@ -7,7 +7,7 @@
     <body>
       <trans-unit id="label_code">
         <source>label_code</source>
-        <target>Saisissez le code de sécurité</target>
+        <target>Code de sécurité</target>
       </trans-unit>
       <trans-unit id="error_invalid">
         <source>error_invalid</source>
@@ -15,11 +15,11 @@
       </trans-unit>
       <trans-unit id="error_not_found">
         <source>error_not_found</source>
-        <target>Ce code a expiré. Demandez-en un nouveau ci-dessous.</target>
+        <target>Ce code a expiré.</target>
       </trans-unit>
       <trans-unit id="error_attempts_exceeded">
         <source>error_attempts_exceeded</source>
-        <target>Trop de tentatives. Demandez un nouveau code ci-dessous.</target>
+        <target>Trop de tentatives.</target>
       </trans-unit>
       <trans-unit id="flash_sent">
         <source>flash_sent</source>
@@ -27,7 +27,7 @@
       </trans-unit>
       <trans-unit id="flash_too_recent">
         <source>flash_too_recent</source>
-        <target>Veuillez patienter avant de redemander un code.</target>
+        <target>Patientez %seconds% secondes avant de demander un nouveau code.</target>
       </trans-unit>
       <trans-unit id="button_resend">
         <source>button_resend</source>
@@ -35,7 +35,11 @@
       </trans-unit>
       <trans-unit id="flash_failed">
         <source>flash_failed</source>
-        <target>Une erreur est survenue. Merci de réessayer.</target>
+        <target>Une erreur est survenue.</target>
+      </trans-unit>
+      <trans-unit id="flash_rate_limited">
+        <source>flash_rate_limited</source>
+        <target>Trop de codes demandés. Réessayez dans %minutes% minutes.</target>
       </trans-unit>
     </body>
   </file>

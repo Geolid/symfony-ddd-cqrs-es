@@ -64,7 +64,7 @@ final class TotpIssuerTest extends AbstractIntegrationTestCase
         $backupCodes = $this->issuer->issueFor($backupCodeBuilder['identityId'], $secret, $code);
 
         // Then
-        self::assertSame([], $backupCodes);
+        self::assertNull($backupCodes);
     }
 
     #[Test]

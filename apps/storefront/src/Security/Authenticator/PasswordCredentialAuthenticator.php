@@ -20,9 +20,12 @@ use Symfony\Component\Security\Http\Authenticator\Passport\Badge\UserBadge;
 use Symfony\Component\Security\Http\Authenticator\Passport\Credentials\CustomCredentials;
 use Symfony\Component\Security\Http\Authenticator\Passport\Passport;
 use Symfony\Component\Security\Http\SecurityRequestAttributes;
+use Symfony\Component\Security\Http\Util\TargetPathTrait;
 
 final class PasswordCredentialAuthenticator extends AbstractLoginFormAuthenticator
 {
+    use TargetPathTrait;
+
     public function __construct(
         private readonly UrlGeneratorInterface $urlGenerator,
         private readonly PasswordCredentialVerifierInterface $verifier,
@@ -55,7 +58,14 @@ final class PasswordCredentialAuthenticator extends AbstractLoginFormAuthenticat
 
     public function onAuthenticationSuccess(Request $request, TokenInterface $token, string $firewallName): RedirectResponse
     {
-        return new RedirectResponse($this->urlGenerator->generate('storefront_account_show'));
+        $targetPath = $this->getTargetPath($request->getSession(), $firewallName);
+        if (null !== $targetPath) {
+            $this->removeTargetPath($request->getSession(), $firewallName);
+
+            return new RedirectResponse($targetPath);
+        }
+
+        return new RedirectResponse($this->urlGenerator->generate('storefront_home_show'));
     }
 
     public function onAuthenticationFailure(Request $request, AuthenticationException $exception): RedirectResponse

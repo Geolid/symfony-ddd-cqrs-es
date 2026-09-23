@@ -8,11 +8,12 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-#[Route(path: ['en' => '/', 'fr' => '/'], name: 'storefront_home', methods: ['GET'])]
+#[Route(path: ['en' => '/', 'fr' => '/'], name: 'storefront_home_', methods: ['GET'])]
 final class HomeController extends AbstractController
 {
-    public function __invoke(): Response
+    #[Route(name: 'show')]
+    public function show(): Response
     {
-        return $this->render('home/index.html.twig');
+        return $this->render('home/show.html.twig');
     }
 }

@@ -27,6 +27,7 @@ use Patchlevel\EventSourcing\Attribute\Id;
 use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
 use Shared\Domain\Exception\VerificationCodeNotFoundException;
 use Shared\Domain\Service\CodeChallengerInterface;
+use Shared\Domain\Service\CooldownCalculator;
 use Shared\Domain\Specification\CooldownElapsedSpecification;
 use Shared\Domain\ValueObject\VerificationCodeKey;
 
@@ -34,8 +35,6 @@ use Shared\Domain\ValueObject\VerificationCodeKey;
 final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAware
 {
     use AggregateRootAttributeBehaviour;
-
-    private const string RESET_REQUEST_COOLDOWN = '+60 seconds';
 
     #[Id]
     public private(set) PasswordCredentialId $id;
@@ -96,8 +95,9 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
      */
     public function requestReset(\DateTimeImmutable $requestedAt): void
     {
-        if (!new CooldownElapsedSpecification(self::RESET_REQUEST_COOLDOWN, $requestedAt)->isSatisfiedBy($this->resetRequestedAt)) {
-            throw PasswordResetRequestedTooRecentlyException::forId($this->id);
+        $cooldownCalculator = new CooldownCalculator();
+        if (!new CooldownElapsedSpecification($cooldownCalculator, $requestedAt)->isSatisfiedBy($this->resetRequestedAt)) {
+            throw PasswordResetRequestedTooRecentlyException::forId($this->id, $cooldownCalculator->retryAt($this->resetRequestedAt));
         }
 
         $this->recordThat(new PasswordCredentialResetRequested(

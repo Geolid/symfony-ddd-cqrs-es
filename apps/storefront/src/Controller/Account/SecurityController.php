@@ -7,6 +7,7 @@ namespace Storefront\Controller\Account;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\SvgWriter;
 use Iam\Authentication\Application\Command\RevokeDeviceTrust\RevokeDeviceTrust;
+use Iam\Authentication\Application\Query\GetBackupCodeCredentialByIdentity\GetBackupCodeCredentialByIdentity;
 use Iam\Authentication\Application\Query\GetTotpCredentialByIdentity\GetTotpCredentialByIdentity;
 use Iam\Authentication\Application\TotpIssuance\TotpIssuerInterface;
 use Iam\Authentication\Application\TotpIssuance\TotpProvisioningInterface;
@@ -68,10 +69,12 @@ final class SecurityController extends AbstractController
     public function show(#[CurrentUser] PasswordUser $user): Response
     {
         $totpCredential = $this->queryBus->ask(new GetTotpCredentialByIdentity($user->identityId()));
+        $backupCodeCredential = $this->queryBus->ask(new GetBackupCodeCredentialByIdentity($user->identityId()));
 
         return $this->render('account/security/show.html.twig', [
             'user' => $user,
             'totpIssued' => null !== $totpCredential,
+            'backupCodeCredential' => $backupCodeCredential,
         ]);
     }
 
@@ -79,7 +82,7 @@ final class SecurityController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route(path: ['en' => '/2fa/enable', 'fr' => '/2fa/activer'], name: 'issue_totp', methods: ['GET', 'POST'])]
+    #[Route(path: ['en' => '/2sv/enable', 'fr' => '/v2e/activer'], name: 'issue_totp', methods: ['GET', 'POST'])]
     public function issueTotp(Request $request, #[CurrentUser] PasswordUser $user): Response
     {
         $session = $request->getSession();
@@ -106,6 +109,13 @@ final class SecurityController extends AbstractController
             }
 
             $session->remove(self::SESSION_KEY);
+
+            if (null === $backupCodes) {
+                $this->addFlash('success', $this->translator->trans('issue_totp_flash_issued_codes_kept', domain: 'account_security'));
+
+                return $this->redirectToRoute('storefront_account_security_show');
+            }
+
             $this->addFlash('success', $this->translator->trans('issue_totp_flash_issued', domain: 'account_security'));
 
             return $this->render('account/security/issue_totp_backup_codes.html.twig', ['backupCodes' => $backupCodes]);

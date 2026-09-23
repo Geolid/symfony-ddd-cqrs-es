@@ -12,8 +12,13 @@ use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
+/**
+ * @phpstan-type Row array{issued_at: string, regenerated_at: string|null, remaining_count: int}
+ */
 final class DbalBackupCodeCredentialProjectorTest extends AbstractIntegrationTestCase
 {
+    private const string DATE_FORMAT = 'Y-m-d H:i:s';
+
     private FakeBackupCodeHasher $backupCodeHasher;
 
     protected function setUp(): void
@@ -34,7 +39,59 @@ final class DbalBackupCodeCredentialProjectorTest extends AbstractIntegrationTes
         $this->store($credential);
 
         // Then
-        self::assertNotFalse($this->fetchRow($builder['identityId']));
+        $row = $this->fetchRow($builder['identityId']);
+        self::assertNotFalse($row);
+        self::assertSame($builder['issuedAt']->format(self::DATE_FORMAT), $row['issued_at']);
+        self::assertNull($row['regenerated_at']);
+        self::assertSame(\count($builder['plainBackupCodes']), (int) $row['remaining_count']);
+    }
+
+    #[Test]
+    public function itProjectsOnBackupCodeCredentialRegenerated(): void
+    {
+        // Given
+        $otherBuilder = BackupCodeCredentialBuilder::new()->withBackupCodeHasher($this->backupCodeHasher);
+        $other = $otherBuilder->create();
+
+        $builder = BackupCodeCredentialBuilder::new()->withBackupCodeHasher($this->backupCodeHasher)->regenerated();
+        $credential = $builder->create();
+
+        // When
+        $this->store($other, $credential);
+
+        // Then
+        $row = $this->fetchRow($builder['identityId']);
+        self::assertNotFalse($row);
+        self::assertSame($builder['regeneratedAt']->format(self::DATE_FORMAT), $row['regenerated_at']);
+        self::assertSame(\count($builder['regeneratedBackupCodes']), (int) $row['remaining_count']);
+
+        $otherRow = $this->fetchRow($otherBuilder['identityId']);
+        self::assertNotFalse($otherRow);
+        self::assertNull($otherRow['regenerated_at']);
+        self::assertSame(\count($otherBuilder['plainBackupCodes']), (int) $otherRow['remaining_count']);
+    }
+
+    #[Test]
+    public function itProjectsOnBackupCodeCredentialConsumed(): void
+    {
+        // Given
+        $otherBuilder = BackupCodeCredentialBuilder::new()->withBackupCodeHasher($this->backupCodeHasher);
+        $other = $otherBuilder->create();
+
+        $builder = BackupCodeCredentialBuilder::new()->withBackupCodeHasher($this->backupCodeHasher)->consumed();
+        $credential = $builder->create();
+
+        // When
+        $this->store($other, $credential);
+
+        // Then
+        $row = $this->fetchRow($builder['identityId']);
+        self::assertNotFalse($row);
+        self::assertSame(\count($builder['plainBackupCodes']) - 1, (int) $row['remaining_count']);
+
+        $otherRow = $this->fetchRow($otherBuilder['identityId']);
+        self::assertNotFalse($otherRow);
+        self::assertSame(\count($otherBuilder['plainBackupCodes']), (int) $otherRow['remaining_count']);
     }
 
     #[Test]
@@ -60,14 +117,15 @@ final class DbalBackupCodeCredentialProjectorTest extends AbstractIntegrationTes
     }
 
     /**
-     * @return array<string, mixed>|false
+     * @return Row|false
      */
     private function fetchRow(string $identityId): array|false
     {
         $connection = $this->serviceAs('doctrine.dbal.read_model_connection', Connection::class);
 
+        /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT identity_id FROM %s WHERE identity_id = :identityId', DbalBackupCodeCredentialProjector::TABLE),
+            \sprintf('SELECT issued_at, regenerated_at, remaining_count FROM %s WHERE identity_id = :identityId', DbalBackupCodeCredentialProjector::TABLE),
             ['identityId' => $identityId],
         );
     }

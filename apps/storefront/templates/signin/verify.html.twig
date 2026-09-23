@@ -4,7 +4,7 @@
 {% block title %}{{ 'verify_title'|trans }}{% endblock %}
 
 {% block content %}
-    <article>
+    <article class="auth-card">
         <h1>{{ 'verify_title'|trans }}</h1>
 
         <form method="post" action="{{ path('storefront_signin_verify') }}">
@@ -17,7 +17,7 @@
 
             <div class="grid">
                 <label for="password">{{ 'verify_label_password'|trans }}</label>
-                <a href="{{ path('storefront_forgot_password_request') }}" class="justify-end">{{ 'verify_link_forgot'|trans }}</a>
+                <a href="{{ path('storefront_forgot_password_request') }}" class="u-justify-end">{{ 'verify_link_forgot'|trans }}</a>
             </div>
             <input type="password" id="password" name="password" required autofocus>
 

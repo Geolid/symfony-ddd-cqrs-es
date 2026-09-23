@@ -1,0 +1,9 @@
+{% extends 'layout.html.twig' %}
+
+{% block title %}{{ 'title'|trans({}, 'account') }}{% endblock %}
+
+{% block content %}
+    <h1>{{ 'title'|trans({}, 'account') }}</h1>
+
+    <p><a href="{{ path('storefront_account_security_show') }}">{{ 'link_security'|trans({}, 'account') }}</a></p>
+{% endblock %}

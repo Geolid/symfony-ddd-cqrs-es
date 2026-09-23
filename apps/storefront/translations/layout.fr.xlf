@@ -19,7 +19,7 @@
       </trans-unit>
       <trans-unit id="link_security">
         <source>link_security</source>
-        <target>Connexion &amp; Sécurité</target>
+        <target>Connexion et Sécurité</target>
       </trans-unit>
     </body>
   </file>

@@ -6,6 +6,7 @@ namespace Storefront\Security\Provider;
 
 use Iam\Authentication\Application\CredentialVerification\BackupCodeCredentialVerifierInterface;
 use Iam\Authentication\Application\Query\GetBackupCodeCredentialByIdentity\GetBackupCodeCredentialByIdentity;
+use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeGeneratorInterface;
 use Scheb\TwoFactorBundle\Security\TwoFactor\AuthenticationContextInterface;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\DefaultTwoFactorFormRenderer;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\TwoFactorFormRendererInterface;
@@ -52,6 +53,10 @@ final readonly class BackupCodeTwoFactorProvider implements TwoFactorProviderInt
 
     public function getFormRenderer(): TwoFactorFormRendererInterface
     {
-        return new DefaultTwoFactorFormRenderer($this->twig, 'two_factor/challenge.html.twig');
+        return new DefaultTwoFactorFormRenderer(
+            $this->twig,
+            'two_factor/challenge_backup_code.html.twig',
+            ['pattern' => \sprintf('\d{%d}', BackupCodeGeneratorInterface::DIGITS)],
+        );
     }
 }

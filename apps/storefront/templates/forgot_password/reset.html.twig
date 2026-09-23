@@ -1,12 +1,10 @@
 {% extends 'layout_auth.html.twig' %}
 {% trans_default_domain 'forgot_password' %}
 
-{% block importmap %}{{ importmap(['shared', 'auth']) }}{% endblock %}
-
 {% block title %}{{ 'reset_title'|trans }}{% endblock %}
 
 {% block content %}
-    <article>
+    <article class="auth-card">
         <h1>{{ 'reset_title'|trans }}</h1>
 
         <p>{{ 'reset_subtitle'|trans({'%email%': email}) }}</p>

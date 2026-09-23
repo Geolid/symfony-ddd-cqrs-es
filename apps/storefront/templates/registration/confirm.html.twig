@@ -4,7 +4,7 @@
 {% block title %}{{ 'confirm_title'|trans }}{% endblock %}
 
 {% block content %}
-    <article>
+    <article class="auth-card">
         <h1>{{ 'confirm_title'|trans }}</h1>
 
         <p>{{ 'confirm_message_sent'|trans({'%email%': email}) }} (<a href="{{ path('storefront_signin_identify') }}">{{ 'link_modify'|trans({}, 'messages') }}</a>)</p>

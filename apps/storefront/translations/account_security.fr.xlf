@@ -27,39 +27,111 @@
       </trans-unit>
       <trans-unit id="show_status_enabled">
         <source>show_status_enabled</source>
-        <target>Authentification à deux facteurs activée.</target>
+        <target>Vérification en deux étapes activée.</target>
       </trans-unit>
       <trans-unit id="show_link_enable_two_factor">
         <source>show_link_enable_two_factor</source>
         <target>Activer</target>
       </trans-unit>
+      <trans-unit id="show_label_backup_codes">
+        <source>show_label_backup_codes</source>
+        <target>Codes de secours</target>
+      </trans-unit>
+      <trans-unit id="show_backup_codes_issued_at">
+        <source>show_backup_codes_issued_at</source>
+        <target>Activés le %date%.</target>
+      </trans-unit>
+      <trans-unit id="show_backup_codes_regenerated_at">
+        <source>show_backup_codes_regenerated_at</source>
+        <target>Dernière régénération le %date%.</target>
+      </trans-unit>
+      <trans-unit id="show_backup_codes_remaining">
+        <source>show_backup_codes_remaining</source>
+        <target>%count% codes restants.</target>
+      </trans-unit>
       <trans-unit id="issue_totp_title">
         <source>issue_totp_title</source>
-        <target>Activer la double authentification</target>
+        <target>Activer la vérification en deux étapes</target>
       </trans-unit>
-      <trans-unit id="issue_totp_instructions_qr">
-        <source>issue_totp_instructions_qr</source>
-        <target>Scannez ce QR code avec votre application d'authentification (Google Authenticator, etc.) :</target>
+      <trans-unit id="issue_totp_heading">
+        <source>issue_totp_heading</source>
+        <target>Inscrire un authentificateur pour la vérification en deux étapes</target>
       </trans-unit>
-      <trans-unit id="issue_totp_instructions_manual">
-        <source>issue_totp_instructions_manual</source>
-        <target>Ou saisissez cette clé manuellement :</target>
+      <trans-unit id="issue_totp_step_indicator">
+        <source>issue_totp_step_indicator</source>
+        <target>Étape 1 sur 2</target>
       </trans-unit>
-      <trans-unit id="issue_totp_instructions_confirm">
-        <source>issue_totp_instructions_confirm</source>
-        <target>Puis saisissez le code affiché pour confirmer :</target>
+      <trans-unit id="issue_totp_note_label">
+        <source>issue_totp_note_label</source>
+        <target>Remarque :</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_note">
+        <source>issue_totp_note</source>
+        <target>Lors de toutes vos prochaines connexions après l'activation de la vérification en deux étapes, vous saisirez un code de sécurité généré à l'aide d'une application d'authentification.</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_step_open_verb">
+        <source>issue_totp_step_open_verb</source>
+        <target>Ouvrez</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_step_open_rest">
+        <source>issue_totp_step_open_rest</source>
+        <target>votre application d'authentification.</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_step_add_verb">
+        <source>issue_totp_step_add_verb</source>
+        <target>Ajoutez</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_step_add_rest">
+        <source>issue_totp_step_add_rest</source>
+        <target>un compte dans l'application et scannez le QR code ci-dessous :</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_instructions_manual_toggle">
+        <source>issue_totp_instructions_manual_toggle</source>
+        <target>Vous ne pouvez pas scanner le QR code ?</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_manual_step1">
+        <source>issue_totp_manual_step1</source>
+        <target>Ouvrez votre application d'authentification et choisissez « Ajouter un compte manuellement » dans le menu.</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_manual_step2">
+        <source>issue_totp_manual_step2</source>
+        <target>Dans « Nom du compte », saisissez votre adresse e-mail complète.</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_manual_step3">
+        <source>issue_totp_manual_step3</source>
+        <target>Dans « Clé », saisissez la clé suivante (les espaces ne sont pas nécessaires) :</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_manual_step4">
+        <source>issue_totp_manual_step4</source>
+        <target>Réglez le type de clé sur « Basé sur le temps », puis appuyez sur Ajouter.</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_step_enter_verb">
+        <source>issue_totp_step_enter_verb</source>
+        <target>Saisissez le code.</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_step_enter_rest">
+        <source>issue_totp_step_enter_rest</source>
+        <target>Une fois le QR code scanné, saisissez le code généré par l'application :</target>
       </trans-unit>
       <trans-unit id="issue_totp_button_submit">
         <source>issue_totp_button_submit</source>
-        <target>Confirmer</target>
+        <target>Vérifier le code et continuer</target>
       </trans-unit>
       <trans-unit id="issue_totp_flash_invalid_code">
         <source>issue_totp_flash_invalid_code</source>
-        <target>Code invalide, réessayez.</target>
+        <target>Code invalide.</target>
       </trans-unit>
       <trans-unit id="issue_totp_flash_issued">
         <source>issue_totp_flash_issued</source>
-        <target>Authentification à deux facteurs activée.</target>
+        <target>Vérification en deux étapes activée.</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_flash_issued_codes_kept">
+        <source>issue_totp_flash_issued_codes_kept</source>
+        <target>Vérification en deux étapes activée. Vos codes de secours existants restent valides.</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_backup_codes_step_indicator">
+        <source>issue_totp_backup_codes_step_indicator</source>
+        <target>Étape 2 sur 2</target>
       </trans-unit>
       <trans-unit id="issue_totp_backup_codes_title">
         <source>issue_totp_backup_codes_title</source>

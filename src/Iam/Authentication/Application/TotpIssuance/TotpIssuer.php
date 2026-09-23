@@ -29,13 +29,13 @@ final readonly class TotpIssuer implements TotpIssuerInterface
      * Backup codes are shown only the first time they're issued — enabling a second 2FA
      * method later reuses the identity's existing pool instead of silently replacing it.
      *
-     * @return list<non-empty-string>
+     * @return list<non-empty-string>|null
      *
      * @throws InvalidTotpCodeException
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    public function issueFor(string $identityId, #[\SensitiveParameter] string $secret, #[\SensitiveParameter] string $code): array
+    public function issueFor(string $identityId, #[\SensitiveParameter] string $secret, #[\SensitiveParameter] string $code): ?array
     {
         if (!$this->verifier->verify($secret, $code)) {
             throw InvalidTotpCodeException::forIdentity($identityId);
@@ -44,7 +44,7 @@ final readonly class TotpIssuer implements TotpIssuerInterface
         $this->commandBus->dispatch(new IssueTotpCredential(Uuid::uuid7()->toString(), $identityId, $secret));
 
         if (null !== $this->backupCodeCredentialFinder->ofIdentityOrNull($identityId)) {
-            return [];
+            return null;
         }
 
         $backupCodes = $this->backupCodeGenerator->generate($this->backupCodeCount);

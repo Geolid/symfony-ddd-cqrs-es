@@ -1,4 +1,9 @@
-article {
-  width: 21.875rem;
-  margin: 0 auto;
+.auth-card {
+  width: min(100%, 30rem);
+  margin: auto;
+}
+
+.auth-card > a[role=button] {
+  display: block;
+  width: 100%;
 }
