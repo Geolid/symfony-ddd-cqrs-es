@@ -1,0 +1,63 @@
+{% extends 'layout.html.twig' %}
+{% trans_default_domain 'account_security' %}
+
+{% block javascripts %}
+    {% block importmap %}{{ importmap(['shared', 'account']) }}{% endblock %}
+{% endblock %}
+
+{% block title %}{{ 'two_step_settings_title'|trans }}{% endblock %}
+
+{% block content %}
+    <twig:ui:Breadcrumb :items="[
+        {label: 'title'|trans({}, 'account'), url: path('storefront_account_show')},
+        {label: 'show_title'|trans, url: path('storefront_account_security_show')},
+        {label: 'two_step_settings_title'|trans},
+    ]" />
+
+    <h1>{{ 'two_step_settings_title'|trans }}</h1>
+
+    <article class="settings-sections">
+        <dl>
+            <dt>{{ 'two_step_settings_section_recovery_codes_title'|trans }}</dt>
+            <dd>
+                <p>{{ 'two_step_settings_section_recovery_codes_instructions'|trans }}</p>
+                <small>
+                    {{ 'show_recovery_codes_issued_at'|trans({'%date%': backupCodeCredential.issuedAt|date('d/m/Y')}) }}
+                    {% if backupCodeCredential.regeneratedAt %}
+                        {{ 'show_recovery_codes_regenerated_at'|trans({'%date%': backupCodeCredential.regeneratedAt|date('d/m/Y')}) }}
+                    {% endif %}
+                    {{ 'show_recovery_codes_remaining'|trans({'%count%': backupCodeCredential.remainingCount}) }}
+                </small>
+            </dd>
+        </dl>
+        <form method="post" action="{{ path('storefront_account_security_regenerate_backup_codes') }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('regenerate_backup_codes') }}">
+            <button type="submit" class="outline">{{ 'two_step_settings_button_regenerate'|trans }}</button>
+        </form>
+
+        <hr>
+
+        <dl>
+            <dt>{{ 'show_label_trusted_devices'|trans }}</dt>
+            <dd>{{ 'two_step_settings_section_devices_instructions'|trans }}</dd>
+        </dl>
+        <form method="post" action="{{ path('storefront_account_security_revoke_device_trust') }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('revoke_device_trust') }}">
+            <button type="submit" class="outline pico-background-red-500">{{ 'show_button_revoke_device_trust'|trans }}</button>
+        </form>
+
+        <hr>
+
+        <dl>
+            <dt>{{ 'two_step_settings_section_disable_title'|trans }}</dt>
+            <dd>
+                <p>{{ 'two_step_settings_section_disable_instructions'|trans }}</p>
+                <p><strong>{{ 'two_step_settings_section_disable_warning_label'|trans }}</strong> {{ 'two_step_settings_section_disable_warning'|trans }}</p>
+            </dd>
+        </dl>
+        <form method="post" action="{{ path('storefront_account_security_revoke_totp') }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('revoke_totp') }}">
+            <button type="submit" class="outline pico-background-red-500">{{ 'two_step_settings_button_disable'|trans }}</button>
+        </form>
+    </article>
+{% endblock %}

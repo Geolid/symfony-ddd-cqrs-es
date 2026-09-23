@@ -17,7 +17,7 @@ return static function (ContainerConfigurator $container): void {
     // Self-contained — no SecurityBundle dependency, works in apps with no firewall.
     $services->set(NativePasswordHasher::class);
 
-    $container->parameters()->set('iam.authentication.backup_code_count', 5);
+    $container->parameters()->set('iam.authentication.backup_code_count', 10);
     $services->get(TotpIssuer::class)->arg('$backupCodeCount', '%iam.authentication.backup_code_count%');
     $services->get(BackupCodeRegenerator::class)->arg('$backupCodeCount', '%iam.authentication.backup_code_count%');
 

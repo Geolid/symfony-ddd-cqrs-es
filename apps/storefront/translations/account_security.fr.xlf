@@ -25,33 +25,33 @@
         <source>show_label_two_factor</source>
         <target>Vérification en deux étapes</target>
       </trans-unit>
-      <trans-unit id="show_status_enabled">
-        <source>show_status_enabled</source>
-        <target>Vérification en deux étapes activée.</target>
+      <trans-unit id="show_two_factor_description">
+        <source>show_two_factor_description</source>
+        <target>Configurez un authentificateur de vérification en deux étapes pour ajouter une couche de sécurité supplémentaire à la connexion.</target>
       </trans-unit>
-      <trans-unit id="show_link_enable_two_factor">
-        <source>show_link_enable_two_factor</source>
-        <target>Activer</target>
+      <trans-unit id="show_button_configure_two_factor">
+        <source>show_button_configure_two_factor</source>
+        <target>Configurer</target>
       </trans-unit>
-      <trans-unit id="show_label_backup_codes">
-        <source>show_label_backup_codes</source>
-        <target>Codes de secours</target>
+      <trans-unit id="show_label_recovery_codes">
+        <source>show_label_recovery_codes</source>
+        <target>Codes de récupération</target>
       </trans-unit>
-      <trans-unit id="show_backup_codes_issued_at">
-        <source>show_backup_codes_issued_at</source>
+      <trans-unit id="show_recovery_codes_issued_at">
+        <source>show_recovery_codes_issued_at</source>
         <target>Activés le %date%.</target>
       </trans-unit>
-      <trans-unit id="show_backup_codes_regenerated_at">
-        <source>show_backup_codes_regenerated_at</source>
+      <trans-unit id="show_recovery_codes_regenerated_at">
+        <source>show_recovery_codes_regenerated_at</source>
         <target>Dernière régénération le %date%.</target>
       </trans-unit>
-      <trans-unit id="show_backup_codes_remaining">
-        <source>show_backup_codes_remaining</source>
+      <trans-unit id="show_recovery_codes_remaining">
+        <source>show_recovery_codes_remaining</source>
         <target>%count% codes restants.</target>
       </trans-unit>
       <trans-unit id="issue_totp_title">
         <source>issue_totp_title</source>
-        <target>Activer la vérification en deux étapes</target>
+        <target>Activer la V2E</target>
       </trans-unit>
       <trans-unit id="issue_totp_heading">
         <source>issue_totp_heading</source>
@@ -127,23 +127,83 @@
       </trans-unit>
       <trans-unit id="issue_totp_flash_issued_codes_kept">
         <source>issue_totp_flash_issued_codes_kept</source>
-        <target>Vérification en deux étapes activée. Vos codes de secours existants restent valides.</target>
+        <target>Vérification en deux étapes activée. Vos codes de récupération existants restent valides.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_backup_codes_step_indicator">
-        <source>issue_totp_backup_codes_step_indicator</source>
-        <target>Étape 2 sur 2</target>
+      <trans-unit id="issue_totp_recovery_codes_title">
+        <source>issue_totp_recovery_codes_title</source>
+        <target>Enregistrez vos codes de récupération</target>
       </trans-unit>
-      <trans-unit id="issue_totp_backup_codes_title">
-        <source>issue_totp_backup_codes_title</source>
-        <target>Vos codes de secours</target>
+      <trans-unit id="issue_totp_recovery_codes_instructions">
+        <source>issue_totp_recovery_codes_instructions</source>
+        <target>Les codes de récupération permettent d'accéder à votre compte si vous perdez votre appareil et ne pouvez pas recevoir de code de vérification en deux étapes.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_backup_codes_instructions">
-        <source>issue_totp_backup_codes_instructions</source>
-        <target>Conservez ces codes en lieu sûr. Chacun ne peut être utilisé qu'une fois pour vous connecter si vous perdez l'accès à votre application d'authentification. Ils ne seront plus jamais affichés.</target>
+      <trans-unit id="issue_totp_recovery_codes_warning">
+        <source>issue_totp_recovery_codes_warning</source>
+        <target>Pour la sécurité de votre compte, ne partagez jamais ces codes. Nous vous recommandons vivement de les enregistrer dans un gestionnaire de mots de passe sécurisé. Faites-le dès maintenant, ces codes ne seront affichés qu'une seule fois.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_backup_codes_button_continue">
-        <source>issue_totp_backup_codes_button_continue</source>
-        <target>J'ai sauvegardé mes codes</target>
+      <trans-unit id="recovery_codes_button_copy">
+        <source>recovery_codes_button_copy</source>
+        <target>Copier les codes</target>
+      </trans-unit>
+      <trans-unit id="recovery_codes_button_download">
+        <source>recovery_codes_button_download</source>
+        <target>Télécharger</target>
+      </trans-unit>
+      <trans-unit id="recovery_codes_link_back">
+        <source>recovery_codes_link_back</source>
+        <target>Retour aux paramètres V2E</target>
+      </trans-unit>
+      <trans-unit id="two_step_settings_title">
+        <source>two_step_settings_title</source>
+        <target>Paramètres de vérification en deux étapes (V2E)</target>
+      </trans-unit>
+      <trans-unit id="two_step_settings_section_disable_title">
+        <source>two_step_settings_section_disable_title</source>
+        <target>Désactiver la vérification en deux étapes</target>
+      </trans-unit>
+      <trans-unit id="two_step_settings_section_disable_instructions">
+        <source>two_step_settings_section_disable_instructions</source>
+        <target>Un code ne vous sera plus demandé à la connexion. Désactivez si vous devez configurer une nouvelle application d'authentification.</target>
+      </trans-unit>
+      <trans-unit id="two_step_settings_section_disable_warning_label">
+        <source>two_step_settings_section_disable_warning_label</source>
+        <target>Attention :</target>
+      </trans-unit>
+      <trans-unit id="two_step_settings_section_disable_warning">
+        <source>two_step_settings_section_disable_warning</source>
+        <target>Laisser ceci désactivé réduit la sécurité de votre compte.</target>
+      </trans-unit>
+      <trans-unit id="two_step_settings_button_disable">
+        <source>two_step_settings_button_disable</source>
+        <target>Désactiver la V2E</target>
+      </trans-unit>
+      <trans-unit id="two_step_settings_flash_revoked">
+        <source>two_step_settings_flash_revoked</source>
+        <target>Vérification en deux étapes désactivée.</target>
+      </trans-unit>
+      <trans-unit id="two_step_settings_section_recovery_codes_title">
+        <source>two_step_settings_section_recovery_codes_title</source>
+        <target>Codes de récupération</target>
+      </trans-unit>
+      <trans-unit id="two_step_settings_section_recovery_codes_instructions">
+        <source>two_step_settings_section_recovery_codes_instructions</source>
+        <target>Utilisez les codes de récupération pour vous connecter si vous perdez l'accès à votre appareil. Générer de nouveaux codes invalide définitivement les codes actuels.</target>
+      </trans-unit>
+      <trans-unit id="two_step_settings_button_regenerate">
+        <source>two_step_settings_button_regenerate</source>
+        <target>Générer de nouveaux codes de récupération</target>
+      </trans-unit>
+      <trans-unit id="two_step_settings_section_devices_instructions">
+        <source>two_step_settings_section_devices_instructions</source>
+        <target>Déconnectez-vous de tous les appareils de confiance. Utilisez ceci si votre compte est compromis, ou si vous avez perdu un appareil connecté à ce compte. Un code de vérification vous sera demandé à la prochaine connexion.</target>
+      </trans-unit>
+      <trans-unit id="regenerate_recovery_codes_title">
+        <source>regenerate_recovery_codes_title</source>
+        <target>Vos nouveaux codes de récupération</target>
+      </trans-unit>
+      <trans-unit id="regenerate_recovery_codes_instructions">
+        <source>regenerate_recovery_codes_instructions</source>
+        <target>Vos anciens codes de récupération ne fonctionnent plus. Conservez ces nouveaux codes en lieu sûr. Ils ne seront plus jamais affichés.</target>
       </trans-unit>
       <trans-unit id="show_label_trusted_devices">
         <source>show_label_trusted_devices</source>
@@ -155,7 +215,7 @@
       </trans-unit>
       <trans-unit id="revoke_device_trust_flash_success">
         <source>revoke_device_trust_flash_success</source>
-        <target>Vous avez été déconnecté de tous les appareils mémorisés. Un code vous sera de nouveau demandé à leur prochaine connexion.</target>
+        <target>Vous avez été déconnecté de tous les appareils mémorisés.</target>
       </trans-unit>
     </body>
   </file>

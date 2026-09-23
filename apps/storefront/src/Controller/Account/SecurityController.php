@@ -6,7 +6,9 @@ namespace Storefront\Controller\Account;
 
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\SvgWriter;
+use Iam\Authentication\Application\BackupCodeIssuance\BackupCodeRegeneratorInterface;
 use Iam\Authentication\Application\Command\RevokeDeviceTrust\RevokeDeviceTrust;
+use Iam\Authentication\Application\Command\RevokeTotp\RevokeTotp;
 use Iam\Authentication\Application\Query\GetBackupCodeCredentialByIdentity\GetBackupCodeCredentialByIdentity;
 use Iam\Authentication\Application\Query\GetTotpCredentialByIdentity\GetTotpCredentialByIdentity;
 use Iam\Authentication\Application\TotpIssuance\TotpIssuerInterface;
@@ -40,6 +42,7 @@ final class SecurityController extends AbstractController
         private readonly CommandBusInterface $commandBus,
         private readonly TotpProvisioningInterface $provisioning,
         private readonly TotpIssuerInterface $totpIssuer,
+        private readonly BackupCodeRegeneratorInterface $backupCodeRegenerator,
         private readonly TranslatorInterface $translator,
     ) {
     }
@@ -59,21 +62,31 @@ final class SecurityController extends AbstractController
 
         $this->addFlash('success', $this->translator->trans('revoke_device_trust_flash_success', domain: 'account_security'));
 
-        return $this->redirectToRoute('storefront_account_security_show');
+        return $this->redirectToRoute('storefront_account_security_two_step_settings');
+    }
+
+    #[Route(name: 'show', methods: ['GET'])]
+    public function show(#[CurrentUser] PasswordUser $user): Response
+    {
+        return $this->render('account/security/show.html.twig', ['user' => $user]);
     }
 
     /**
      * @throws ApplicationExceptionInterface
+     * @throws \DomainException
      */
-    #[Route(name: 'show', methods: ['GET'])]
-    public function show(#[CurrentUser] PasswordUser $user): Response
+    #[Route(path: ['en' => '/2sv/settings', 'fr' => '/v2e/parametres'], name: 'two_step_settings', methods: ['GET', 'POST'])]
+    public function twoStepSettings(Request $request, #[CurrentUser] PasswordUser $user): Response
     {
         $totpCredential = $this->queryBus->ask(new GetTotpCredentialByIdentity($user->identityId()));
+
+        if (null === $totpCredential) {
+            return $this->enrollTotp($request, $user);
+        }
+
         $backupCodeCredential = $this->queryBus->ask(new GetBackupCodeCredentialByIdentity($user->identityId()));
 
-        return $this->render('account/security/show.html.twig', [
-            'user' => $user,
-            'totpIssued' => null !== $totpCredential,
+        return $this->render('account/security/two_step_settings.html.twig', [
             'backupCodeCredential' => $backupCodeCredential,
         ]);
     }
@@ -82,8 +95,45 @@ final class SecurityController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route(path: ['en' => '/2sv/enable', 'fr' => '/v2e/activer'], name: 'issue_totp', methods: ['GET', 'POST'])]
-    public function issueTotp(Request $request, #[CurrentUser] PasswordUser $user): Response
+    #[Route(path: ['en' => '/2sv/disable', 'fr' => '/v2e/desactiver'], name: 'revoke_totp', methods: ['POST'])]
+    public function revokeTotp(Request $request, #[CurrentUser] PasswordUser $user): RedirectResponse
+    {
+        if (!$this->isCsrfTokenValid('revoke_totp', (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $totpCredential = $this->queryBus->ask(new GetTotpCredentialByIdentity($user->identityId()));
+
+        if (null !== $totpCredential) {
+            $this->commandBus->dispatch(new RevokeTotp($totpCredential->id, $user->identityId()));
+        }
+
+        $this->addFlash('success', $this->translator->trans('two_step_settings_flash_revoked', domain: 'account_security'));
+
+        return $this->redirectToRoute('storefront_account_security_show');
+    }
+
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
+    #[Route(path: ['en' => '/2sv/recovery-codes/regenerate', 'fr' => '/v2e/codes-recuperation/regenerer'], name: 'regenerate_backup_codes', methods: ['POST'])]
+    public function regenerateBackupCodes(Request $request, #[CurrentUser] PasswordUser $user): Response
+    {
+        if (!$this->isCsrfTokenValid('regenerate_backup_codes', (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $backupCodes = $this->backupCodeRegenerator->regenerateFor($user->identityId());
+
+        return $this->render('account/security/regenerate_backup_codes.html.twig', ['backupCodes' => $backupCodes]);
+    }
+
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
+    private function enrollTotp(Request $request, PasswordUser $user): Response
     {
         $session = $request->getSession();
         /** @var non-empty-string|null $secret */
@@ -113,7 +163,7 @@ final class SecurityController extends AbstractController
             if (null === $backupCodes) {
                 $this->addFlash('success', $this->translator->trans('issue_totp_flash_issued_codes_kept', domain: 'account_security'));
 
-                return $this->redirectToRoute('storefront_account_security_show');
+                return $this->redirectToRoute('storefront_account_security_two_step_settings');
             }
 
             $this->addFlash('success', $this->translator->trans('issue_totp_flash_issued', domain: 'account_security'));

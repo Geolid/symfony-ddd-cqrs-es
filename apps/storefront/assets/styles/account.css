@@ -1,5 +1,59 @@
 .totp-qr {
   display: block;
   max-width: 12rem;
+  margin: var(--pico-spacing) auto;
+}
+
+.totp-code-input {
+  max-width: 8rem;
+}
+
+.totp-manual-toggle summary {
+  width: fit-content;
   margin-inline: auto;
 }
+
+.recovery-codes {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--pico-spacing);
+  padding: var(--pico-spacing);
+  margin-bottom: var(--pico-spacing);
+  background-color: var(--pico-code-background-color);
+  border-radius: var(--pico-border-radius);
+  text-align: center;
+}
+
+.recovery-codes code {
+  background: none;
+  letter-spacing: 0.15em;
+}
+
+.settings-sections {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: start;
+  gap: var(--pico-spacing);
+}
+
+.settings-sections hr {
+  grid-column: 1 / -1;
+}
+
+.settings-sections form,
+.settings-sections > button,
+.settings-sections > [role=button] {
+  align-self: center;
+}
+
+.settings-sections button,
+.settings-sections [role=button] {
+  width: 100%;
+}
+
+.settings-sections .outline.pico-background-red-500 {
+  background-color: transparent;
+  border-color: var(--pico-color-red-500);
+  color: var(--pico-color-red-500);
+}
+

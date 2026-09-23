@@ -17,9 +17,11 @@ use Storefront\Security\PasswordUser;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Twig\Environment;
 
-#[AutoconfigureTag('scheb_two_factor.provider', ['alias' => 'backup_code'])]
+#[AutoconfigureTag('scheb_two_factor.provider', ['alias' => self::ALIAS])]
 final readonly class BackupCodeTwoFactorProvider implements TwoFactorProviderInterface
 {
+    public const string ALIAS = 'backup_code';
+
     public function __construct(
         private QueryBusInterface $queryBus,
         private BackupCodeCredentialVerifierInterface $verifier,

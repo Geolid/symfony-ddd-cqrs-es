@@ -25,33 +25,33 @@
         <source>show_label_two_factor</source>
         <target>Two-step verification</target>
       </trans-unit>
-      <trans-unit id="show_status_enabled">
-        <source>show_status_enabled</source>
-        <target>Two-step verification enabled.</target>
+      <trans-unit id="show_two_factor_description">
+        <source>show_two_factor_description</source>
+        <target>Configure a two-step verification authenticator to add an additional layer of security when signing in.</target>
       </trans-unit>
-      <trans-unit id="show_link_enable_two_factor">
-        <source>show_link_enable_two_factor</source>
-        <target>Enable</target>
+      <trans-unit id="show_button_configure_two_factor">
+        <source>show_button_configure_two_factor</source>
+        <target>Configure</target>
       </trans-unit>
-      <trans-unit id="show_label_backup_codes">
-        <source>show_label_backup_codes</source>
-        <target>Backup codes</target>
+      <trans-unit id="show_label_recovery_codes">
+        <source>show_label_recovery_codes</source>
+        <target>Recovery codes</target>
       </trans-unit>
-      <trans-unit id="show_backup_codes_issued_at">
-        <source>show_backup_codes_issued_at</source>
+      <trans-unit id="show_recovery_codes_issued_at">
+        <source>show_recovery_codes_issued_at</source>
         <target>Issued on %date%.</target>
       </trans-unit>
-      <trans-unit id="show_backup_codes_regenerated_at">
-        <source>show_backup_codes_regenerated_at</source>
+      <trans-unit id="show_recovery_codes_regenerated_at">
+        <source>show_recovery_codes_regenerated_at</source>
         <target>Last regenerated on %date%.</target>
       </trans-unit>
-      <trans-unit id="show_backup_codes_remaining">
-        <source>show_backup_codes_remaining</source>
+      <trans-unit id="show_recovery_codes_remaining">
+        <source>show_recovery_codes_remaining</source>
         <target>%count% codes remaining.</target>
       </trans-unit>
       <trans-unit id="issue_totp_title">
         <source>issue_totp_title</source>
-        <target>Enable two-step verification</target>
+        <target>Enable 2SV</target>
       </trans-unit>
       <trans-unit id="issue_totp_heading">
         <source>issue_totp_heading</source>
@@ -127,23 +127,83 @@
       </trans-unit>
       <trans-unit id="issue_totp_flash_issued_codes_kept">
         <source>issue_totp_flash_issued_codes_kept</source>
-        <target>Two-step verification enabled. Your existing backup codes are still valid.</target>
+        <target>Two-step verification enabled. Your existing recovery codes are still valid.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_backup_codes_step_indicator">
-        <source>issue_totp_backup_codes_step_indicator</source>
-        <target>Step 2 of 2</target>
+      <trans-unit id="issue_totp_recovery_codes_title">
+        <source>issue_totp_recovery_codes_title</source>
+        <target>Save Your Recovery Codes</target>
       </trans-unit>
-      <trans-unit id="issue_totp_backup_codes_title">
-        <source>issue_totp_backup_codes_title</source>
-        <target>Your backup codes</target>
+      <trans-unit id="issue_totp_recovery_codes_instructions">
+        <source>issue_totp_recovery_codes_instructions</source>
+        <target>Recovery codes can be used to access your account if you lose your device and cannot receive Two-Step Verification codes.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_backup_codes_instructions">
-        <source>issue_totp_backup_codes_instructions</source>
-        <target>Store these codes somewhere safe. Each one can only be used once to sign in if you lose access to your authenticator app. They will never be shown again.</target>
+      <trans-unit id="issue_totp_recovery_codes_warning">
+        <source>issue_totp_recovery_codes_warning</source>
+        <target>To keep your account secure, never share these codes. We strongly recommend saving them in a secure password manager. Please do this now, as these codes will only be shown once.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_backup_codes_button_continue">
-        <source>issue_totp_backup_codes_button_continue</source>
-        <target>I've saved my codes</target>
+      <trans-unit id="recovery_codes_button_copy">
+        <source>recovery_codes_button_copy</source>
+        <target>Copy codes</target>
+      </trans-unit>
+      <trans-unit id="recovery_codes_button_download">
+        <source>recovery_codes_button_download</source>
+        <target>Download</target>
+      </trans-unit>
+      <trans-unit id="recovery_codes_link_back">
+        <source>recovery_codes_link_back</source>
+        <target>Back to 2SV settings</target>
+      </trans-unit>
+      <trans-unit id="two_step_settings_title">
+        <source>two_step_settings_title</source>
+        <target>Two-Step Verification (2SV) settings</target>
+      </trans-unit>
+      <trans-unit id="two_step_settings_section_disable_title">
+        <source>two_step_settings_section_disable_title</source>
+        <target>Disable two-step verification</target>
+      </trans-unit>
+      <trans-unit id="two_step_settings_section_disable_instructions">
+        <source>two_step_settings_section_disable_instructions</source>
+        <target>You'll no longer be asked for a code when you sign in. Disable this if you need to set up a new authenticator app.</target>
+      </trans-unit>
+      <trans-unit id="two_step_settings_section_disable_warning_label">
+        <source>two_step_settings_section_disable_warning_label</source>
+        <target>Warning:</target>
+      </trans-unit>
+      <trans-unit id="two_step_settings_section_disable_warning">
+        <source>two_step_settings_section_disable_warning</source>
+        <target>Leaving this disabled reduces your account security.</target>
+      </trans-unit>
+      <trans-unit id="two_step_settings_button_disable">
+        <source>two_step_settings_button_disable</source>
+        <target>Disable 2SV</target>
+      </trans-unit>
+      <trans-unit id="two_step_settings_flash_revoked">
+        <source>two_step_settings_flash_revoked</source>
+        <target>Two-step verification disabled.</target>
+      </trans-unit>
+      <trans-unit id="two_step_settings_section_recovery_codes_title">
+        <source>two_step_settings_section_recovery_codes_title</source>
+        <target>Recovery codes</target>
+      </trans-unit>
+      <trans-unit id="two_step_settings_section_recovery_codes_instructions">
+        <source>two_step_settings_section_recovery_codes_instructions</source>
+        <target>Use recovery codes to sign in if you lose access to your device. Generating new codes will permanently invalidate your current ones.</target>
+      </trans-unit>
+      <trans-unit id="two_step_settings_button_regenerate">
+        <source>two_step_settings_button_regenerate</source>
+        <target>Generate new recovery codes</target>
+      </trans-unit>
+      <trans-unit id="two_step_settings_section_devices_instructions">
+        <source>two_step_settings_section_devices_instructions</source>
+        <target>Sign out of all trusted devices. Use this if your account is compromised or you lost a device connected to this account. You will need to enter a verification code the next time you sign in.</target>
+      </trans-unit>
+      <trans-unit id="regenerate_recovery_codes_title">
+        <source>regenerate_recovery_codes_title</source>
+        <target>Your New Recovery Codes</target>
+      </trans-unit>
+      <trans-unit id="regenerate_recovery_codes_instructions">
+        <source>regenerate_recovery_codes_instructions</source>
+        <target>Your previous recovery codes no longer work. Save these new ones somewhere safe. They won't be shown again.</target>
       </trans-unit>
       <trans-unit id="show_label_trusted_devices">
         <source>show_label_trusted_devices</source>
@@ -155,7 +215,7 @@
       </trans-unit>
       <trans-unit id="revoke_device_trust_flash_success">
         <source>revoke_device_trust_flash_success</source>
-        <target>You've been signed out of all remembered devices. You'll be asked for a code again next time you sign in from them.</target>
+        <target>You've been signed out of all remembered devices.</target>
       </trans-unit>
     </body>
   </file>

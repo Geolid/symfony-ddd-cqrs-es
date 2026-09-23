@@ -1,0 +1,12 @@
+<div data-controller="recovery-codes" data-recovery-codes-filename-value="recovery-codes.txt">
+    <div class="recovery-codes">
+        {% for backupCode in backupCodes %}
+            <code data-recovery-codes-target="code">{{ backupCode }}</code>
+        {% endfor %}
+    </div>
+
+    <div class="grid">
+        <button type="button" data-action="click->recovery-codes#copy">{{ 'recovery_codes_button_copy'|trans({}, 'account_security') }}</button>
+        <button type="button" data-action="click->recovery-codes#download">{{ 'recovery_codes_button_download'|trans({}, 'account_security') }}</button>
+    </div>
+</div>

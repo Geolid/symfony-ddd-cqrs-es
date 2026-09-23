@@ -5,7 +5,7 @@
     {% block importmap %}{{ importmap(['shared', 'account']) }}{% endblock %}
 {% endblock %}
 
-{% block title %}{{ 'issue_totp_recovery_codes_title'|trans }}{% endblock %}
+{% block title %}{{ 'regenerate_recovery_codes_title'|trans }}{% endblock %}
 
 {% block content %}
     <twig:ui:Breadcrumb :items="[
@@ -15,11 +15,10 @@
         {label: 'two_step_settings_section_recovery_codes_title'|trans},
     ]" />
 
-    <h1>{{ 'issue_totp_recovery_codes_title'|trans }}</h1>
+    <h1>{{ 'regenerate_recovery_codes_title'|trans }}</h1>
 
     <article>
-        <p>{{ 'issue_totp_recovery_codes_instructions'|trans }}</p>
-        <p>{{ 'issue_totp_recovery_codes_warning'|trans }}</p>
+        <p>{{ 'regenerate_recovery_codes_instructions'|trans }}</p>
 
         {{ include('account/security/_recovery_codes.html.twig', {backupCodes: backupCodes}) }}
 

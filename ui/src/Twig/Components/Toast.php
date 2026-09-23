@@ -14,10 +14,10 @@ final class Toast
     public function getColorClass(): string
     {
         return match ($this->variant) {
-            'success' => 'pico-color-jade-500',
-            'warning' => 'pico-color-amber-500',
-            'error' => 'pico-color-red-600',
-            default => '',
+            'success' => 'icon-success',
+            'warning' => 'icon-warning',
+            'error' => 'icon-error',
+            default => 'icon-info',
         };
     }
 

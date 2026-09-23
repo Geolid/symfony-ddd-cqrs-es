@@ -9,7 +9,7 @@
 
         <form method="post" action="{{ path('storefront_signin_verify') }}">
             {% if error %}
-                <div class="form-error">{{- error.messageKey|trans(error.messageData, 'security') -}}</div>
+                <twig:ui:FormError>{{- error.messageKey|trans(error.messageData, 'security') -}}</twig:ui:FormError>
             {% endif %}
 
             <p>{{ email }} <a href="{{ path('storefront_signin_identify') }}">{{ 'link_modify'|trans({}, 'messages') }}</a></p>

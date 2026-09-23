@@ -1,85 +1,49 @@
 {% extends 'layout.html.twig' %}
 {% trans_default_domain 'account_security' %}
 
+{% block javascripts %}
+    {% block importmap %}{{ importmap(['shared', 'account']) }}{% endblock %}
+{% endblock %}
+
 {% block title %}{{ 'show_title'|trans }}{% endblock %}
 
 {% block content %}
-    <nav aria-label="breadcrumb">
-        <ul>
-            <li><a href="{{ path('storefront_account_show') }}">{{ 'title'|trans({}, 'account') }}</a></li>
-            <li>{{ 'show_title'|trans }}</li>
-        </ul>
-    </nav>
+    <twig:ui:Breadcrumb :items="[
+        {label: 'title'|trans({}, 'account'), url: path('storefront_account_show')},
+        {label: 'show_title'|trans},
+    ]" />
 
     <h1>{{ 'show_title'|trans }}</h1>
 
-    <article>
-        <div class="grid">
-            <dl>
-                <dt>{{ 'show_label_name'|trans }}</dt>
-                <dd>{{ user.fullName }}</dd>
-            </dl>
-            <button type="button" class="u-justify-end" disabled>{{ 'link_modify'|trans({}, 'messages') }}</button>
-        </div>
+    <article class="settings-sections">
+        <dl>
+            <dt>{{ 'show_label_name'|trans }}</dt>
+            <dd>{{ user.fullName }}</dd>
+        </dl>
+        <button type="button" class="outline" disabled>{{ 'link_modify'|trans({}, 'messages') }}</button>
 
         <hr>
 
-        <div class="grid">
-            <dl>
-                <dt>{{ 'show_label_email'|trans }}</dt>
-                <dd>{{ user.getUserIdentifier() }}</dd>
-            </dl>
-            <button type="button" class="u-justify-end" disabled>{{ 'link_modify'|trans({}, 'messages') }}</button>
-        </div>
+        <dl>
+            <dt>{{ 'show_label_email'|trans }}</dt>
+            <dd>{{ user.getUserIdentifier() }}</dd>
+        </dl>
+        <button type="button" class="outline" disabled>{{ 'link_modify'|trans({}, 'messages') }}</button>
+
         <hr>
 
-        <div class="grid">
-            <dl>
-                <dt>{{ 'show_label_password'|trans }}</dt>
-                <dd>••••••••••••••••</dd>
-            </dl>
-            <button type="button" class="u-justify-end" disabled>{{ 'link_modify'|trans({}, 'messages') }}</button>
-        </div>
+        <dl>
+            <dt>{{ 'show_label_password'|trans }}</dt>
+            <dd>••••••••••••••••</dd>
+        </dl>
+        <button type="button" class="outline" disabled>{{ 'link_modify'|trans({}, 'messages') }}</button>
+
         <hr>
 
-        <div class="grid">
-            <dl>
-                <dt>{{ 'show_label_two_factor'|trans }}</dt>
-                <dd>{% if totpIssued %}{{ 'show_status_enabled'|trans }}{% endif %}</dd>
-            </dl>
-            {% if not totpIssued %}
-                <a href="{{ path('storefront_account_security_issue_totp') }}" role="button"
-                   class="u-justify-end">{{ 'show_link_enable_two_factor'|trans }}</a>
-            {% endif %}
-        </div>
-        <hr>
-
-        {% if backupCodeCredential %}
-            <dl>
-                <dt>{{ 'show_label_backup_codes'|trans }}</dt>
-                <dd>
-                    {{ 'show_backup_codes_issued_at'|trans({'%date%': backupCodeCredential.issuedAt|date('d/m/Y')}) }}
-                    <br>
-                    {% if backupCodeCredential.regeneratedAt %}
-                        {{ 'show_backup_codes_regenerated_at'|trans({'%date%': backupCodeCredential.regeneratedAt|date('d/m/Y')}) }}
-                        <br>
-                    {% endif %}
-                    {{ 'show_backup_codes_remaining'|trans({'%count%': backupCodeCredential.remainingCount}) }}
-                </dd>
-            </dl>
-            <hr>
-        {% endif %}
-
-        <div class="grid">
-            <dl>
-                <dt>{{ 'show_label_trusted_devices'|trans }}</dt>
-                <dd></dd>
-            </dl>
-            <form method="post" action="{{ path('storefront_account_security_revoke_device_trust') }}"
-                  class="u-justify-end">
-                <input type="hidden" name="_token" value="{{ csrf_token('revoke_device_trust') }}">
-                <button type="submit">{{ 'show_button_revoke_device_trust'|trans }}</button>
-            </form>
-        </div>
+        <dl>
+            <dt>{{ 'show_label_two_factor'|trans }}</dt>
+            <dd>{{ 'show_two_factor_description'|trans }}</dd>
+        </dl>
+        <a href="{{ path('storefront_account_security_two_step_settings') }}" role="button" class="outline">{{ 'show_button_configure_two_factor'|trans }}</a>
     </article>
 {% endblock %}

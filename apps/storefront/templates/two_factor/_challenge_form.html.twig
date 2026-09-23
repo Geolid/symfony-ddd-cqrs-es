@@ -8,24 +8,10 @@
 
         <form method="post" action="{{ checkPathUrl ?? path(checkPathRoute) }}">
             {% if authenticationError %}
-                <div class="form-error">{{- authenticationError|trans(authenticationErrorData, 'SchebTwoFactorBundle') -}}</div>
+                <twig:ui:FormError>{{- authenticationError|trans(authenticationErrorData, 'SchebTwoFactorBundle') -}}</twig:ui:FormError>
             {% endif %}
 
             {% block code_field %}{% endblock %}
-
-            {% if availableTwoFactorProviders|length > 1 %}
-                <ul>
-                    {% for provider in availableTwoFactorProviders %}
-                        {% if provider != twoFactorProvider %}
-                            <li>
-                                <a href="{{ path('storefront_two_factor_challenge', {preferProvider: provider}) }}">
-                                    {{ ('switch_provider_' ~ provider)|trans({}, 'two_factor_challenge') }}
-                                </a>
-                            </li>
-                        {% endif %}
-                    {% endfor %}
-                </ul>
-            {% endif %}
 
             <label for="two-factor-trusted">
                 <input type="checkbox" id="two-factor-trusted" name="_trusted" value="1">
@@ -38,6 +24,12 @@
 
             <button type="submit">{{ 'button_submit'|trans({}, 'two_factor_challenge') }}</button>
         </form>
+
+        {% for provider in availableTwoFactorProviders %}
+            {% if provider != twoFactorProvider %}
+                <p><a href="{{ path('storefront_two_factor_challenge', {preferProvider: provider}) }}">{{ ('switch_provider_' ~ provider)|trans({}, 'two_factor_challenge') }}</a></p>
+            {% endif %}
+        {% endfor %}
 
         <p><a href="{{ logoutPath }}">{{ 'link_logout'|trans({}, 'two_factor_challenge') }}</a></p>
     </article>

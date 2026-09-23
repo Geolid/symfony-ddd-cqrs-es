@@ -2,6 +2,10 @@
   justify-self: end;
 }
 
+.u-mt {
+  margin-top: var(--pico-spacing);
+}
+
 .u-muted {
   color: var(--pico-muted-color);
 }
