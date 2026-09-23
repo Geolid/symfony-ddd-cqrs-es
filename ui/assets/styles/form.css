@@ -5,8 +5,8 @@
 .form-error {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1rem;
+  gap: calc(var(--pico-spacing) * .5);
+  padding: calc(var(--pico-spacing) * .75) var(--pico-spacing);
   margin-bottom: var(--pico-spacing);
   background-color: var(--pico-background-color);
   border: var(--pico-border-width) solid var(--pico-del-color);

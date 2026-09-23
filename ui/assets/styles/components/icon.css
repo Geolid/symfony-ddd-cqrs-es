@@ -4,6 +4,12 @@
   height: 1.25rem;
 }
 
+.icon-text {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--pico-spacing) * .5);
+}
+
 .icon-success {
   color: var(--pico-ins-color);
 }

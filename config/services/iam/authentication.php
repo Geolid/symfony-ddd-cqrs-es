@@ -21,6 +21,8 @@ return static function (ContainerConfigurator $container): void {
     $services->get(TotpIssuer::class)->arg('$backupCodeCount', '%iam.authentication.backup_code_count%');
     $services->get(BackupCodeRegenerator::class)->arg('$backupCodeCount', '%iam.authentication.backup_code_count%');
 
+    $container->parameters()->set('iam.authentication.backup_code_digit_count', 8);
+
     if ('test' === $container->env()) {
         // Same algorithm, lowest cost — real hashing still runs, just fast.
         $services->get(NativePasswordHasher::class)->arg('$cost', 4);

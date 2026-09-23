@@ -6,7 +6,6 @@ namespace Storefront\Security\Provider;
 
 use Iam\Authentication\Application\CredentialVerification\BackupCodeCredentialVerifierInterface;
 use Iam\Authentication\Application\Query\GetBackupCodeCredentialByIdentity\GetBackupCodeCredentialByIdentity;
-use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeGeneratorInterface;
 use Scheb\TwoFactorBundle\Security\TwoFactor\AuthenticationContextInterface;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\DefaultTwoFactorFormRenderer;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\TwoFactorFormRendererInterface;
@@ -15,6 +14,7 @@ use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
 use Storefront\Security\PasswordUser;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Twig\Environment;
 
 #[AutoconfigureTag('scheb_two_factor.provider', ['alias' => self::ALIAS])]
@@ -26,6 +26,8 @@ final readonly class BackupCodeTwoFactorProvider implements TwoFactorProviderInt
         private QueryBusInterface $queryBus,
         private BackupCodeCredentialVerifierInterface $verifier,
         private Environment $twig,
+        #[Autowire(param: 'iam.authentication.backup_code_digit_count')]
+        private int $digitCount,
     ) {
     }
 
@@ -58,7 +60,7 @@ final readonly class BackupCodeTwoFactorProvider implements TwoFactorProviderInt
         return new DefaultTwoFactorFormRenderer(
             $this->twig,
             'two_factor/challenge_backup_code.html.twig',
-            ['pattern' => \sprintf('\d{%d}', BackupCodeGeneratorInterface::DIGITS)],
+            ['pattern' => \sprintf('\d{%d}', $this->digitCount)],
         );
     }
 }

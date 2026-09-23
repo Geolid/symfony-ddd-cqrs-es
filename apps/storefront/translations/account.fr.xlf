@@ -13,6 +13,10 @@
         <source>link_security</source>
         <target>Connexion et Sécurité</target>
       </trans-unit>
+      <trans-unit id="card_security_description">
+        <source>card_security_description</source>
+        <target>Gérez votre mot de passe, l'authentification à deux facteurs et les appareils de confiance.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

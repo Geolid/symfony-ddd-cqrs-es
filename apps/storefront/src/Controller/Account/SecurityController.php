@@ -62,7 +62,7 @@ final class SecurityController extends AbstractController
 
         $this->addFlash('success', $this->translator->trans('revoke_device_trust_flash_success', domain: 'account_security'));
 
-        return $this->redirectToRoute('storefront_account_security_two_step_settings');
+        return $this->redirectToRoute('storefront_account_security_two_factor_settings');
     }
 
     #[Route(name: 'show', methods: ['GET'])]
@@ -75,8 +75,8 @@ final class SecurityController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route(path: ['en' => '/2sv/settings', 'fr' => '/v2e/parametres'], name: 'two_step_settings', methods: ['GET', 'POST'])]
-    public function twoStepSettings(Request $request, #[CurrentUser] PasswordUser $user): Response
+    #[Route(path: ['en' => '/2fa/settings', 'fr' => '/a2f/parametres'], name: 'two_factor_settings', methods: ['GET', 'POST'])]
+    public function twoFactorSettings(Request $request, #[CurrentUser] PasswordUser $user): Response
     {
         $totpCredential = $this->queryBus->ask(new GetTotpCredentialByIdentity($user->identityId()));
 
@@ -86,7 +86,7 @@ final class SecurityController extends AbstractController
 
         $backupCodeCredential = $this->queryBus->ask(new GetBackupCodeCredentialByIdentity($user->identityId()));
 
-        return $this->render('account/security/two_step_settings.html.twig', [
+        return $this->render('account/security/two_factor_settings.html.twig', [
             'backupCodeCredential' => $backupCodeCredential,
         ]);
     }
@@ -95,7 +95,7 @@ final class SecurityController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route(path: ['en' => '/2sv/disable', 'fr' => '/v2e/desactiver'], name: 'revoke_totp', methods: ['POST'])]
+    #[Route(path: ['en' => '/2fa/disable', 'fr' => '/a2f/desactiver'], name: 'revoke_totp', methods: ['POST'])]
     public function revokeTotp(Request $request, #[CurrentUser] PasswordUser $user): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('revoke_totp', (string) $request->request->get('_token'))) {
@@ -108,7 +108,7 @@ final class SecurityController extends AbstractController
             $this->commandBus->dispatch(new RevokeTotp($totpCredential->id, $user->identityId()));
         }
 
-        $this->addFlash('success', $this->translator->trans('two_step_settings_flash_revoked', domain: 'account_security'));
+        $this->addFlash('success', $this->translator->trans('two_factor_settings_flash_revoked', domain: 'account_security'));
 
         return $this->redirectToRoute('storefront_account_security_show');
     }
@@ -117,7 +117,7 @@ final class SecurityController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route(path: ['en' => '/2sv/recovery-codes/regenerate', 'fr' => '/v2e/codes-recuperation/regenerer'], name: 'regenerate_backup_codes', methods: ['POST'])]
+    #[Route(path: ['en' => '/2fa/backup-codes/regenerate', 'fr' => '/a2f/codes-secours/regenerer'], name: 'regenerate_backup_codes', methods: ['POST'])]
     public function regenerateBackupCodes(Request $request, #[CurrentUser] PasswordUser $user): Response
     {
         if (!$this->isCsrfTokenValid('regenerate_backup_codes', (string) $request->request->get('_token'))) {
@@ -163,7 +163,7 @@ final class SecurityController extends AbstractController
             if (null === $backupCodes) {
                 $this->addFlash('success', $this->translator->trans('issue_totp_flash_issued_codes_kept', domain: 'account_security'));
 
-                return $this->redirectToRoute('storefront_account_security_two_step_settings');
+                return $this->redirectToRoute('storefront_account_security_two_factor_settings');
             }
 
             $this->addFlash('success', $this->translator->trans('issue_totp_flash_issued', domain: 'account_security'));

@@ -1,25 +1,20 @@
-{% extends 'layout.html.twig' %}
+{% extends 'account/security/_layout.html.twig' %}
 {% trans_default_domain 'account_security' %}
-
-{% block javascripts %}
-    {% block importmap %}{{ importmap(['shared', 'account']) }}{% endblock %}
-{% endblock %}
+{% import 'account/security/_breadcrumb.html.twig' as security %}
 
 {% block title %}{{ 'issue_totp_title'|trans }}{% endblock %}
 
 {% block content %}
-    <twig:ui:Breadcrumb :items="[
-        {label: 'title'|trans({}, 'account'), url: path('storefront_account_show')},
-        {label: 'show_title'|trans, url: path('storefront_account_security_show')},
-        {label: 'two_step_settings_title'|trans, url: path('storefront_account_security_two_step_settings')},
+    {{ security.trail([
+        {label: 'two_factor_settings_title'|trans, url: path('storefront_account_security_two_factor_settings')},
         {label: 'issue_totp_title'|trans},
-    ]" />
+    ]) }}
 
     <small>{{ 'issue_totp_step_indicator'|trans }}</small>
     <h1>{{ 'issue_totp_heading'|trans }}</h1>
 
     <article>
-        <p><strong>{{ 'issue_totp_note_label'|trans }}</strong> {{ 'issue_totp_note'|trans }}</p>
+        <p class="icon-text"><twig:ux:icon name="info" class="icon icon-info" /> {{ 'issue_totp_note'|trans }}</p>
 
         <ol>
             <li><strong>{{ 'issue_totp_step_open_verb'|trans }}</strong> {{ 'issue_totp_step_open_rest'|trans }}</li>

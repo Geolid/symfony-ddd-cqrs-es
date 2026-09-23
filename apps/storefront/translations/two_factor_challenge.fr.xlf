@@ -7,7 +7,7 @@
     <body>
       <trans-unit id="title">
         <source>title</source>
-        <target>Vérification en deux étapes</target>
+        <target>Authentification à deux facteurs</target>
       </trans-unit>
       <trans-unit id="label_totp_code">
         <source>label_totp_code</source>

@@ -1,28 +1,24 @@
-{% extends 'layout.html.twig' %}
+{% extends 'account/security/_layout.html.twig' %}
 {% trans_default_domain 'account_security' %}
+{% import 'account/security/_breadcrumb.html.twig' as security %}
 
-{% block javascripts %}
-    {% block importmap %}{{ importmap(['shared', 'account']) }}{% endblock %}
-{% endblock %}
-
-{% block title %}{{ 'issue_totp_recovery_codes_title'|trans }}{% endblock %}
+{% block title %}{{ 'issue_totp_backup_codes_title'|trans }}{% endblock %}
 
 {% block content %}
-    <twig:ui:Breadcrumb :items="[
-        {label: 'title'|trans({}, 'account'), url: path('storefront_account_show')},
-        {label: 'show_title'|trans, url: path('storefront_account_security_show')},
-        {label: 'two_step_settings_title'|trans, url: path('storefront_account_security_two_step_settings')},
-        {label: 'two_step_settings_section_recovery_codes_title'|trans},
-    ]" />
+    {{ security.trail([
+        {label: 'two_factor_settings_title'|trans, url: path('storefront_account_security_two_factor_settings')},
+        {label: 'two_factor_settings_section_backup_codes_title'|trans},
+    ]) }}
 
-    <h1>{{ 'issue_totp_recovery_codes_title'|trans }}</h1>
+    <small>{{ 'issue_totp_backup_codes_step_indicator'|trans }}</small>
+    <h1>{{ 'issue_totp_backup_codes_title'|trans }}</h1>
 
     <article>
-        <p>{{ 'issue_totp_recovery_codes_instructions'|trans }}</p>
-        <p>{{ 'issue_totp_recovery_codes_warning'|trans }}</p>
+        <p>{{ 'issue_totp_backup_codes_instructions'|trans }}</p>
+        <p>{{ 'issue_totp_backup_codes_warning'|trans }}</p>
 
-        {{ include('account/security/_recovery_codes.html.twig', {backupCodes: backupCodes}) }}
+        {{ include('account/security/_backup_codes.html.twig', {backupCodes: backupCodes}) }}
 
-        <p><a href="{{ path('storefront_account_security_two_step_settings') }}">&larr; {{ 'recovery_codes_link_back'|trans }}</a></p>
+        <p><a href="{{ path('storefront_account_security_two_factor_settings') }}">&larr; {{ 'backup_codes_link_back'|trans }}</a></p>
     </article>
 {% endblock %}

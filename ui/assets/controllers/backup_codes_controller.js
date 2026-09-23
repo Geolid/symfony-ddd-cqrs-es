@@ -14,7 +14,7 @@ export default class extends Controller {
 
         const link = document.createElement('a');
         link.href = url;
-        link.download = this.filenameValue || 'recovery-codes.txt';
+        link.download = this.filenameValue || 'backup-codes.txt';
         link.click();
 
         URL.revokeObjectURL(url);

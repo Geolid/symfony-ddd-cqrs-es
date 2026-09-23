@@ -13,7 +13,7 @@
   margin-inline: auto;
 }
 
-.recovery-codes {
+.backup-codes {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: var(--pico-spacing);
@@ -24,7 +24,7 @@
   text-align: center;
 }
 
-.recovery-codes code {
+.backup-codes code {
   background: none;
   letter-spacing: 0.15em;
 }

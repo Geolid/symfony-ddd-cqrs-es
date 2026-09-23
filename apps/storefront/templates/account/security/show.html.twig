@@ -1,9 +1,5 @@
-{% extends 'layout.html.twig' %}
+{% extends 'account/security/_layout.html.twig' %}
 {% trans_default_domain 'account_security' %}
-
-{% block javascripts %}
-    {% block importmap %}{{ importmap(['shared', 'account']) }}{% endblock %}
-{% endblock %}
 
 {% block title %}{{ 'show_title'|trans }}{% endblock %}
 
@@ -44,6 +40,6 @@
             <dt>{{ 'show_label_two_factor'|trans }}</dt>
             <dd>{{ 'show_two_factor_description'|trans }}</dd>
         </dl>
-        <a href="{{ path('storefront_account_security_two_step_settings') }}" role="button" class="outline">{{ 'show_button_configure_two_factor'|trans }}</a>
+        <a href="{{ path('storefront_account_security_two_factor_settings') }}" role="button" class="outline">{{ 'show_button_configure_two_factor'|trans }}</a>
     </article>
 {% endblock %}

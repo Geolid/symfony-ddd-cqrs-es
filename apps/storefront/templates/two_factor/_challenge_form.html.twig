@@ -3,34 +3,30 @@
 {% block title %}{{ 'title'|trans({}, 'two_factor_challenge') }}{% endblock %}
 
 {% block content %}
-    <article class="auth-card">
-        <h1>{{ 'title'|trans({}, 'two_factor_challenge') }}</h1>
+    <form method="post" action="{{ checkPathUrl ?? path(checkPathRoute) }}">
+        {% if authenticationError %}
+            <twig:ui:FormError>{{- authenticationError|trans(authenticationErrorData, 'SchebTwoFactorBundle') -}}</twig:ui:FormError>
+        {% endif %}
 
-        <form method="post" action="{{ checkPathUrl ?? path(checkPathRoute) }}">
-            {% if authenticationError %}
-                <twig:ui:FormError>{{- authenticationError|trans(authenticationErrorData, 'SchebTwoFactorBundle') -}}</twig:ui:FormError>
-            {% endif %}
+        {% block code_field %}{% endblock %}
 
-            {% block code_field %}{% endblock %}
+        <label for="two-factor-trusted">
+            <input type="checkbox" id="two-factor-trusted" name="_trusted" value="1">
+            {{ 'label_trust_device'|trans({}, 'two_factor_challenge') }}
+        </label>
 
-            <label for="two-factor-trusted">
-                <input type="checkbox" id="two-factor-trusted" name="_trusted" value="1">
-                {{ 'label_trust_device'|trans({}, 'two_factor_challenge') }}
-            </label>
+        {% if isCsrfProtectionEnabled %}
+            <input type="hidden" name="{{ csrfParameterName }}" value="{{ csrf_token(csrfTokenId) }}">
+        {% endif %}
 
-            {% if isCsrfProtectionEnabled %}
-                <input type="hidden" name="{{ csrfParameterName }}" value="{{ csrf_token(csrfTokenId) }}">
-            {% endif %}
+        <button type="submit">{{ 'button_submit'|trans({}, 'two_factor_challenge') }}</button>
+    </form>
 
-            <button type="submit">{{ 'button_submit'|trans({}, 'two_factor_challenge') }}</button>
-        </form>
+    {% for provider in availableTwoFactorProviders %}
+        {% if provider != twoFactorProvider %}
+            <p><a href="{{ path('storefront_two_factor_challenge', {preferProvider: provider}) }}">{{ ('switch_provider_' ~ provider)|trans({}, 'two_factor_challenge') }}</a></p>
+        {% endif %}
+    {% endfor %}
 
-        {% for provider in availableTwoFactorProviders %}
-            {% if provider != twoFactorProvider %}
-                <p><a href="{{ path('storefront_two_factor_challenge', {preferProvider: provider}) }}">{{ ('switch_provider_' ~ provider)|trans({}, 'two_factor_challenge') }}</a></p>
-            {% endif %}
-        {% endfor %}
-
-        <p><a href="{{ logoutPath }}">{{ 'link_logout'|trans({}, 'two_factor_challenge') }}</a></p>
-    </article>
+    <p><a href="{{ logoutPath }}">{{ 'link_logout'|trans({}, 'two_factor_challenge') }}</a></p>
 {% endblock %}

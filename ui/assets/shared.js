@@ -7,5 +7,6 @@ import './styles/link.css';
 import './styles/utilities.css';
 import './styles/components/toast.css';
 import './styles/components/icon.css';
+import './styles/components/header.css';
 
 import './bootstrap.js';
