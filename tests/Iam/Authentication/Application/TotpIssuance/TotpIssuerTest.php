@@ -46,6 +46,8 @@ final class TotpIssuerTest extends AbstractIntegrationTestCase
         self::assertFalse($result->revoked);
 
         $backupCodeCount = self::getContainer()->getParameter('iam.authentication.backup_code_count');
+        self::assertIsInt($backupCodeCount);
+        self::assertNotNull($backupCodes);
         self::assertCount($backupCodeCount, $backupCodes);
     }
 
