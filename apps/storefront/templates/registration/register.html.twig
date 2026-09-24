@@ -4,21 +4,17 @@
 {% block title %}{{ 'register_title'|trans }}{% endblock %}
 
 {% block content %}
-    <article>
-        <h1>{{ 'register_title'|trans }}</h1>
+    <p class="u-muted">{{ 'register_subtitle'|trans }}</p>
 
-        <p>{{ 'register_subtitle'|trans }}</p>
+    {{ form_start(form) }}
+        {{ form_errors(form) }}
+        <dl>
+            <dt>{{ 'register_label_email'|trans }}</dt>
+            <dd>{{ form.email.vars.value }} <a href="{{ path('storefront_signin_identify') }}">{{ 'link_modify'|trans({}, 'messages') }}</a></dd>
+        </dl>
+        {{ form_rest(form) }}
+        <button type="submit">{{ 'register_button_submit'|trans }}</button>
+    {{ form_end(form) }}
 
-        {{ form_start(form) }}
-            {{ form_widget(form.email) }}
-            <label for="{{ form.email.vars.id }}">{{ 'register_label_email'|trans }}</label>
-            <p>{{ form.email.vars.value }} <a href="{{ path('storefront_signin_identify') }}">{{ 'link_modify'|trans({}, 'messages') }}</a></p>
-            {{ form_row(form.fullName) }}
-            {{ form_row(form.password.first) }}
-            {{ form_row(form.password.second) }}
-            <button type="submit">{{ 'register_button_submit'|trans }}</button>
-        {{ form_end(form) }}
-
-        <p><strong>{{ 'register_text_already_customer'|trans }}</strong><br><a href="{{ path('storefront_signin_identify') }}">{{ 'register_link_identify_instead'|trans }}</a></p>
-    </article>
+    <p><strong>{{ 'register_text_already_customer'|trans }}</strong><br><a href="{{ path('storefront_signin_identify') }}">{{ 'register_link_identify_instead'|trans }}</a></p>
 {% endblock %}

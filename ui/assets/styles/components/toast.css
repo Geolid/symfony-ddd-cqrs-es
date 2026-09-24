@@ -1,0 +1,28 @@
+.flash-container {
+  position: fixed;
+  bottom: var(--pico-spacing);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: calc(var(--pico-spacing) * .5);
+  min-width: 20rem;
+  max-width: 40rem;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pico-spacing) * .5);
+  padding: calc(var(--pico-spacing) * .75) var(--pico-spacing);
+  background-color: var(--pico-card-background-color);
+  border-radius: var(--pico-border-radius);
+  box-shadow: var(--pico-card-box-shadow);
+}
+
+.flash-container .toast {
+  margin-bottom: 0;
+  cursor: pointer;
+  transition: opacity 300ms;
+}

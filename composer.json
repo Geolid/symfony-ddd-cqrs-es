@@ -19,6 +19,7 @@
     "predis/predis": "^3.6",
     "ramsey/uuid": "^4.9",
     "scheb/2fa-bundle": "^8.6",
+    "scheb/2fa-trusted-device": "^8.6",
     "sentry/sentry-symfony": "^5.10",
     "spomky-labs/otphp": "^11.5",
     "symfony/asset": "8.1.*",

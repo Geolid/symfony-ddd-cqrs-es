@@ -7,11 +7,27 @@
     <body>
       <trans-unit id="title">
         <source>title</source>
-        <target>Two-factor verification</target>
+        <target>Two-factor authentication</target>
       </trans-unit>
-      <trans-unit id="label_code">
-        <source>label_code</source>
-        <target>6-digit code</target>
+      <trans-unit id="label_totp_code">
+        <source>label_totp_code</source>
+        <target>Authentication code</target>
+      </trans-unit>
+      <trans-unit id="label_backup_code">
+        <source>label_backup_code</source>
+        <target>Backup code</target>
+      </trans-unit>
+      <trans-unit id="switch_provider_totp">
+        <source>switch_provider_totp</source>
+        <target>Use my authenticator app</target>
+      </trans-unit>
+      <trans-unit id="switch_provider_backup_code">
+        <source>switch_provider_backup_code</source>
+        <target>Use a backup code</target>
+      </trans-unit>
+      <trans-unit id="label_trust_device">
+        <source>label_trust_device</source>
+        <target>Remember this device for 30 days</target>
       </trans-unit>
       <trans-unit id="button_submit">
         <source>button_submit</source>

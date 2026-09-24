@@ -16,7 +16,14 @@ final class TwoFactorConfirmType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder->add('code', TextType::class);
+        $builder->add('code', TextType::class, [
+            'attr' => [
+                'class' => 'totp-code-input',
+                'inputmode' => 'numeric',
+                'pattern' => '\d{6}',
+                'autocomplete' => 'one-time-code',
+            ],
+        ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void

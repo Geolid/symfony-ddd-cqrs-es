@@ -1,20 +1,14 @@
 {% extends 'layout_auth.html.twig' %}
 {% trans_default_domain 'forgot_password' %}
 
-{% block importmap %}{{ importmap(['shared', 'auth']) }}{% endblock %}
-
 {% block title %}{{ 'request_title'|trans }}{% endblock %}
 
 {% block content %}
-    <article>
-        <h1>{{ 'request_title'|trans }}</h1>
+    <p>{{ 'request_subtitle'|trans }}</p>
 
-        <p>{{ 'request_subtitle'|trans }}</p>
-
-        {{ form_start(form) }}
-            {{ form_errors(form) }}
-            {{ form_row(form.email) }}
-            <button type="submit">{{ 'request_button_submit'|trans }}</button>
-        {{ form_end(form) }}
-    </article>
+    {{ form_start(form) }}
+        {{ form_errors(form) }}
+        {{ form_row(form.email) }}
+        <button type="submit">{{ 'request_button_submit'|trans }}</button>
+    {{ form_end(form) }}
 {% endblock %}

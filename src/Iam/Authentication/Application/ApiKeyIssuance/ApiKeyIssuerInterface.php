@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Application\ApiKeyIssuance;
 
+use Iam\Authentication\Domain\ApiKeyCredential\Service\GeneratedApiKey;
 use Shared\Application\DrivingPort;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 

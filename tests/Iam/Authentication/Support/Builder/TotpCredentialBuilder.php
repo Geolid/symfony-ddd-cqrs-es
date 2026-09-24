@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Support\Builder;
 
 use Iam\Authentication\Domain\TotpCredential\Service\TotpCipherInterface;
-use Iam\Authentication\Domain\TotpCredential\Service\TotpVerifierInterface;
 use Iam\Authentication\Domain\TotpCredential\TotpCredential;
 use Iam\Authentication\Domain\TotpCredential\ValueObject\TotpCredentialId;
-use Iam\Tests\Authentication\Support\Double\FakeTotpVerifier;
 use OTPHP\TOTP;
 use Ramsey\Uuid\Uuid;
 use Support\Builder\AbstractAggregateBuilder;
@@ -20,11 +18,9 @@ use Webmozart\Assert\Assert;
  *     id: TotpCredentialId,
  *     identityId: string,
  *     secret: string,
- *     enrolledAt: \DateTimeImmutable,
- *     confirmedAt: \DateTimeImmutable,
+ *     issuedAt: \DateTimeImmutable,
  *     revokedAt: \DateTimeImmutable,
  *     cipher?: TotpCipherInterface,
- *     verifier?: TotpVerifierInterface,
  * }
  *
  * @extends AbstractAggregateBuilder<TotpCredential, Attributes>
@@ -46,28 +42,14 @@ final class TotpCredentialBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(secret: $secret);
     }
 
-    public function withEnrolledAt(\DateTimeImmutable $enrolledAt): self
-    {
-        return $this->withAttributes(enrolledAt: $enrolledAt);
-    }
-
     public function withCipher(TotpCipherInterface $cipher): self
     {
         return $this->withAttributes(cipher: $cipher);
     }
 
-    public function withVerifier(TotpVerifierInterface $verifier): self
+    public function withIssuedAt(\DateTimeImmutable $issuedAt): self
     {
-        return $this->withAttributes(verifier: $verifier);
-    }
-
-    public function confirmed(?string $code = null, ?\DateTimeImmutable $confirmedAt = null): self
-    {
-        $builder = null !== $confirmedAt ? $this->withAttributes(confirmedAt: $confirmedAt) : $this;
-
-        return $builder->withModifier(static function (TotpCredential $credential, self $builder) use ($code): void {
-            $credential->confirm($builder['identityId'], $code ?? FakeTotpVerifier::codeFor($builder['secret']), $builder->cipher(), $builder->verifier(), $builder['confirmedAt']);
-        });
+        return $this->withAttributes(issuedAt: $issuedAt);
     }
 
     public function revoked(?\DateTimeImmutable $revokedAt = null): self
@@ -87,20 +69,19 @@ final class TotpCredentialBuilder extends AbstractAggregateBuilder
             'id' => static fn (): TotpCredentialId => TotpCredentialId::fromString(Uuid::uuid7()->toString()),
             'identityId' => static fn (): string => Uuid::uuid7()->toString(),
             'secret' => static fn (): string => TOTP::generate()->getSecret(),
-            'enrolledAt' => static fn (): \DateTimeImmutable => $now,
-            'confirmedAt' => static fn (): \DateTimeImmutable => $now->modify('+15 seconds'),
+            'issuedAt' => static fn (): \DateTimeImmutable => $now,
             'revokedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
         ];
     }
 
     protected function build(): TotpCredential
     {
-        return TotpCredential::enroll(
+        return TotpCredential::issue(
             id: $this['id'],
             identityId: $this['identityId'],
             secret: $this['secret'],
             cipher: $this->cipher(),
-            enrolledAt: $this['enrolledAt'],
+            issuedAt: $this['issuedAt'],
         );
     }
 
@@ -109,12 +90,5 @@ final class TotpCredentialBuilder extends AbstractAggregateBuilder
         Assert::isInstanceOf($cipher = $this['cipher'], TotpCipherInterface::class);
 
         return $cipher;
-    }
-
-    private function verifier(): TotpVerifierInterface
-    {
-        Assert::isInstanceOf($verifier = $this['verifier'], TotpVerifierInterface::class);
-
-        return $verifier;
     }
 }
