@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Application\Command\IssueBackupCodeCredential;
+namespace Iam\Authentication\Application\Command\GenerateBackupCodes;
 
 use Iam\Authentication\Domain\BackupCodeCredential\BackupCodeCredential;
 use Iam\Authentication\Domain\BackupCodeCredential\Exception\BackupCodeCredentialAlreadyExistsException;
@@ -13,7 +13,7 @@ use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
 
 #[CommandHandler]
-final readonly class IssueBackupCodeCredentialHandler
+final readonly class GenerateBackupCodesHandler
 {
     public function __construct(
         private BackupCodeCredentialRepositoryInterface $repository,
@@ -25,14 +25,14 @@ final readonly class IssueBackupCodeCredentialHandler
     /**
      * @throws BackupCodeCredentialAlreadyExistsException
      */
-    public function __invoke(IssueBackupCodeCredential $command): void
+    public function __invoke(GenerateBackupCodes $command): void
     {
-        $credential = BackupCodeCredential::issue(
+        $credential = BackupCodeCredential::generate(
             id: BackupCodeCredentialId::forIdentity($command->identityId),
             identityId: $command->identityId,
             plainBackupCodes: $command->backupCodes,
             backupCodeHasher: $this->backupCodeHasher,
-            issuedAt: $this->clock->now(),
+            generatedAt: $this->clock->now(),
         );
 
         $this->repository->save($credential);

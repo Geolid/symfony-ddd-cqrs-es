@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Application\BackupCodeIssuance;
+namespace Iam\Authentication\Application\BackupCodeRegeneration;
 
-use Iam\Authentication\Application\BackupCodeIssuance\Exception\BackupCodeCredentialNotIssuedException;
+use Iam\Authentication\Application\BackupCodeRegeneration\Exception\BackupCodeCredentialNotGeneratedException;
 use Shared\Application\DrivingPort;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
@@ -14,7 +14,7 @@ interface BackupCodeRegeneratorInterface
     /**
      * @return list<non-empty-string>
      *
-     * @throws BackupCodeCredentialNotIssuedException
+     * @throws BackupCodeCredentialNotGeneratedException
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */

@@ -9,7 +9,7 @@ use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Iam\Authentication\Domain\BackupCodeCredential\Event\BackupCodeCredentialConsumed;
-use Iam\Authentication\Domain\BackupCodeCredential\Event\BackupCodeCredentialIssued;
+use Iam\Authentication\Domain\BackupCodeCredential\Event\BackupCodeCredentialGenerated;
 use Iam\Authentication\Domain\BackupCodeCredential\Event\BackupCodeCredentialRegenerated;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
@@ -21,18 +21,18 @@ final readonly class DbalBackupCodeCredentialProjector extends AbstractDbalProje
 {
     public const string TABLE = 'iam_authentication_backup_code_credential';
 
-    #[Subscribe(BackupCodeCredentialIssued::class)]
-    public function onBackupCodeCredentialIssued(BackupCodeCredentialIssued $event): void
+    #[Subscribe(BackupCodeCredentialGenerated::class)]
+    public function onBackupCodeCredentialGenerated(BackupCodeCredentialGenerated $event): void
     {
         $this->connection->insert(
             self::TABLE,
             [
                 'id' => $event->id->toString(),
                 'identity_id' => $event->identityId,
-                'issued_at' => $event->issuedAt,
+                'generated_at' => $event->generatedAt,
                 'remaining_count' => \count($event->backupCodes),
             ],
-            ['issued_at' => Types::DATETIME_IMMUTABLE],
+            ['generated_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -73,7 +73,7 @@ final readonly class DbalBackupCodeCredentialProjector extends AbstractDbalProje
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('identity_id', Types::STRING, ['length' => 36]);
-        $table->addColumn('issued_at', Types::DATETIME_IMMUTABLE);
+        $table->addColumn('generated_at', Types::DATETIME_IMMUTABLE);
         $table->addColumn('regenerated_at', Types::DATETIME_IMMUTABLE, ['notnull' => false]);
         $table->addColumn('remaining_count', Types::INTEGER);
         $table->addPrimaryKeyConstraint(

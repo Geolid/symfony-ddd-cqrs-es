@@ -6,7 +6,7 @@ namespace Storefront\Controller\Account;
 
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\SvgWriter;
-use Iam\Authentication\Application\BackupCodeIssuance\BackupCodeRegeneratorInterface;
+use Iam\Authentication\Application\BackupCodeRegeneration\BackupCodeRegeneratorInterface;
 use Iam\Authentication\Application\Command\RevokeDeviceTrust\RevokeDeviceTrust;
 use Iam\Authentication\Application\Command\UnenrollTotp\UnenrollTotp;
 use Iam\Authentication\Application\Query\GetBackupCodeCredentialByIdentity\GetBackupCodeCredentialByIdentity;

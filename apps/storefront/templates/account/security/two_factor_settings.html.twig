@@ -15,10 +15,7 @@
             <dd>
                 <p>{{ 'two_factor_settings_section_backup_codes_instructions'|trans }}</p>
                 <small>
-                    {{ 'show_backup_codes_issued_at'|trans({'%date%': backupCodeCredential.issuedAt|date('d/m/Y')}) }}
-                    {% if backupCodeCredential.regeneratedAt %}
-                        {{ 'show_backup_codes_regenerated_at'|trans({'%date%': backupCodeCredential.regeneratedAt|date('d/m/Y')}) }}
-                    {% endif %}
+                    {{ 'show_backup_codes_generated_at'|trans({'%date%': (backupCodeCredential.regeneratedAt ?? backupCodeCredential.generatedAt)|date('d/m/Y')}) }}
                     {{ 'show_backup_codes_remaining'|trans({'%count%': backupCodeCredential.remainingCount}) }}
                 </small>
             </dd>

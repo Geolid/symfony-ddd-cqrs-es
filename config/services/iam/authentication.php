@@ -3,7 +3,7 @@
 declare(strict_types=1);
 
 use Bootstrap\DependencyInjection\BoundedContextServiceLoader;
-use Iam\Authentication\Application\BackupCodeIssuance\BackupCodeRegenerator;
+use Iam\Authentication\Application\BackupCodeRegeneration\BackupCodeRegenerator;
 use Iam\Authentication\Application\TotpEnrollment\TotpEnroller;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\PasswordHasher\Hasher\NativePasswordHasher;

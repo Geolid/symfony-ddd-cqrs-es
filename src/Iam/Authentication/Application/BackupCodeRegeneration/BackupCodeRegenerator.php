@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Application\BackupCodeIssuance;
+namespace Iam\Authentication\Application\BackupCodeRegeneration;
 
-use Iam\Authentication\Application\BackupCodeIssuance\Exception\BackupCodeCredentialNotIssuedException;
+use Iam\Authentication\Application\BackupCodeRegeneration\Exception\BackupCodeCredentialNotGeneratedException;
 use Iam\Authentication\Application\Command\RegenerateBackupCodes\RegenerateBackupCodes;
 use Iam\Authentication\Application\Finder\BackupCodeCredential\BackupCodeCredentialFinderInterface;
 use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeGeneratorInterface;
@@ -24,14 +24,14 @@ final readonly class BackupCodeRegenerator implements BackupCodeRegeneratorInter
     /**
      * @return list<non-empty-string>
      *
-     * @throws BackupCodeCredentialNotIssuedException
+     * @throws BackupCodeCredentialNotGeneratedException
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
     public function regenerateFor(string $identityId): array
     {
         $this->backupCodeCredentialFinder->ofIdentityOrNull($identityId)
-            ?? throw BackupCodeCredentialNotIssuedException::forIdentity($identityId);
+            ?? throw BackupCodeCredentialNotGeneratedException::forIdentity($identityId);
 
         $backupCodes = $this->backupCodeGenerator->generate($this->backupCodeCount);
 
