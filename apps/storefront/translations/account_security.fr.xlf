@@ -33,13 +33,9 @@
         <source>show_button_configure_two_factor</source>
         <target>Configurer</target>
       </trans-unit>
-      <trans-unit id="show_backup_codes_issued_at">
-        <source>show_backup_codes_issued_at</source>
-        <target>Activés le %date%.</target>
-      </trans-unit>
-      <trans-unit id="show_backup_codes_regenerated_at">
-        <source>show_backup_codes_regenerated_at</source>
-        <target>Dernière régénération le %date%.</target>
+      <trans-unit id="show_backup_codes_generated_at">
+        <source>show_backup_codes_generated_at</source>
+        <target>Générés le %date%.</target>
       </trans-unit>
       <trans-unit id="show_backup_codes_remaining">
         <source>show_backup_codes_remaining</source>

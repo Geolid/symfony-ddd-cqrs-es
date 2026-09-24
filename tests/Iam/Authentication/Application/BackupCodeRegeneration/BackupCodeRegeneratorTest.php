@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Authentication\Application\BackupCodeIssuance;
+namespace Iam\Tests\Authentication\Application\BackupCodeRegeneration;
 
-use Iam\Authentication\Application\BackupCodeIssuance\BackupCodeRegeneratorInterface;
-use Iam\Authentication\Application\BackupCodeIssuance\Exception\BackupCodeCredentialNotIssuedException;
+use Iam\Authentication\Application\BackupCodeRegeneration\BackupCodeRegeneratorInterface;
+use Iam\Authentication\Application\BackupCodeRegeneration\Exception\BackupCodeCredentialNotGeneratedException;
 use Iam\Authentication\Application\CredentialVerification\BackupCodeCredentialVerifierInterface;
 use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeHasherInterface;
 use Iam\Tests\Authentication\Support\Builder\BackupCodeCredentialBuilder;
@@ -45,10 +45,10 @@ final class BackupCodeRegeneratorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenNotIssued(): void
+    public function itFailsWhenNotGenerated(): void
     {
         // Then
-        $this->expectException(BackupCodeCredentialNotIssuedException::class);
+        $this->expectException(BackupCodeCredentialNotGeneratedException::class);
 
         // When
         $this->regenerator->regenerateFor(BackupCodeCredentialBuilder::sample('identityId'));

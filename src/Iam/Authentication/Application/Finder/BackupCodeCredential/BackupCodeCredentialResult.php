@@ -8,7 +8,7 @@ final readonly class BackupCodeCredentialResult
 {
     public function __construct(
         public string $identityId,
-        public \DateTimeImmutable $issuedAt,
+        public \DateTimeImmutable $generatedAt,
         public ?\DateTimeImmutable $regeneratedAt,
         public int $remainingCount,
     ) {

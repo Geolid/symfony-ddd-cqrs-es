@@ -17,7 +17,7 @@ use Webmozart\Assert\Assert;
  *     id: BackupCodeCredentialId,
  *     identityId: string,
  *     plainBackupCodes: list<non-empty-string>,
- *     issuedAt: \DateTimeImmutable,
+ *     generatedAt: \DateTimeImmutable,
  *     regeneratedBackupCodes: list<non-empty-string>,
  *     regeneratedAt: \DateTimeImmutable,
  *     consumedBackupCode: non-empty-string,
@@ -47,9 +47,9 @@ final class BackupCodeCredentialBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(backupCodeHasher: $backupCodeHasher);
     }
 
-    public function withIssuedAt(\DateTimeImmutable $issuedAt): self
+    public function withGeneratedAt(\DateTimeImmutable $generatedAt): self
     {
-        return $this->withAttributes(issuedAt: $issuedAt);
+        return $this->withAttributes(generatedAt: $generatedAt);
     }
 
     /**
@@ -89,7 +89,7 @@ final class BackupCodeCredentialBuilder extends AbstractAggregateBuilder
             ),
             'identityId' => static fn (): string => Uuid::uuid7()->toString(),
             'plainBackupCodes' => static fn (): array => [bin2hex(random_bytes(5)), bin2hex(random_bytes(5))],
-            'issuedAt' => static fn (): \DateTimeImmutable => $now,
+            'generatedAt' => static fn (): \DateTimeImmutable => $now,
             'regeneratedBackupCodes' => static fn (): array => [bin2hex(random_bytes(5)), bin2hex(random_bytes(5))],
             'regeneratedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
             'consumedBackupCode' => static fn (?self $builder): string => null !== $builder ? $builder['plainBackupCodes'][0] : bin2hex(random_bytes(5)),
@@ -99,12 +99,12 @@ final class BackupCodeCredentialBuilder extends AbstractAggregateBuilder
 
     protected function build(): BackupCodeCredential
     {
-        return BackupCodeCredential::issue(
+        return BackupCodeCredential::generate(
             id: $this['id'],
             identityId: $this['identityId'],
             plainBackupCodes: $this['plainBackupCodes'],
             backupCodeHasher: $this->hasher(),
-            issuedAt: $this['issuedAt'],
+            generatedAt: $this['generatedAt'],
         );
     }
 

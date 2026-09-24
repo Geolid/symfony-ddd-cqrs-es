@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Iam\Authentication\Application\TotpEnrollment;
 
 use Iam\Authentication\Application\Command\EnrollTotpCredential\EnrollTotpCredential;
-use Iam\Authentication\Application\Command\IssueBackupCodeCredential\IssueBackupCodeCredential;
+use Iam\Authentication\Application\Command\GenerateBackupCodes\GenerateBackupCodes;
 use Iam\Authentication\Application\Finder\BackupCodeCredential\BackupCodeCredentialFinderInterface;
 use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeGeneratorInterface;
 use Iam\Authentication\Domain\TotpCredential\Exception\InvalidTotpCodeException;
@@ -26,7 +26,7 @@ final readonly class TotpEnroller implements TotpEnrollerInterface
     }
 
     /**
-     * Backup codes are shown only the first time they're issued — enabling a second 2FA
+     * Backup codes are shown only the first time they're generated — enabling a second 2FA
      * method later reuses the identity's existing pool instead of silently replacing it.
      *
      * @return list<non-empty-string>|null
@@ -49,7 +49,7 @@ final readonly class TotpEnroller implements TotpEnrollerInterface
 
         $backupCodes = $this->backupCodeGenerator->generate($this->backupCodeCount);
 
-        $this->commandBus->dispatch(new IssueBackupCodeCredential($identityId, $backupCodes));
+        $this->commandBus->dispatch(new GenerateBackupCodes($identityId, $backupCodes));
 
         return $backupCodes;
     }

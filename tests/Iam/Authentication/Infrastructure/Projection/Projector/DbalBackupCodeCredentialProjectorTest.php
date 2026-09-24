@@ -13,7 +13,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{issued_at: string, regenerated_at: string|null, remaining_count: int}
+ * @phpstan-type Row array{generated_at: string, regenerated_at: string|null, remaining_count: int}
  */
 final class DbalBackupCodeCredentialProjectorTest extends AbstractIntegrationTestCase
 {
@@ -29,7 +29,7 @@ final class DbalBackupCodeCredentialProjectorTest extends AbstractIntegrationTes
     }
 
     #[Test]
-    public function itProjectsOnBackupCodeCredentialIssued(): void
+    public function itProjectsOnBackupCodeCredentialGenerated(): void
     {
         // Given
         $builder = BackupCodeCredentialBuilder::new()->withBackupCodeHasher($this->backupCodeHasher);
@@ -41,7 +41,7 @@ final class DbalBackupCodeCredentialProjectorTest extends AbstractIntegrationTes
         // Then
         $row = $this->fetchRow($builder['identityId']);
         self::assertNotFalse($row);
-        self::assertSame($builder['issuedAt']->format(self::DATE_FORMAT), $row['issued_at']);
+        self::assertSame($builder['generatedAt']->format(self::DATE_FORMAT), $row['generated_at']);
         self::assertNull($row['regenerated_at']);
         self::assertSame(\count($builder['plainBackupCodes']), (int) $row['remaining_count']);
     }
@@ -125,7 +125,7 @@ final class DbalBackupCodeCredentialProjectorTest extends AbstractIntegrationTes
 
         /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT issued_at, regenerated_at, remaining_count FROM %s WHERE identity_id = :identityId', DbalBackupCodeCredentialProjector::TABLE),
+            \sprintf('SELECT generated_at, regenerated_at, remaining_count FROM %s WHERE identity_id = :identityId', DbalBackupCodeCredentialProjector::TABLE),
             ['identityId' => $identityId],
         );
     }

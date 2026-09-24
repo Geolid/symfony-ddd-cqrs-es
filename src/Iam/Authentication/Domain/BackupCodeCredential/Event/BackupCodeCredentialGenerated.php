@@ -8,8 +8,8 @@ use Iam\Authentication\Domain\BackupCodeCredential\Entity\BackupCode;
 use Iam\Authentication\Domain\BackupCodeCredential\ValueObject\BackupCodeCredentialId;
 use Patchlevel\EventSourcing\Attribute\Event;
 
-#[Event('iam.authentication.backup_code_credential.issued')]
-final readonly class BackupCodeCredentialIssued
+#[Event('iam.authentication.backup_code_credential.generated')]
+final readonly class BackupCodeCredentialGenerated
 {
     /**
      * @param list<BackupCode> $backupCodes
@@ -18,7 +18,7 @@ final readonly class BackupCodeCredentialIssued
         public BackupCodeCredentialId $id,
         public string $identityId,
         public array $backupCodes,
-        public \DateTimeImmutable $issuedAt,
+        public \DateTimeImmutable $generatedAt,
     ) {
     }
 }
