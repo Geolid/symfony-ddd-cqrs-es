@@ -38,7 +38,7 @@ final class DbalTotpCredentialFinder extends AbstractDbalFinder implements TotpC
 
     protected function configureBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'identity_id', 'encrypted_secret', 'issued_at', 'revoked', 'revoked_at')
+        $qb->select('id', 'identity_id', 'encrypted_secret', 'enrolled_at', 'revoked', 'revoked_at')
             ->from(DbalTotpCredentialProjector::TABLE);
     }
 

@@ -18,7 +18,7 @@ use Webmozart\Assert\Assert;
  *     id: TotpCredentialId,
  *     identityId: string,
  *     secret: string,
- *     issuedAt: \DateTimeImmutable,
+ *     enrolledAt: \DateTimeImmutable,
  *     revokedAt: \DateTimeImmutable,
  *     cipher?: TotpCipherInterface,
  * }
@@ -47,9 +47,9 @@ final class TotpCredentialBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(cipher: $cipher);
     }
 
-    public function withIssuedAt(\DateTimeImmutable $issuedAt): self
+    public function withEnrolledAt(\DateTimeImmutable $enrolledAt): self
     {
-        return $this->withAttributes(issuedAt: $issuedAt);
+        return $this->withAttributes(enrolledAt: $enrolledAt);
     }
 
     public function revoked(?\DateTimeImmutable $revokedAt = null): self
@@ -69,19 +69,19 @@ final class TotpCredentialBuilder extends AbstractAggregateBuilder
             'id' => static fn (): TotpCredentialId => TotpCredentialId::fromString(Uuid::uuid7()->toString()),
             'identityId' => static fn (): string => Uuid::uuid7()->toString(),
             'secret' => static fn (): string => TOTP::generate()->getSecret(),
-            'issuedAt' => static fn (): \DateTimeImmutable => $now,
+            'enrolledAt' => static fn (): \DateTimeImmutable => $now,
             'revokedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
         ];
     }
 
     protected function build(): TotpCredential
     {
-        return TotpCredential::issue(
+        return TotpCredential::enroll(
             id: $this['id'],
             identityId: $this['identityId'],
             secret: $this['secret'],
             cipher: $this->cipher(),
-            issuedAt: $this['issuedAt'],
+            enrolledAt: $this['enrolledAt'],
         );
     }
 

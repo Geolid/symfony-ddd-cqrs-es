@@ -8,7 +8,7 @@ use Doctrine\DBAL\Schema\Name\UnqualifiedName;
 use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
-use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialIssued;
+use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialEnrolled;
 use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialRevoked;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
@@ -20,16 +20,16 @@ final readonly class DbalTotpCredentialProjector extends AbstractDbalProjector
 {
     public const string TABLE = 'iam_authentication_totp_credential';
 
-    #[Subscribe(TotpCredentialIssued::class)]
-    public function onTotpCredentialIssued(TotpCredentialIssued $event): void
+    #[Subscribe(TotpCredentialEnrolled::class)]
+    public function onTotpCredentialEnrolled(TotpCredentialEnrolled $event): void
     {
         $this->connection->insert(self::TABLE, [
             'id' => $event->id->toString(),
             'identity_id' => $event->identityId,
             'encrypted_secret' => $event->encryptedSecret,
-            'issued_at' => $event->issuedAt,
+            'enrolled_at' => $event->enrolledAt,
             'revoked' => false,
-        ], ['issued_at' => Types::DATETIME_IMMUTABLE, 'revoked' => Types::BOOLEAN]);
+        ], ['enrolled_at' => Types::DATETIME_IMMUTABLE, 'revoked' => Types::BOOLEAN]);
     }
 
     #[Subscribe(TotpCredentialRevoked::class)]
@@ -58,7 +58,7 @@ final readonly class DbalTotpCredentialProjector extends AbstractDbalProjector
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('identity_id', Types::STRING, ['length' => 36]);
         $table->addColumn('encrypted_secret', Types::TEXT);
-        $table->addColumn('issued_at', Types::DATETIME_IMMUTABLE);
+        $table->addColumn('enrolled_at', Types::DATETIME_IMMUTABLE);
         $table->addColumn('revoked', Types::BOOLEAN);
         $table->addColumn('revoked_at', Types::DATETIME_IMMUTABLE, ['notnull' => false]);
         $table->addPrimaryKeyConstraint(

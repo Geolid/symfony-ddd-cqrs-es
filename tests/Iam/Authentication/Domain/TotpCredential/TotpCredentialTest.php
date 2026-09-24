@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Domain\TotpCredential;
 
-use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialIssued;
+use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialEnrolled;
 use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialRevoked;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialOwnedByAnotherIdentityException;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpCipherInterface;
@@ -21,7 +21,7 @@ final class TotpCredentialTest extends AggregateRootTestCase
     private TotpCredentialId $id;
     private string $identityId;
     private string $secret;
-    private \DateTimeImmutable $issuedAt;
+    private \DateTimeImmutable $enrolledAt;
     private TotpCipherInterface $cipher;
 
     protected function setUp(): void
@@ -31,23 +31,23 @@ final class TotpCredentialTest extends AggregateRootTestCase
         $this->id = TotpCredentialId::fromString(Uuid::uuid7()->toString());
         $this->identityId = TotpCredentialBuilder::sample('identityId');
         $this->secret = TotpCredentialBuilder::sample('secret');
-        $this->issuedAt = TotpCredentialBuilder::sample('issuedAt');
+        $this->enrolledAt = TotpCredentialBuilder::sample('enrolledAt');
         $this->cipher = new FakeTotpCipher();
     }
 
     #[Test]
-    public function itIssues(): void
+    public function itEnrolls(): void
     {
         $this
             ->given()
-            ->when(fn (): TotpCredential => TotpCredential::issue(
+            ->when(fn (): TotpCredential => TotpCredential::enroll(
                 $this->id,
                 $this->identityId,
                 $this->secret,
                 $this->cipher,
-                $this->issuedAt,
+                $this->enrolledAt,
             ))
-            ->then($this->issued());
+            ->then($this->enrolled());
     }
 
     #[Test]
@@ -56,7 +56,7 @@ final class TotpCredentialTest extends AggregateRootTestCase
         $revokedAt = TotpCredentialBuilder::sample('revokedAt');
 
         $this
-            ->given($this->issued())
+            ->given($this->enrolled())
             ->when(fn (TotpCredential $credential) => $credential->revoke($this->identityId, $revokedAt))
             ->then(new TotpCredentialRevoked($this->id, $revokedAt));
     }
@@ -68,7 +68,7 @@ final class TotpCredentialTest extends AggregateRootTestCase
 
         $this
             ->given(
-                $this->issued(),
+                $this->enrolled(),
                 new TotpCredentialRevoked($this->id, $revokedAt),
             )
             ->when(fn (TotpCredential $credential) => $credential->revoke($this->identityId, $revokedAt))
@@ -81,7 +81,7 @@ final class TotpCredentialTest extends AggregateRootTestCase
         $anotherIdentityId = TotpCredentialBuilder::sample('identityId');
 
         $this
-            ->given($this->issued())
+            ->given($this->enrolled())
             ->when(static fn (TotpCredential $credential) => $credential->revoke($anotherIdentityId, TotpCredentialBuilder::sample('revokedAt')))
             ->expectsException(TotpCredentialOwnedByAnotherIdentityException::class);
     }
@@ -91,13 +91,13 @@ final class TotpCredentialTest extends AggregateRootTestCase
         return TotpCredential::class;
     }
 
-    private function issued(): TotpCredentialIssued
+    private function enrolled(): TotpCredentialEnrolled
     {
-        return new TotpCredentialIssued(
+        return new TotpCredentialEnrolled(
             $this->id,
             $this->identityId,
             $this->cipher->encrypt($this->secret),
-            $this->issuedAt,
+            $this->enrolledAt,
         );
     }
 }

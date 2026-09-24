@@ -13,7 +13,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{issued_at: string, revoked: bool, revoked_at: string|null}
+ * @phpstan-type Row array{enrolled_at: string, revoked: bool, revoked_at: string|null}
  */
 final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
 {
@@ -29,7 +29,7 @@ final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsOnTotpCredentialIssued(): void
+    public function itProjectsOnTotpCredentialEnrolled(): void
     {
         // Given
         $builder = TotpCredentialBuilder::new()->withCipher($this->cipher);
@@ -41,7 +41,7 @@ final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($builder['issuedAt']->format(self::DATE_FORMAT), $row['issued_at']);
+        self::assertSame($builder['enrolledAt']->format(self::DATE_FORMAT), $row['enrolled_at']);
         self::assertFalse((bool) $row['revoked']);
         self::assertNull($row['revoked_at']);
     }
@@ -103,7 +103,7 @@ final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
 
         /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT issued_at, revoked, revoked_at FROM %s WHERE id = :id', DbalTotpCredentialProjector::TABLE),
+            \sprintf('SELECT enrolled_at, revoked, revoked_at FROM %s WHERE id = :id', DbalTotpCredentialProjector::TABLE),
             ['id' => $id],
         );
     }
