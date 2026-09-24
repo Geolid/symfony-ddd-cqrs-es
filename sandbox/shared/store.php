@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 function fake_api_store_path(string $provider): string
 {
-    $dir = dirname(__DIR__).'/data';
+    $dir = __DIR__.'/../data';
     if (!is_dir($dir)) {
         mkdir($dir, 0777, true);
     }
