@@ -9,7 +9,7 @@ use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
 use Doctrine\DBAL\Types\Types;
 use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialEnrolled;
-use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialRevoked;
+use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialUnenrolled;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Infrastructure\Projection\Projector;
@@ -28,18 +28,18 @@ final readonly class DbalTotpCredentialProjector extends AbstractDbalProjector
             'identity_id' => $event->identityId,
             'encrypted_secret' => $event->encryptedSecret,
             'enrolled_at' => $event->enrolledAt,
-            'revoked' => false,
-        ], ['enrolled_at' => Types::DATETIME_IMMUTABLE, 'revoked' => Types::BOOLEAN]);
+            'unenrolled' => false,
+        ], ['enrolled_at' => Types::DATETIME_IMMUTABLE, 'unenrolled' => Types::BOOLEAN]);
     }
 
-    #[Subscribe(TotpCredentialRevoked::class)]
-    public function onTotpCredentialRevoked(TotpCredentialRevoked $event): void
+    #[Subscribe(TotpCredentialUnenrolled::class)]
+    public function onTotpCredentialUnenrolled(TotpCredentialUnenrolled $event): void
     {
         $this->connection->update(
             self::TABLE,
-            ['revoked' => true, 'revoked_at' => $event->revokedAt],
+            ['unenrolled' => true, 'unenrolled_at' => $event->unenrolledAt],
             ['id' => $event->id->toString()],
-            ['revoked' => Types::BOOLEAN, 'revoked_at' => Types::DATETIME_IMMUTABLE],
+            ['unenrolled' => Types::BOOLEAN, 'unenrolled_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -59,8 +59,8 @@ final readonly class DbalTotpCredentialProjector extends AbstractDbalProjector
         $table->addColumn('identity_id', Types::STRING, ['length' => 36]);
         $table->addColumn('encrypted_secret', Types::TEXT);
         $table->addColumn('enrolled_at', Types::DATETIME_IMMUTABLE);
-        $table->addColumn('revoked', Types::BOOLEAN);
-        $table->addColumn('revoked_at', Types::DATETIME_IMMUTABLE, ['notnull' => false]);
+        $table->addColumn('unenrolled', Types::BOOLEAN);
+        $table->addColumn('unenrolled_at', Types::DATETIME_IMMUTABLE, ['notnull' => false]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))

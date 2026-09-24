@@ -13,7 +13,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{enrolled_at: string, revoked: bool, revoked_at: string|null}
+ * @phpstan-type Row array{enrolled_at: string, unenrolled: bool, unenrolled_at: string|null}
  */
 final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
 {
@@ -42,12 +42,12 @@ final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
         self::assertSame($builder['enrolledAt']->format(self::DATE_FORMAT), $row['enrolled_at']);
-        self::assertFalse((bool) $row['revoked']);
-        self::assertNull($row['revoked_at']);
+        self::assertFalse((bool) $row['unenrolled']);
+        self::assertNull($row['unenrolled_at']);
     }
 
     #[Test]
-    public function itProjectsOnTotpCredentialRevoked(): void
+    public function itProjectsOnTotpCredentialUnenrolled(): void
     {
         // Given
         $other = TotpCredentialBuilder::new()->withCipher($this->cipher)->create();
@@ -55,7 +55,7 @@ final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
 
         $builder = TotpCredentialBuilder::new()
             ->withCipher($this->cipher)
-            ->revoked();
+            ->unenrolled();
         $credential = $builder->create();
 
         // When
@@ -64,13 +64,13 @@ final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
-        self::assertTrue((bool) $row['revoked']);
-        self::assertSame($builder['revokedAt']->format(self::DATE_FORMAT), $row['revoked_at']);
+        self::assertTrue((bool) $row['unenrolled']);
+        self::assertSame($builder['unenrolledAt']->format(self::DATE_FORMAT), $row['unenrolled_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
-        self::assertFalse((bool) $otherRow['revoked']);
-        self::assertNull($otherRow['revoked_at']);
+        self::assertFalse((bool) $otherRow['unenrolled']);
+        self::assertNull($otherRow['unenrolled_at']);
     }
 
     #[Test]
@@ -103,7 +103,7 @@ final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
 
         /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT enrolled_at, revoked, revoked_at FROM %s WHERE id = :id', DbalTotpCredentialProjector::TABLE),
+            \sprintf('SELECT enrolled_at, unenrolled, unenrolled_at FROM %s WHERE id = :id', DbalTotpCredentialProjector::TABLE),
             ['id' => $id],
         );
     }

@@ -19,7 +19,7 @@ use Webmozart\Assert\Assert;
  *     identityId: string,
  *     secret: string,
  *     enrolledAt: \DateTimeImmutable,
- *     revokedAt: \DateTimeImmutable,
+ *     unenrolledAt: \DateTimeImmutable,
  *     cipher?: TotpCipherInterface,
  * }
  *
@@ -52,12 +52,12 @@ final class TotpCredentialBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(enrolledAt: $enrolledAt);
     }
 
-    public function revoked(?\DateTimeImmutable $revokedAt = null): self
+    public function unenrolled(?\DateTimeImmutable $unenrolledAt = null): self
     {
-        $builder = null !== $revokedAt ? $this->withAttributes(revokedAt: $revokedAt) : $this;
+        $builder = null !== $unenrolledAt ? $this->withAttributes(unenrolledAt: $unenrolledAt) : $this;
 
         return $builder->withModifier(static function (TotpCredential $credential, self $builder): void {
-            $credential->revoke($builder['identityId'], $builder['revokedAt']);
+            $credential->unenroll($builder['identityId'], $builder['unenrolledAt']);
         });
     }
 
@@ -70,7 +70,7 @@ final class TotpCredentialBuilder extends AbstractAggregateBuilder
             'identityId' => static fn (): string => Uuid::uuid7()->toString(),
             'secret' => static fn (): string => TOTP::generate()->getSecret(),
             'enrolledAt' => static fn (): \DateTimeImmutable => $now,
-            'revokedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
+            'unenrolledAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
         ];
     }
 

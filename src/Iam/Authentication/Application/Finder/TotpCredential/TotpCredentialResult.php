@@ -11,8 +11,8 @@ final readonly class TotpCredentialResult
         public string $identityId,
         public string $encryptedSecret,
         public \DateTimeImmutable $enrolledAt,
-        public bool $revoked,
-        public ?\DateTimeImmutable $revokedAt,
+        public bool $unenrolled,
+        public ?\DateTimeImmutable $unenrolledAt,
     ) {
     }
 }

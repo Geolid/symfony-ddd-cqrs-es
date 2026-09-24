@@ -65,7 +65,7 @@ final class TotpCredentialVerifierTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itRefusesWhenNotIssued(): void
+    public function itRefusesWhenNotEnrolled(): void
     {
         // When
         $verified = $this->credentialVerifier->verify(TotpCredentialBuilder::sample('identityId'), '000000');
@@ -75,10 +75,10 @@ final class TotpCredentialVerifierTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itRefusesWhenRevoked(): void
+    public function itRefusesWhenUnenrolled(): void
     {
         // Given
-        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher)->revoked();
+        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher)->unenrolled();
         $credential = $builder->create();
         $this->store($credential);
 

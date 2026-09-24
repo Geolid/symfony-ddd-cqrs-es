@@ -51,7 +51,7 @@
       </trans-unit>
       <trans-unit id="enroll_totp_heading">
         <source>enroll_totp_heading</source>
-        <target>Inscrire un authentificateur pour l'authentification à deux facteurs</target>
+        <target>Activer l'authentification à deux facteurs</target>
       </trans-unit>
       <trans-unit id="enroll_totp_step_indicator">
         <source>enroll_totp_step_indicator</source>
@@ -177,8 +177,8 @@
         <source>two_factor_settings_button_disable</source>
         <target>Désactiver l'A2F</target>
       </trans-unit>
-      <trans-unit id="two_factor_settings_flash_revoked">
-        <source>two_factor_settings_flash_revoked</source>
+      <trans-unit id="two_factor_settings_flash_unenrolled">
+        <source>two_factor_settings_flash_unenrolled</source>
         <target>Authentification à deux facteurs désactivée.</target>
       </trans-unit>
       <trans-unit id="two_factor_settings_section_backup_codes_title">

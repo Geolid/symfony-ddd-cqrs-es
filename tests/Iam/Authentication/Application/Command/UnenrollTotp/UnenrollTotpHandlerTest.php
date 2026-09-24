@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Authentication\Application\Command\RevokeTotp;
+namespace Iam\Tests\Authentication\Application\Command\UnenrollTotp;
 
 use Iam\Authentication\Application\AuthenticationUniqueKey;
-use Iam\Authentication\Application\Command\RevokeTotp\RevokeTotp;
+use Iam\Authentication\Application\Command\UnenrollTotp\UnenrollTotp;
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInterface;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialNotFoundException;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialOwnedByAnotherIdentityException;
@@ -17,7 +17,7 @@ use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 
-final class RevokeTotpHandlerTest extends AbstractIntegrationTestCase
+final class UnenrollTotpHandlerTest extends AbstractIntegrationTestCase
 {
     private TotpCredentialFinderInterface $finder;
     private TotpCipherInterface $cipher;
@@ -33,7 +33,7 @@ final class RevokeTotpHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itRevokes(): void
+    public function itUnenrolls(): void
     {
         // Given
         $builder = TotpCredentialBuilder::new()->withCipher($this->cipher);
@@ -44,25 +44,25 @@ final class RevokeTotpHandlerTest extends AbstractIntegrationTestCase
         $this->uniqueness->claim($identityKey, $builder['identityId'], $credential->id->toString());
 
         // When
-        $this->dispatch(new RevokeTotp($credential->id->toString(), $builder['identityId']));
+        $this->dispatch(new UnenrollTotp($credential->id->toString(), $builder['identityId']));
 
         // Then
         $result = $this->finder->ofId($credential->id->toString());
-        self::assertTrue($result->revoked);
+        self::assertTrue($result->unenrolled);
 
         self::assertFalse($this->uniqueness->isClaimed($identityKey, $builder['identityId']));
     }
 
     #[Test]
-    public function itIgnoresWhenAlreadyRevoked(): void
+    public function itIgnoresWhenAlreadyUnenrolled(): void
     {
         // Given
-        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher)->revoked();
+        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher)->unenrolled();
         $credential = $builder->create();
         $this->store($credential);
 
         // When
-        $this->dispatch(new RevokeTotp($credential->id->toString(), $builder['identityId']));
+        $this->dispatch(new UnenrollTotp($credential->id->toString(), $builder['identityId']));
 
         // Then
         self::expectNotToPerformAssertions();
@@ -75,7 +75,7 @@ final class RevokeTotpHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(TotpCredentialNotFoundException::class);
 
         // When
-        $this->dispatch(new RevokeTotp(
+        $this->dispatch(new UnenrollTotp(
             Uuid::uuid7()->toString(),
             TotpCredentialBuilder::sample('identityId'),
         ));
@@ -92,7 +92,7 @@ final class RevokeTotpHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(TotpCredentialOwnedByAnotherIdentityException::class);
 
         // When
-        $this->dispatch(new RevokeTotp(
+        $this->dispatch(new UnenrollTotp(
             $credential->id->toString(),
             TotpCredentialBuilder::sample('identityId'),
         ));
