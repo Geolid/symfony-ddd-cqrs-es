@@ -14,7 +14,7 @@ final class ValidUniqueEmail extends Compound
     protected function getConstraints(array $options): array
     {
         return [
-            new ValidUniqueValue(IdentityUniqueKey::EMAIL),
+            new ValidUniqueValue(IdentityUniqueKey::EMAIL, message: 'error_email_already_in_use'),
         ];
     }
 }

@@ -8,7 +8,6 @@ use Iam\Authentication\Application\AuthenticationUniqueKey;
 use Iam\Authentication\Application\Command\IssueTotpCredential\Exception\TotpAlreadyIssuedException;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialAlreadyExistsException;
 use Iam\Authentication\Domain\TotpCredential\Repository\TotpCredentialRepositoryInterface;
-use Iam\Authentication\Domain\TotpCredential\Service\TotpBackupCodeHasherInterface;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpCipherInterface;
 use Iam\Authentication\Domain\TotpCredential\TotpCredential;
 use Iam\Authentication\Domain\TotpCredential\ValueObject\TotpCredentialId;
@@ -25,7 +24,6 @@ final readonly class IssueTotpCredentialHandler
         private TotpCredentialRepositoryInterface $repository,
         private UniquenessRegistryInterface $uniqueness,
         private TotpCipherInterface $cipher,
-        private TotpBackupCodeHasherInterface $backupCodeHasher,
         private ClockInterface $clock,
     ) {
     }
@@ -47,8 +45,6 @@ final readonly class IssueTotpCredentialHandler
             identityId: $command->identityId,
             secret: $command->secret,
             cipher: $this->cipher,
-            plainBackupCodes: $command->backupCodes,
-            backupCodeHasher: $this->backupCodeHasher,
             issuedAt: $this->clock->now(),
         );
 

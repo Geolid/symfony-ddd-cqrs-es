@@ -4,12 +4,8 @@
 {% block title %}{{ 'identify_title'|trans }}{% endblock %}
 
 {% block content %}
-    <article>
-        <h1>{{ 'identify_title'|trans }}</h1>
-
-        {{ form_start(form) }}
-            {{ form_row(form.email) }}
-            <button type="submit">{{ 'identify_button_submit'|trans }}</button>
-        {{ form_end(form) }}
-    </article>
+    {{ form_start(form) }}
+        {{ form_row(form.email) }}
+        <button type="submit">{{ 'identify_button_submit'|trans }}</button>
+    {{ form_end(form) }}
 {% endblock %}

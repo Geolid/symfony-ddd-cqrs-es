@@ -8,23 +8,40 @@
     {% set current_route = app.request.attributes.get('_route') %}
     {% set current_route_params = app.request.attributes.get('_route_params')|default({}) %}
 
-    <header class="container">
-        <nav>
-            <ul>
-                <li><a href="{{ path('storefront_home') }}"><strong>Showcase</strong></a></li>
-            </ul>
-            <ul>
+    <header class="site-header">
+        <nav class="container" data-controller="site-header">
+            <ul class="site-header-brand">
                 <li>
-                    <a href="{{ path(current_route, current_route_params|merge({_locale: 'fr'})) }}">🇫🇷 FR</a>
-                    <a href="{{ path(current_route, current_route_params|merge({_locale: 'en'})) }}">🇬🇧 EN</a>
+                    <button
+                        type="button"
+                        class="site-header-toggle"
+                        aria-label="{{ 'link_menu'|trans({}, 'layout') }}"
+                        aria-expanded="false"
+                        data-site-header-target="toggle"
+                        data-action="click->site-header#toggle"
+                    >
+                        <twig:ux:icon name="menu" class="icon" />
+                    </button>
+                </li>
+                <li><a href="{{ path('storefront_home_show') }}"><strong>Showcase</strong></a></li>
+            </ul>
+            <ul class="site-header-actions" data-site-header-target="menu">
+                <li>
+                    <details class="dropdown">
+                        <summary>{{ app.request.locale|upper }}</summary>
+                        <ul>
+                            <li><a href="{{ path(current_route, current_route_params|merge({_locale: 'fr'})) }}">Français</a></li>
+                            <li><a href="{{ path(current_route, current_route_params|merge({_locale: 'en'})) }}">English</a></li>
+                        </ul>
+                    </details>
                 </li>
                 <li>
                     {% if is_granted('IS_AUTHENTICATED_FULLY') %}
                         <details class="dropdown">
                             <summary>{{ 'greeting'|trans({'%fullName%': app.user.fullName}, 'layout') }}</summary>
                             <ul>
+                                <li><a href="{{ path('storefront_account_show') }}">{{ 'title'|trans({}, 'account') }}</a></li>
                                 <li><a href="{{ logout_path() }}">{{ 'link_logout'|trans({}, 'layout') }}</a></li>
-                                <li><a href="{{ path('storefront_account_security_show') }}">{{ 'link_security'|trans({}, 'layout') }}</a></li>
                             </ul>
                         </details>
                     {% else %}

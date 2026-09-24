@@ -9,7 +9,6 @@ use Iam\Authentication\Application\Command\RevokeTotp\RevokeTotp;
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInterface;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialNotFoundException;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialOwnedByAnotherIdentityException;
-use Iam\Authentication\Domain\TotpCredential\Service\TotpBackupCodeHasherInterface;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpCipherInterface;
 use Iam\Tests\Authentication\Support\Builder\TotpCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
@@ -22,7 +21,6 @@ final class RevokeTotpHandlerTest extends AbstractIntegrationTestCase
 {
     private TotpCredentialFinderInterface $finder;
     private TotpCipherInterface $cipher;
-    private TotpBackupCodeHasherInterface $backupCodeHasher;
     private UniquenessRegistryInterface $uniqueness;
 
     protected function setUp(): void
@@ -31,7 +29,6 @@ final class RevokeTotpHandlerTest extends AbstractIntegrationTestCase
 
         $this->finder = $this->service(TotpCredentialFinderInterface::class);
         $this->cipher = $this->service(TotpCipherInterface::class);
-        $this->backupCodeHasher = $this->service(TotpBackupCodeHasherInterface::class);
         $this->uniqueness = $this->service(UniquenessRegistryInterface::class);
     }
 
@@ -39,7 +36,7 @@ final class RevokeTotpHandlerTest extends AbstractIntegrationTestCase
     public function itRevokes(): void
     {
         // Given
-        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher)->withBackupCodeHasher($this->backupCodeHasher);
+        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher);
         $credential = $builder->create();
         $this->store($credential);
 
@@ -60,7 +57,7 @@ final class RevokeTotpHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyRevoked(): void
     {
         // Given
-        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher)->withBackupCodeHasher($this->backupCodeHasher)->revoked();
+        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher)->revoked();
         $credential = $builder->create();
         $this->store($credential);
 
@@ -88,7 +85,7 @@ final class RevokeTotpHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenOwnedByAnotherIdentity(): void
     {
         // Given
-        $credential = TotpCredentialBuilder::new()->withCipher($this->cipher)->withBackupCodeHasher($this->backupCodeHasher)->create();
+        $credential = TotpCredentialBuilder::new()->withCipher($this->cipher)->create();
         $this->store($credential);
 
         // Then

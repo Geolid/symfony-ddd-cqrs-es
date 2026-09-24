@@ -1,25 +1,46 @@
-{% extends 'layout.html.twig' %}
+{% extends 'account/security/_layout.html.twig' %}
 {% trans_default_domain 'account_security' %}
-
-{% block importmap %}{{ importmap(['shared', 'auth']) }}{% endblock %}
+{% import 'account/security/_breadcrumb.html.twig' as security %}
 
 {% block title %}{{ 'issue_totp_title'|trans }}{% endblock %}
 
 {% block content %}
+    {{ security.trail([
+        {label: 'two_factor_settings_title'|trans, url: path('storefront_account_security_two_factor_settings')},
+        {label: 'issue_totp_title'|trans},
+    ]) }}
+
+    <small>{{ 'issue_totp_step_indicator'|trans }}</small>
+    <h1>{{ 'issue_totp_heading'|trans }}</h1>
+
     <article>
-        <h1>{{ 'issue_totp_title'|trans }}</h1>
+        <p class="icon-text"><twig:ux:icon name="info" class="icon icon-info" /> {{ 'issue_totp_note'|trans }}</p>
 
-        <p>{{ 'issue_totp_instructions_qr'|trans }}</p>
-        <img src="{{ qrCodeDataUri }}" alt="{{ 'issue_totp_title'|trans }}">
+        <ol>
+            <li><strong>{{ 'issue_totp_step_open_verb'|trans }}</strong> {{ 'issue_totp_step_open_rest'|trans }}</li>
+            <li>
+                <strong>{{ 'issue_totp_step_add_verb'|trans }}</strong> {{ 'issue_totp_step_add_rest'|trans }}
+                <p><img class="totp-qr" src="{{ qrCodeDataUri }}" alt="{{ 'issue_totp_title'|trans }}"></p>
 
-        <p>{{ 'issue_totp_instructions_manual'|trans }}</p>
-        <p>{{ secret }}</p>
-
-        <p>{{ 'issue_totp_instructions_confirm'|trans }}</p>
-
-        {{ form_start(form) }}
-            {{ form_row(form.code) }}
-            <button type="submit">{{ 'issue_totp_button_submit'|trans }}</button>
-        {{ form_end(form) }}
+                <details class="totp-manual-toggle">
+                    <summary>{{ 'issue_totp_instructions_manual_toggle'|trans }}</summary>
+                    <ol>
+                        <li>{{ 'issue_totp_manual_step1'|trans }}</li>
+                        <li>{{ 'issue_totp_manual_step2'|trans }}</li>
+                        <li>{{ 'issue_totp_manual_step3'|trans }} <code>{{ secret|split('', 4)|join(' ') }}</code></li>
+                        <li>{{ 'issue_totp_manual_step4'|trans }}</li>
+                    </ol>
+                </details>
+            </li>
+            <li>
+                <strong>{{ 'issue_totp_step_enter_verb'|trans }}</strong> {{ 'issue_totp_step_enter_rest'|trans }}
+                {{ form_start(form) }}
+                    <div class="u-mt">
+                        {{ form_row(form.code, {label_attr: {class: 'u-visually-hidden'}}) }}
+                    </div>
+                    <button type="submit">{{ 'issue_totp_button_submit'|trans }}</button>
+                {{ form_end(form) }}
+            </li>
+        </ol>
     </article>
 {% endblock %}

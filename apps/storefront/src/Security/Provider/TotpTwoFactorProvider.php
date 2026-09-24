@@ -16,9 +16,11 @@ use Storefront\Security\PasswordUser;
 use Symfony\Component\DependencyInjection\Attribute\AutoconfigureTag;
 use Twig\Environment;
 
-#[AutoconfigureTag('scheb_two_factor.provider', ['alias' => 'totp'])]
+#[AutoconfigureTag('scheb_two_factor.provider', ['alias' => self::ALIAS])]
 final readonly class TotpTwoFactorProvider implements TwoFactorProviderInterface
 {
+    public const string ALIAS = 'totp';
+
     public function __construct(
         private QueryBusInterface $queryBus,
         private TotpCredentialVerifierInterface $verifier,
@@ -52,6 +54,6 @@ final readonly class TotpTwoFactorProvider implements TwoFactorProviderInterface
 
     public function getFormRenderer(): TwoFactorFormRendererInterface
     {
-        return new DefaultTwoFactorFormRenderer($this->twig, 'two_factor/challenge.html.twig');
+        return new DefaultTwoFactorFormRenderer($this->twig, 'two_factor/challenge_totp.html.twig');
     }
 }

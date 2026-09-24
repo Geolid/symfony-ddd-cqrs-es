@@ -25,11 +25,10 @@ final class IssueTotpCredentialHandlerTest extends AbstractIntegrationTestCase
         $id = Uuid::uuid7()->toString();
         $identityId = TotpCredentialBuilder::sample('identityId');
         $secret = TotpCredentialBuilder::sample('secret');
-        $backupCodes = TotpCredentialBuilder::sample('plainBackupCodes');
         $now = Clock::get()->now();
 
         // When
-        $this->dispatch(new IssueTotpCredential($id, $identityId, $secret, $backupCodes));
+        $this->dispatch(new IssueTotpCredential($id, $identityId, $secret));
 
         // Then
         $result = $this->service(TotpCredentialFinderInterface::class)->ofId($id);
@@ -64,7 +63,6 @@ final class IssueTotpCredentialHandlerTest extends AbstractIntegrationTestCase
             Uuid::uuid7()->toString(),
             $identityId,
             TotpCredentialBuilder::sample('secret'),
-            TotpCredentialBuilder::sample('plainBackupCodes'),
         ));
     }
 }

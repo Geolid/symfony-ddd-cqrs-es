@@ -17,9 +17,9 @@
         <source>link_logout</source>
         <target>Déconnexion</target>
       </trans-unit>
-      <trans-unit id="link_security">
-        <source>link_security</source>
-        <target>Connexion &amp; Sécurité</target>
+      <trans-unit id="link_menu">
+        <source>link_menu</source>
+        <target>Menu</target>
       </trans-unit>
     </body>
   </file>
