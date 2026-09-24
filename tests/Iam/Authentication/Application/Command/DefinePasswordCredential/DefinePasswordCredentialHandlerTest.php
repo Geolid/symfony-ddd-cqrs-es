@@ -30,7 +30,8 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         $this->dispatch(new DefinePasswordCredential($identityId, $password));
 
         // Then
-        $result = $this->service(PasswordCredentialFinderInterface::class)->ofIdentity($identityId);
+        $result = $this->service(PasswordCredentialFinderInterface::class)->ofIdentityOrNull($identityId);
+        self::assertNotNull($result);
         self::assertSame(PasswordCredentialId::forIdentity($identityId)->toString(), $result->id);
         self::assertSame($identityId, $result->identityId);
         self::assertSame(
@@ -39,7 +40,7 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         );
         self::assertSame(
             $now->format(\DateTimeInterface::ATOM),
-            $result->passwordChangedAt->format(\DateTimeInterface::ATOM),
+            $result->changedAt->format(\DateTimeInterface::ATOM),
         );
         self::assertNotSame($password, $result->passwordHash);
     }

@@ -1,0 +1,25 @@
+{% extends 'layout_auth.html.twig' %}
+{% trans_default_domain 'signin' %}
+
+{% block title %}{{ 'verify_title'|trans }}{% endblock %}
+
+{% block content %}
+    <form method="post" action="{{ path('storefront_signin_verify') }}">
+        {% if error %}
+            <twig:ui:FormError>{{- error.messageKey|trans(error.messageData, 'security') -}}</twig:ui:FormError>
+        {% endif %}
+
+        <p>{{ email }} <a href="{{ path('storefront_signin_identify') }}">{{ 'link_modify'|trans({}, 'messages') }}</a></p>
+        <input type="hidden" name="email" value="{{ email }}">
+
+        <div class="grid">
+            <label for="password">{{ 'verify_label_password'|trans }}</label>
+            <a href="{{ path('storefront_forgot_password_request') }}" class="u-justify-end">{{ 'verify_link_forgot'|trans }}</a>
+        </div>
+        <input type="password" id="password" name="password" required autofocus>
+
+        <input type="hidden" name="_csrf_token" value="{{ csrf_token('authenticate') }}">
+
+        <button type="submit">{{ 'verify_button_submit'|trans }}</button>
+    </form>
+{% endblock %}

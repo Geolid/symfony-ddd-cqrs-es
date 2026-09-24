@@ -1,0 +1,15 @@
+{% extends '@ui/base.html.twig' %}
+
+{% block javascripts %}
+    {% block importmap %}{{ importmap(['shared', 'auth']) }}{% endblock %}
+{% endblock %}
+
+{% block body %}
+    <main class="container">
+        <twig:ui:Flashes :flashes="app.flashes" />
+        <article class="auth-card">
+            <h1>{% block heading %}{{ block('title') }}{% endblock %}</h1>
+            {% block content %}{% endblock %}
+        </article>
+    </main>
+{% endblock %}

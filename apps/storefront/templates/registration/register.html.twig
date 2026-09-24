@@ -1,0 +1,20 @@
+{% extends 'layout_auth.html.twig' %}
+{% trans_default_domain 'registration' %}
+
+{% block title %}{{ 'register_title'|trans }}{% endblock %}
+
+{% block content %}
+    <p class="u-muted">{{ 'register_subtitle'|trans }}</p>
+
+    {{ form_start(form) }}
+        {{ form_errors(form) }}
+        <dl>
+            <dt>{{ 'register_label_email'|trans }}</dt>
+            <dd>{{ form.email.vars.value }} <a href="{{ path('storefront_signin_identify') }}">{{ 'link_modify'|trans({}, 'messages') }}</a></dd>
+        </dl>
+        {{ form_rest(form) }}
+        <button type="submit">{{ 'register_button_submit'|trans }}</button>
+    {{ form_end(form) }}
+
+    <p><strong>{{ 'register_text_already_customer'|trans }}</strong><br><a href="{{ path('storefront_signin_identify') }}">{{ 'register_link_identify_instead'|trans }}</a></p>
+{% endblock %}

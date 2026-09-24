@@ -1,0 +1,6 @@
+{% macro trail(extra) %}
+    <twig:ui:Breadcrumb :items="[
+        {label: 'title'|trans({}, 'account'), url: path('storefront_account_show')},
+        {label: 'show_title'|trans({}, 'account_security'), url: path('storefront_account_security_show')},
+    ]|merge(extra)" />
+{% endmacro %}

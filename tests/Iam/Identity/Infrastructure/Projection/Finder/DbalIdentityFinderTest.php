@@ -18,6 +18,7 @@ use Shared\Application\Finder\PaginationMetadata;
 use Shared\Application\Finder\PaginatorInterface;
 use Shared\Tests\Support\TestCase\AbstractPaginatableFinderTestCase;
 use Shared\Tests\Support\TestCase\RealColumnLeadsTrait;
+use Support\Faker\SeededFaker;
 use Symfony\Component\Clock\Clock;
 
 /**
@@ -67,6 +68,23 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
 
         // When
         $this->finder()->ofId(Uuid::uuid7()->toString());
+    }
+
+    #[Test]
+    public function itFindsByEmail(): void
+    {
+        // Given
+        $builder = IdentityBuilder::new();
+        $identity = $builder->create();
+        $this->store($identity);
+
+        // When
+        $found = $this->finder()->ofEmailOrNull($builder['email']->value);
+        $notFound = $this->finder()->ofEmailOrNull(SeededFaker::get()->unique()->safeEmail());
+
+        // Then
+        self::assertSame($identity->id->toString(), $found?->id);
+        self::assertNull($notFound);
     }
 
     #[Test]

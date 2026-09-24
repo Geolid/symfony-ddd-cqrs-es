@@ -1,0 +1,15 @@
+{% embed 'two_factor/_challenge_form.html.twig' %}
+    {% block code_field %}
+        <label for="two-factor-code">{{ 'label_totp_code'|trans({}, 'two_factor_challenge') }}</label>
+        <input
+            type="text"
+            id="two-factor-code"
+            name="{{ authCodeParameterName }}"
+            autocomplete="one-time-code"
+            inputmode="numeric"
+            pattern="\d{6}"
+            required
+            autofocus
+        >
+    {% endblock %}
+{% endembed %}

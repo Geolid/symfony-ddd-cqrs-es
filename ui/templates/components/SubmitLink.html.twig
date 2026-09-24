@@ -1,0 +1,6 @@
+{% props actionUrl, csrfId, label %}
+
+<form method="post" action="{{ actionUrl }}" data-controller="submit-link">
+    <input type="hidden" name="_token" value="{{ csrf_token(csrfId) }}">
+    <a href="#" data-action="click->submit-link#submit" {{ attributes }}>{{ label }}</a>
+</form>
