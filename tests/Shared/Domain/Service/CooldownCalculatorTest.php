@@ -22,7 +22,10 @@ final class CooldownCalculatorTest extends TestCase
         $retryAt = $calculator->retryAt($lastRequestedAt);
 
         // Then
-        self::assertSame($lastRequestedAt->modify('+60 seconds'), $retryAt);
+        self::assertSame(
+            $lastRequestedAt->modify('+60 seconds')->format(\DateTimeInterface::ATOM),
+            $retryAt->format(\DateTimeInterface::ATOM),
+        );
     }
 
     #[Test]
@@ -36,6 +39,9 @@ final class CooldownCalculatorTest extends TestCase
         $retryAt = $calculator->retryAt($lastRequestedAt);
 
         // Then
-        self::assertSame($lastRequestedAt->modify(CooldownCalculator::DEFAULT_COOLDOWN), $retryAt);
+        self::assertSame(
+            $lastRequestedAt->modify(CooldownCalculator::DEFAULT_COOLDOWN)->format(\DateTimeInterface::ATOM),
+            $retryAt->format(\DateTimeInterface::ATOM),
+        );
     }
 }
