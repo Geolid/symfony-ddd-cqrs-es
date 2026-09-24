@@ -7,7 +7,6 @@ namespace Iam\Tests\Authentication\Infrastructure\Projection\Finder;
 use Iam\Authentication\Application\Finder\TotpCredential\Exception\TotpCredentialResultNotFoundException;
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInterface;
 use Iam\Tests\Authentication\Support\Builder\TotpCredentialBuilder;
-use Iam\Tests\Authentication\Support\Double\FakeTotpBackupCodeHasher;
 use Iam\Tests\Authentication\Support\Double\FakeTotpCipher;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -17,7 +16,6 @@ final class DbalTotpCredentialFinderTest extends AbstractIntegrationTestCase
 {
     private TotpCredentialFinderInterface $finder;
     private FakeTotpCipher $cipher;
-    private FakeTotpBackupCodeHasher $backupCodeHasher;
 
     protected function setUp(): void
     {
@@ -25,16 +23,15 @@ final class DbalTotpCredentialFinderTest extends AbstractIntegrationTestCase
 
         $this->finder = $this->service(TotpCredentialFinderInterface::class);
         $this->cipher = new FakeTotpCipher();
-        $this->backupCodeHasher = new FakeTotpBackupCodeHasher();
     }
 
     #[Test]
     public function itGetsById(): void
     {
         // Given
-        $other = TotpCredentialBuilder::new()->withCipher($this->cipher)->withBackupCodeHasher($this->backupCodeHasher)->create();
+        $other = TotpCredentialBuilder::new()->withCipher($this->cipher)->create();
 
-        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher)->withBackupCodeHasher($this->backupCodeHasher);
+        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher);
         $credential = $builder->create();
         $this->store($other, $credential);
 
@@ -67,9 +64,9 @@ final class DbalTotpCredentialFinderTest extends AbstractIntegrationTestCase
     public function itFindsActiveByIdentity(): void
     {
         // Given
-        $other = TotpCredentialBuilder::new()->withCipher($this->cipher)->withBackupCodeHasher($this->backupCodeHasher)->create();
+        $other = TotpCredentialBuilder::new()->withCipher($this->cipher)->create();
 
-        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher)->withBackupCodeHasher($this->backupCodeHasher);
+        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher);
         $credential = $builder->create();
         $this->store($other, $credential);
 
@@ -86,7 +83,7 @@ final class DbalTotpCredentialFinderTest extends AbstractIntegrationTestCase
     public function itFindsNothingWhenRevoked(): void
     {
         // Given
-        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher)->withBackupCodeHasher($this->backupCodeHasher)->revoked();
+        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher)->revoked();
         $credential = $builder->create();
         $this->store($credential);
 

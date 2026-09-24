@@ -7,15 +7,27 @@
     <body>
       <trans-unit id="title">
         <source>title</source>
-        <target>Vérification à deux facteurs</target>
+        <target>Authentification à deux facteurs</target>
       </trans-unit>
-      <trans-unit id="label_code">
-        <source>label_code</source>
+      <trans-unit id="label_totp_code">
+        <source>label_totp_code</source>
         <target>Code d'authentification</target>
       </trans-unit>
-      <trans-unit id="hint_backup_code">
-        <source>hint_backup_code</source>
-        <target>Saisissez votre code à 6 chiffres, ou l'un de vos codes de secours à 8 chiffres si vous n'avez plus accès à votre application d'authentification.</target>
+      <trans-unit id="label_backup_code">
+        <source>label_backup_code</source>
+        <target>Code de secours</target>
+      </trans-unit>
+      <trans-unit id="switch_provider_totp">
+        <source>switch_provider_totp</source>
+        <target>Utiliser mon application d'authentification</target>
+      </trans-unit>
+      <trans-unit id="switch_provider_backup_code">
+        <source>switch_provider_backup_code</source>
+        <target>Utiliser un code de secours</target>
+      </trans-unit>
+      <trans-unit id="label_trust_device">
+        <source>label_trust_device</source>
+        <target>Se souvenir de cet appareil pendant 30 jours</target>
       </trans-unit>
       <trans-unit id="button_submit">
         <source>button_submit</source>
@@ -23,7 +35,7 @@
       </trans-unit>
       <trans-unit id="link_logout">
         <source>link_logout</source>
-        <target>Se déconnecter</target>
+        <target>Déconnexion</target>
       </trans-unit>
     </body>
   </file>

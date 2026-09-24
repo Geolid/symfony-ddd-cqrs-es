@@ -33,6 +33,7 @@ use Patchlevel\EventSourcing\Attribute\Id;
 use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
 use Shared\Domain\Exception\VerificationCodeNotFoundException;
 use Shared\Domain\Service\CodeChallengerInterface;
+use Shared\Domain\Service\CooldownCalculator;
 use Shared\Domain\Specification\CanTransitionToSpecification;
 use Shared\Domain\Specification\CooldownElapsedSpecification;
 use Shared\Domain\ValueObject\ErasureState;
@@ -49,8 +50,6 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         ErasureState::REQUESTED->value => [ErasureState::RETAINED, ErasureState::ERASED],
         ErasureState::ERASED->value => [],
     ];
-
-    private const string CONFIRMATION_COOLDOWN = '+60 seconds';
 
     #[Id]
     public private(set) IdentityId $id;
@@ -154,8 +153,9 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
             throw IdentityAlreadyConfirmedException::forId($this->id);
         }
 
-        if (!new CooldownElapsedSpecification(self::CONFIRMATION_COOLDOWN, $requestedAt)->isSatisfiedBy($this->confirmationRequestedAt)) {
-            throw ConfirmationRequestedTooRecentlyException::forId($this->id);
+        $cooldownCalculator = new CooldownCalculator();
+        if (!new CooldownElapsedSpecification($cooldownCalculator, $requestedAt)->isSatisfiedBy($this->confirmationRequestedAt)) {
+            throw ConfirmationRequestedTooRecentlyException::forId($this->id, $cooldownCalculator->retryAt($this->confirmationRequestedAt));
         }
 
         $this->recordThat(new IdentityConfirmationRequested(

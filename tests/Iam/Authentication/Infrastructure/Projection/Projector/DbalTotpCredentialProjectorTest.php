@@ -7,7 +7,6 @@ namespace Iam\Tests\Authentication\Infrastructure\Projection\Projector;
 use Doctrine\DBAL\Connection;
 use Iam\Authentication\Infrastructure\Projection\Projector\DbalTotpCredentialProjector;
 use Iam\Tests\Authentication\Support\Builder\TotpCredentialBuilder;
-use Iam\Tests\Authentication\Support\Double\FakeTotpBackupCodeHasher;
 use Iam\Tests\Authentication\Support\Double\FakeTotpCipher;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
@@ -21,21 +20,19 @@ final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
     private const string DATE_FORMAT = 'Y-m-d H:i:s';
 
     private FakeTotpCipher $cipher;
-    private FakeTotpBackupCodeHasher $backupCodeHasher;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->cipher = new FakeTotpCipher();
-        $this->backupCodeHasher = new FakeTotpBackupCodeHasher();
     }
 
     #[Test]
     public function itProjectsOnTotpCredentialIssued(): void
     {
         // Given
-        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher)->withBackupCodeHasher($this->backupCodeHasher);
+        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher);
         $credential = $builder->create();
 
         // When
@@ -53,12 +50,11 @@ final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnTotpCredentialRevoked(): void
     {
         // Given
-        $other = TotpCredentialBuilder::new()->withCipher($this->cipher)->withBackupCodeHasher($this->backupCodeHasher)->create();
+        $other = TotpCredentialBuilder::new()->withCipher($this->cipher)->create();
         $this->store($other);
 
         $builder = TotpCredentialBuilder::new()
             ->withCipher($this->cipher)
-            ->withBackupCodeHasher($this->backupCodeHasher)
             ->revoked();
         $credential = $builder->create();
 
@@ -81,14 +77,13 @@ final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
     public function itRemovesOnIdentityErasedIntegrationEvent(): void
     {
         // Given
-        $other = TotpCredentialBuilder::new()->withCipher($this->cipher)->withBackupCodeHasher($this->backupCodeHasher)->create();
+        $other = TotpCredentialBuilder::new()->withCipher($this->cipher)->create();
         $this->store($other);
 
         $identity = IdentityBuilder::new()->erasureRequested()->erased()->create();
         $credential = TotpCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withCipher($this->cipher)
-            ->withBackupCodeHasher($this->backupCodeHasher)
             ->create();
 
         // When

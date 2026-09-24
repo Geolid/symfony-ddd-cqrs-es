@@ -27,6 +27,7 @@ declare(strict_types=1);
 return [
     'shared' => ['path' => 'shared/shared.js', 'entrypoint' => true],
     'auth' => ['path' => 'storefront/auth.js', 'entrypoint' => true],
+    'account' => ['path' => 'storefront/account.js', 'entrypoint' => true],
     '@picocss/pico' => ['version' => '2.1.1'],
     '@picocss/pico/css/pico.min.css' => ['version' => '2.1.1', 'type' => 'css'],
     '@picocss/pico/css/pico.colors.min.css' => ['version' => '2.1.1', 'type' => 'css'],

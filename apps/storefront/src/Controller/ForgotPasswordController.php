@@ -9,6 +9,7 @@ use Iam\Authentication\Application\Command\ResetPassword\ResetPassword;
 use Iam\Authentication\Application\CredentialVerification\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordResetRequestedTooRecentlyException;
 use Iam\Identity\Application\Query\GetIdentityByEmail\GetIdentityByEmail;
+use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
@@ -17,6 +18,7 @@ use Storefront\Form\PasswordReset\PasswordResetFormData;
 use Storefront\Form\PasswordReset\PasswordResetType;
 use Storefront\Form\PasswordResetRequest\PasswordResetRequestFormData;
 use Storefront\Form\PasswordResetRequest\PasswordResetRequestType;
+use Storefront\Security\RateLimiter\VerificationCodeRateLimiter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\RedirectResponse;
@@ -36,6 +38,8 @@ final class ForgotPasswordController extends AbstractController
         private readonly QueryBusInterface $queryBus,
         private readonly TranslatorInterface $translator,
         private readonly FormExceptionMapper $formExceptionMapper,
+        private readonly ClockInterface $clock,
+        private readonly VerificationCodeRateLimiter $rateLimiter,
     ) {
     }
 
@@ -65,7 +69,7 @@ final class ForgotPasswordController extends AbstractController
                 return $this->redirectToRoute('storefront_registration_confirm', ['identityId' => $identity->id]);
             }
 
-            $this->requestPasswordResetCode($identity->id);
+            $this->requestPasswordResetCode($request, $identity->id);
 
             return $this->redirectToRoute('storefront_forgot_password_reset', ['identityId' => $identity->id]);
         }
@@ -86,6 +90,7 @@ final class ForgotPasswordController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             try {
                 $this->commandBus->dispatch(new ResetPassword($identityId, (string) $formData->code, (string) $formData->newPassword));
+                $this->rateLimiter->reset($request, $identityId, 'reset');
                 $this->addFlash('success', $this->translator->trans('reset_flash_reset', domain: 'forgot_password'));
 
                 return $this->redirectToRoute('storefront_signin_identify');
@@ -116,7 +121,7 @@ final class ForgotPasswordController extends AbstractController
     {
         if ($this->isCsrfTokenValid('password_reset_resend', (string) $request->request->get('_token'))) {
             try {
-                $this->requestPasswordResetCode($identityId);
+                $this->requestPasswordResetCode($request, $identityId);
             } catch (IdentityNotAuthenticatableException) {
                 $this->addFlash('error', $this->translator->trans('reset_flash_not_authenticatable', domain: 'forgot_password'));
 
@@ -133,13 +138,22 @@ final class ForgotPasswordController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    private function requestPasswordResetCode(string $identityId): void
+    private function requestPasswordResetCode(Request $request, string $identityId): void
     {
+        $retryAt = $this->rateLimiter->consume($request, $identityId, 'reset');
+        if (null !== $retryAt) {
+            $minutes = (int) ceil(($retryAt->getTimestamp() - $this->clock->now()->getTimestamp()) / 60);
+            $this->addFlash('error', $this->translator->trans('flash_rate_limited', ['%minutes%' => $minutes], domain: 'verification_code'));
+
+            return;
+        }
+
         try {
             $this->commandBus->dispatch(new RequestPasswordReset($identityId));
             $this->addFlash('success', $this->translator->trans('flash_sent', domain: 'verification_code'));
-        } catch (PasswordResetRequestedTooRecentlyException) {
-            $this->addFlash('error', $this->translator->trans('flash_too_recent', domain: 'verification_code'));
+        } catch (PasswordResetRequestedTooRecentlyException $e) {
+            $seconds = max(1, $e->retryAt->getTimestamp() - $this->clock->now()->getTimestamp());
+            $this->addFlash('error', $this->translator->trans('flash_too_recent', ['%seconds%' => $seconds], domain: 'verification_code'));
         }
     }
 }

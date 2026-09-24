@@ -6,10 +6,13 @@ namespace Storefront\Security;
 
 use Iam\Identity\Application\IdentityModerationStatus;
 use Iam\Identity\Application\IdentityVerificationStatus;
+use Scheb\TwoFactorBundle\Model\PreferredProviderInterface;
+use Scheb\TwoFactorBundle\Model\TrustedDeviceInterface;
+use Storefront\Security\Provider\TotpTwoFactorProvider;
 use Symfony\Component\Security\Core\User\EquatableInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
-final readonly class PasswordUser implements UserInterface, EquatableInterface
+final readonly class PasswordUser implements UserInterface, EquatableInterface, TrustedDeviceInterface, PreferredProviderInterface
 {
     public function __construct(
         private string $identityId,
@@ -18,7 +21,18 @@ final readonly class PasswordUser implements UserInterface, EquatableInterface
         public IdentityVerificationStatus $verificationStatus,
         public IdentityModerationStatus $moderationStatus,
         public \DateTimeImmutable $passwordChangedAt,
+        private ?\DateTimeImmutable $deviceTrustRevokedAt,
     ) {
+    }
+
+    public function getTrustedTokenVersion(): int
+    {
+        return $this->deviceTrustRevokedAt?->getTimestamp() ?? 0;
+    }
+
+    public function getPreferredTwoFactorProvider(): string
+    {
+        return TotpTwoFactorProvider::ALIAS;
     }
 
     public function getRoles(): array

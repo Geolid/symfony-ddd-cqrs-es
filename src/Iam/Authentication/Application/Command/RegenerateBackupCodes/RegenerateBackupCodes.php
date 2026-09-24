@@ -12,7 +12,6 @@ final readonly class RegenerateBackupCodes implements CommandInterface
      * @param list<non-empty-string> $backupCodes
      */
     public function __construct(
-        public string $id,
         public string $identityId,
         #[\SensitiveParameter]
         public array $backupCodes,

@@ -36,10 +36,10 @@ return static function (ContainerConfigurator $container): void {
                 'two_factor' => [
                     'auth_form_path' => 'storefront_two_factor_challenge',
                     'check_path' => 'storefront_two_factor_challenge_check',
-                    'default_target_path' => 'storefront_account_show',
+                    'default_target_path' => 'storefront_home_show',
                     'enable_csrf' => true,
                 ],
-                'logout' => ['path' => '/logout', 'target' => 'storefront_signin'],
+                'logout' => ['path' => '/logout', 'target' => 'storefront_signin_identify'],
             ],
         ],
     ]);

@@ -8,8 +8,15 @@ use Iam\Identity\Domain\ValueObject\IdentityId;
 
 final class ConfirmationRequestedTooRecentlyException extends \DomainException
 {
-    public static function forId(IdentityId $id): self
+    private function __construct(
+        string $message,
+        public readonly \DateTimeImmutable $retryAt,
+    ) {
+        parent::__construct($message);
+    }
+
+    public static function forId(IdentityId $id, \DateTimeImmutable $retryAt): self
     {
-        return new self(\sprintf('A confirmation was already requested too recently for identity "%s".', $id->toString()));
+        return new self(\sprintf('A confirmation was already requested too recently for identity "%s".', $id->toString()), $retryAt);
     }
 }

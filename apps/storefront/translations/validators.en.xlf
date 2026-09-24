@@ -9,6 +9,14 @@
         <source>invalid_password_mismatch</source>
         <target>The passwords must match.</target>
       </trans-unit>
+      <trans-unit id="value_already_in_use">
+        <source>value_already_in_use</source>
+        <target>The value "{{ value }}" is already in use.</target>
+      </trans-unit>
+      <trans-unit id="error_email_already_in_use">
+        <source>error_email_already_in_use</source>
+        <target>The email address {{ value }} is already registered.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

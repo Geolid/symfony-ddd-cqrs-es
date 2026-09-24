@@ -7,6 +7,9 @@
 {% block body %}
     <main class="container">
         <twig:ui:Flashes :flashes="app.flashes" />
-        {% block content %}{% endblock %}
+        <article class="auth-card">
+            <h1>{% block heading %}{{ block('title') }}{% endblock %}</h1>
+            {% block content %}{% endblock %}
+        </article>
     </main>
 {% endblock %}

@@ -1,0 +1,56 @@
+{% extends 'account/security/_layout.html.twig' %}
+{% trans_default_domain 'account_security' %}
+{% import 'account/security/_breadcrumb.html.twig' as security %}
+
+{% block title %}{{ 'two_factor_settings_title'|trans }}{% endblock %}
+
+{% block content %}
+    {{ security.trail([{label: 'two_factor_settings_title'|trans}]) }}
+
+    <h1>{{ 'two_factor_settings_title'|trans }}</h1>
+
+    <article class="settings-sections">
+        <dl>
+            <dt>{{ 'two_factor_settings_section_backup_codes_title'|trans }}</dt>
+            <dd>
+                <p>{{ 'two_factor_settings_section_backup_codes_instructions'|trans }}</p>
+                <small>
+                    {{ 'show_backup_codes_issued_at'|trans({'%date%': backupCodeCredential.issuedAt|date('d/m/Y')}) }}
+                    {% if backupCodeCredential.regeneratedAt %}
+                        {{ 'show_backup_codes_regenerated_at'|trans({'%date%': backupCodeCredential.regeneratedAt|date('d/m/Y')}) }}
+                    {% endif %}
+                    {{ 'show_backup_codes_remaining'|trans({'%count%': backupCodeCredential.remainingCount}) }}
+                </small>
+            </dd>
+        </dl>
+        <form method="post" action="{{ path('storefront_account_security_regenerate_backup_codes') }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('regenerate_backup_codes') }}">
+            <button type="submit" class="outline">{{ 'two_factor_settings_button_regenerate'|trans }}</button>
+        </form>
+
+        <hr>
+
+        <dl>
+            <dt>{{ 'show_label_trusted_devices'|trans }}</dt>
+            <dd>{{ 'two_factor_settings_section_devices_instructions'|trans }}</dd>
+        </dl>
+        <form method="post" action="{{ path('storefront_account_security_revoke_device_trust') }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('revoke_device_trust') }}">
+            <button type="submit" class="outline pico-background-red-500">{{ 'show_button_revoke_device_trust'|trans }}</button>
+        </form>
+
+        <hr>
+
+        <dl>
+            <dt>{{ 'two_factor_settings_section_disable_title'|trans }}</dt>
+            <dd>
+                <p>{{ 'two_factor_settings_section_disable_instructions'|trans }}</p>
+                <p class="icon-text"><twig:ux:icon name="warning" class="icon icon-warning" /> {{ 'two_factor_settings_section_disable_warning'|trans }}</p>
+            </dd>
+        </dl>
+        <form method="post" action="{{ path('storefront_account_security_revoke_totp') }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('revoke_totp') }}">
+            <button type="submit" class="outline pico-background-red-500">{{ 'two_factor_settings_button_disable'|trans }}</button>
+        </form>
+    </article>
+{% endblock %}

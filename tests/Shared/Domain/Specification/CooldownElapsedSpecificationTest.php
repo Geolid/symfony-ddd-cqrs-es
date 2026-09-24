@@ -7,6 +7,7 @@ namespace Shared\Tests\Domain\Specification;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
+use Shared\Domain\Service\CooldownCalculator;
 use Shared\Domain\Specification\CooldownElapsedSpecification;
 use Symfony\Component\Clock\Clock;
 
@@ -17,7 +18,7 @@ final class CooldownElapsedSpecificationTest extends TestCase
     public function itIsSatisfiedBy(?\DateTimeImmutable $lastRequestedAt, \DateTimeImmutable $now, bool $expected): void
     {
         // Given
-        $specification = new CooldownElapsedSpecification('+60 seconds', $now);
+        $specification = new CooldownElapsedSpecification(new CooldownCalculator(), $now);
 
         // When
         $result = $specification->isSatisfiedBy($lastRequestedAt);

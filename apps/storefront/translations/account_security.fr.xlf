@@ -23,55 +23,199 @@
       </trans-unit>
       <trans-unit id="show_label_two_factor">
         <source>show_label_two_factor</source>
-        <target>Vérification en deux étapes</target>
+        <target>Authentification à deux facteurs</target>
       </trans-unit>
-      <trans-unit id="show_status_enabled">
-        <source>show_status_enabled</source>
-        <target>Authentification à deux facteurs activée.</target>
+      <trans-unit id="show_two_factor_description">
+        <source>show_two_factor_description</source>
+        <target>Configurez un authentificateur à deux facteurs pour ajouter une couche de sécurité supplémentaire à la connexion.</target>
       </trans-unit>
-      <trans-unit id="show_link_enable_two_factor">
-        <source>show_link_enable_two_factor</source>
-        <target>Activer</target>
+      <trans-unit id="show_button_configure_two_factor">
+        <source>show_button_configure_two_factor</source>
+        <target>Configurer</target>
+      </trans-unit>
+      <trans-unit id="show_backup_codes_issued_at">
+        <source>show_backup_codes_issued_at</source>
+        <target>Activés le %date%.</target>
+      </trans-unit>
+      <trans-unit id="show_backup_codes_regenerated_at">
+        <source>show_backup_codes_regenerated_at</source>
+        <target>Dernière régénération le %date%.</target>
+      </trans-unit>
+      <trans-unit id="show_backup_codes_remaining">
+        <source>show_backup_codes_remaining</source>
+        <target>%count% codes restants.</target>
       </trans-unit>
       <trans-unit id="issue_totp_title">
         <source>issue_totp_title</source>
-        <target>Activer la double authentification</target>
+        <target>Activer l'A2F</target>
       </trans-unit>
-      <trans-unit id="issue_totp_instructions_qr">
-        <source>issue_totp_instructions_qr</source>
-        <target>Scannez ce QR code avec votre application d'authentification (Google Authenticator, etc.) :</target>
+      <trans-unit id="issue_totp_heading">
+        <source>issue_totp_heading</source>
+        <target>Inscrire un authentificateur pour l'authentification à deux facteurs</target>
       </trans-unit>
-      <trans-unit id="issue_totp_instructions_manual">
-        <source>issue_totp_instructions_manual</source>
-        <target>Ou saisissez cette clé manuellement :</target>
+      <trans-unit id="issue_totp_step_indicator">
+        <source>issue_totp_step_indicator</source>
+        <target>Étape 1 sur 2</target>
       </trans-unit>
-      <trans-unit id="issue_totp_instructions_confirm">
-        <source>issue_totp_instructions_confirm</source>
-        <target>Puis saisissez le code affiché pour confirmer :</target>
+      <trans-unit id="issue_totp_backup_codes_step_indicator">
+        <source>issue_totp_backup_codes_step_indicator</source>
+        <target>Étape 2 sur 2</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_note_label">
+        <source>issue_totp_note_label</source>
+        <target>Remarque :</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_note">
+        <source>issue_totp_note</source>
+        <target>Lors de toutes vos prochaines connexions après l'activation de l'authentification à deux facteurs, vous saisirez un code de sécurité généré à l'aide d'une application d'authentification.</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_step_open_verb">
+        <source>issue_totp_step_open_verb</source>
+        <target>Ouvrez</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_step_open_rest">
+        <source>issue_totp_step_open_rest</source>
+        <target>votre application d'authentification.</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_step_add_verb">
+        <source>issue_totp_step_add_verb</source>
+        <target>Ajoutez</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_step_add_rest">
+        <source>issue_totp_step_add_rest</source>
+        <target>un compte dans l'application et scannez le QR code ci-dessous :</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_instructions_manual_toggle">
+        <source>issue_totp_instructions_manual_toggle</source>
+        <target>Vous ne pouvez pas scanner le QR code ?</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_manual_step1">
+        <source>issue_totp_manual_step1</source>
+        <target>Ouvrez votre application d'authentification et choisissez « Ajouter un compte manuellement » dans le menu.</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_manual_step2">
+        <source>issue_totp_manual_step2</source>
+        <target>Dans « Nom du compte », saisissez votre adresse e-mail complète.</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_manual_step3">
+        <source>issue_totp_manual_step3</source>
+        <target>Dans « Clé », saisissez la clé suivante (les espaces ne sont pas nécessaires) :</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_manual_step4">
+        <source>issue_totp_manual_step4</source>
+        <target>Réglez le type de clé sur « Basé sur le temps », puis appuyez sur Ajouter.</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_step_enter_verb">
+        <source>issue_totp_step_enter_verb</source>
+        <target>Saisissez le code.</target>
+      </trans-unit>
+      <trans-unit id="issue_totp_step_enter_rest">
+        <source>issue_totp_step_enter_rest</source>
+        <target>Une fois le QR code scanné, saisissez le code généré par l'application :</target>
       </trans-unit>
       <trans-unit id="issue_totp_button_submit">
         <source>issue_totp_button_submit</source>
-        <target>Confirmer</target>
+        <target>Vérifier le code et continuer</target>
       </trans-unit>
       <trans-unit id="issue_totp_flash_invalid_code">
         <source>issue_totp_flash_invalid_code</source>
-        <target>Code invalide, réessayez.</target>
+        <target>Code invalide.</target>
       </trans-unit>
       <trans-unit id="issue_totp_flash_issued">
         <source>issue_totp_flash_issued</source>
         <target>Authentification à deux facteurs activée.</target>
       </trans-unit>
+      <trans-unit id="issue_totp_flash_issued_codes_kept">
+        <source>issue_totp_flash_issued_codes_kept</source>
+        <target>Authentification à deux facteurs activée. Vos codes de secours existants restent valides.</target>
+      </trans-unit>
       <trans-unit id="issue_totp_backup_codes_title">
         <source>issue_totp_backup_codes_title</source>
-        <target>Vos codes de secours</target>
+        <target>Enregistrez vos codes de secours</target>
       </trans-unit>
       <trans-unit id="issue_totp_backup_codes_instructions">
         <source>issue_totp_backup_codes_instructions</source>
-        <target>Conservez ces codes en lieu sûr. Chacun ne peut être utilisé qu'une fois pour vous connecter si vous perdez l'accès à votre application d'authentification. Ils ne seront plus jamais affichés.</target>
+        <target>Les codes de secours permettent d'accéder à votre compte si vous perdez votre appareil et ne pouvez pas recevoir de code d'authentification à deux facteurs.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_backup_codes_button_continue">
-        <source>issue_totp_backup_codes_button_continue</source>
-        <target>J'ai sauvegardé mes codes</target>
+      <trans-unit id="issue_totp_backup_codes_warning">
+        <source>issue_totp_backup_codes_warning</source>
+        <target>Pour la sécurité de votre compte, ne partagez jamais ces codes. Nous vous recommandons vivement de les enregistrer dans un gestionnaire de mots de passe sécurisé. Faites-le dès maintenant, ces codes ne seront affichés qu'une seule fois.</target>
+      </trans-unit>
+      <trans-unit id="backup_codes_button_copy">
+        <source>backup_codes_button_copy</source>
+        <target>Copier les codes</target>
+      </trans-unit>
+      <trans-unit id="backup_codes_button_download">
+        <source>backup_codes_button_download</source>
+        <target>Télécharger</target>
+      </trans-unit>
+      <trans-unit id="backup_codes_link_back">
+        <source>backup_codes_link_back</source>
+        <target>Retour aux paramètres A2F</target>
+      </trans-unit>
+      <trans-unit id="two_factor_settings_title">
+        <source>two_factor_settings_title</source>
+        <target>Paramètres d'authentification à deux facteurs (A2F)</target>
+      </trans-unit>
+      <trans-unit id="two_factor_settings_section_disable_title">
+        <source>two_factor_settings_section_disable_title</source>
+        <target>Désactiver l'authentification à deux facteurs</target>
+      </trans-unit>
+      <trans-unit id="two_factor_settings_section_disable_instructions">
+        <source>two_factor_settings_section_disable_instructions</source>
+        <target>Un code ne vous sera plus demandé à la connexion. Désactivez si vous devez configurer une nouvelle application d'authentification.</target>
+      </trans-unit>
+      <trans-unit id="two_factor_settings_section_disable_warning_label">
+        <source>two_factor_settings_section_disable_warning_label</source>
+        <target>Attention :</target>
+      </trans-unit>
+      <trans-unit id="two_factor_settings_section_disable_warning">
+        <source>two_factor_settings_section_disable_warning</source>
+        <target>Laisser ceci désactivé réduit la sécurité de votre compte.</target>
+      </trans-unit>
+      <trans-unit id="two_factor_settings_button_disable">
+        <source>two_factor_settings_button_disable</source>
+        <target>Désactiver l'A2F</target>
+      </trans-unit>
+      <trans-unit id="two_factor_settings_flash_revoked">
+        <source>two_factor_settings_flash_revoked</source>
+        <target>Authentification à deux facteurs désactivée.</target>
+      </trans-unit>
+      <trans-unit id="two_factor_settings_section_backup_codes_title">
+        <source>two_factor_settings_section_backup_codes_title</source>
+        <target>Codes de secours</target>
+      </trans-unit>
+      <trans-unit id="two_factor_settings_section_backup_codes_instructions">
+        <source>two_factor_settings_section_backup_codes_instructions</source>
+        <target>Utilisez les codes de secours pour vous connecter si vous perdez l'accès à votre appareil. Générer de nouveaux codes invalide définitivement les codes actuels.</target>
+      </trans-unit>
+      <trans-unit id="two_factor_settings_button_regenerate">
+        <source>two_factor_settings_button_regenerate</source>
+        <target>Générer de nouveaux codes de secours</target>
+      </trans-unit>
+      <trans-unit id="two_factor_settings_section_devices_instructions">
+        <source>two_factor_settings_section_devices_instructions</source>
+        <target>Déconnectez-vous de tous les appareils de confiance. Utilisez ceci si votre compte est compromis, ou si vous avez perdu un appareil connecté à ce compte. Un code de vérification vous sera demandé à la prochaine connexion.</target>
+      </trans-unit>
+      <trans-unit id="regenerate_backup_codes_title">
+        <source>regenerate_backup_codes_title</source>
+        <target>Vos nouveaux codes de secours</target>
+      </trans-unit>
+      <trans-unit id="regenerate_backup_codes_instructions">
+        <source>regenerate_backup_codes_instructions</source>
+        <target>Vos anciens codes de secours ne fonctionnent plus. Conservez ces nouveaux codes en lieu sûr. Ils ne seront plus jamais affichés.</target>
+      </trans-unit>
+      <trans-unit id="show_label_trusted_devices">
+        <source>show_label_trusted_devices</source>
+        <target>Appareils mémorisés</target>
+      </trans-unit>
+      <trans-unit id="show_button_revoke_device_trust">
+        <source>show_button_revoke_device_trust</source>
+        <target>Se déconnecter de tous les appareils</target>
+      </trans-unit>
+      <trans-unit id="revoke_device_trust_flash_success">
+        <source>revoke_device_trust_flash_success</source>
+        <target>Vous avez été déconnecté de tous les appareils mémorisés.</target>
       </trans-unit>
     </body>
   </file>
