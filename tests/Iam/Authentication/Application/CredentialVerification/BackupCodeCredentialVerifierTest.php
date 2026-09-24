@@ -54,7 +54,7 @@ final class BackupCodeCredentialVerifierTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itRefusesWhenNotIssued(): void
+    public function itRefusesWhenNotGenerated(): void
     {
         // When
         $verified = $this->verifier->verify(BackupCodeCredentialBuilder::sample('identityId'), 'INVALIDCODE');
