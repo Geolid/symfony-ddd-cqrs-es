@@ -17,7 +17,7 @@ Requires an already-registered, confirmed account (see `e2e-register`) with a kn
 2. Type the email into "Enter your email address", click "Continue" → `/storefront/signin/verify`.
 3. Type the password into "Password", click "Sign in".
 4. If no 2FA credential is issued: lands on `/storefront/account` ("Your account").
-   If TOTP/backup codes are issued: lands on `/storefront/2sv` (see `e2e-2fa-challenge`).
+   If TOTP/backup codes are issued: lands on `/storefront/2fa` (see `e2e-2fa-challenge`).
 
 ## Steps — edge cases
 

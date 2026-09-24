@@ -9,25 +9,25 @@ effort: low
 
 ## Prerequisites
 
-Requires an account with TOTP + backup codes already issued (see `e2e-2fa-enable`), signed in past the password step, currently on `/storefront/2sv`.
+Requires an account with TOTP + backup codes already issued (see `e2e-2fa-enable`), signed in past the password step, currently on `/storefront/2fa`.
 
-## Steps — TOTP path
+## Steps — TOTP path (default)
 
-1. If the page shows "Backup code", click "Use my authenticator app" → `?preferProvider=totp`.
+1. `PasswordUser::getPreferredTwoFactorProvider()` always prefers TOTP over backup codes when both are enrolled, so the page should already show "Authentication code" — no switch needed on the happy path.
 2. Generate the current code: `node tools/e2e/totp.mjs <secret>` (same secret as `e2e-2fa-enable`).
 3. Type it into "Authentication code", click "Verify" → lands on `/storefront/account` (or wherever `default_target_path` points).
 
 ## Steps — backup code path
 
-1. If the page shows "Authentication code", click "Use a backup code" → `?preferProvider=backup_code`.
+1. Below the "Verify" button, click "Use a backup code" → `?preferProvider=backup_code`.
 2. Type one never-used 8-digit backup code into "Backup code", click "Verify".
 3. Re-check `/storefront/account/security` — "N codes remaining" must have decremented by exactly 1. Re-submitting the SAME backup code afterward must be rejected (already consumed).
 
 ## Steps — remember this device
 
 1. On either path, check "Remember this device for 30 days" before clicking "Verify".
-2. Log out (`/storefront/logout`), sign in again with email+password — must land directly past `/storefront/2sv` with no challenge shown.
-3. On `/storefront/account/security`, click "Sign out of all devices" — flash "You've been signed out of all remembered devices...".
+2. Log out (`/storefront/logout`), sign in again with email+password — must land directly past `/storefront/2fa` with no challenge shown.
+3. On `/storefront/account/security`, click "Sign out of all devices" — flash "You've been signed out of all remembered devices."
 4. Log out, sign in again — the 2FA challenge must reappear.
 
 **Don't stop at step 2 as proof.** Staying in the same Playwright browser context the whole time doesn't by itself prove the *trusted-device cookie* is what's skipping the challenge — cookies persist naturally across `browser_navigate` calls regardless. To actually isolate the cause: after confirming step 2's skip, clear cookies for real (including httpOnly ones, which `document.cookie` can't touch) via `browser_run_code_unsafe`:
@@ -52,5 +52,4 @@ Every combination above renders correctly; the switch link always names the OTHE
 
 ## Locale
 
-The route is locale-aware: `/2sv` (en) / `/v2e` (fr) — matching the app's standardized terminology ("Two-step verification" / "Vérification en deux étapes", 2026-09-22), not the older "authentification à deux facteurs" wording the previous `/2fa`/`/a2f` paths were based on. Distinct path text per locale is what makes the FR/EN switcher actually work here (Symfony's sticky-locale URL generation needs the path text to genuinely differ per locale; an identical path for both locales silently collapses to whichever locale was declared first, and a bare `?_locale=` query string on a route with no locale-aware path does nothing at all — both were tried and confirmed broken before landing on distinct paths). Signing in through the French tunnel (`/connexion` → `/connexion/verifier`) must redirect to `/v2e`, not `/2sv`.
-
+The route is locale-aware: `/2fa` (en) / `/a2f` (fr) — matching the app's standardized terminology ("Two-factor authentication" / "Authentification à deux facteurs", 2026-09-23). Distinct path text per locale is what makes the FR/EN switcher actually work here (Symfony's sticky-locale URL generation needs the path text to genuinely differ per locale; an identical path for both locales silently collapses to whichever locale was declared first, and a bare `?_locale=` query string on a route with no locale-aware path does nothing at all — both were tried and confirmed broken before landing on distinct paths). Signing in through the French tunnel (`/connexion` → `/connexion/verifier`) must redirect to `/a2f`, not `/2fa`.
