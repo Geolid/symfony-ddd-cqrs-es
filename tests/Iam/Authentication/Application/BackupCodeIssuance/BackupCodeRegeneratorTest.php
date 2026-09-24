@@ -39,7 +39,9 @@ final class BackupCodeRegeneratorTest extends AbstractIntegrationTestCase
         $newBackupCodes = $this->regenerator->regenerateFor($builder['identityId']);
 
         // Then
-        self::assertNotEmpty($newBackupCodes);
+        $backupCodeCount = self::getContainer()->getParameter('iam.authentication.backup_code_count');
+        self::assertIsInt($backupCodeCount);
+        self::assertCount($backupCodeCount, $newBackupCodes);
         self::assertFalse($this->verifier->verify($builder['identityId'], $builder['plainBackupCodes'][0]));
         self::assertTrue($this->verifier->verify($builder['identityId'], $newBackupCodes[0]));
     }

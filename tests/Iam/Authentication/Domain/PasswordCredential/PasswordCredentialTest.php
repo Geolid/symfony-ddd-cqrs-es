@@ -143,7 +143,8 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $this
             ->given($this->defined(), $this->resetRequested())
             ->when(fn (PasswordCredential $credential) => $credential->requestReset($this->requestedAt->modify('+1 second')))
-            ->expectsException(PasswordResetRequestedTooRecentlyException::class);
+            ->expectsException(PasswordResetRequestedTooRecentlyException::class)
+            ->expectsExceptionMessage('requested too recently');
     }
 
     #[Test]
