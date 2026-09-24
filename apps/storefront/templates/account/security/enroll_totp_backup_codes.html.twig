@@ -2,7 +2,7 @@
 {% trans_default_domain 'account_security' %}
 {% import 'account/security/_breadcrumb.html.twig' as security %}
 
-{% block title %}{{ 'issue_totp_backup_codes_title'|trans }}{% endblock %}
+{% block title %}{{ 'enroll_totp_backup_codes_title'|trans }}{% endblock %}
 
 {% block content %}
     {{ security.trail([
@@ -10,12 +10,12 @@
         {label: 'two_factor_settings_section_backup_codes_title'|trans},
     ]) }}
 
-    <small>{{ 'issue_totp_backup_codes_step_indicator'|trans }}</small>
-    <h1>{{ 'issue_totp_backup_codes_title'|trans }}</h1>
+    <small>{{ 'enroll_totp_backup_codes_step_indicator'|trans }}</small>
+    <h1>{{ 'enroll_totp_backup_codes_title'|trans }}</h1>
 
     <article>
-        <p>{{ 'issue_totp_backup_codes_instructions'|trans }}</p>
-        <p>{{ 'issue_totp_backup_codes_warning'|trans }}</p>
+        <p>{{ 'enroll_totp_backup_codes_instructions'|trans }}</p>
+        <p>{{ 'enroll_totp_backup_codes_warning'|trans }}</p>
 
         {{ include('account/security/_backup_codes.html.twig', {backupCodes: backupCodes}) }}
 

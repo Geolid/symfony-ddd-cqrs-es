@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Application\Command\IssueTotpCredential;
+namespace Iam\Authentication\Application\Command\EnrollTotpCredential;
 
 use Iam\Authentication\Application\AuthenticationUniqueKey;
-use Iam\Authentication\Application\Command\IssueTotpCredential\Exception\TotpAlreadyIssuedException;
+use Iam\Authentication\Application\Command\EnrollTotpCredential\Exception\TotpAlreadyEnrolledException;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialAlreadyExistsException;
 use Iam\Authentication\Domain\TotpCredential\Repository\TotpCredentialRepositoryInterface;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpCipherInterface;
@@ -18,7 +18,7 @@ use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 
 #[CommandHandler]
-final readonly class IssueTotpCredentialHandler
+final readonly class EnrollTotpCredentialHandler
 {
     public function __construct(
         private TotpCredentialRepositoryInterface $repository,
@@ -29,23 +29,23 @@ final readonly class IssueTotpCredentialHandler
     }
 
     /**
-     * @throws TotpAlreadyIssuedException
+     * @throws TotpAlreadyEnrolledException
      * @throws TotpCredentialAlreadyExistsException
      */
-    public function __invoke(IssueTotpCredential $command): void
+    public function __invoke(EnrollTotpCredential $command): void
     {
         try {
             $this->uniqueness->claim(UniqueKey::for(AuthenticationUniqueKey::TOTP_CREDENTIAL_IDENTITY), $command->identityId, $command->id);
         } catch (UniquenessViolatedException $e) {
-            throw TotpAlreadyIssuedException::forIdentity($command->identityId, $e);
+            throw TotpAlreadyEnrolledException::forIdentity($command->identityId, $e);
         }
 
-        $credential = TotpCredential::issue(
+        $credential = TotpCredential::enroll(
             id: TotpCredentialId::fromString($command->id),
             identityId: $command->identityId,
             secret: $command->secret,
             cipher: $this->cipher,
-            issuedAt: $this->clock->now(),
+            enrolledAt: $this->clock->now(),
         );
 
         $this->repository->save($credential);

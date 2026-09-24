@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Infrastructure\Totp;
 
-use Iam\Authentication\Application\TotpIssuance\TotpProvisioningInterface;
+use Iam\Authentication\Application\TotpEnrollment\TotpProvisioningInterface;
 use OTPHP\TOTP;
 use Psr\Clock\ClockInterface;
 

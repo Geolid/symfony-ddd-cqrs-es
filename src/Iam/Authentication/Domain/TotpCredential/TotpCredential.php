@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Domain\TotpCredential;
 
-use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialIssued;
+use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialEnrolled;
 use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialRevoked;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialOwnedByAnotherIdentityException;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpCipherInterface;
@@ -26,20 +26,20 @@ final class TotpCredential implements AggregateRoot, AggregateRootMetadataAware
     private string $identityId;
     private bool $revoked;
 
-    public static function issue(
+    public static function enroll(
         TotpCredentialId $id,
         string $identityId,
         #[\SensitiveParameter]
         string $secret,
         TotpCipherInterface $cipher,
-        \DateTimeImmutable $issuedAt,
+        \DateTimeImmutable $enrolledAt,
     ): self {
         $self = new self();
-        $self->recordThat(new TotpCredentialIssued(
+        $self->recordThat(new TotpCredentialEnrolled(
             id: $id,
             identityId: $identityId,
             encryptedSecret: $cipher->encrypt($secret),
-            issuedAt: $issuedAt,
+            enrolledAt: $enrolledAt,
         ));
 
         return $self;
@@ -65,7 +65,7 @@ final class TotpCredential implements AggregateRoot, AggregateRootMetadataAware
     }
 
     #[Apply]
-    private function applyIssued(TotpCredentialIssued $event): void
+    private function applyEnrolled(TotpCredentialEnrolled $event): void
     {
         $this->id = $event->id;
         $this->identityId = $event->identityId;

@@ -45,100 +45,100 @@
         <source>show_backup_codes_remaining</source>
         <target>%count% codes remaining.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_title">
-        <source>issue_totp_title</source>
+      <trans-unit id="enroll_totp_title">
+        <source>enroll_totp_title</source>
         <target>Enable 2FA</target>
       </trans-unit>
-      <trans-unit id="issue_totp_heading">
-        <source>issue_totp_heading</source>
+      <trans-unit id="enroll_totp_heading">
+        <source>enroll_totp_heading</source>
         <target>Enroll a two-factor authenticator</target>
       </trans-unit>
-      <trans-unit id="issue_totp_step_indicator">
-        <source>issue_totp_step_indicator</source>
+      <trans-unit id="enroll_totp_step_indicator">
+        <source>enroll_totp_step_indicator</source>
         <target>Step 1 of 2</target>
       </trans-unit>
-      <trans-unit id="issue_totp_backup_codes_step_indicator">
-        <source>issue_totp_backup_codes_step_indicator</source>
+      <trans-unit id="enroll_totp_backup_codes_step_indicator">
+        <source>enroll_totp_backup_codes_step_indicator</source>
         <target>Step 2 of 2</target>
       </trans-unit>
-      <trans-unit id="issue_totp_note_label">
-        <source>issue_totp_note_label</source>
+      <trans-unit id="enroll_totp_note_label">
+        <source>enroll_totp_note_label</source>
         <target>Note:</target>
       </trans-unit>
-      <trans-unit id="issue_totp_note">
-        <source>issue_totp_note</source>
+      <trans-unit id="enroll_totp_note">
+        <source>enroll_totp_note</source>
         <target>For all future sign-ins after you turn on two-factor authentication, you'll enter a security code you generated using an authenticator app.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_step_open_verb">
-        <source>issue_totp_step_open_verb</source>
+      <trans-unit id="enroll_totp_step_open_verb">
+        <source>enroll_totp_step_open_verb</source>
         <target>Open</target>
       </trans-unit>
-      <trans-unit id="issue_totp_step_open_rest">
-        <source>issue_totp_step_open_rest</source>
+      <trans-unit id="enroll_totp_step_open_rest">
+        <source>enroll_totp_step_open_rest</source>
         <target>your authenticator app.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_step_add_verb">
-        <source>issue_totp_step_add_verb</source>
+      <trans-unit id="enroll_totp_step_add_verb">
+        <source>enroll_totp_step_add_verb</source>
         <target>Add</target>
       </trans-unit>
-      <trans-unit id="issue_totp_step_add_rest">
-        <source>issue_totp_step_add_rest</source>
+      <trans-unit id="enroll_totp_step_add_rest">
+        <source>enroll_totp_step_add_rest</source>
         <target>an account within the app and scan the QR code below:</target>
       </trans-unit>
-      <trans-unit id="issue_totp_instructions_manual_toggle">
-        <source>issue_totp_instructions_manual_toggle</source>
+      <trans-unit id="enroll_totp_instructions_manual_toggle">
+        <source>enroll_totp_instructions_manual_toggle</source>
         <target>Can't scan the QR code?</target>
       </trans-unit>
-      <trans-unit id="issue_totp_manual_step1">
-        <source>issue_totp_manual_step1</source>
+      <trans-unit id="enroll_totp_manual_step1">
+        <source>enroll_totp_manual_step1</source>
         <target>Open your authenticator app and select "Add account manually" from the menu.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_manual_step2">
-        <source>issue_totp_manual_step2</source>
+      <trans-unit id="enroll_totp_manual_step2">
+        <source>enroll_totp_manual_step2</source>
         <target>In "Account name", type your full email address.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_manual_step3">
-        <source>issue_totp_manual_step3</source>
+      <trans-unit id="enroll_totp_manual_step3">
+        <source>enroll_totp_manual_step3</source>
         <target>In "Key", type the following key (spaces not required):</target>
       </trans-unit>
-      <trans-unit id="issue_totp_manual_step4">
-        <source>issue_totp_manual_step4</source>
+      <trans-unit id="enroll_totp_manual_step4">
+        <source>enroll_totp_manual_step4</source>
         <target>Set the key type to "Time-based", then tap Add.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_step_enter_verb">
-        <source>issue_totp_step_enter_verb</source>
+      <trans-unit id="enroll_totp_step_enter_verb">
+        <source>enroll_totp_step_enter_verb</source>
         <target>Enter code.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_step_enter_rest">
-        <source>issue_totp_step_enter_rest</source>
+      <trans-unit id="enroll_totp_step_enter_rest">
+        <source>enroll_totp_step_enter_rest</source>
         <target>After you've scanned the QR code, enter the code generated by the app:</target>
       </trans-unit>
-      <trans-unit id="issue_totp_button_submit">
-        <source>issue_totp_button_submit</source>
+      <trans-unit id="enroll_totp_button_submit">
+        <source>enroll_totp_button_submit</source>
         <target>Verify code and continue</target>
       </trans-unit>
-      <trans-unit id="issue_totp_flash_invalid_code">
-        <source>issue_totp_flash_invalid_code</source>
+      <trans-unit id="enroll_totp_flash_invalid_code">
+        <source>enroll_totp_flash_invalid_code</source>
         <target>Invalid code.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_flash_issued">
-        <source>issue_totp_flash_issued</source>
+      <trans-unit id="enroll_totp_flash_enrolled">
+        <source>enroll_totp_flash_enrolled</source>
         <target>Two-factor authentication enabled.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_flash_issued_codes_kept">
-        <source>issue_totp_flash_issued_codes_kept</source>
+      <trans-unit id="enroll_totp_flash_enrolled_codes_kept">
+        <source>enroll_totp_flash_enrolled_codes_kept</source>
         <target>Two-factor authentication enabled. Your existing backup codes are still valid.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_backup_codes_title">
-        <source>issue_totp_backup_codes_title</source>
+      <trans-unit id="enroll_totp_backup_codes_title">
+        <source>enroll_totp_backup_codes_title</source>
         <target>Save Your Backup Codes</target>
       </trans-unit>
-      <trans-unit id="issue_totp_backup_codes_instructions">
-        <source>issue_totp_backup_codes_instructions</source>
+      <trans-unit id="enroll_totp_backup_codes_instructions">
+        <source>enroll_totp_backup_codes_instructions</source>
         <target>Backup codes can be used to access your account if you lose your device and cannot receive two-factor authentication codes.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_backup_codes_warning">
-        <source>issue_totp_backup_codes_warning</source>
+      <trans-unit id="enroll_totp_backup_codes_warning">
+        <source>enroll_totp_backup_codes_warning</source>
         <target>To keep your account secure, never share these codes. We strongly recommend saving them in a secure password manager. Please do this now, as these codes will only be shown once.</target>
       </trans-unit>
       <trans-unit id="backup_codes_button_copy">

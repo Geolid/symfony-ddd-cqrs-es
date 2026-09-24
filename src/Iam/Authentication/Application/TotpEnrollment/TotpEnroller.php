@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Application\TotpIssuance;
+namespace Iam\Authentication\Application\TotpEnrollment;
 
+use Iam\Authentication\Application\Command\EnrollTotpCredential\EnrollTotpCredential;
 use Iam\Authentication\Application\Command\IssueBackupCodeCredential\IssueBackupCodeCredential;
-use Iam\Authentication\Application\Command\IssueTotpCredential\IssueTotpCredential;
 use Iam\Authentication\Application\Finder\BackupCodeCredential\BackupCodeCredentialFinderInterface;
 use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeGeneratorInterface;
 use Iam\Authentication\Domain\TotpCredential\Exception\InvalidTotpCodeException;
@@ -14,7 +14,7 @@ use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
-final readonly class TotpIssuer implements TotpIssuerInterface
+final readonly class TotpEnroller implements TotpEnrollerInterface
 {
     public function __construct(
         private TotpVerifierInterface $verifier,
@@ -35,13 +35,13 @@ final readonly class TotpIssuer implements TotpIssuerInterface
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    public function issueFor(string $identityId, #[\SensitiveParameter] string $secret, #[\SensitiveParameter] string $code): ?array
+    public function enrollFor(string $identityId, #[\SensitiveParameter] string $secret, #[\SensitiveParameter] string $code): ?array
     {
         if (!$this->verifier->verify($secret, $code)) {
             throw InvalidTotpCodeException::forIdentity($identityId);
         }
 
-        $this->commandBus->dispatch(new IssueTotpCredential(Uuid::uuid7()->toString(), $identityId, $secret));
+        $this->commandBus->dispatch(new EnrollTotpCredential(Uuid::uuid7()->toString(), $identityId, $secret));
 
         if (null !== $this->backupCodeCredentialFinder->ofIdentityOrNull($identityId)) {
             return null;

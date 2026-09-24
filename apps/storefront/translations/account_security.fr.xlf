@@ -45,100 +45,100 @@
         <source>show_backup_codes_remaining</source>
         <target>%count% codes restants.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_title">
-        <source>issue_totp_title</source>
+      <trans-unit id="enroll_totp_title">
+        <source>enroll_totp_title</source>
         <target>Activer l'A2F</target>
       </trans-unit>
-      <trans-unit id="issue_totp_heading">
-        <source>issue_totp_heading</source>
+      <trans-unit id="enroll_totp_heading">
+        <source>enroll_totp_heading</source>
         <target>Inscrire un authentificateur pour l'authentification à deux facteurs</target>
       </trans-unit>
-      <trans-unit id="issue_totp_step_indicator">
-        <source>issue_totp_step_indicator</source>
+      <trans-unit id="enroll_totp_step_indicator">
+        <source>enroll_totp_step_indicator</source>
         <target>Étape 1 sur 2</target>
       </trans-unit>
-      <trans-unit id="issue_totp_backup_codes_step_indicator">
-        <source>issue_totp_backup_codes_step_indicator</source>
+      <trans-unit id="enroll_totp_backup_codes_step_indicator">
+        <source>enroll_totp_backup_codes_step_indicator</source>
         <target>Étape 2 sur 2</target>
       </trans-unit>
-      <trans-unit id="issue_totp_note_label">
-        <source>issue_totp_note_label</source>
+      <trans-unit id="enroll_totp_note_label">
+        <source>enroll_totp_note_label</source>
         <target>Remarque :</target>
       </trans-unit>
-      <trans-unit id="issue_totp_note">
-        <source>issue_totp_note</source>
+      <trans-unit id="enroll_totp_note">
+        <source>enroll_totp_note</source>
         <target>Lors de toutes vos prochaines connexions après l'activation de l'authentification à deux facteurs, vous saisirez un code de sécurité généré à l'aide d'une application d'authentification.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_step_open_verb">
-        <source>issue_totp_step_open_verb</source>
+      <trans-unit id="enroll_totp_step_open_verb">
+        <source>enroll_totp_step_open_verb</source>
         <target>Ouvrez</target>
       </trans-unit>
-      <trans-unit id="issue_totp_step_open_rest">
-        <source>issue_totp_step_open_rest</source>
+      <trans-unit id="enroll_totp_step_open_rest">
+        <source>enroll_totp_step_open_rest</source>
         <target>votre application d'authentification.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_step_add_verb">
-        <source>issue_totp_step_add_verb</source>
+      <trans-unit id="enroll_totp_step_add_verb">
+        <source>enroll_totp_step_add_verb</source>
         <target>Ajoutez</target>
       </trans-unit>
-      <trans-unit id="issue_totp_step_add_rest">
-        <source>issue_totp_step_add_rest</source>
+      <trans-unit id="enroll_totp_step_add_rest">
+        <source>enroll_totp_step_add_rest</source>
         <target>un compte dans l'application et scannez le QR code ci-dessous :</target>
       </trans-unit>
-      <trans-unit id="issue_totp_instructions_manual_toggle">
-        <source>issue_totp_instructions_manual_toggle</source>
+      <trans-unit id="enroll_totp_instructions_manual_toggle">
+        <source>enroll_totp_instructions_manual_toggle</source>
         <target>Vous ne pouvez pas scanner le QR code ?</target>
       </trans-unit>
-      <trans-unit id="issue_totp_manual_step1">
-        <source>issue_totp_manual_step1</source>
+      <trans-unit id="enroll_totp_manual_step1">
+        <source>enroll_totp_manual_step1</source>
         <target>Ouvrez votre application d'authentification et choisissez « Ajouter un compte manuellement » dans le menu.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_manual_step2">
-        <source>issue_totp_manual_step2</source>
+      <trans-unit id="enroll_totp_manual_step2">
+        <source>enroll_totp_manual_step2</source>
         <target>Dans « Nom du compte », saisissez votre adresse e-mail complète.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_manual_step3">
-        <source>issue_totp_manual_step3</source>
+      <trans-unit id="enroll_totp_manual_step3">
+        <source>enroll_totp_manual_step3</source>
         <target>Dans « Clé », saisissez la clé suivante (les espaces ne sont pas nécessaires) :</target>
       </trans-unit>
-      <trans-unit id="issue_totp_manual_step4">
-        <source>issue_totp_manual_step4</source>
+      <trans-unit id="enroll_totp_manual_step4">
+        <source>enroll_totp_manual_step4</source>
         <target>Réglez le type de clé sur « Basé sur le temps », puis appuyez sur Ajouter.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_step_enter_verb">
-        <source>issue_totp_step_enter_verb</source>
+      <trans-unit id="enroll_totp_step_enter_verb">
+        <source>enroll_totp_step_enter_verb</source>
         <target>Saisissez le code.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_step_enter_rest">
-        <source>issue_totp_step_enter_rest</source>
+      <trans-unit id="enroll_totp_step_enter_rest">
+        <source>enroll_totp_step_enter_rest</source>
         <target>Une fois le QR code scanné, saisissez le code généré par l'application :</target>
       </trans-unit>
-      <trans-unit id="issue_totp_button_submit">
-        <source>issue_totp_button_submit</source>
+      <trans-unit id="enroll_totp_button_submit">
+        <source>enroll_totp_button_submit</source>
         <target>Vérifier le code et continuer</target>
       </trans-unit>
-      <trans-unit id="issue_totp_flash_invalid_code">
-        <source>issue_totp_flash_invalid_code</source>
+      <trans-unit id="enroll_totp_flash_invalid_code">
+        <source>enroll_totp_flash_invalid_code</source>
         <target>Code invalide.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_flash_issued">
-        <source>issue_totp_flash_issued</source>
+      <trans-unit id="enroll_totp_flash_enrolled">
+        <source>enroll_totp_flash_enrolled</source>
         <target>Authentification à deux facteurs activée.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_flash_issued_codes_kept">
-        <source>issue_totp_flash_issued_codes_kept</source>
+      <trans-unit id="enroll_totp_flash_enrolled_codes_kept">
+        <source>enroll_totp_flash_enrolled_codes_kept</source>
         <target>Authentification à deux facteurs activée. Vos codes de secours existants restent valides.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_backup_codes_title">
-        <source>issue_totp_backup_codes_title</source>
+      <trans-unit id="enroll_totp_backup_codes_title">
+        <source>enroll_totp_backup_codes_title</source>
         <target>Enregistrez vos codes de secours</target>
       </trans-unit>
-      <trans-unit id="issue_totp_backup_codes_instructions">
-        <source>issue_totp_backup_codes_instructions</source>
+      <trans-unit id="enroll_totp_backup_codes_instructions">
+        <source>enroll_totp_backup_codes_instructions</source>
         <target>Les codes de secours permettent d'accéder à votre compte si vous perdez votre appareil et ne pouvez pas recevoir de code d'authentification à deux facteurs.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_backup_codes_warning">
-        <source>issue_totp_backup_codes_warning</source>
+      <trans-unit id="enroll_totp_backup_codes_warning">
+        <source>enroll_totp_backup_codes_warning</source>
         <target>Pour la sécurité de votre compte, ne partagez jamais ces codes. Nous vous recommandons vivement de les enregistrer dans un gestionnaire de mots de passe sécurisé. Faites-le dès maintenant, ces codes ne seront affichés qu'une seule fois.</target>
       </trans-unit>
       <trans-unit id="backup_codes_button_copy">

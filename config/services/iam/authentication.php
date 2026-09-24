@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 use Bootstrap\DependencyInjection\BoundedContextServiceLoader;
 use Iam\Authentication\Application\BackupCodeIssuance\BackupCodeRegenerator;
-use Iam\Authentication\Application\TotpIssuance\TotpIssuer;
+use Iam\Authentication\Application\TotpEnrollment\TotpEnroller;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\PasswordHasher\Hasher\NativePasswordHasher;
 
@@ -18,7 +18,7 @@ return static function (ContainerConfigurator $container): void {
     $services->set(NativePasswordHasher::class);
 
     $container->parameters()->set('iam.authentication.backup_code_count', 10);
-    $services->get(TotpIssuer::class)->arg('$backupCodeCount', '%iam.authentication.backup_code_count%');
+    $services->get(TotpEnroller::class)->arg('$backupCodeCount', '%iam.authentication.backup_code_count%');
     $services->get(BackupCodeRegenerator::class)->arg('$backupCodeCount', '%iam.authentication.backup_code_count%');
 
     $container->parameters()->set('iam.authentication.backup_code_digit_count', 8);

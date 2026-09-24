@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Authentication\Application\TotpIssuance;
+namespace Iam\Tests\Authentication\Application\TotpEnrollment;
 
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInterface;
-use Iam\Authentication\Application\TotpIssuance\TotpIssuerInterface;
+use Iam\Authentication\Application\TotpEnrollment\TotpEnrollerInterface;
 use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeHasherInterface;
 use Iam\Authentication\Domain\TotpCredential\Exception\InvalidTotpCodeException;
 use Iam\Tests\Authentication\Support\Builder\BackupCodeCredentialBuilder;
@@ -15,21 +15,21 @@ use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
-final class TotpIssuerTest extends AbstractIntegrationTestCase
+final class TotpEnrollerTest extends AbstractIntegrationTestCase
 {
-    private TotpIssuerInterface $issuer;
+    private TotpEnrollerInterface $enroller;
     private TotpCredentialFinderInterface $finder;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->issuer = $this->service(TotpIssuerInterface::class);
+        $this->enroller = $this->service(TotpEnrollerInterface::class);
         $this->finder = $this->service(TotpCredentialFinderInterface::class);
     }
 
     #[Test]
-    public function itIssues(): void
+    public function itEnrolls(): void
     {
         // Given
         $identityId = TotpCredentialBuilder::sample('identityId');
@@ -37,7 +37,7 @@ final class TotpIssuerTest extends AbstractIntegrationTestCase
         $code = TOTP::createFromSecret($secret, Clock::get())->now();
 
         // When
-        $backupCodes = $this->issuer->issueFor($identityId, $secret, $code);
+        $backupCodes = $this->enroller->enrollFor($identityId, $secret, $code);
 
         // Then
         $result = $this->finder->activeOfIdentityOrNull($identityId);
@@ -46,11 +46,13 @@ final class TotpIssuerTest extends AbstractIntegrationTestCase
         self::assertFalse($result->revoked);
 
         $backupCodeCount = self::getContainer()->getParameter('iam.authentication.backup_code_count');
+        self::assertIsInt($backupCodeCount);
+        self::assertNotNull($backupCodes);
         self::assertCount($backupCodeCount, $backupCodes);
     }
 
     #[Test]
-    public function itIssuesWithoutNewBackupCodesWhenAlreadyIssued(): void
+    public function itEnrollsWithoutNewBackupCodesWhenAlreadyEnrolled(): void
     {
         // Given
         $backupCodeBuilder = BackupCodeCredentialBuilder::new()->withBackupCodeHasher($this->service(BackupCodeHasherInterface::class));
@@ -61,7 +63,7 @@ final class TotpIssuerTest extends AbstractIntegrationTestCase
         $code = TOTP::createFromSecret($secret, Clock::get())->now();
 
         // When
-        $backupCodes = $this->issuer->issueFor($backupCodeBuilder['identityId'], $secret, $code);
+        $backupCodes = $this->enroller->enrollFor($backupCodeBuilder['identityId'], $secret, $code);
 
         // Then
         self::assertNull($backupCodes);
@@ -78,6 +80,6 @@ final class TotpIssuerTest extends AbstractIntegrationTestCase
         $this->expectException(InvalidTotpCodeException::class);
 
         // When
-        $this->issuer->issueFor($identityId, $secret, '000000');
+        $this->enroller->enrollFor($identityId, $secret, '000000');
     }
 }

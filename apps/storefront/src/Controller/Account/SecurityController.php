@@ -11,8 +11,8 @@ use Iam\Authentication\Application\Command\RevokeDeviceTrust\RevokeDeviceTrust;
 use Iam\Authentication\Application\Command\RevokeTotp\RevokeTotp;
 use Iam\Authentication\Application\Query\GetBackupCodeCredentialByIdentity\GetBackupCodeCredentialByIdentity;
 use Iam\Authentication\Application\Query\GetTotpCredentialByIdentity\GetTotpCredentialByIdentity;
-use Iam\Authentication\Application\TotpIssuance\TotpIssuerInterface;
-use Iam\Authentication\Application\TotpIssuance\TotpProvisioningInterface;
+use Iam\Authentication\Application\TotpEnrollment\TotpEnrollerInterface;
+use Iam\Authentication\Application\TotpEnrollment\TotpProvisioningInterface;
 use Iam\Authentication\Domain\TotpCredential\Exception\InvalidTotpCodeException;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -34,14 +34,15 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[Route(path: ['en' => '/account/security', 'fr' => '/compte/connexion-securite'], name: 'storefront_account_security_')]
 final class SecurityController extends AbstractController
 {
-    private const string SESSION_KEY = 'storefront.totp_issuance_secret';
+    private const string SESSION_KEY = 'storefront.totp_enrollment_secret';
     private const string ISSUER = 'Storefront';
+    public $totpIssuer;
 
     public function __construct(
         private readonly QueryBusInterface $queryBus,
         private readonly CommandBusInterface $commandBus,
         private readonly TotpProvisioningInterface $provisioning,
-        private readonly TotpIssuerInterface $totpIssuer,
+        private readonly TotpEnrollerInterface $totpEnroller,
         private readonly BackupCodeRegeneratorInterface $backupCodeRegenerator,
         private readonly TranslatorInterface $translator,
     ) {
@@ -151,37 +152,37 @@ final class SecurityController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             try {
-                $backupCodes = $this->totpIssuer->issueFor($user->identityId(), $secret, (string) $formData->code);
+                $backupCodes = $this->totpEnroller->enrollFor($user->identityId(), $secret, (string) $formData->code);
             } catch (InvalidTotpCodeException) {
-                $this->addFlash('error', $this->translator->trans('issue_totp_flash_invalid_code', domain: 'account_security'));
+                $this->addFlash('error', $this->translator->trans('enroll_totp_flash_invalid_code', domain: 'account_security'));
 
-                return $this->renderIssueTotpForm($form, $secret, $provisioningUri);
+                return $this->renderEnrollTotpForm($form, $secret, $provisioningUri);
             }
 
             $session->remove(self::SESSION_KEY);
 
             if (null === $backupCodes) {
-                $this->addFlash('success', $this->translator->trans('issue_totp_flash_issued_codes_kept', domain: 'account_security'));
+                $this->addFlash('success', $this->translator->trans('enroll_totp_flash_enrolled_codes_kept', domain: 'account_security'));
 
                 return $this->redirectToRoute('storefront_account_security_two_factor_settings');
             }
 
-            $this->addFlash('success', $this->translator->trans('issue_totp_flash_issued', domain: 'account_security'));
+            $this->addFlash('success', $this->translator->trans('enroll_totp_flash_enrolled', domain: 'account_security'));
 
-            return $this->render('account/security/issue_totp_backup_codes.html.twig', ['backupCodes' => $backupCodes]);
+            return $this->render('account/security/enroll_totp_backup_codes.html.twig', ['backupCodes' => $backupCodes]);
         }
 
-        return $this->renderIssueTotpForm($form, $secret, $provisioningUri);
+        return $this->renderEnrollTotpForm($form, $secret, $provisioningUri);
     }
 
     /**
      * @param FormInterface<TwoFactorConfirmFormData> $form
      */
-    private function renderIssueTotpForm(FormInterface $form, string $secret, string $provisioningUri): Response
+    private function renderEnrollTotpForm(FormInterface $form, string $secret, string $provisioningUri): Response
     {
         $qrCode = new Builder()->build(writer: new SvgWriter(), data: $provisioningUri);
 
-        return $this->render('account/security/issue_totp.html.twig', [
+        return $this->render('account/security/enroll_totp.html.twig', [
             'form' => $form,
             'secret' => $secret,
             'qrCodeDataUri' => $qrCode->getDataUri(),
