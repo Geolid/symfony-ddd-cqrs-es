@@ -1,7 +1,7 @@
 ---
 name: e2e-2fa-enable
 description: End-to-end regression check of the unified 2FA settings page — first-time enrollment, backup-code regeneration, disabling, and trusted-device revocation, all from one page.
-when_to_use: Verifying apps/storefront's 2FA settings tunnel still works after touching Account/SecurityController, TotpIssuer, BackupCodeRegenerator, or account/security/*.html.twig.
+when_to_use: Verifying apps/storefront's 2FA settings tunnel still works after touching Account/SecurityController, TotpEnroller, BackupCodeRegenerator, or account/security/*.html.twig.
 paths: apps/storefront/src/Controller/Account/**, apps/storefront/templates/account/security/**, src/Iam/Authentication/**
 allowed-tools: mcp__playwright__browser_navigate, mcp__playwright__browser_snapshot, mcp__playwright__browser_click, mcp__playwright__browser_type, Bash(node:*), Bash(castor cc:*)
 effort: low
@@ -55,4 +55,4 @@ Backup codes (the vendor's own term — `BackupCodeCredential`, `backup_code` pr
 
 - A wrong 6-digit code during enrollment re-renders the wizard with a translated inline error, secret unchanged, never a raw key or a 500.
 - The secret's clock step is 30s — if a generated code gets rejected as stale, regenerate immediately before submitting (network round-trip can cross a step boundary).
-- Re-enrolling after a previous disable, when a backup-code pool already exists from before: skips straight to "Two-factor authentication enabled. Your existing backup codes are still valid." (redirects to `/2fa/settings`, no new codes page) — `TotpIssuer::issueFor()` only issues a fresh pool when none exists yet for that identity.
+- Re-enrolling after a previous disable, when a backup-code pool already exists from before: skips straight to "Two-factor authentication enabled. Your existing backup codes are still valid." (redirects to `/2fa/settings`, no new codes page) — `TotpEnroller::enrollFor()` only issues a fresh pool when none exists yet for that identity.
