@@ -9,7 +9,7 @@
     "php": ">=8.5",
     "ext-ctype": "*",
     "ext-iconv": "*",
-    "api-platform/core": "^4.3",
+    "api-platform/core": "^5.0",
     "doctrine/doctrine-bundle": "^3.2",
     "dragonmantank/cron-expression": "^3.6",
     "itspire/monolog-loki": "^2.1",
