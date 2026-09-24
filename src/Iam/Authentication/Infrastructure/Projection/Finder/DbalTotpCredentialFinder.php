@@ -29,16 +29,16 @@ final class DbalTotpCredentialFinder extends AbstractDbalFinder implements TotpC
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($identityId): void {
-                $qb->andWhere('identity_id = :identityId AND revoked = :revoked')
+                $qb->andWhere('identity_id = :identityId AND unenrolled = :unenrolled')
                     ->setParameter('identityId', $identityId)
-                    ->setParameter('revoked', false);
+                    ->setParameter('unenrolled', false);
             },
         )->one();
     }
 
     protected function configureBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'identity_id', 'encrypted_secret', 'enrolled_at', 'revoked', 'revoked_at')
+        $qb->select('id', 'identity_id', 'encrypted_secret', 'enrolled_at', 'unenrolled', 'unenrolled_at')
             ->from(DbalTotpCredentialProjector::TABLE);
     }
 

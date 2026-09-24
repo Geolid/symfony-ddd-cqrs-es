@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Application\Command\RevokeTotp;
+namespace Iam\Authentication\Application\Command\UnenrollTotp;
 
 use Shared\Application\Command\CommandInterface;
 
-final readonly class RevokeTotp implements CommandInterface
+final readonly class UnenrollTotp implements CommandInterface
 {
     public function __construct(
         public string $id,

@@ -51,7 +51,7 @@
       </trans-unit>
       <trans-unit id="enroll_totp_heading">
         <source>enroll_totp_heading</source>
-        <target>Enroll a two-factor authenticator</target>
+        <target>Enable two-factor authentication</target>
       </trans-unit>
       <trans-unit id="enroll_totp_step_indicator">
         <source>enroll_totp_step_indicator</source>
@@ -177,8 +177,8 @@
         <source>two_factor_settings_button_disable</source>
         <target>Disable 2FA</target>
       </trans-unit>
-      <trans-unit id="two_factor_settings_flash_revoked">
-        <source>two_factor_settings_flash_revoked</source>
+      <trans-unit id="two_factor_settings_flash_unenrolled">
+        <source>two_factor_settings_flash_unenrolled</source>
         <target>Two-factor authentication disabled.</target>
       </trans-unit>
       <trans-unit id="two_factor_settings_section_backup_codes_title">

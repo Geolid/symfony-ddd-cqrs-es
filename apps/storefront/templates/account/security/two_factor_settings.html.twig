@@ -48,8 +48,8 @@
                 <p class="icon-text"><twig:ux:icon name="warning" class="icon icon-warning" /> {{ 'two_factor_settings_section_disable_warning'|trans }}</p>
             </dd>
         </dl>
-        <form method="post" action="{{ path('storefront_account_security_revoke_totp') }}">
-            <input type="hidden" name="_token" value="{{ csrf_token('revoke_totp') }}">
+        <form method="post" action="{{ path('storefront_account_security_unenroll_totp') }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('unenroll_totp') }}">
             <button type="submit" class="outline pico-background-red-500">{{ 'two_factor_settings_button_disable'|trans }}</button>
         </form>
     </article>

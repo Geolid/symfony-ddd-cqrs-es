@@ -8,7 +8,7 @@ use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\SvgWriter;
 use Iam\Authentication\Application\BackupCodeIssuance\BackupCodeRegeneratorInterface;
 use Iam\Authentication\Application\Command\RevokeDeviceTrust\RevokeDeviceTrust;
-use Iam\Authentication\Application\Command\RevokeTotp\RevokeTotp;
+use Iam\Authentication\Application\Command\UnenrollTotp\UnenrollTotp;
 use Iam\Authentication\Application\Query\GetBackupCodeCredentialByIdentity\GetBackupCodeCredentialByIdentity;
 use Iam\Authentication\Application\Query\GetTotpCredentialByIdentity\GetTotpCredentialByIdentity;
 use Iam\Authentication\Application\TotpEnrollment\TotpEnrollerInterface;
@@ -36,7 +36,6 @@ final class SecurityController extends AbstractController
 {
     private const string SESSION_KEY = 'storefront.totp_enrollment_secret';
     private const string ISSUER = 'Storefront';
-    public $totpIssuer;
 
     public function __construct(
         private readonly QueryBusInterface $queryBus,
@@ -96,20 +95,20 @@ final class SecurityController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route(path: ['en' => '/2fa/disable', 'fr' => '/a2f/desactiver'], name: 'revoke_totp', methods: ['POST'])]
-    public function revokeTotp(Request $request, #[CurrentUser] PasswordUser $user): RedirectResponse
+    #[Route(path: ['en' => '/2fa/disable', 'fr' => '/a2f/desactiver'], name: 'unenroll_totp', methods: ['POST'])]
+    public function unenrollTotp(Request $request, #[CurrentUser] PasswordUser $user): RedirectResponse
     {
-        if (!$this->isCsrfTokenValid('revoke_totp', (string) $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('unenroll_totp', (string) $request->request->get('_token'))) {
             throw $this->createAccessDeniedException();
         }
 
         $totpCredential = $this->queryBus->ask(new GetTotpCredentialByIdentity($user->identityId()));
 
         if (null !== $totpCredential) {
-            $this->commandBus->dispatch(new RevokeTotp($totpCredential->id, $user->identityId()));
+            $this->commandBus->dispatch(new UnenrollTotp($totpCredential->id, $user->identityId()));
         }
 
-        $this->addFlash('success', $this->translator->trans('two_factor_settings_flash_revoked', domain: 'account_security'));
+        $this->addFlash('success', $this->translator->trans('two_factor_settings_flash_unenrolled', domain: 'account_security'));
 
         return $this->redirectToRoute('storefront_account_security_show');
     }

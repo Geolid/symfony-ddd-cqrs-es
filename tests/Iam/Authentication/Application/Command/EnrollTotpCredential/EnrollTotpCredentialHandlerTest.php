@@ -38,8 +38,8 @@ final class EnrollTotpCredentialHandlerTest extends AbstractIntegrationTestCase
             $now->format(\DateTimeInterface::ATOM),
             $result->enrolledAt->format(\DateTimeInterface::ATOM),
         );
-        self::assertFalse($result->revoked);
-        self::assertNull($result->revokedAt);
+        self::assertFalse($result->unenrolled);
+        self::assertNull($result->unenrolledAt);
 
         self::assertNotSame($secret, $result->encryptedSecret);
     }

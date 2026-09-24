@@ -45,7 +45,7 @@ Backup codes (the vendor's own term — `BackupCodeCredential`, `backup_code` pr
 1. Navigate to `/storefront/account/security/2fa/settings` directly (or via "Configure") — now renders the 3-section settings page instead of the wizard.
 2. **Backup codes section**: shows "Issued on `<date>`. `<N>` codes remaining." Click "Generate new backup codes" → shows "Your New Backup Codes" with a fresh list — the OLD codes stop working immediately (regeneration replaces the whole pool, verify one of the old codes is rejected afterward if testing thoroughly).
 3. **Trusted devices section**: "Sign out of all devices" — same `RevokeDeviceTrust` mechanism as before, just relocated here. Redirects back to `/2fa/settings` (not the general security page) on success.
-4. **Disable section**: red "Disable 2FA" button → dispatches `RevokeTotp`, redirects to `/storefront/account/security`, flash "Two-factor authentication disabled." Visiting `/2fa/settings` again afterward shows the enrollment wizard again (state reverted to not-enrolled).
+4. **Disable section**: red "Disable 2FA" button → dispatches `UnenrollTotp`, redirects to `/storefront/account/security`, flash "Two-factor authentication disabled." Visiting `/2fa/settings` again afterward shows the enrollment wizard again (state reverted to not-enrolled).
 
 ## Expected result
 

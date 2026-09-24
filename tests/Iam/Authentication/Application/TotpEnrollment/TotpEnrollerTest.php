@@ -46,7 +46,7 @@ final class TotpEnrollerTest extends AbstractIntegrationTestCase
         $result = $this->finder->activeOfIdentityOrNull($identityId);
         self::assertNotNull($result);
         self::assertSame($identityId, $result->identityId);
-        self::assertFalse($result->revoked);
+        self::assertFalse($result->unenrolled);
 
         $backupCodeCount = self::getContainer()->getParameter('iam.authentication.backup_code_count');
         self::assertIsInt($backupCodeCount);
