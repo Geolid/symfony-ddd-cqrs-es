@@ -97,6 +97,8 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
     {
         $cooldownCalculator = new CooldownCalculator();
         if (!new CooldownElapsedSpecification($cooldownCalculator, $requestedAt)->isSatisfiedBy($this->resetRequestedAt)) {
+            \assert(null !== $this->resetRequestedAt);
+
             throw PasswordResetRequestedTooRecentlyException::forId($this->id, $cooldownCalculator->retryAt($this->resetRequestedAt));
         }
 

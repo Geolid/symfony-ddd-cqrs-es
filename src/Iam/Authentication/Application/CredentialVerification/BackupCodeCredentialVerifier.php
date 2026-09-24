@@ -8,6 +8,7 @@ use Iam\Authentication\Application\Command\ConsumeBackupCode\ConsumeBackupCode;
 use Iam\Authentication\Application\Finder\BackupCodeCredential\BackupCodeCredentialFinderInterface;
 use Iam\Authentication\Domain\BackupCodeCredential\Exception\InvalidBackupCodeException;
 use Shared\Application\Command\CommandBusInterface;
+use Shared\Application\Exception\ApplicationExceptionInterface;
 
 final readonly class BackupCodeCredentialVerifier implements BackupCodeCredentialVerifierInterface
 {
@@ -17,6 +18,10 @@ final readonly class BackupCodeCredentialVerifier implements BackupCodeCredentia
     ) {
     }
 
+    /**
+     * @throws \DomainException
+     * @throws ApplicationExceptionInterface
+     */
     public function verify(string $identityId, #[\SensitiveParameter] string $code): bool
     {
         if (null === $this->backupCodeCredentialFinder->ofIdentityOrNull($identityId)) {
