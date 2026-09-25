@@ -32,7 +32,7 @@
             <dt>{{ 'show_label_password'|trans }}</dt>
             <dd>••••••••••••••••</dd>
         </dl>
-        <button type="button" class="outline" disabled>{{ 'link_modify'|trans({}, 'messages') }}</button>
+        <a href="{{ path('storefront_account_security_change_password') }}" role="button" class="outline">{{ 'link_modify'|trans({}, 'messages') }}</a>
 
         <hr>
 
