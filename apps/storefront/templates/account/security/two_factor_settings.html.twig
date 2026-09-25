@@ -31,10 +31,7 @@
             <dt>{{ 'show_label_trusted_devices'|trans }}</dt>
             <dd>{{ 'two_factor_settings_section_devices_instructions'|trans }}</dd>
         </dl>
-        <form method="post" action="{{ path('storefront_account_security_revoke_device_trust') }}">
-            <input type="hidden" name="_token" value="{{ csrf_token('revoke_device_trust') }}">
-            <button type="submit" class="outline pico-background-red-500">{{ 'show_button_revoke_device_trust'|trans }}</button>
-        </form>
+        <a href="{{ path('storefront_account_security_trusted_devices') }}" role="button" class="outline">{{ 'two_factor_settings_button_view_devices'|trans }}</a>
 
         <hr>
 

@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Storefront\Security\Provider\TrustedDeviceManager;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 return static function (ContainerConfigurator $container): void {
@@ -9,6 +10,7 @@ return static function (ContainerConfigurator $container): void {
         'trusted_device' => [
             'enabled' => true,
             'lifetime' => 2592000, // 30 days
+            'manager' => TrustedDeviceManager::class,
         ],
     ]);
 };
