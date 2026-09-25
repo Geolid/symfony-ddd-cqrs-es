@@ -18,8 +18,8 @@ final readonly class SymfonyBackupCodeHasher implements BackupCodeHasherInterfac
         return $this->hasher->hash($code);
     }
 
-    public function verify(#[\SensitiveParameter] string $code, string $hashedCode): bool
+    public function verify(string $hashedCode, #[\SensitiveParameter] string $plainCode): bool
     {
-        return $this->hasher->verify($hashedCode, $code);
+        return $this->hasher->verify($hashedCode, $plainCode);
     }
 }

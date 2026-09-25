@@ -76,7 +76,7 @@ final class BackupCodeCredential implements AggregateRoot, AggregateRootMetadata
         \DateTimeImmutable $consumedAt,
     ): void {
         foreach ($this->backupCodes as $backupCode) {
-            if (!$backupCode->isConsumed() && $backupCodeHasher->verify($code, $backupCode->hashedCode)) {
+            if (!$backupCode->isConsumed() && $backupCodeHasher->verify($backupCode->hashedCode, $code)) {
                 $this->recordThat(new BackupCodeCredentialConsumed(
                     id: $this->id,
                     hashedCode: $backupCode->hashedCode,

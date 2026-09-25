@@ -25,7 +25,7 @@ final class SymfonyBackupCodeHasherTest extends TestCase
         $hashedCode = $this->hasher->hash('12345678');
 
         // When
-        $verified = $this->hasher->verify('12345678', $hashedCode);
+        $verified = $this->hasher->verify($hashedCode, '12345678');
 
         // Then
         self::assertNotSame('12345678', $hashedCode);
@@ -39,7 +39,7 @@ final class SymfonyBackupCodeHasherTest extends TestCase
         $hashedCode = $this->hasher->hash('12345678');
 
         // When
-        $verified = $this->hasher->verify('87654321', $hashedCode);
+        $verified = $this->hasher->verify($hashedCode, '87654321');
 
         // Then
         self::assertFalse($verified);

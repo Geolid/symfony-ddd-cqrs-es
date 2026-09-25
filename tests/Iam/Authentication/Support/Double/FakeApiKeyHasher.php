@@ -13,8 +13,8 @@ final class FakeApiKeyHasher implements ApiKeyHasherInterface
         return str_pad(substr('hashed:'.$secret, 0, 64), 64, '*');
     }
 
-    public function verify(string $hashedSecret, #[\SensitiveParameter] string $secret): bool
+    public function verify(string $hashedSecret, #[\SensitiveParameter] string $plainSecret): bool
     {
-        return $hashedSecret === $this->hash($secret);
+        return $hashedSecret === $this->hash($plainSecret);
     }
 }
