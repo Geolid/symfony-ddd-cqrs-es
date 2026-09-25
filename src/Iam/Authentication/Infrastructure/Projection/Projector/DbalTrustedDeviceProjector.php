@@ -28,12 +28,11 @@ final readonly class DbalTrustedDeviceProjector extends AbstractDbalProjector
             [
                 'id' => $event->id->toString(),
                 'identity_id' => $event->identityId,
-                'version' => $event->version,
                 'user_agent' => $event->userAgent,
                 'ip' => $event->ip,
                 'trusted_at' => $event->trustedAt,
             ],
-            ['version' => Types::BIGINT, 'trusted_at' => Types::DATETIME_IMMUTABLE],
+            ['trusted_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -62,7 +61,6 @@ final readonly class DbalTrustedDeviceProjector extends AbstractDbalProjector
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
         $table->addColumn('identity_id', Types::STRING, ['length' => 36]);
-        $table->addColumn('version', Types::BIGINT);
         $table->addColumn('user_agent', Types::STRING, ['length' => 255]);
         $table->addColumn('ip', Types::STRING, ['length' => 45]);
         $table->addColumn('trusted_at', Types::DATETIME_IMMUTABLE);

@@ -13,7 +13,6 @@ final readonly class TrustedDeviceTrusted
     public function __construct(
         public TrustedDeviceId $id,
         public string $identityId,
-        public int $version,
         public string $userAgent,
         public string $ip,
         public \DateTimeImmutable $trustedAt,

@@ -12,7 +12,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{version: int, user_agent: string, ip: string, trusted_at: string, revoked_at: string|null}
+ * @phpstan-type Row array{user_agent: string, ip: string, trusted_at: string, revoked_at: string|null}
  */
 final class DbalTrustedDeviceProjectorTest extends AbstractIntegrationTestCase
 {
@@ -31,7 +31,6 @@ final class DbalTrustedDeviceProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($trustedDevice->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($builder['version'], $row['version']);
         self::assertSame($builder['userAgent'], $row['user_agent']);
         self::assertSame($builder['ip'], $row['ip']);
         self::assertSame($builder['trustedAt']->format(self::DATE_FORMAT), $row['trusted_at']);
@@ -89,7 +88,7 @@ final class DbalTrustedDeviceProjectorTest extends AbstractIntegrationTestCase
 
         /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT version, user_agent, ip, trusted_at, revoked_at FROM %s WHERE id = :id', DbalTrustedDeviceProjector::TABLE),
+            \sprintf('SELECT user_agent, ip, trusted_at, revoked_at FROM %s WHERE id = :id', DbalTrustedDeviceProjector::TABLE),
             ['id' => $id],
         );
     }

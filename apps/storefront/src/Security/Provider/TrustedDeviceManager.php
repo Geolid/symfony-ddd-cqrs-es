@@ -49,17 +49,16 @@ final readonly class TrustedDeviceManager implements TrustedDeviceManagerInterfa
             return;
         }
 
-        $version = random_int(1, \PHP_INT_MAX);
+        $id = Uuid::uuid7()->toString();
 
         $this->commandBus->dispatch(new TrustDevice(
-            Uuid::uuid7()->toString(),
+            $id,
             $user->identityId(),
-            $version,
             $request->headers->get('User-Agent', ''),
             $request->getClientIp() ?? '',
         ));
 
-        $this->trustedTokenStorage->addTrustedToken($user->getUserIdentifier(), $firewallName, $version);
+        $this->trustedTokenStorage->addTrustedToken($user->getUserIdentifier(), $firewallName, $this->version($id));
     }
 
     /**
@@ -74,11 +73,20 @@ final readonly class TrustedDeviceManager implements TrustedDeviceManagerInterfa
         $trustedDevices = $this->queryBus->ask(new ListTrustedDevicesByIdentity($user->identityId()));
 
         foreach ($trustedDevices as $trustedDevice) {
-            if ($this->trustedTokenStorage->hasTrustedToken($user->getUserIdentifier(), $firewallName, $trustedDevice->version)) {
+            if ($this->trustedTokenStorage->hasTrustedToken($user->getUserIdentifier(), $firewallName, $this->version($trustedDevice->id))) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    /**
+     * scheb's cookie carries only an opaque int, no device id field — derived deterministically
+     * from the aggregate's own id.
+     */
+    private function version(string $id): int
+    {
+        return crc32($id);
     }
 }

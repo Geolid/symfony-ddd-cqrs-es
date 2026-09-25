@@ -19,12 +19,11 @@ final class TrustDeviceHandlerTest extends AbstractIntegrationTestCase
         // Given
         $id = Uuid::uuid7()->toString();
         $identityId = TrustedDeviceBuilder::sample('identityId');
-        $version = TrustedDeviceBuilder::sample('version');
         $userAgent = TrustedDeviceBuilder::sample('userAgent');
         $ip = TrustedDeviceBuilder::sample('ip');
 
         // When
-        $this->dispatch(new TrustDevice($id, $identityId, $version, $userAgent, $ip));
+        $this->dispatch(new TrustDevice($id, $identityId, $userAgent, $ip));
 
         // Then
         $results = iterator_to_array($this->service(TrustedDeviceFinderInterface::class)->activeByIdentity($identityId), false);
@@ -33,7 +32,6 @@ final class TrustDeviceHandlerTest extends AbstractIntegrationTestCase
         $result = $results[0];
         self::assertSame($id, $result->id);
         self::assertSame($identityId, $result->identityId);
-        self::assertSame($version, $result->version);
         self::assertSame($userAgent, $result->userAgent);
         self::assertSame($ip, $result->ip);
     }

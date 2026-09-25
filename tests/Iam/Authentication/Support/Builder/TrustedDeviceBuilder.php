@@ -14,7 +14,6 @@ use Symfony\Component\Clock\Clock;
  * @phpstan-type Attributes = array{
  *     id: TrustedDeviceId,
  *     identityId: string,
- *     version: int,
  *     userAgent: string,
  *     ip: string,
  *     trustedAt: \DateTimeImmutable,
@@ -28,11 +27,6 @@ final class TrustedDeviceBuilder extends AbstractAggregateBuilder
     public function withIdentityId(string $identityId): self
     {
         return $this->withAttributes(identityId: $identityId);
-    }
-
-    public function withVersion(int $version): self
-    {
-        return $this->withAttributes(version: $version);
     }
 
     public function withTrustedAt(\DateTimeImmutable $trustedAt): self
@@ -56,7 +50,6 @@ final class TrustedDeviceBuilder extends AbstractAggregateBuilder
         return [
             'id' => static fn (): TrustedDeviceId => TrustedDeviceId::fromString(Uuid::uuid7()->toString()),
             'identityId' => static fn (): string => Uuid::uuid7()->toString(),
-            'version' => static fn (): int => random_int(1, \PHP_INT_MAX),
             'userAgent' => static fn (): string => 'Mozilla/5.0',
             'ip' => static fn (): string => '203.0.113.42',
             'trustedAt' => static fn (): \DateTimeImmutable => $now,
@@ -69,7 +62,6 @@ final class TrustedDeviceBuilder extends AbstractAggregateBuilder
         return TrustedDevice::trust(
             id: $this['id'],
             identityId: $this['identityId'],
-            version: $this['version'],
             userAgent: $this['userAgent'],
             ip: $this['ip'],
             trustedAt: $this['trustedAt'],

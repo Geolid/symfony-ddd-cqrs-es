@@ -28,7 +28,6 @@ final class TrustedDevice implements AggregateRoot, AggregateRootMetadataAware
     public static function trust(
         TrustedDeviceId $id,
         string $identityId,
-        int $version,
         string $userAgent,
         string $ip,
         \DateTimeImmutable $trustedAt,
@@ -37,7 +36,6 @@ final class TrustedDevice implements AggregateRoot, AggregateRootMetadataAware
         $self->recordThat(new TrustedDeviceTrusted(
             id: $id,
             identityId: $identityId,
-            version: $version,
             userAgent: $userAgent,
             ip: $ip,
             trustedAt: $trustedAt,
