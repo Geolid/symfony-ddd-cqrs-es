@@ -75,17 +75,17 @@
   border-radius: var(--pico-border-radius);
 }
 
-.trusted-device-card form {
-  margin: 0;
-}
-
-.trusted-device-info {
+.trusted-device-card > div {
   display: flex;
   align-items: center;
   gap: var(--pico-spacing);
 }
 
-.trusted-device-info .icon {
+.trusted-device-card form {
+  margin: 0;
+}
+
+.trusted-device-card .icon {
   width: 1.5rem;
   height: 1.5rem;
   color: var(--pico-muted-color);

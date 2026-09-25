@@ -14,7 +14,6 @@ use Iam\Authentication\Application\Query\GetTotpCredentialByIdentity\GetTotpCred
 use Iam\Authentication\Application\Query\ListTrustedDevicesByIdentity\ListTrustedDevicesByIdentity;
 use Iam\Authentication\Application\TotpEnrollment\TotpEnrollerInterface;
 use Iam\Authentication\Application\TotpEnrollment\TotpProvisioningInterface;
-use Iam\Authentication\Application\TrustedDeviceRevocation\TrustedDeviceRevokerInterface;
 use Iam\Authentication\Domain\TotpCredential\Exception\InvalidTotpCodeException;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -46,7 +45,6 @@ final class SecurityController extends AbstractController
         private readonly TotpProvisioningInterface $provisioning,
         private readonly TotpEnrollerInterface $totpEnroller,
         private readonly BackupCodeRegeneratorInterface $backupCodeRegenerator,
-        private readonly TrustedDeviceRevokerInterface $trustedDeviceRevoker,
         private readonly TranslatorInterface $translator,
         #[Autowire(param: 'iam.authentication.trusted_device_lifetime')]
         private readonly int $trustedDeviceLifetime,
@@ -123,7 +121,9 @@ final class SecurityController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $this->trustedDeviceRevoker->revokeAllFor($user->identityId());
+        foreach ($this->queryBus->ask(new ListTrustedDevicesByIdentity($user->identityId())) as $trustedDevice) {
+            $this->commandBus->dispatch(new RevokeTrustedDevice($trustedDevice->id, $user->identityId()));
+        }
 
         $this->addFlash('success', $this->translator->trans('trusted_devices_flash_revoked_all', domain: 'account_security'));
 

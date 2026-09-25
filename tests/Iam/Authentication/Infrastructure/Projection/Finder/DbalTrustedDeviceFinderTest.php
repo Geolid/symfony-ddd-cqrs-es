@@ -6,6 +6,7 @@ namespace Iam\Tests\Authentication\Infrastructure\Projection\Finder;
 
 use Iam\Authentication\Application\Finder\TrustedDevice\TrustedDeviceFinderInterface;
 use Iam\Authentication\Application\Finder\TrustedDevice\TrustedDeviceResult;
+use Iam\Authentication\Domain\TrustedDevice\TrustedDevice;
 use Iam\Tests\Authentication\Support\Builder\TrustedDeviceBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
@@ -79,19 +80,11 @@ final class DbalTrustedDeviceFinderTest extends AbstractIterableFinderTestCase
      */
     protected function seed(int $count): array
     {
-        $now = Clock::get()->now();
-
-        $trustedDevices = [];
-        for ($i = 0; $i < $count; ++$i) {
-            $trustedDevices[] = TrustedDeviceBuilder::new()
-                ->withTrustedAt($now->modify(\sprintf('+%d minutes', $i)))
-                ->create();
-        }
-
+        $trustedDevices = TrustedDeviceBuilder::new()->many($count)->create();
         $this->store(...$trustedDevices);
 
         return array_reverse(array_map(
-            static fn (object $trustedDevice): string => $trustedDevice->id->toString(),
+            static fn (TrustedDevice $trustedDevice): string => $trustedDevice->id->toString(),
             $trustedDevices,
         ));
     }
