@@ -10,8 +10,10 @@ use Ramsey\Uuid\Uuid;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Trusted\TrustedDeviceManagerInterface;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Trusted\TrustedDeviceTokenStorage;
 use Shared\Application\Command\CommandBusInterface;
+use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
 use Storefront\Security\PasswordUser;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 
@@ -20,6 +22,7 @@ final readonly class TrustedDeviceManager implements TrustedDeviceManagerInterfa
     public function __construct(
         private QueryBusInterface $queryBus,
         private CommandBusInterface $commandBus,
+        #[Autowire(service: 'scheb_two_factor.trusted_token_storage')]
         private TrustedDeviceTokenStorage $trustedTokenStorage,
         private RequestStack $requestStack,
     ) {
@@ -30,6 +33,10 @@ final readonly class TrustedDeviceManager implements TrustedDeviceManagerInterfa
         return $user instanceof PasswordUser;
     }
 
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
     public function addTrustedDevice(object $user, string $firewallName): void
     {
         if (!$user instanceof PasswordUser) {
@@ -55,6 +62,9 @@ final readonly class TrustedDeviceManager implements TrustedDeviceManagerInterfa
         $this->trustedTokenStorage->addTrustedToken($user->getUserIdentifier(), $firewallName, $version);
     }
 
+    /**
+     * @throws ApplicationExceptionInterface
+     */
     public function isTrustedDevice(object $user, string $firewallName): bool
     {
         if (!$user instanceof PasswordUser) {
