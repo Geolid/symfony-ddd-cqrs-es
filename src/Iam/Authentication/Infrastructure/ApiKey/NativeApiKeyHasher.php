@@ -13,8 +13,8 @@ final readonly class NativeApiKeyHasher implements ApiKeyHasherInterface
         return hash('sha256', $secret);
     }
 
-    public function verify(string $hashedSecret, #[\SensitiveParameter] string $secret): bool
+    public function verify(string $hashedSecret, #[\SensitiveParameter] string $plainSecret): bool
     {
-        return hash_equals($hashedSecret, $this->hash($secret));
+        return hash_equals($hashedSecret, $this->hash($plainSecret));
     }
 }
