@@ -23,6 +23,7 @@ use Storefront\Form\TwoFactorConfirm\TwoFactorConfirmFormData;
 use Storefront\Form\TwoFactorConfirm\TwoFactorConfirmType;
 use Storefront\Security\PasswordUser;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -47,6 +48,8 @@ final class SecurityController extends AbstractController
         private readonly BackupCodeRegeneratorInterface $backupCodeRegenerator,
         private readonly TrustedDeviceRevokerInterface $trustedDeviceRevoker,
         private readonly TranslatorInterface $translator,
+        #[Autowire(param: 'iam.authentication.trusted_device_lifetime')]
+        private readonly int $trustedDeviceLifetime,
     ) {
     }
 
@@ -85,7 +88,10 @@ final class SecurityController extends AbstractController
     {
         $trustedDevices = $this->queryBus->ask(new ListTrustedDevicesByIdentity($user->identityId()));
 
-        return $this->render('account/security/trusted_devices.html.twig', ['trustedDevices' => $trustedDevices]);
+        return $this->render('account/security/trusted_devices.html.twig', [
+            'trustedDevices' => $trustedDevices,
+            'trustedDeviceLifetimeDays' => intdiv($this->trustedDeviceLifetime, 86400),
+        ]);
     }
 
     /**
