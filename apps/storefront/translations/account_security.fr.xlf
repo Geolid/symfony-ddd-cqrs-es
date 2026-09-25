@@ -215,11 +215,15 @@
       </trans-unit>
       <trans-unit id="trusted_devices_instructions">
         <source>trusted_devices_instructions</source>
-        <target>Voici tous les appareils autorisés à contourner l'authentification à deux facteurs pendant %days% jours. Révoquez l'accès d'un appareil que vous ne reconnaissez pas.</target>
+        <target>Voici les appareils sur lesquels l'authentification à deux facteurs (2FA) est ignorée pour les %days% prochains jours. Vous pouvez révoquer l'accès d'un appareil que vous ne reconnaissez pas.</target>
       </trans-unit>
       <trans-unit id="trusted_devices_empty">
         <source>trusted_devices_empty</source>
         <target>Aucun appareil de confiance.</target>
+      </trans-unit>
+      <trans-unit id="trusted_devices_unknown_device">
+        <source>trusted_devices_unknown_device</source>
+        <target>Appareil inconnu</target>
       </trans-unit>
       <trans-unit id="trusted_devices_button_revoke">
         <source>trusted_devices_button_revoke</source>
@@ -227,7 +231,7 @@
       </trans-unit>
       <trans-unit id="trusted_devices_section_revoke_all_instructions">
         <source>trusted_devices_section_revoke_all_instructions</source>
-        <target>Révoquez tous les appareils de confiance en une seule fois. Utilisez ceci si votre compte est compromis, ou si vous avez perdu un appareil connecté à ce compte. Un code de vérification vous sera demandé à la prochaine connexion depuis chacun d'eux.</target>
+        <target>Révoquez tous les appareils de confiance en une seule fois si vous pensez que votre compte est compromis. Un code de vérification vous sera demandé à la prochaine connexion depuis chacun d'eux.</target>
       </trans-unit>
       <trans-unit id="trusted_devices_button_revoke_all">
         <source>trusted_devices_button_revoke_all</source>
