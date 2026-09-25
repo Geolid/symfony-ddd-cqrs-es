@@ -245,8 +245,8 @@
         <source>trusted_devices_flash_revoked_all</source>
         <target>Tous les appareils ont été révoqués.</target>
       </trans-unit>
-      <trans-unit id="change_title">
-        <source>change_title</source>
+      <trans-unit id="change_password_title">
+        <source>change_password_title</source>
         <target>Changer de mot de passe</target>
       </trans-unit>
       <trans-unit id="change_label_current_password">
@@ -265,12 +265,12 @@
         <source>change_label_new_password_confirm</source>
         <target>Confirmez le nouveau mot de passe</target>
       </trans-unit>
-      <trans-unit id="change_button_submit">
-        <source>change_button_submit</source>
+      <trans-unit id="change_password_button_submit">
+        <source>change_password_button_submit</source>
         <target>Changer de mot de passe</target>
       </trans-unit>
-      <trans-unit id="change_flash_changed">
-        <source>change_flash_changed</source>
+      <trans-unit id="change_password_flash_changed">
+        <source>change_password_flash_changed</source>
         <target>Mot de passe modifié.</target>
       </trans-unit>
       <trans-unit id="change_error_invalid_current_password">
@@ -280,6 +280,22 @@
       <trans-unit id="change_error_same_password">
         <source>change_error_same_password</source>
         <target>Il doit être différent de votre mot de passe actuel.</target>
+      </trans-unit>
+      <trans-unit id="change_full_name_title">
+        <source>change_full_name_title</source>
+        <target>Modifier votre nom</target>
+      </trans-unit>
+      <trans-unit id="change_full_name_label">
+        <source>change_full_name_label</source>
+        <target>Nom complet</target>
+      </trans-unit>
+      <trans-unit id="change_full_name_button_submit">
+        <source>change_full_name_button_submit</source>
+        <target>Enregistrer</target>
+      </trans-unit>
+      <trans-unit id="change_full_name_flash_changed">
+        <source>change_full_name_flash_changed</source>
+        <target>Nom modifié.</target>
       </trans-unit>
     </body>
   </file>

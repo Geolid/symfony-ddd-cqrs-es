@@ -16,9 +16,12 @@ use Iam\Authentication\Application\Query\ListTrustedDevicesByIdentity\ListTruste
 use Iam\Authentication\Application\TotpEnrollment\TotpEnrollerInterface;
 use Iam\Authentication\Application\TotpEnrollment\TotpProvisioningInterface;
 use Iam\Authentication\Domain\TotpCredential\Exception\InvalidTotpCodeException;
+use Iam\Identity\Application\Command\ChangeFullName\ChangeFullName;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
+use Storefront\Form\ChangeFullName\ChangeFullNameFormData;
+use Storefront\Form\ChangeFullName\ChangeFullNameType;
 use Storefront\Form\ChangePassword\ChangePasswordFormData;
 use Storefront\Form\ChangePassword\ChangePasswordType;
 use Storefront\Form\FormExceptionMapper;
@@ -66,6 +69,27 @@ final class SecurityController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
+    #[Route(path: ['en' => '/name/change', 'fr' => '/nom/modifier'], name: 'change_full_name', methods: ['GET', 'POST'])]
+    public function changeFullName(Request $request, #[CurrentUser] PasswordUser $user): Response
+    {
+        $formData = new ChangeFullNameFormData();
+        $formData->fullName = $user->fullName;
+        $form = $this->createForm(ChangeFullNameType::class, $formData)->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            $this->commandBus->dispatch(new ChangeFullName($user->identityId(), $formData->fullName));
+            $this->addFlash('success', $this->translator->trans('change_full_name_flash_changed', domain: 'account_security'));
+
+            return $this->redirectToRoute('storefront_account_security_show');
+        }
+
+        return $this->render('account/security/change_full_name.html.twig', ['form' => $form]);
+    }
+
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
     #[Route(path: ['en' => '/password/change', 'fr' => '/mot-de-passe/modifier'], name: 'change_password', methods: ['GET', 'POST'])]
     public function changePassword(Request $request, #[CurrentUser] PasswordUser $user): Response
     {
@@ -75,7 +99,7 @@ final class SecurityController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             try {
                 $this->commandBus->dispatch(new ChangePassword($user->identityId(), (string) $formData->currentPassword, (string) $formData->newPassword));
-                $this->addFlash('success', $this->translator->trans('change_flash_changed', domain: 'account_security'));
+                $this->addFlash('success', $this->translator->trans('change_password_flash_changed', domain: 'account_security'));
 
                 return $this->redirectToRoute('storefront_account_security_show');
             } catch (ApplicationExceptionInterface|\DomainException $e) {

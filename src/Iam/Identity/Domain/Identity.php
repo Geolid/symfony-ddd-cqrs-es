@@ -9,6 +9,7 @@ use Iam\Identity\Domain\Event\IdentityConfirmed;
 use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\Event\IdentityErasureCancelled;
 use Iam\Identity\Domain\Event\IdentityErasureRequested;
+use Iam\Identity\Domain\Event\IdentityFullNameChanged;
 use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Identity\Domain\Event\IdentitySuspended;
@@ -53,6 +54,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     public private(set) IdentityId $id;
+    private FullName $fullName;
     private IdentityVerificationState $verificationState;
     private IdentityModerationState $moderationState;
     private ErasureState $erasureState;
@@ -95,6 +97,26 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         $this->recordThat(new IdentityConfirmed(
             id: $this->id,
             confirmedAt: $confirmedAt,
+        ));
+    }
+
+    /**
+     * @throws IdentityAlreadyErasedException
+     */
+    public function changeFullName(FullName $newFullName, \DateTimeImmutable $changedAt): void
+    {
+        if ($this->erasureState->isErased()) {
+            throw IdentityAlreadyErasedException::forId($this->id);
+        }
+
+        if ($this->fullName->equals($newFullName)) {
+            return;
+        }
+
+        $this->recordThat(new IdentityFullNameChanged(
+            id: $this->id,
+            fullName: $newFullName,
+            changedAt: $changedAt,
         ));
     }
 
@@ -229,11 +251,18 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     private function applyRegistered(IdentityRegistered $event): void
     {
         $this->id = $event->id;
+        $this->fullName = $event->fullName;
         $this->verificationState = IdentityVerificationState::PENDING;
         $this->moderationState = IdentityModerationState::ACTIVE;
         $this->erasureState = ErasureState::RETAINED;
         $this->registeredAt = $event->registeredAt;
         $this->confirmationRequestedAt = $event->registeredAt;
+    }
+
+    #[Apply]
+    private function applyFullNameChanged(IdentityFullNameChanged $event): void
+    {
+        $this->fullName = $event->fullName;
     }
 
     #[Apply]

@@ -2,18 +2,18 @@
 {% trans_default_domain 'account_security' %}
 {% import 'account/security/_breadcrumb.html.twig' as security %}
 
-{% block title %}{{ 'change_password_title'|trans }}{% endblock %}
+{% block title %}{{ 'change_full_name_title'|trans }}{% endblock %}
 
 {% block content %}
     {{ security.trail([
-        {label: 'change_password_title'|trans},
+        {label: 'change_full_name_title'|trans},
     ]) }}
 
-    <h1>{{ 'change_password_title'|trans }}</h1>
+    <h1>{{ 'change_full_name_title'|trans }}</h1>
 
     {{ form_start(form) }}
         {{ form_errors(form) }}
         {{ form_rest(form) }}
-        <button type="submit">{{ 'change_password_button_submit'|trans }}</button>
+        <button type="submit">{{ 'change_full_name_button_submit'|trans }}</button>
     {{ form_end(form) }}
 {% endblock %}
