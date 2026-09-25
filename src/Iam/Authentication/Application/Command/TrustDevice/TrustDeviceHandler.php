@@ -28,7 +28,6 @@ final readonly class TrustDeviceHandler
         $trustedDevice = TrustedDevice::trust(
             id: TrustedDeviceId::fromString($command->id),
             identityId: $command->identityId,
-            version: $command->version,
             userAgent: $command->userAgent,
             ip: $command->ip,
             trustedAt: $this->clock->now(),

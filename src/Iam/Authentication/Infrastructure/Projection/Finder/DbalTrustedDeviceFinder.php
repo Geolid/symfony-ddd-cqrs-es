@@ -47,7 +47,7 @@ final class DbalTrustedDeviceFinder extends AbstractIterableDbalFinder implement
 
     protected function configureBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'identity_id', 'version', 'user_agent', 'ip', 'trusted_at')
+        $qb->select('id', 'identity_id', 'user_agent', 'ip', 'trusted_at')
             ->from(DbalTrustedDeviceProjector::TABLE);
     }
 

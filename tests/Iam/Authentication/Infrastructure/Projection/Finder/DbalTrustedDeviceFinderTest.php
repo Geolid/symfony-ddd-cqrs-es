@@ -35,7 +35,6 @@ final class DbalTrustedDeviceFinderTest extends AbstractIterableFinderTestCase
         self::assertCount(1, $results);
         self::assertSame($trustedDevice->id->toString(), $results[0]->id);
         self::assertSame($builder['identityId'], $results[0]->identityId);
-        self::assertSame($builder['version'], $results[0]->version);
         self::assertSame($builder['userAgent'], $results[0]->userAgent);
         self::assertSame($builder['ip'], $results[0]->ip);
     }

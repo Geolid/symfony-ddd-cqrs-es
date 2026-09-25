@@ -18,7 +18,6 @@ final class TrustedDeviceTest extends AggregateRootTestCase
 {
     private TrustedDeviceId $id;
     private string $identityId;
-    private int $version;
     private string $userAgent;
     private string $ip;
     private \DateTimeImmutable $trustedAt;
@@ -29,7 +28,6 @@ final class TrustedDeviceTest extends AggregateRootTestCase
 
         $this->id = TrustedDeviceId::fromString(Uuid::uuid7()->toString());
         $this->identityId = TrustedDeviceBuilder::sample('identityId');
-        $this->version = TrustedDeviceBuilder::sample('version');
         $this->userAgent = TrustedDeviceBuilder::sample('userAgent');
         $this->ip = TrustedDeviceBuilder::sample('ip');
         $this->trustedAt = TrustedDeviceBuilder::sample('trustedAt');
@@ -43,7 +41,6 @@ final class TrustedDeviceTest extends AggregateRootTestCase
             ->when(fn (): TrustedDevice => TrustedDevice::trust(
                 $this->id,
                 $this->identityId,
-                $this->version,
                 $this->userAgent,
                 $this->ip,
                 $this->trustedAt,
@@ -97,7 +94,6 @@ final class TrustedDeviceTest extends AggregateRootTestCase
         return new TrustedDeviceTrusted(
             $this->id,
             $this->identityId,
-            $this->version,
             $this->userAgent,
             $this->ip,
             $this->trustedAt,
