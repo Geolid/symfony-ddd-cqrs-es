@@ -16,7 +16,7 @@
             <dt>{{ 'show_label_name'|trans }}</dt>
             <dd>{{ user.fullName }}</dd>
         </dl>
-        <button type="button" class="outline" disabled>{{ 'link_modify'|trans({}, 'messages') }}</button>
+        <a href="{{ path('storefront_account_security_change_full_name') }}" role="button" class="outline">{{ 'link_modify'|trans({}, 'messages') }}</a>
 
         <hr>
 

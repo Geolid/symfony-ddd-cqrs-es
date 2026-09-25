@@ -24,6 +24,7 @@ use Symfony\Component\Clock\Clock;
  *     confirmedAt: \DateTimeImmutable,
  *     confirmationCode: string,
  *     confirmationRequestedAt: \DateTimeImmutable,
+ *     changedAt: \DateTimeImmutable,
  *     reason: Reason,
  *     suspendedAt: \DateTimeImmutable,
  *     reactivatedAt: \DateTimeImmutable,
@@ -69,6 +70,15 @@ final class IdentityBuilder extends AbstractAggregateBuilder
                 new FakeCodeChallenger(),
                 $builder['confirmedAt'],
             ),
+        );
+    }
+
+    public function fullNameChanged(string $newFullName, ?\DateTimeImmutable $changedAt = null): self
+    {
+        $builder = null !== $changedAt ? $this->withAttributes(changedAt: $changedAt) : $this;
+
+        return $builder->withModifier(
+            static fn (Identity $identity, self $builder) => $identity->changeFullName(FullName::fromString($newFullName), $builder['changedAt']),
         );
     }
 
@@ -144,6 +154,7 @@ final class IdentityBuilder extends AbstractAggregateBuilder
             'confirmedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 hour'),
             'confirmationCode' => static fn (): string => FakeCodeChallenger::CODE,
             'confirmationRequestedAt' => static fn (): \DateTimeImmutable => $now->modify('+30 minutes'),
+            'changedAt' => static fn (): \DateTimeImmutable => $now->modify('+45 minutes'),
             'reason' => static fn (): Reason => Reason::fromString(SeededFaker::get()->sentence(4)),
             'suspendedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
             'reactivatedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 day'),

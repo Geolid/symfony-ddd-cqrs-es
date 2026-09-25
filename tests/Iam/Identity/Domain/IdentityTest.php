@@ -9,6 +9,7 @@ use Iam\Identity\Domain\Event\IdentityConfirmed;
 use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\Event\IdentityErasureCancelled;
 use Iam\Identity\Domain\Event\IdentityErasureRequested;
+use Iam\Identity\Domain\Event\IdentityFullNameChanged;
 use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Identity\Domain\Event\IdentitySuspended;
@@ -37,6 +38,7 @@ final class IdentityTest extends AggregateRootTestCase
     private \DateTimeImmutable $registeredAt;
     private \DateTimeImmutable $confirmedAt;
     private string $confirmationCode;
+    private \DateTimeImmutable $changedAt;
     private CodeChallengerInterface $codeChallenger;
     private \DateTimeImmutable $suspendedAt;
     private \DateTimeImmutable $reactivatedAt;
@@ -56,6 +58,7 @@ final class IdentityTest extends AggregateRootTestCase
         $this->registeredAt = IdentityBuilder::sample('registeredAt');
         $this->confirmedAt = IdentityBuilder::sample('confirmedAt');
         $this->confirmationCode = IdentityBuilder::sample('confirmationCode');
+        $this->changedAt = IdentityBuilder::sample('changedAt');
         $this->codeChallenger = new FakeCodeChallenger();
         $this->suspendedAt = IdentityBuilder::sample('suspendedAt');
         $this->reactivatedAt = IdentityBuilder::sample('reactivatedAt');
@@ -121,6 +124,39 @@ final class IdentityTest extends AggregateRootTestCase
             ->given($this->registered())
             ->when(fn (Identity $identity) => $identity->confirm('wrong', new FakeCodeChallenger(), $this->confirmedAt))
             ->expectsException(InvalidConfirmationCodeException::class);
+    }
+
+    #[Test]
+    public function itChangesFullName(): void
+    {
+        $newFullName = IdentityBuilder::sample('fullName');
+
+        $this
+            ->given($this->registered())
+            ->when(fn (Identity $identity) => $identity->changeFullName($newFullName, $this->changedAt))
+            ->then(new IdentityFullNameChanged($this->id, $newFullName, $this->changedAt));
+    }
+
+    #[Test]
+    public function itDoesNotChangeFullNameWhenSame(): void
+    {
+        $this
+            ->given($this->registered())
+            ->when(fn (Identity $identity) => $identity->changeFullName($this->fullName, $this->changedAt))
+            ->then();
+    }
+
+    #[Test]
+    public function itCannotChangeFullNameWhenErased(): void
+    {
+        $this
+            ->given(
+                $this->registered(),
+                $this->erasureRequested(),
+                $this->erased(),
+            )
+            ->when(fn (Identity $identity) => $identity->changeFullName(IdentityBuilder::sample('fullName'), $this->changedAt))
+            ->expectsException(IdentityAlreadyErasedException::class);
     }
 
     #[Test]
