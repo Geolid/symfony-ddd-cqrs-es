@@ -9,6 +9,7 @@ use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialDefined
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialRehashed;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialReset;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialResetRequested;
+use Iam\Authentication\Domain\PasswordCredential\Exception\InvalidCurrentPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\InvalidPasswordResetCodeException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordResetRequestedTooRecentlyException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
@@ -70,22 +71,27 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
     }
 
     /**
+     * @throws InvalidCurrentPasswordException
      * @throws WeakPasswordException
      * @throws SamePasswordException
      */
-    public function change(#[\SensitiveParameter] Password $password, PasswordStrengthSpecificationInterface $passwordStrengthSpecification, PasswordHasherInterface $hasher, \DateTimeImmutable $changedAt): void
+    public function change(#[\SensitiveParameter] string $currentPassword, #[\SensitiveParameter] Password $newPassword, PasswordStrengthSpecificationInterface $passwordStrengthSpecification, PasswordHasherInterface $hasher, \DateTimeImmutable $changedAt): void
     {
-        if (!$passwordStrengthSpecification->isSatisfiedBy($password)) {
+        if (!$hasher->verify($this->passwordHash, $currentPassword)) {
+            throw InvalidCurrentPasswordException::forId($this->id);
+        }
+
+        if (!$passwordStrengthSpecification->isSatisfiedBy($newPassword)) {
             throw WeakPasswordException::forPasswordCredential($this->id);
         }
 
-        if ($hasher->verify($this->passwordHash, $password->value)) {
+        if ($hasher->verify($this->passwordHash, $newPassword->value)) {
             throw SamePasswordException::forId($this->id);
         }
 
         $this->recordThat(new PasswordCredentialChanged(
             id: $this->id,
-            passwordHash: $hasher->hash($password->value),
+            passwordHash: $hasher->hash($newPassword->value),
             changedAt: $changedAt,
         ));
     }

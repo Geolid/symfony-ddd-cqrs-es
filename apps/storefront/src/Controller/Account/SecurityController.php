@@ -7,6 +7,7 @@ namespace Storefront\Controller\Account;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\SvgWriter;
 use Iam\Authentication\Application\BackupCodeRegeneration\BackupCodeRegeneratorInterface;
+use Iam\Authentication\Application\Command\ChangePassword\ChangePassword;
 use Iam\Authentication\Application\Command\RevokeTrustedDevice\RevokeTrustedDevice;
 use Iam\Authentication\Application\Command\UnenrollTotp\UnenrollTotp;
 use Iam\Authentication\Application\Query\GetBackupCodeCredentialByIdentity\GetBackupCodeCredentialByIdentity;
@@ -18,6 +19,9 @@ use Iam\Authentication\Domain\TotpCredential\Exception\InvalidTotpCodeException;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
+use Storefront\Form\ChangePassword\ChangePasswordFormData;
+use Storefront\Form\ChangePassword\ChangePasswordType;
+use Storefront\Form\FormExceptionMapper;
 use Storefront\Form\TwoFactorConfirm\TwoFactorConfirmFormData;
 use Storefront\Form\TwoFactorConfirm\TwoFactorConfirmType;
 use Storefront\Security\PasswordUser;
@@ -45,6 +49,7 @@ final class SecurityController extends AbstractController
         private readonly TotpProvisioningInterface $provisioning,
         private readonly TotpEnrollerInterface $totpEnroller,
         private readonly BackupCodeRegeneratorInterface $backupCodeRegenerator,
+        private readonly FormExceptionMapper $formExceptionMapper,
         private readonly TranslatorInterface $translator,
         #[Autowire(param: 'iam.authentication.trusted_device_lifetime')]
         private readonly int $trustedDeviceLifetime,
@@ -55,6 +60,32 @@ final class SecurityController extends AbstractController
     public function show(#[CurrentUser] PasswordUser $user): Response
     {
         return $this->render('account/security/show.html.twig', ['user' => $user]);
+    }
+
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
+    #[Route(path: ['en' => '/password/change', 'fr' => '/mot-de-passe/modifier'], name: 'change_password', methods: ['GET', 'POST'])]
+    public function changePassword(Request $request, #[CurrentUser] PasswordUser $user): Response
+    {
+        $formData = new ChangePasswordFormData();
+        $form = $this->createForm(ChangePasswordType::class, $formData)->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                $this->commandBus->dispatch(new ChangePassword($user->identityId(), (string) $formData->currentPassword, (string) $formData->newPassword));
+                $this->addFlash('success', $this->translator->trans('change_flash_changed', domain: 'account_security'));
+
+                return $this->redirectToRoute('storefront_account_security_show');
+            } catch (ApplicationExceptionInterface|\DomainException $e) {
+                if (!$this->formExceptionMapper->map($form, $e)) {
+                    throw $e;
+                }
+            }
+        }
+
+        return $this->render('account/security/change_password.html.twig', ['form' => $form]);
     }
 
     /**

@@ -9,6 +9,7 @@ use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialDefined
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialRehashed;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialReset;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialResetRequested;
+use Iam\Authentication\Domain\PasswordCredential\Exception\InvalidCurrentPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\InvalidPasswordResetCodeException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordResetRequestedTooRecentlyException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
@@ -88,6 +89,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $this
             ->given($this->defined())
             ->when(fn (PasswordCredential $credential) => $credential->change(
+                $this->password->value,
                 Password::fromString($newPassword),
                 new StubPasswordStrengthSpecification(),
                 $this->hasher,
@@ -101,11 +103,27 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     }
 
     #[Test]
+    public function itCannotChangeWithInvalidCurrentPassword(): void
+    {
+        $this
+            ->given($this->defined())
+            ->when(fn (PasswordCredential $credential) => $credential->change(
+                'wrong-current-password',
+                Password::fromString('updated-password'),
+                new StubPasswordStrengthSpecification(),
+                $this->hasher,
+                PasswordCredentialBuilder::sample('changedAt'),
+            ))
+            ->expectsException(InvalidCurrentPasswordException::class);
+    }
+
+    #[Test]
     public function itCannotChangeToWeakPassword(): void
     {
         $this
             ->given($this->defined())
             ->when(fn (PasswordCredential $credential) => $credential->change(
+                $this->password->value,
                 Password::fromString('updated-password'),
                 new StubPasswordStrengthSpecification(sufficient: false),
                 $this->hasher,
@@ -120,6 +138,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $this
             ->given($this->defined())
             ->when(fn (PasswordCredential $credential) => $credential->change(
+                $this->password->value,
                 $this->password,
                 new StubPasswordStrengthSpecification(),
                 $this->hasher,

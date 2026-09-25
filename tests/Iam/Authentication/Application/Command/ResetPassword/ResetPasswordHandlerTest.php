@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Application\Command\ResetPassword;
 
+use Iam\Authentication\Application\BreachDatabase\CompromisedPasswordGatewayInterface;
+use Iam\Authentication\Application\BreachDatabase\Exception\CompromisedPasswordException;
 use Iam\Authentication\Application\Command\ResetPassword\ResetPassword;
 use Iam\Authentication\Application\CredentialVerification\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Application\Finder\Identity\Exception\IdentityResultNotFoundException;
@@ -14,6 +16,7 @@ use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface
 use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialVerificationCodePurpose;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
+use Iam\Tests\Authentication\Support\Double\StubCompromisedPasswordGateway;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -92,6 +95,29 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         $this->expectException(IdentityNotAuthenticatableException::class);
+
+        // When
+        $this->dispatch(new ResetPassword($identity->id->toString(), $code, self::NEW_PASSWORD));
+    }
+
+    #[Test]
+    public function itFailsWhenCompromisedPassword(): void
+    {
+        // Given
+        $this->replace(CompromisedPasswordGatewayInterface::class, new StubCompromisedPasswordGateway(compromised: true));
+
+        $identity = IdentityBuilder::new()->confirmed()->create();
+        $credential = PasswordCredentialBuilder::new()
+            ->withIdentityId($identity->id->toString())
+            ->withPasswordStrength($this->passwordStrength)
+            ->withHasher($this->hasher)
+            ->create();
+        $this->store($identity, $credential);
+
+        $code = $this->codeChallenger->issue(VerificationCodeKey::for(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identity->id->toString()), Clock::get()->now());
+
+        // Then
+        $this->expectException(CompromisedPasswordException::class);
 
         // When
         $this->dispatch(new ResetPassword($identity->id->toString(), $code, self::NEW_PASSWORD));

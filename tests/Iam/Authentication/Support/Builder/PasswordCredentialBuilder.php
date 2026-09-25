@@ -72,6 +72,7 @@ final class PasswordCredentialBuilder extends AbstractAggregateBuilder
 
         return $builder->withModifier(
             static fn (PasswordCredential $credential, self $builder) => $credential->change(
+                $builder['password']->value,
                 Password::fromString($newPassword),
                 $builder->passwordStrength(),
                 $builder->hasher(),

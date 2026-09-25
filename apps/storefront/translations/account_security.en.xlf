@@ -245,6 +245,42 @@
         <source>trusted_devices_flash_revoked_all</source>
         <target>All devices revoked.</target>
       </trans-unit>
+      <trans-unit id="change_title">
+        <source>change_title</source>
+        <target>Change password</target>
+      </trans-unit>
+      <trans-unit id="change_label_current_password">
+        <source>change_label_current_password</source>
+        <target>Current password</target>
+      </trans-unit>
+      <trans-unit id="change_label_new_password">
+        <source>change_label_new_password</source>
+        <target>New password (at least %min% characters)</target>
+      </trans-unit>
+      <trans-unit id="change_help_new_password">
+        <source>change_help_new_password</source>
+        <target>Passwords must be at least %min% characters.</target>
+      </trans-unit>
+      <trans-unit id="change_label_new_password_confirm">
+        <source>change_label_new_password_confirm</source>
+        <target>Confirm your new password</target>
+      </trans-unit>
+      <trans-unit id="change_button_submit">
+        <source>change_button_submit</source>
+        <target>Change password</target>
+      </trans-unit>
+      <trans-unit id="change_flash_changed">
+        <source>change_flash_changed</source>
+        <target>Password changed.</target>
+      </trans-unit>
+      <trans-unit id="change_error_invalid_current_password">
+        <source>change_error_invalid_current_password</source>
+        <target>Your current password is incorrect.</target>
+      </trans-unit>
+      <trans-unit id="change_error_same_password">
+        <source>change_error_same_password</source>
+        <target>This must be different from your current password.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
