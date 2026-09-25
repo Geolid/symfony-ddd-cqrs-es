@@ -40,6 +40,36 @@ final class DbalTrustedDeviceFinderTest extends AbstractIterableFinderTestCase
         self::assertSame($builder['ip'], $results[0]->ip);
     }
 
+    #[Test]
+    public function itExcludesExpiredFromActiveByIdentity(): void
+    {
+        // Given
+        $lifetime = self::getContainer()->getParameter('iam.authentication.trusted_device_lifetime');
+        self::assertIsInt($lifetime);
+
+        $now = Clock::get()->now();
+        $identityId = TrustedDeviceBuilder::sample('identityId');
+
+        $expired = TrustedDeviceBuilder::new()
+            ->withIdentityId($identityId)
+            ->withTrustedAt($now->modify(\sprintf('-%d seconds', $lifetime + 1)))
+            ->create();
+
+        $stillActive = TrustedDeviceBuilder::new()
+            ->withIdentityId($identityId)
+            ->withTrustedAt($now->modify(\sprintf('-%d seconds', $lifetime)))
+            ->create();
+
+        $this->store($expired, $stillActive);
+
+        // When
+        $results = iterator_to_array($this->finder()->activeByIdentity($identityId));
+
+        // Then
+        self::assertCount(1, $results);
+        self::assertSame($stillActive->id->toString(), $results[0]->id);
+    }
+
     protected function finder(): TrustedDeviceFinderInterface
     {
         return $this->service(TrustedDeviceFinderInterface::class);

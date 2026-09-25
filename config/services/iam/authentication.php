@@ -23,6 +23,9 @@ return static function (ContainerConfigurator $container): void {
 
     $container->parameters()->set('iam.authentication.backup_code_digit_count', 8);
 
+    // Seconds — matches scheb_two_factor.php's own trusted_device.lifetime unit.
+    $container->parameters()->set('iam.authentication.trusted_device_lifetime', 2592000);
+
     if ('test' === $container->env()) {
         // Same algorithm, lowest cost — real hashing still runs, just fast.
         $services->get(NativePasswordHasher::class)->arg('$cost', 4);

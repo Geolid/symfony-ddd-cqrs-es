@@ -215,7 +215,7 @@
       </trans-unit>
       <trans-unit id="trusted_devices_instructions">
         <source>trusted_devices_instructions</source>
-        <target>Here you see all devices trusted to skip two-factor authentication for 30 days. Revoke access to a device you don't recognize.</target>
+        <target>Here you see all devices trusted to skip two-factor authentication for %days% days. Revoke access to a device you don't recognize.</target>
       </trans-unit>
       <trans-unit id="trusted_devices_empty">
         <source>trusted_devices_empty</source>

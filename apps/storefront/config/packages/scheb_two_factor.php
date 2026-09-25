@@ -9,7 +9,7 @@ return static function (ContainerConfigurator $container): void {
     $container->extension('scheb_two_factor', [
         'trusted_device' => [
             'enabled' => true,
-            'lifetime' => 2592000, // 30 days
+            'lifetime' => '%iam.authentication.trusted_device_lifetime%',
             'manager' => TrustedDeviceManager::class,
         ],
     ]);

@@ -215,7 +215,7 @@
       </trans-unit>
       <trans-unit id="trusted_devices_instructions">
         <source>trusted_devices_instructions</source>
-        <target>Voici tous les appareils autorisés à contourner l'authentification à deux facteurs pendant 30 jours. Révoquez l'accès d'un appareil que vous ne reconnaissez pas.</target>
+        <target>Voici tous les appareils autorisés à contourner l'authentification à deux facteurs pendant %days% jours. Révoquez l'accès d'un appareil que vous ne reconnaissez pas.</target>
       </trans-unit>
       <trans-unit id="trusted_devices_empty">
         <source>trusted_devices_empty</source>
