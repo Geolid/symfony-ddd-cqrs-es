@@ -15,7 +15,7 @@ final class NativeBackupCodeGeneratorTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->generator = new NativeBackupCodeGenerator(new NativeNumericCodeGenerator());
+        $this->generator = new NativeBackupCodeGenerator(new NativeNumericCodeGenerator(), 8);
     }
 
     #[Test]

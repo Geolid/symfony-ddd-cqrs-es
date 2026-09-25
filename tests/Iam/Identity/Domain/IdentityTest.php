@@ -236,7 +236,8 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->confirmationRequested(),
             )
             ->when(fn (Identity $identity) => $identity->requestConfirmation($this->confirmationRequestedAt->modify('+1 second')))
-            ->expectsException(ConfirmationRequestedTooRecentlyException::class);
+            ->expectsException(ConfirmationRequestedTooRecentlyException::class)
+            ->expectsExceptionMessage('requested too recently');
     }
 
     #[Test]

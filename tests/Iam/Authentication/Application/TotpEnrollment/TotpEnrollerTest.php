@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Application\TotpEnrollment;
 
+use Iam\Authentication\Application\CredentialVerification\BackupCodeCredentialVerifierInterface;
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInterface;
 use Iam\Authentication\Application\TotpEnrollment\TotpEnrollerInterface;
 use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeHasherInterface;
@@ -19,6 +20,7 @@ final class TotpEnrollerTest extends AbstractIntegrationTestCase
 {
     private TotpEnrollerInterface $enroller;
     private TotpCredentialFinderInterface $finder;
+    private BackupCodeCredentialVerifierInterface $backupCodeVerifier;
 
     protected function setUp(): void
     {
@@ -26,6 +28,7 @@ final class TotpEnrollerTest extends AbstractIntegrationTestCase
 
         $this->enroller = $this->service(TotpEnrollerInterface::class);
         $this->finder = $this->service(TotpCredentialFinderInterface::class);
+        $this->backupCodeVerifier = $this->service(BackupCodeCredentialVerifierInterface::class);
     }
 
     #[Test]
@@ -49,6 +52,8 @@ final class TotpEnrollerTest extends AbstractIntegrationTestCase
         self::assertIsInt($backupCodeCount);
         self::assertNotNull($backupCodes);
         self::assertCount($backupCodeCount, $backupCodes);
+
+        self::assertTrue($this->backupCodeVerifier->verify($identityId, $backupCodes[0]));
     }
 
     #[Test]
