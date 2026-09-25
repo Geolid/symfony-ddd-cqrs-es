@@ -20,7 +20,7 @@ final readonly class NativeCodeChallenger implements CodeChallengerInterface
     public function __construct(
         private VerificationCodeStoreInterface $store,
         private NumericCodeGeneratorInterface $numericCodeGenerator,
-        #[Autowire('%env(CODE_CHALLENGER_HASH_SECRET)%')]
+        #[Autowire('%env(CODE_CHALLENGER_SECRET)%')]
         #[\SensitiveParameter]
         private string $secret,
         #[Autowire(param: 'code_challenger.max_attempts')]
