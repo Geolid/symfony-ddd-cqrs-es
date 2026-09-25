@@ -291,7 +291,7 @@
       </trans-unit>
       <trans-unit id="change_full_name_button_submit">
         <source>change_full_name_button_submit</source>
-        <target>Save</target>
+        <target>Change your name</target>
       </trans-unit>
       <trans-unit id="change_full_name_flash_changed">
         <source>change_full_name_flash_changed</source>
