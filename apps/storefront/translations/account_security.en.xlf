@@ -191,7 +191,11 @@
       </trans-unit>
       <trans-unit id="two_factor_settings_section_devices_instructions">
         <source>two_factor_settings_section_devices_instructions</source>
-        <target>Sign out of all trusted devices. Use this if your account is compromised or you lost a device connected to this account. You will need to enter a verification code the next time you sign in.</target>
+        <target>View and revoke the devices you've trusted to skip two-factor authentication.</target>
+      </trans-unit>
+      <trans-unit id="two_factor_settings_button_view_devices">
+        <source>two_factor_settings_button_view_devices</source>
+        <target>View</target>
       </trans-unit>
       <trans-unit id="regenerate_backup_codes_title">
         <source>regenerate_backup_codes_title</source>
@@ -205,13 +209,37 @@
         <source>show_label_trusted_devices</source>
         <target>Remembered devices</target>
       </trans-unit>
-      <trans-unit id="show_button_revoke_device_trust">
-        <source>show_button_revoke_device_trust</source>
-        <target>Sign out of all devices</target>
+      <trans-unit id="trusted_devices_title">
+        <source>trusted_devices_title</source>
+        <target>Trusted devices</target>
       </trans-unit>
-      <trans-unit id="revoke_device_trust_flash_success">
-        <source>revoke_device_trust_flash_success</source>
-        <target>You've been signed out of all remembered devices.</target>
+      <trans-unit id="trusted_devices_instructions">
+        <source>trusted_devices_instructions</source>
+        <target>Here you see all devices trusted to skip two-factor authentication for 30 days. Revoke access to a device you don't recognize.</target>
+      </trans-unit>
+      <trans-unit id="trusted_devices_empty">
+        <source>trusted_devices_empty</source>
+        <target>No trusted devices.</target>
+      </trans-unit>
+      <trans-unit id="trusted_devices_button_revoke">
+        <source>trusted_devices_button_revoke</source>
+        <target>Revoke</target>
+      </trans-unit>
+      <trans-unit id="trusted_devices_section_revoke_all_instructions">
+        <source>trusted_devices_section_revoke_all_instructions</source>
+        <target>Revoke every trusted device at once. Use this if your account is compromised or you lost a device connected to this account. You will need to enter a verification code the next time you sign in from any of them.</target>
+      </trans-unit>
+      <trans-unit id="trusted_devices_button_revoke_all">
+        <source>trusted_devices_button_revoke_all</source>
+        <target>Revoke all devices</target>
+      </trans-unit>
+      <trans-unit id="trusted_devices_flash_revoked">
+        <source>trusted_devices_flash_revoked</source>
+        <target>Device revoked.</target>
+      </trans-unit>
+      <trans-unit id="trusted_devices_flash_revoked_all">
+        <source>trusted_devices_flash_revoked_all</source>
+        <target>All devices revoked.</target>
       </trans-unit>
     </body>
   </file>

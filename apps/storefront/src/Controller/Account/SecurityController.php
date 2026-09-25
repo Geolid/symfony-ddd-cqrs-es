@@ -7,12 +7,14 @@ namespace Storefront\Controller\Account;
 use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\SvgWriter;
 use Iam\Authentication\Application\BackupCodeRegeneration\BackupCodeRegeneratorInterface;
-use Iam\Authentication\Application\Command\RevokeDeviceTrust\RevokeDeviceTrust;
+use Iam\Authentication\Application\Command\RevokeTrustedDevice\RevokeTrustedDevice;
 use Iam\Authentication\Application\Command\UnenrollTotp\UnenrollTotp;
 use Iam\Authentication\Application\Query\GetBackupCodeCredentialByIdentity\GetBackupCodeCredentialByIdentity;
 use Iam\Authentication\Application\Query\GetTotpCredentialByIdentity\GetTotpCredentialByIdentity;
+use Iam\Authentication\Application\Query\ListTrustedDevicesByIdentity\ListTrustedDevicesByIdentity;
 use Iam\Authentication\Application\TotpEnrollment\TotpEnrollerInterface;
 use Iam\Authentication\Application\TotpEnrollment\TotpProvisioningInterface;
+use Iam\Authentication\Application\TrustedDeviceRevocation\TrustedDeviceRevokerInterface;
 use Iam\Authentication\Domain\TotpCredential\Exception\InvalidTotpCodeException;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -43,26 +45,9 @@ final class SecurityController extends AbstractController
         private readonly TotpProvisioningInterface $provisioning,
         private readonly TotpEnrollerInterface $totpEnroller,
         private readonly BackupCodeRegeneratorInterface $backupCodeRegenerator,
+        private readonly TrustedDeviceRevokerInterface $trustedDeviceRevoker,
         private readonly TranslatorInterface $translator,
     ) {
-    }
-
-    /**
-     * @throws ApplicationExceptionInterface
-     * @throws \DomainException
-     */
-    #[Route(path: ['en' => '/devices/revoke', 'fr' => '/appareils/revoquer'], name: 'revoke_device_trust', methods: ['POST'])]
-    public function revokeDeviceTrust(Request $request, #[CurrentUser] PasswordUser $user): RedirectResponse
-    {
-        if (!$this->isCsrfTokenValid('revoke_device_trust', (string) $request->request->get('_token'))) {
-            throw $this->createAccessDeniedException();
-        }
-
-        $this->commandBus->dispatch(new RevokeDeviceTrust($user->identityId()));
-
-        $this->addFlash('success', $this->translator->trans('revoke_device_trust_flash_success', domain: 'account_security'));
-
-        return $this->redirectToRoute('storefront_account_security_two_factor_settings');
     }
 
     #[Route(name: 'show', methods: ['GET'])]
@@ -89,6 +74,54 @@ final class SecurityController extends AbstractController
         return $this->render('account/security/two_factor_settings.html.twig', [
             'backupCodeCredential' => $backupCodeCredential,
         ]);
+    }
+
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
+    #[Route(path: ['en' => '/2fa/devices', 'fr' => '/a2f/appareils'], name: 'trusted_devices', methods: ['GET'])]
+    public function trustedDevices(#[CurrentUser] PasswordUser $user): Response
+    {
+        $trustedDevices = $this->queryBus->ask(new ListTrustedDevicesByIdentity($user->identityId()));
+
+        return $this->render('account/security/trusted_devices.html.twig', ['trustedDevices' => $trustedDevices]);
+    }
+
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
+    #[Route(path: ['en' => '/2fa/devices/{id}/revoke', 'fr' => '/a2f/appareils/{id}/revoquer'], name: 'revoke_trusted_device', methods: ['POST'])]
+    public function revokeTrustedDevice(string $id, Request $request, #[CurrentUser] PasswordUser $user): RedirectResponse
+    {
+        if (!$this->isCsrfTokenValid('revoke_trusted_device_'.$id, (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $this->commandBus->dispatch(new RevokeTrustedDevice($id, $user->identityId()));
+
+        $this->addFlash('success', $this->translator->trans('trusted_devices_flash_revoked', domain: 'account_security'));
+
+        return $this->redirectToRoute('storefront_account_security_trusted_devices');
+    }
+
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
+    #[Route(path: ['en' => '/2fa/devices/revoke-all', 'fr' => '/a2f/appareils/tout-revoquer'], name: 'revoke_trusted_devices', methods: ['POST'])]
+    public function revokeTrustedDevices(Request $request, #[CurrentUser] PasswordUser $user): RedirectResponse
+    {
+        if (!$this->isCsrfTokenValid('revoke_trusted_devices', (string) $request->request->get('_token'))) {
+            throw $this->createAccessDeniedException();
+        }
+
+        $this->trustedDeviceRevoker->revokeAllFor($user->identityId());
+
+        $this->addFlash('success', $this->translator->trans('trusted_devices_flash_revoked_all', domain: 'account_security'));
+
+        return $this->redirectToRoute('storefront_account_security_trusted_devices');
     }
 
     /**
