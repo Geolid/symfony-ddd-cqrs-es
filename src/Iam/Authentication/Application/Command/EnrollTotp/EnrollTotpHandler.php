@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Application\Command\EnrollTotpCredential;
+namespace Iam\Authentication\Application\Command\EnrollTotp;
 
 use Iam\Authentication\Application\AuthenticationUniqueKey;
-use Iam\Authentication\Application\Command\EnrollTotpCredential\Exception\TotpAlreadyEnrolledException;
+use Iam\Authentication\Application\Command\EnrollTotp\Exception\TotpAlreadyEnrolledException;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialAlreadyExistsException;
 use Iam\Authentication\Domain\TotpCredential\Repository\TotpCredentialRepositoryInterface;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpCipherInterface;
@@ -18,7 +18,7 @@ use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 
 #[CommandHandler]
-final readonly class EnrollTotpCredentialHandler
+final readonly class EnrollTotpHandler
 {
     public function __construct(
         private TotpCredentialRepositoryInterface $repository,
@@ -32,7 +32,7 @@ final readonly class EnrollTotpCredentialHandler
      * @throws TotpAlreadyEnrolledException
      * @throws TotpCredentialAlreadyExistsException
      */
-    public function __invoke(EnrollTotpCredential $command): void
+    public function __invoke(EnrollTotp $command): void
     {
         try {
             $this->uniqueness->claim(UniqueKey::for(AuthenticationUniqueKey::TOTP_CREDENTIAL_IDENTITY), $command->identityId, $command->id);

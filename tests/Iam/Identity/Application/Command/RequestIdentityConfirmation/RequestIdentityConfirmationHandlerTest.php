@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Identity\Application\Command\RequestConfirmation;
+namespace Iam\Tests\Identity\Application\Command\RequestIdentityConfirmation;
 
-use Iam\Identity\Application\Command\RequestConfirmation\RequestConfirmation;
+use Iam\Identity\Application\Command\RequestIdentityConfirmation\RequestIdentityConfirmation;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\IdentityVerificationStatus;
 use Iam\Identity\Domain\Exception\ConfirmationRequestedTooRecentlyException;
@@ -17,7 +17,7 @@ use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
-final class RequestConfirmationHandlerTest extends AbstractIntegrationTestCase
+final class RequestIdentityConfirmationHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
     public function itRequests(): void
@@ -28,7 +28,7 @@ final class RequestConfirmationHandlerTest extends AbstractIntegrationTestCase
         $this->store($identity);
 
         // When
-        $this->dispatch(new RequestConfirmation($identity->id->toString()));
+        $this->dispatch(new RequestIdentityConfirmation($identity->id->toString()));
 
         // Then
         $result = $this->service(IdentityFinderInterface::class)->ofId($identity->id->toString());
@@ -46,7 +46,7 @@ final class RequestConfirmationHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new RequestConfirmation(Uuid::uuid7()->toString()));
+        $this->dispatch(new RequestIdentityConfirmation(Uuid::uuid7()->toString()));
     }
 
     #[Test]
@@ -60,7 +60,7 @@ final class RequestConfirmationHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityAlreadyErasedException::class);
 
         // When
-        $this->dispatch(new RequestConfirmation($identity->id->toString()));
+        $this->dispatch(new RequestIdentityConfirmation($identity->id->toString()));
     }
 
     #[Test]
@@ -74,7 +74,7 @@ final class RequestConfirmationHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityAlreadyConfirmedException::class);
 
         // When
-        $this->dispatch(new RequestConfirmation($identity->id->toString()));
+        $this->dispatch(new RequestIdentityConfirmation($identity->id->toString()));
     }
 
     #[Test]
@@ -88,6 +88,6 @@ final class RequestConfirmationHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(ConfirmationRequestedTooRecentlyException::class);
 
         // When
-        $this->dispatch(new RequestConfirmation($identity->id->toString()));
+        $this->dispatch(new RequestIdentityConfirmation($identity->id->toString()));
     }
 }

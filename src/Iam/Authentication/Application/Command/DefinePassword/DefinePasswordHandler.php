@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Application\Command\DefinePasswordCredential;
+namespace Iam\Authentication\Application\Command\DefinePassword;
 
 use Iam\Authentication\Application\BreachDatabase\CompromisedPasswordGatewayInterface;
 use Iam\Authentication\Application\BreachDatabase\Exception\CompromisedPasswordException;
@@ -18,7 +18,7 @@ use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
 
 #[CommandHandler]
-final readonly class DefinePasswordCredentialHandler
+final readonly class DefinePasswordHandler
 {
     public function __construct(
         private PasswordCredentialRepositoryInterface $repository,
@@ -34,7 +34,7 @@ final readonly class DefinePasswordCredentialHandler
      * @throws CompromisedPasswordException
      * @throws PasswordCredentialAlreadyExistsException
      */
-    public function __invoke(DefinePasswordCredential $command): void
+    public function __invoke(DefinePassword $command): void
     {
         $id = PasswordCredentialId::forIdentity($command->identityId);
         $password = Password::fromString($command->password);

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Application\ApiKeyIssuance;
 
-use Iam\Authentication\Application\Command\IssueApiKeyCredential\IssueApiKeyCredential;
+use Iam\Authentication\Application\Command\IssueApiKey\IssueApiKey;
 use Iam\Authentication\Domain\ApiKeyCredential\Service\ApiKeyGeneratorInterface;
 use Iam\Authentication\Domain\ApiKeyCredential\Service\GeneratedApiKey;
 use Ramsey\Uuid\Uuid;
@@ -27,7 +27,7 @@ final readonly class ApiKeyIssuer implements ApiKeyIssuerInterface
     {
         $apiKey = $this->apiKeyGenerator->generate();
 
-        $this->commandBus->dispatch(new IssueApiKeyCredential(
+        $this->commandBus->dispatch(new IssueApiKey(
             id: Uuid::uuid7()->toString(),
             identityId: $identityId,
             label: $label,

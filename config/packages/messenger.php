@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Fulfilment\Shipping\Application\Command\ApproveShipmentErasure\ApproveShipmentErasure;
+use Iam\Authentication\Application\Command\RevokeTrustedDevice\RevokeTrustedDevice;
 use Iam\Identity\Application\Command\EraseIdentity\EraseIdentity;
 use Sales\Ordering\Application\Command\ApproveOrderErasure\ApproveOrderErasure;
 use Shared\Infrastructure\Doctrine\Dbal\TransactionMessengerMiddleware;
@@ -27,6 +28,7 @@ return static function (ContainerConfigurator $container): void {
                 ApproveOrderErasure::class => 'async',
                 ApproveShipmentErasure::class => 'async',
                 EraseIdentity::class => 'async',
+                RevokeTrustedDevice::class => 'async',
                 SendEmailMessage::class => 'async',
             ],
         ],

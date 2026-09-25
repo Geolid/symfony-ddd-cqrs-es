@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iam\Identity\Application\Command\RequestConfirmation;
+namespace Iam\Identity\Application\Command\RequestIdentityConfirmation;
 
 use Iam\Identity\Domain\Exception\ConfirmationRequestedTooRecentlyException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyConfirmedException;
@@ -15,7 +15,7 @@ use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
 
 #[CommandHandler]
-final readonly class RequestConfirmationHandler
+final readonly class RequestIdentityConfirmationHandler
 {
     public function __construct(
         private IdentityRepositoryInterface $repository,
@@ -30,7 +30,7 @@ final readonly class RequestConfirmationHandler
      * @throws ConfirmationRequestedTooRecentlyException
      * @throws IdentityAlreadyExistsException
      */
-    public function __invoke(RequestConfirmation $command): void
+    public function __invoke(RequestIdentityConfirmation $command): void
     {
         $identity = $this->repository->load(IdentityId::fromString($command->id));
         $identity->requestConfirmation($this->clock->now());

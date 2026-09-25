@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Application\Command\IssueApiKeyCredential;
+namespace Iam\Authentication\Application\Command\IssueApiKey;
 
 use Iam\Authentication\Application\AuthenticationUniqueKey;
-use Iam\Authentication\Application\Command\IssueApiKeyCredential\Exception\ApiKeyCredentialLabelAlreadyInUseException;
+use Iam\Authentication\Application\Command\IssueApiKey\Exception\ApiKeyCredentialLabelAlreadyInUseException;
 use Iam\Authentication\Domain\ApiKeyCredential\ApiKeyCredential;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialAlreadyExistsException;
 use Iam\Authentication\Domain\ApiKeyCredential\Repository\ApiKeyCredentialRepositoryInterface;
@@ -20,7 +20,7 @@ use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Shared\Domain\ValueObject\Label;
 
 #[CommandHandler]
-final readonly class IssueApiKeyCredentialHandler
+final readonly class IssueApiKeyHandler
 {
     public function __construct(
         private ApiKeyCredentialRepositoryInterface $repository,
@@ -34,7 +34,7 @@ final readonly class IssueApiKeyCredentialHandler
      * @throws ApiKeyCredentialLabelAlreadyInUseException
      * @throws ApiKeyCredentialAlreadyExistsException
      */
-    public function __invoke(IssueApiKeyCredential $command): void
+    public function __invoke(IssueApiKey $command): void
     {
         $id = ApiKeyCredentialId::fromString($command->id);
         $label = Label::fromString($command->label);
