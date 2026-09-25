@@ -19,11 +19,15 @@
     {% else %}
         <div class="trusted-devices">
             {% for trustedDevice in trustedDevices %}
+                {% set agent = device_agent(trustedDevice.userAgent) %}
                 <article class="trusted-device-card">
-                    <div>
-                        <strong>{{ trustedDevice.userAgent }}</strong> &mdash; IP: {{ trustedDevice.ip }}
-                        <br>
-                        <small>{{ trustedDevice.trustedAt|date('d/m/Y H:i') }}</small>
+                    <div class="trusted-device-info">
+                        <twig:ux:icon name="{{ agent.icon }}" class="icon" />
+                        <div>
+                            <strong>{{ agent.label }}</strong> &mdash; IP: {{ trustedDevice.ip }}
+                            <br>
+                            <small>{{ trustedDevice.trustedAt|date('d/m/Y H:i') }}</small>
+                        </div>
                     </div>
                     <form method="post" action="{{ path('storefront_account_security_revoke_trusted_device', {id: trustedDevice.id}) }}">
                         <input type="hidden" name="_token" value="{{ csrf_token('revoke_trusted_device_' ~ trustedDevice.id) }}">

@@ -215,11 +215,15 @@
       </trans-unit>
       <trans-unit id="trusted_devices_instructions">
         <source>trusted_devices_instructions</source>
-        <target>Here you see all devices trusted to skip two-factor authentication for %days% days. Revoke access to a device you don't recognize.</target>
+        <target>Here are the devices where two-factor authentication (2FA) is skipped for the next %days% days. You can revoke access for a device you don't recognize.</target>
       </trans-unit>
       <trans-unit id="trusted_devices_empty">
         <source>trusted_devices_empty</source>
         <target>No trusted devices.</target>
+      </trans-unit>
+      <trans-unit id="trusted_devices_unknown_device">
+        <source>trusted_devices_unknown_device</source>
+        <target>Unknown device</target>
       </trans-unit>
       <trans-unit id="trusted_devices_button_revoke">
         <source>trusted_devices_button_revoke</source>
@@ -227,7 +231,7 @@
       </trans-unit>
       <trans-unit id="trusted_devices_section_revoke_all_instructions">
         <source>trusted_devices_section_revoke_all_instructions</source>
-        <target>Revoke every trusted device at once. Use this if your account is compromised or you lost a device connected to this account. You will need to enter a verification code the next time you sign in from any of them.</target>
+        <target>Revoke every trusted device at once if you think your account is compromised. You'll need to enter a verification code the next time you sign in from any of them.</target>
       </trans-unit>
       <trans-unit id="trusted_devices_button_revoke_all">
         <source>trusted_devices_button_revoke_all</source>

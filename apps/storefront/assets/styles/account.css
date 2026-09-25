@@ -79,6 +79,18 @@
   margin: 0;
 }
 
+.trusted-device-info {
+  display: flex;
+  align-items: center;
+  gap: var(--pico-spacing);
+}
+
+.trusted-device-info .icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--pico-muted-color);
+}
+
 .trusted-device-card .outline.pico-background-red-500 {
   background-color: transparent;
   border-color: var(--pico-color-red-500);
