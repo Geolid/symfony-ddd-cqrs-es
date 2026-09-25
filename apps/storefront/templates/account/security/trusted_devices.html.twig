@@ -21,7 +21,7 @@
             {% for trustedDevice in trustedDevices %}
                 {% set agent = device_agent(trustedDevice.userAgent) %}
                 <article class="trusted-device-card">
-                    <div class="trusted-device-info">
+                    <div>
                         <twig:ux:icon name="{{ agent.icon }}" class="icon" />
                         <div>
                             <strong>{{ agent.label }}</strong> &mdash; IP: {{ trustedDevice.ip }}
