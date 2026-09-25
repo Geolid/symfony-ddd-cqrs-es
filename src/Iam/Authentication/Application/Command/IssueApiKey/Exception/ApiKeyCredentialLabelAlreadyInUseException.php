@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Application\Command\IssueApiKeyCredential\Exception;
+namespace Iam\Authentication\Application\Command\IssueApiKey\Exception;
 
 use Shared\Application\Exception\ApplicationExceptionInterface;
 

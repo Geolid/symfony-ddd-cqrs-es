@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Authentication\Application\Command\IssueApiKeyCredential;
+namespace Iam\Tests\Authentication\Application\Command\IssueApiKey;
 
 use Iam\Authentication\Application\AuthenticationUniqueKey;
-use Iam\Authentication\Application\Command\IssueApiKeyCredential\Exception\ApiKeyCredentialLabelAlreadyInUseException;
-use Iam\Authentication\Application\Command\IssueApiKeyCredential\IssueApiKeyCredential;
+use Iam\Authentication\Application\Command\IssueApiKey\Exception\ApiKeyCredentialLabelAlreadyInUseException;
+use Iam\Authentication\Application\Command\IssueApiKey\IssueApiKey;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
@@ -16,7 +16,7 @@ use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
-final class IssueApiKeyCredentialHandlerTest extends AbstractIntegrationTestCase
+final class IssueApiKeyHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
     public function itIssues(): void
@@ -30,7 +30,7 @@ final class IssueApiKeyCredentialHandlerTest extends AbstractIntegrationTestCase
         $now = Clock::get()->now();
 
         // When
-        $this->dispatch(new IssueApiKeyCredential($id, $identityId, $label, $keyId, $secret));
+        $this->dispatch(new IssueApiKey($id, $identityId, $label, $keyId, $secret));
 
         // Then
         $result = $this->service(ApiKeyCredentialFinderInterface::class)->ofKeyId($keyId);
@@ -65,7 +65,7 @@ final class IssueApiKeyCredentialHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(ApiKeyCredentialLabelAlreadyInUseException::class);
 
         // When
-        $this->dispatch(new IssueApiKeyCredential(
+        $this->dispatch(new IssueApiKey(
             Uuid::uuid7()->toString(),
             $identityId,
             $label,

@@ -2,17 +2,15 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Application\Command\IssueApiKeyCredential;
+namespace Iam\Authentication\Application\Command\EnrollTotp;
 
 use Shared\Application\Command\CommandInterface;
 
-final readonly class IssueApiKeyCredential implements CommandInterface
+final readonly class EnrollTotp implements CommandInterface
 {
     public function __construct(
         public string $id,
         public string $identityId,
-        public string $label,
-        public string $keyId,
         #[\SensitiveParameter]
         public string $secret,
     ) {

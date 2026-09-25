@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Authentication\Application\Command\DefinePasswordCredential;
+namespace Iam\Tests\Authentication\Application\Command\DefinePassword;
 
 use Iam\Authentication\Application\BreachDatabase\CompromisedPasswordGatewayInterface;
 use Iam\Authentication\Application\BreachDatabase\Exception\CompromisedPasswordException;
-use Iam\Authentication\Application\Command\DefinePasswordCredential\DefinePasswordCredential;
+use Iam\Authentication\Application\Command\DefinePassword\DefinePassword;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
@@ -16,7 +16,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
-final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestCase
+final class DefinePasswordHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
     public function itDefines(): void
@@ -27,7 +27,7 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         $now = Clock::get()->now();
 
         // When
-        $this->dispatch(new DefinePasswordCredential($identityId, $password));
+        $this->dispatch(new DefinePassword($identityId, $password));
 
         // Then
         $result = $this->service(PasswordCredentialFinderInterface::class)->ofIdentityOrNull($identityId);
@@ -55,7 +55,7 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         $this->expectException(CompromisedPasswordException::class);
 
         // When
-        $this->dispatch(new DefinePasswordCredential(
+        $this->dispatch(new DefinePassword(
             PasswordCredentialBuilder::sample('identityId'),
             PasswordCredentialBuilder::sample('password')->value,
         ));
@@ -68,7 +68,7 @@ final class DefinePasswordCredentialHandlerTest extends AbstractIntegrationTestC
         $this->expectException(WeakPasswordException::class);
 
         // When
-        $this->dispatch(new DefinePasswordCredential(
+        $this->dispatch(new DefinePassword(
             PasswordCredentialBuilder::sample('identityId'),
             'passwordpassword',
         ));

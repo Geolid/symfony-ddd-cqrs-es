@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Authentication\Application\Command\EnrollTotpCredential;
+namespace Iam\Tests\Authentication\Application\Command\EnrollTotp;
 
 use Iam\Authentication\Application\AuthenticationUniqueKey;
-use Iam\Authentication\Application\Command\EnrollTotpCredential\EnrollTotpCredential;
-use Iam\Authentication\Application\Command\EnrollTotpCredential\Exception\TotpAlreadyEnrolledException;
+use Iam\Authentication\Application\Command\EnrollTotp\EnrollTotp;
+use Iam\Authentication\Application\Command\EnrollTotp\Exception\TotpAlreadyEnrolledException;
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInterface;
 use Iam\Tests\Authentication\Support\Builder\TotpCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
@@ -16,7 +16,7 @@ use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
-final class EnrollTotpCredentialHandlerTest extends AbstractIntegrationTestCase
+final class EnrollTotpHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
     public function itEnrolls(): void
@@ -28,7 +28,7 @@ final class EnrollTotpCredentialHandlerTest extends AbstractIntegrationTestCase
         $now = Clock::get()->now();
 
         // When
-        $this->dispatch(new EnrollTotpCredential($id, $identityId, $secret));
+        $this->dispatch(new EnrollTotp($id, $identityId, $secret));
 
         // Then
         $result = $this->service(TotpCredentialFinderInterface::class)->ofId($id);
@@ -59,7 +59,7 @@ final class EnrollTotpCredentialHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(TotpAlreadyEnrolledException::class);
 
         // When
-        $this->dispatch(new EnrollTotpCredential(
+        $this->dispatch(new EnrollTotp(
             Uuid::uuid7()->toString(),
             $identityId,
             TotpCredentialBuilder::sample('secret'),

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Iam\Authentication\Application\Command\EnrollTotpCredential\Exception;
+namespace Iam\Authentication\Application\Command\EnrollTotp\Exception;
 
 use Shared\Application\Exception\ApplicationExceptionInterface;
 

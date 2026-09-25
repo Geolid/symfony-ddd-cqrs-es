@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Application\TotpEnrollment;
 
-use Iam\Authentication\Application\Command\EnrollTotpCredential\EnrollTotpCredential;
+use Iam\Authentication\Application\Command\EnrollTotp\EnrollTotp;
 use Iam\Authentication\Application\Command\GenerateBackupCodes\GenerateBackupCodes;
 use Iam\Authentication\Application\Finder\BackupCodeCredential\BackupCodeCredentialFinderInterface;
 use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeGeneratorInterface;
@@ -41,7 +41,7 @@ final readonly class TotpEnroller implements TotpEnrollerInterface
             throw InvalidTotpCodeException::forIdentity($identityId);
         }
 
-        $this->commandBus->dispatch(new EnrollTotpCredential(Uuid::uuid7()->toString(), $identityId, $secret));
+        $this->commandBus->dispatch(new EnrollTotp(Uuid::uuid7()->toString(), $identityId, $secret));
 
         if (null !== $this->backupCodeCredentialFinder->ofIdentityOrNull($identityId)) {
             return null;
