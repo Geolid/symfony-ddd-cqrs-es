@@ -32,7 +32,9 @@ final class RequestEmailChangeHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new RequestEmailChange($identity->id->toString(), IdentityBuilder::sample('email')->value));
 
         // Then
-        self::expectNotToPerformAssertions();
+        $this->expectException(EmailChangeRequestedTooRecentlyException::class);
+
+        $this->dispatch(new RequestEmailChange($identity->id->toString(), IdentityBuilder::sample('email')->value));
     }
 
     #[Test]
