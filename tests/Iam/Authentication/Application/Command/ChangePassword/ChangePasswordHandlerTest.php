@@ -8,6 +8,7 @@ use Iam\Authentication\Application\BreachDatabase\CompromisedPasswordGatewayInte
 use Iam\Authentication\Application\BreachDatabase\Exception\CompromisedPasswordException;
 use Iam\Authentication\Application\Command\ChangePassword\ChangePassword;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
+use Iam\Authentication\Domain\PasswordCredential\Exception\InvalidCurrentPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialNotFoundException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
@@ -45,7 +46,7 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
         $this->store($credential);
 
         // When
-        $this->dispatch(new ChangePassword($builder['identityId'], self::NEW_PASSWORD));
+        $this->dispatch(new ChangePassword($builder['identityId'], $builder['password']->value, self::NEW_PASSWORD));
 
         // Then
         $result = $this->service(PasswordCredentialFinderInterface::class)->ofIdentityOrNull($builder['identityId']);
@@ -69,7 +70,7 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(CompromisedPasswordException::class);
 
         // When
-        $this->dispatch(new ChangePassword($builder['identityId'], self::NEW_PASSWORD));
+        $this->dispatch(new ChangePassword($builder['identityId'], $builder['password']->value, self::NEW_PASSWORD));
     }
 
     #[Test]
@@ -83,8 +84,26 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
             new ChangePassword(
                 PasswordCredentialBuilder::sample('identityId'),
                 PasswordCredentialBuilder::sample('password')->value,
+                self::NEW_PASSWORD,
             ),
         );
+    }
+
+    #[Test]
+    public function itFailsWhenInvalidCurrentPassword(): void
+    {
+        // Given
+        $builder = PasswordCredentialBuilder::new()
+            ->withPasswordStrength($this->passwordStrength)
+            ->withHasher($this->hasher);
+        $credential = $builder->create();
+        $this->store($credential);
+
+        // Then
+        $this->expectException(InvalidCurrentPasswordException::class);
+
+        // When
+        $this->dispatch(new ChangePassword($builder['identityId'], 'wrong-current-password', self::NEW_PASSWORD));
     }
 
     #[Test]
@@ -102,7 +121,7 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(WeakPasswordException::class);
 
         // When
-        $this->dispatch(new ChangePassword($builder['identityId'], 'passwordpassword'));
+        $this->dispatch(new ChangePassword($builder['identityId'], $builder['password']->value, 'passwordpassword'));
     }
 
     #[Test]
@@ -120,6 +139,6 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(SamePasswordException::class);
 
         // When
-        $this->dispatch(new ChangePassword($builder['identityId'], $builder['password']->value));
+        $this->dispatch(new ChangePassword($builder['identityId'], $builder['password']->value, $builder['password']->value));
     }
 }

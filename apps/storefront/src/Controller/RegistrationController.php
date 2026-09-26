@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Storefront\Controller;
 
-use Iam\Authentication\Application\Command\DefinePasswordCredential\DefinePasswordCredential;
+use Iam\Authentication\Application\Command\DefinePassword\DefinePassword;
 use Iam\Identity\Application\Command\ConfirmIdentity\ConfirmIdentity;
 use Iam\Identity\Application\Command\RegisterIdentity\Exception\IdentityEmailAlreadyInUseException;
 use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
-use Iam\Identity\Application\Command\RequestConfirmation\RequestConfirmation;
+use Iam\Identity\Application\Command\RequestIdentityConfirmation\RequestIdentityConfirmation;
 use Iam\Identity\Domain\Exception\ConfirmationRequestedTooRecentlyException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyConfirmedException;
 use Psr\Clock\ClockInterface;
@@ -68,7 +68,7 @@ final class RegistrationController extends AbstractController
                 return $this->redirectToRoute('storefront_signin_identify');
             }
 
-            $this->commandBus->dispatch(new DefinePasswordCredential($identityId, (string) $formData->password));
+            $this->commandBus->dispatch(new DefinePassword($identityId, (string) $formData->password));
 
             return $this->redirectToRoute('storefront_registration_confirm', ['identityId' => $identityId]);
         }
@@ -129,7 +129,7 @@ final class RegistrationController extends AbstractController
         }
 
         try {
-            $this->commandBus->dispatch(new RequestConfirmation($identityId));
+            $this->commandBus->dispatch(new RequestIdentityConfirmation($identityId));
             $this->addFlash('success', $this->translator->trans('flash_sent', domain: 'verification_code'));
         } catch (ConfirmationRequestedTooRecentlyException $e) {
             $seconds = max(1, $e->retryAt->getTimestamp() - $this->clock->now()->getTimestamp());

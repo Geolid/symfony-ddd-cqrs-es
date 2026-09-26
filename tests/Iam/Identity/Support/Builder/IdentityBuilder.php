@@ -24,6 +24,9 @@ use Symfony\Component\Clock\Clock;
  *     confirmedAt: \DateTimeImmutable,
  *     confirmationCode: string,
  *     confirmationRequestedAt: \DateTimeImmutable,
+ *     fullNameChangedAt: \DateTimeImmutable,
+ *     emailChangeRequestedAt: \DateTimeImmutable,
+ *     emailChangedAt: \DateTimeImmutable,
  *     reason: Reason,
  *     suspendedAt: \DateTimeImmutable,
  *     reactivatedAt: \DateTimeImmutable,
@@ -69,6 +72,33 @@ final class IdentityBuilder extends AbstractAggregateBuilder
                 new FakeCodeChallenger(),
                 $builder['confirmedAt'],
             ),
+        );
+    }
+
+    public function fullNameChanged(string $newFullName, ?\DateTimeImmutable $fullNameChangedAt = null): self
+    {
+        $builder = null !== $fullNameChangedAt ? $this->withAttributes(fullNameChangedAt: $fullNameChangedAt) : $this;
+
+        return $builder->withModifier(
+            static fn (Identity $identity, self $builder) => $identity->changeFullName(FullName::fromString($newFullName), $builder['fullNameChangedAt']),
+        );
+    }
+
+    public function emailChangeRequested(string $newEmail, ?\DateTimeImmutable $requestedAt = null): self
+    {
+        $builder = null !== $requestedAt ? $this->withAttributes(emailChangeRequestedAt: $requestedAt) : $this;
+
+        return $builder->withModifier(
+            static fn (Identity $identity, self $builder) => $identity->requestEmailChange(Email::fromString($newEmail), $builder['emailChangeRequestedAt']),
+        );
+    }
+
+    public function emailChanged(string $newEmail, ?\DateTimeImmutable $changedAt = null): self
+    {
+        $builder = null !== $changedAt ? $this->withAttributes(emailChangedAt: $changedAt) : $this;
+
+        return $builder->withModifier(
+            static fn (Identity $identity, self $builder) => $identity->changeEmail(FakeCodeChallenger::CODE, new FakeCodeChallenger(), Email::fromString($newEmail), $builder['emailChangedAt']),
         );
     }
 
@@ -144,6 +174,9 @@ final class IdentityBuilder extends AbstractAggregateBuilder
             'confirmedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 hour'),
             'confirmationCode' => static fn (): string => FakeCodeChallenger::CODE,
             'confirmationRequestedAt' => static fn (): \DateTimeImmutable => $now->modify('+30 minutes'),
+            'fullNameChangedAt' => static fn (): \DateTimeImmutable => $now->modify('+45 minutes'),
+            'emailChangeRequestedAt' => static fn (): \DateTimeImmutable => $now->modify('+50 minutes'),
+            'emailChangedAt' => static fn (): \DateTimeImmutable => $now->modify('+55 minutes'),
             'reason' => static fn (): Reason => Reason::fromString(SeededFaker::get()->sentence(4)),
             'suspendedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
             'reactivatedAt' => static fn (): \DateTimeImmutable => $now->modify('+2 day'),

@@ -6,7 +6,7 @@ namespace Iam\Authentication\Domain\PasswordCredential\Service;
 
 interface PasswordHasherInterface
 {
-    public function hash(#[\SensitiveParameter] string $plainPassword): string;
+    public function hash(#[\SensitiveParameter] string $password): string;
 
     public function verify(string $hashedPassword, #[\SensitiveParameter] string $plainPassword): bool;
 

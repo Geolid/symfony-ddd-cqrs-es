@@ -15,10 +15,7 @@
             <dd>
                 <p>{{ 'two_factor_settings_section_backup_codes_instructions'|trans }}</p>
                 <small>
-                    {{ 'show_backup_codes_issued_at'|trans({'%date%': backupCodeCredential.issuedAt|date('d/m/Y')}) }}
-                    {% if backupCodeCredential.regeneratedAt %}
-                        {{ 'show_backup_codes_regenerated_at'|trans({'%date%': backupCodeCredential.regeneratedAt|date('d/m/Y')}) }}
-                    {% endif %}
+                    {{ 'show_backup_codes_generated_at'|trans({'%date%': (backupCodeCredential.regeneratedAt ?? backupCodeCredential.generatedAt)|date('d/m/Y')}) }}
                     {{ 'show_backup_codes_remaining'|trans({'%count%': backupCodeCredential.remainingCount}) }}
                 </small>
             </dd>
@@ -34,10 +31,7 @@
             <dt>{{ 'show_label_trusted_devices'|trans }}</dt>
             <dd>{{ 'two_factor_settings_section_devices_instructions'|trans }}</dd>
         </dl>
-        <form method="post" action="{{ path('storefront_account_security_revoke_device_trust') }}">
-            <input type="hidden" name="_token" value="{{ csrf_token('revoke_device_trust') }}">
-            <button type="submit" class="outline pico-background-red-500">{{ 'show_button_revoke_device_trust'|trans }}</button>
-        </form>
+        <a href="{{ path('storefront_account_security_trusted_devices') }}" role="button" class="outline">{{ 'two_factor_settings_button_view_devices'|trans }}</a>
 
         <hr>
 
@@ -48,8 +42,8 @@
                 <p class="icon-text"><twig:ux:icon name="warning" class="icon icon-warning" /> {{ 'two_factor_settings_section_disable_warning'|trans }}</p>
             </dd>
         </dl>
-        <form method="post" action="{{ path('storefront_account_security_revoke_totp') }}">
-            <input type="hidden" name="_token" value="{{ csrf_token('revoke_totp') }}">
+        <form method="post" action="{{ path('storefront_account_security_unenroll_totp') }}">
+            <input type="hidden" name="_token" value="{{ csrf_token('unenroll_totp') }}">
             <button type="submit" class="outline pico-background-red-500">{{ 'two_factor_settings_button_disable'|trans }}</button>
         </form>
     </article>

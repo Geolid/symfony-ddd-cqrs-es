@@ -10,9 +10,9 @@ final readonly class TotpCredentialResult
         public string $id,
         public string $identityId,
         public string $encryptedSecret,
-        public \DateTimeImmutable $issuedAt,
-        public bool $revoked,
-        public ?\DateTimeImmutable $revokedAt,
+        public \DateTimeImmutable $enrolledAt,
+        public bool $unenrolled,
+        public ?\DateTimeImmutable $unenrolledAt,
     ) {
     }
 }

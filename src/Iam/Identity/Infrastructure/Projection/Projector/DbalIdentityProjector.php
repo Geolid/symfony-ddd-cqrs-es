@@ -12,9 +12,11 @@ use Iam\Identity\Application\IdentityModerationStatus;
 use Iam\Identity\Application\IdentityVerificationStatus;
 use Iam\Identity\Domain\Event\IdentityConfirmationRequested;
 use Iam\Identity\Domain\Event\IdentityConfirmed;
+use Iam\Identity\Domain\Event\IdentityEmailChanged;
 use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\Event\IdentityErasureCancelled;
 use Iam\Identity\Domain\Event\IdentityErasureRequested;
+use Iam\Identity\Domain\Event\IdentityFullNameChanged;
 use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Identity\Domain\Event\IdentitySuspended;
@@ -55,6 +57,26 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
         $this->connection->update(
             self::TABLE,
             ['verification_status' => IdentityVerificationStatus::CONFIRMED->value],
+            ['id' => $event->id->toString()],
+        );
+    }
+
+    #[Subscribe(IdentityFullNameChanged::class)]
+    public function onIdentityFullNameChanged(IdentityFullNameChanged $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            ['full_name' => $event->fullName->value],
+            ['id' => $event->id->toString()],
+        );
+    }
+
+    #[Subscribe(IdentityEmailChanged::class)]
+    public function onIdentityEmailChanged(IdentityEmailChanged $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            ['email' => $event->email->value],
             ['id' => $event->id->toString()],
         );
     }

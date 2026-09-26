@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Domain\TotpCredential;
 
-use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialIssued;
-use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialRevoked;
+use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialEnrolled;
+use Iam\Authentication\Domain\TotpCredential\Event\TotpCredentialUnenrolled;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialOwnedByAnotherIdentityException;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpCipherInterface;
 use Iam\Authentication\Domain\TotpCredential\ValueObject\TotpCredentialId;
@@ -24,22 +24,22 @@ final class TotpCredential implements AggregateRoot, AggregateRootMetadataAware
     #[Id]
     public private(set) TotpCredentialId $id;
     private string $identityId;
-    private bool $revoked;
+    private bool $unenrolled;
 
-    public static function issue(
+    public static function enroll(
         TotpCredentialId $id,
         string $identityId,
         #[\SensitiveParameter]
         string $secret,
         TotpCipherInterface $cipher,
-        \DateTimeImmutable $issuedAt,
+        \DateTimeImmutable $enrolledAt,
     ): self {
         $self = new self();
-        $self->recordThat(new TotpCredentialIssued(
+        $self->recordThat(new TotpCredentialEnrolled(
             id: $id,
             identityId: $identityId,
             encryptedSecret: $cipher->encrypt($secret),
-            issuedAt: $issuedAt,
+            enrolledAt: $enrolledAt,
         ));
 
         return $self;
@@ -48,33 +48,33 @@ final class TotpCredential implements AggregateRoot, AggregateRootMetadataAware
     /**
      * @throws TotpCredentialOwnedByAnotherIdentityException
      */
-    public function revoke(string $identityId, \DateTimeImmutable $revokedAt): void
+    public function unenroll(string $identityId, \DateTimeImmutable $unenrolledAt): void
     {
         if ($this->identityId !== $identityId) {
             throw TotpCredentialOwnedByAnotherIdentityException::forId($this->id);
         }
 
-        if ($this->revoked) {
+        if ($this->unenrolled) {
             return;
         }
 
-        $this->recordThat(new TotpCredentialRevoked(
+        $this->recordThat(new TotpCredentialUnenrolled(
             id: $this->id,
-            revokedAt: $revokedAt,
+            unenrolledAt: $unenrolledAt,
         ));
     }
 
     #[Apply]
-    private function applyIssued(TotpCredentialIssued $event): void
+    private function applyEnrolled(TotpCredentialEnrolled $event): void
     {
         $this->id = $event->id;
         $this->identityId = $event->identityId;
-        $this->revoked = false;
+        $this->unenrolled = false;
     }
 
     #[Apply]
-    private function applyRevoked(TotpCredentialRevoked $event): void
+    private function applyUnenrolled(TotpCredentialUnenrolled $event): void
     {
-        $this->revoked = true;
+        $this->unenrolled = true;
     }
 }

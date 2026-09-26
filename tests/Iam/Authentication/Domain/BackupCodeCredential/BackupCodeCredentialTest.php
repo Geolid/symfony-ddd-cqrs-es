@@ -7,7 +7,7 @@ namespace Iam\Tests\Authentication\Domain\BackupCodeCredential;
 use Iam\Authentication\Domain\BackupCodeCredential\BackupCodeCredential;
 use Iam\Authentication\Domain\BackupCodeCredential\Entity\BackupCode;
 use Iam\Authentication\Domain\BackupCodeCredential\Event\BackupCodeCredentialConsumed;
-use Iam\Authentication\Domain\BackupCodeCredential\Event\BackupCodeCredentialIssued;
+use Iam\Authentication\Domain\BackupCodeCredential\Event\BackupCodeCredentialGenerated;
 use Iam\Authentication\Domain\BackupCodeCredential\Event\BackupCodeCredentialRegenerated;
 use Iam\Authentication\Domain\BackupCodeCredential\Exception\InvalidBackupCodeException;
 use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeHasherInterface;
@@ -23,7 +23,7 @@ final class BackupCodeCredentialTest extends AggregateRootTestCase
     private string $identityId;
     /** @var list<non-empty-string> */
     private array $plainBackupCodes;
-    private \DateTimeImmutable $issuedAt;
+    private \DateTimeImmutable $generatedAt;
     private BackupCodeHasherInterface $backupCodeHasher;
 
     protected function setUp(): void
@@ -33,23 +33,23 @@ final class BackupCodeCredentialTest extends AggregateRootTestCase
         $this->identityId = BackupCodeCredentialBuilder::sample('identityId');
         $this->id = BackupCodeCredentialId::forIdentity($this->identityId);
         $this->plainBackupCodes = BackupCodeCredentialBuilder::sample('plainBackupCodes');
-        $this->issuedAt = BackupCodeCredentialBuilder::sample('issuedAt');
+        $this->generatedAt = BackupCodeCredentialBuilder::sample('generatedAt');
         $this->backupCodeHasher = new FakeBackupCodeHasher();
     }
 
     #[Test]
-    public function itIssues(): void
+    public function itGenerates(): void
     {
         $this
             ->given()
-            ->when(fn (): BackupCodeCredential => BackupCodeCredential::issue(
+            ->when(fn (): BackupCodeCredential => BackupCodeCredential::generate(
                 $this->id,
                 $this->identityId,
                 $this->plainBackupCodes,
                 $this->backupCodeHasher,
-                $this->issuedAt,
+                $this->generatedAt,
             ))
-            ->then($this->issued());
+            ->then($this->generated());
     }
 
     #[Test]
@@ -59,7 +59,7 @@ final class BackupCodeCredentialTest extends AggregateRootTestCase
         $regeneratedAt = BackupCodeCredentialBuilder::sample('regeneratedAt');
 
         $this
-            ->given($this->issued())
+            ->given($this->generated())
             ->when(fn (BackupCodeCredential $credential) => $credential->regenerate(
                 $regeneratedBackupCodes,
                 $this->backupCodeHasher,
@@ -78,7 +78,7 @@ final class BackupCodeCredentialTest extends AggregateRootTestCase
         $consumedAt = BackupCodeCredentialBuilder::sample('consumedAt');
 
         $this
-            ->given($this->issued())
+            ->given($this->generated())
             ->when(fn (BackupCodeCredential $credential) => $credential->consume(
                 $this->plainBackupCodes[0],
                 $this->backupCodeHasher,
@@ -95,7 +95,7 @@ final class BackupCodeCredentialTest extends AggregateRootTestCase
     public function itCannotConsumeWhenInvalid(): void
     {
         $this
-            ->given($this->issued())
+            ->given($this->generated())
             ->when(fn (BackupCodeCredential $credential) => $credential->consume(
                 'INVALIDCODE',
                 $this->backupCodeHasher,
@@ -111,7 +111,7 @@ final class BackupCodeCredentialTest extends AggregateRootTestCase
 
         $this
             ->given(
-                $this->issued(),
+                $this->generated(),
                 new BackupCodeCredentialConsumed(
                     $this->id,
                     $this->backupCodeHasher->hash($this->plainBackupCodes[0]),
@@ -131,13 +131,13 @@ final class BackupCodeCredentialTest extends AggregateRootTestCase
         return BackupCodeCredential::class;
     }
 
-    private function issued(): BackupCodeCredentialIssued
+    private function generated(): BackupCodeCredentialGenerated
     {
-        return new BackupCodeCredentialIssued(
+        return new BackupCodeCredentialGenerated(
             $this->id,
             $this->identityId,
             $this->hashedBackupCodes($this->plainBackupCodes),
-            $this->issuedAt,
+            $this->generatedAt,
         );
     }
 

@@ -6,16 +6,21 @@ namespace Iam\Identity\Domain;
 
 use Iam\Identity\Domain\Event\IdentityConfirmationRequested;
 use Iam\Identity\Domain\Event\IdentityConfirmed;
+use Iam\Identity\Domain\Event\IdentityEmailChanged;
+use Iam\Identity\Domain\Event\IdentityEmailChangeRequested;
 use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\Event\IdentityErasureCancelled;
 use Iam\Identity\Domain\Event\IdentityErasureRequested;
+use Iam\Identity\Domain\Event\IdentityFullNameChanged;
 use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Identity\Domain\Event\IdentitySuspended;
 use Iam\Identity\Domain\Exception\ConfirmationRequestedTooRecentlyException;
+use Iam\Identity\Domain\Exception\EmailChangeRequestedTooRecentlyException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyConfirmedException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\InvalidConfirmationCodeException;
+use Iam\Identity\Domain\Exception\InvalidEmailChangeCodeException;
 use Iam\Identity\Domain\Specification\PendingIdentityExpiredSpecification;
 use Iam\Identity\Domain\ValueObject\Email;
 use Iam\Identity\Domain\ValueObject\FullName;
@@ -53,11 +58,14 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     public private(set) IdentityId $id;
+    private FullName $fullName;
+    private Email $email;
     private IdentityVerificationState $verificationState;
     private IdentityModerationState $moderationState;
     private ErasureState $erasureState;
     private \DateTimeImmutable $registeredAt;
     private \DateTimeImmutable $confirmationRequestedAt;
+    private \DateTimeImmutable $emailChangeRequestedAt;
 
     public static function register(IdentityId $id, FullName $fullName, Email $email, \DateTimeImmutable $registeredAt): self
     {
@@ -95,6 +103,79 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         $this->recordThat(new IdentityConfirmed(
             id: $this->id,
             confirmedAt: $confirmedAt,
+        ));
+    }
+
+    /**
+     * @throws IdentityAlreadyErasedException
+     */
+    public function changeFullName(FullName $newFullName, \DateTimeImmutable $changedAt): void
+    {
+        if ($this->erasureState->isErased()) {
+            throw IdentityAlreadyErasedException::forId($this->id);
+        }
+
+        if ($this->fullName->equals($newFullName)) {
+            return;
+        }
+
+        $this->recordThat(new IdentityFullNameChanged(
+            id: $this->id,
+            fullName: $newFullName,
+            changedAt: $changedAt,
+        ));
+    }
+
+    /**
+     * @throws IdentityAlreadyErasedException
+     * @throws EmailChangeRequestedTooRecentlyException
+     */
+    public function requestEmailChange(Email $newEmail, \DateTimeImmutable $requestedAt): void
+    {
+        if ($this->erasureState->isErased()) {
+            throw IdentityAlreadyErasedException::forId($this->id);
+        }
+
+        if ($this->email->equals($newEmail)) {
+            return;
+        }
+
+        $cooldownCalculator = new CooldownCalculator();
+        if (!new CooldownElapsedSpecification($cooldownCalculator, $requestedAt)->isSatisfiedBy($this->emailChangeRequestedAt)) {
+            throw EmailChangeRequestedTooRecentlyException::forId($this->id, $cooldownCalculator->retryAt($this->emailChangeRequestedAt));
+        }
+
+        $this->recordThat(new IdentityEmailChangeRequested(
+            id: $this->id,
+            email: $newEmail,
+            requestedAt: $requestedAt,
+        ));
+    }
+
+    /**
+     * @throws IdentityAlreadyErasedException
+     * @throws VerificationCodeNotFoundException
+     * @throws VerificationCodeAttemptsExceededException
+     * @throws InvalidEmailChangeCodeException
+     */
+    public function changeEmail(#[\SensitiveParameter] string $code, CodeChallengerInterface $codeChallenger, Email $newEmail, \DateTimeImmutable $changedAt): void
+    {
+        if ($this->erasureState->isErased()) {
+            throw IdentityAlreadyErasedException::forId($this->id);
+        }
+
+        if ($this->email->equals($newEmail)) {
+            return;
+        }
+
+        if (!$codeChallenger->verify(VerificationCodeKey::for(IdentityVerificationCodePurpose::EMAIL_CHANGE, $this->id->toString()), $code, $changedAt)) {
+            throw InvalidEmailChangeCodeException::forId($this->id);
+        }
+
+        $this->recordThat(new IdentityEmailChanged(
+            id: $this->id,
+            email: $newEmail,
+            changedAt: $changedAt,
         ));
     }
 
@@ -229,11 +310,32 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     private function applyRegistered(IdentityRegistered $event): void
     {
         $this->id = $event->id;
+        $this->fullName = $event->fullName;
+        $this->email = $event->email;
         $this->verificationState = IdentityVerificationState::PENDING;
         $this->moderationState = IdentityModerationState::ACTIVE;
         $this->erasureState = ErasureState::RETAINED;
         $this->registeredAt = $event->registeredAt;
         $this->confirmationRequestedAt = $event->registeredAt;
+        $this->emailChangeRequestedAt = $event->registeredAt;
+    }
+
+    #[Apply]
+    private function applyFullNameChanged(IdentityFullNameChanged $event): void
+    {
+        $this->fullName = $event->fullName;
+    }
+
+    #[Apply]
+    private function applyEmailChangeRequested(IdentityEmailChangeRequested $event): void
+    {
+        $this->emailChangeRequestedAt = $event->requestedAt;
+    }
+
+    #[Apply]
+    private function applyEmailChanged(IdentityEmailChanged $event): void
+    {
+        $this->email = $event->email;
     }
 
     #[Apply]

@@ -18,8 +18,8 @@ use Webmozart\Assert\Assert;
  *     id: TotpCredentialId,
  *     identityId: string,
  *     secret: string,
- *     issuedAt: \DateTimeImmutable,
- *     revokedAt: \DateTimeImmutable,
+ *     enrolledAt: \DateTimeImmutable,
+ *     unenrolledAt: \DateTimeImmutable,
  *     cipher?: TotpCipherInterface,
  * }
  *
@@ -47,17 +47,17 @@ final class TotpCredentialBuilder extends AbstractAggregateBuilder
         return $this->withAttributes(cipher: $cipher);
     }
 
-    public function withIssuedAt(\DateTimeImmutable $issuedAt): self
+    public function withEnrolledAt(\DateTimeImmutable $enrolledAt): self
     {
-        return $this->withAttributes(issuedAt: $issuedAt);
+        return $this->withAttributes(enrolledAt: $enrolledAt);
     }
 
-    public function revoked(?\DateTimeImmutable $revokedAt = null): self
+    public function unenrolled(?\DateTimeImmutable $unenrolledAt = null): self
     {
-        $builder = null !== $revokedAt ? $this->withAttributes(revokedAt: $revokedAt) : $this;
+        $builder = null !== $unenrolledAt ? $this->withAttributes(unenrolledAt: $unenrolledAt) : $this;
 
         return $builder->withModifier(static function (TotpCredential $credential, self $builder): void {
-            $credential->revoke($builder['identityId'], $builder['revokedAt']);
+            $credential->unenroll($builder['identityId'], $builder['unenrolledAt']);
         });
     }
 
@@ -69,19 +69,19 @@ final class TotpCredentialBuilder extends AbstractAggregateBuilder
             'id' => static fn (): TotpCredentialId => TotpCredentialId::fromString(Uuid::uuid7()->toString()),
             'identityId' => static fn (): string => Uuid::uuid7()->toString(),
             'secret' => static fn (): string => TOTP::generate()->getSecret(),
-            'issuedAt' => static fn (): \DateTimeImmutable => $now,
-            'revokedAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
+            'enrolledAt' => static fn (): \DateTimeImmutable => $now,
+            'unenrolledAt' => static fn (): \DateTimeImmutable => $now->modify('+1 day'),
         ];
     }
 
     protected function build(): TotpCredential
     {
-        return TotpCredential::issue(
+        return TotpCredential::enroll(
             id: $this['id'],
             identityId: $this['identityId'],
             secret: $this['secret'],
             cipher: $this->cipher(),
-            issuedAt: $this['issuedAt'],
+            enrolledAt: $this['enrolledAt'],
         );
     }
 

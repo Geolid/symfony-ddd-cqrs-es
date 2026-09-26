@@ -33,112 +33,108 @@
         <source>show_button_configure_two_factor</source>
         <target>Configure</target>
       </trans-unit>
-      <trans-unit id="show_backup_codes_issued_at">
-        <source>show_backup_codes_issued_at</source>
-        <target>Issued on %date%.</target>
-      </trans-unit>
-      <trans-unit id="show_backup_codes_regenerated_at">
-        <source>show_backup_codes_regenerated_at</source>
-        <target>Last regenerated on %date%.</target>
+      <trans-unit id="show_backup_codes_generated_at">
+        <source>show_backup_codes_generated_at</source>
+        <target>Generated on %date%.</target>
       </trans-unit>
       <trans-unit id="show_backup_codes_remaining">
         <source>show_backup_codes_remaining</source>
         <target>%count% codes remaining.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_title">
-        <source>issue_totp_title</source>
+      <trans-unit id="enroll_totp_title">
+        <source>enroll_totp_title</source>
         <target>Enable 2FA</target>
       </trans-unit>
-      <trans-unit id="issue_totp_heading">
-        <source>issue_totp_heading</source>
-        <target>Enroll a two-factor authenticator</target>
+      <trans-unit id="enroll_totp_heading">
+        <source>enroll_totp_heading</source>
+        <target>Enable two-factor authentication</target>
       </trans-unit>
-      <trans-unit id="issue_totp_step_indicator">
-        <source>issue_totp_step_indicator</source>
+      <trans-unit id="enroll_totp_step_indicator">
+        <source>enroll_totp_step_indicator</source>
         <target>Step 1 of 2</target>
       </trans-unit>
-      <trans-unit id="issue_totp_backup_codes_step_indicator">
-        <source>issue_totp_backup_codes_step_indicator</source>
+      <trans-unit id="enroll_totp_backup_codes_step_indicator">
+        <source>enroll_totp_backup_codes_step_indicator</source>
         <target>Step 2 of 2</target>
       </trans-unit>
-      <trans-unit id="issue_totp_note_label">
-        <source>issue_totp_note_label</source>
+      <trans-unit id="enroll_totp_note_label">
+        <source>enroll_totp_note_label</source>
         <target>Note:</target>
       </trans-unit>
-      <trans-unit id="issue_totp_note">
-        <source>issue_totp_note</source>
+      <trans-unit id="enroll_totp_note">
+        <source>enroll_totp_note</source>
         <target>For all future sign-ins after you turn on two-factor authentication, you'll enter a security code you generated using an authenticator app.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_step_open_verb">
-        <source>issue_totp_step_open_verb</source>
+      <trans-unit id="enroll_totp_step_open_verb">
+        <source>enroll_totp_step_open_verb</source>
         <target>Open</target>
       </trans-unit>
-      <trans-unit id="issue_totp_step_open_rest">
-        <source>issue_totp_step_open_rest</source>
+      <trans-unit id="enroll_totp_step_open_rest">
+        <source>enroll_totp_step_open_rest</source>
         <target>your authenticator app.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_step_add_verb">
-        <source>issue_totp_step_add_verb</source>
+      <trans-unit id="enroll_totp_step_add_verb">
+        <source>enroll_totp_step_add_verb</source>
         <target>Add</target>
       </trans-unit>
-      <trans-unit id="issue_totp_step_add_rest">
-        <source>issue_totp_step_add_rest</source>
+      <trans-unit id="enroll_totp_step_add_rest">
+        <source>enroll_totp_step_add_rest</source>
         <target>an account within the app and scan the QR code below:</target>
       </trans-unit>
-      <trans-unit id="issue_totp_instructions_manual_toggle">
-        <source>issue_totp_instructions_manual_toggle</source>
+      <trans-unit id="enroll_totp_instructions_manual_toggle">
+        <source>enroll_totp_instructions_manual_toggle</source>
         <target>Can't scan the QR code?</target>
       </trans-unit>
-      <trans-unit id="issue_totp_manual_step1">
-        <source>issue_totp_manual_step1</source>
+      <trans-unit id="enroll_totp_manual_step1">
+        <source>enroll_totp_manual_step1</source>
         <target>Open your authenticator app and select "Add account manually" from the menu.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_manual_step2">
-        <source>issue_totp_manual_step2</source>
+      <trans-unit id="enroll_totp_manual_step2">
+        <source>enroll_totp_manual_step2</source>
         <target>In "Account name", type your full email address.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_manual_step3">
-        <source>issue_totp_manual_step3</source>
+      <trans-unit id="enroll_totp_manual_step3">
+        <source>enroll_totp_manual_step3</source>
         <target>In "Key", type the following key (spaces not required):</target>
       </trans-unit>
-      <trans-unit id="issue_totp_manual_step4">
-        <source>issue_totp_manual_step4</source>
+      <trans-unit id="enroll_totp_manual_step4">
+        <source>enroll_totp_manual_step4</source>
         <target>Set the key type to "Time-based", then tap Add.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_step_enter_verb">
-        <source>issue_totp_step_enter_verb</source>
+      <trans-unit id="enroll_totp_step_enter_verb">
+        <source>enroll_totp_step_enter_verb</source>
         <target>Enter code.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_step_enter_rest">
-        <source>issue_totp_step_enter_rest</source>
+      <trans-unit id="enroll_totp_step_enter_rest">
+        <source>enroll_totp_step_enter_rest</source>
         <target>After you've scanned the QR code, enter the code generated by the app:</target>
       </trans-unit>
-      <trans-unit id="issue_totp_button_submit">
-        <source>issue_totp_button_submit</source>
+      <trans-unit id="enroll_totp_button_submit">
+        <source>enroll_totp_button_submit</source>
         <target>Verify code and continue</target>
       </trans-unit>
-      <trans-unit id="issue_totp_flash_invalid_code">
-        <source>issue_totp_flash_invalid_code</source>
+      <trans-unit id="enroll_totp_flash_invalid_code">
+        <source>enroll_totp_flash_invalid_code</source>
         <target>Invalid code.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_flash_issued">
-        <source>issue_totp_flash_issued</source>
+      <trans-unit id="enroll_totp_flash_enrolled">
+        <source>enroll_totp_flash_enrolled</source>
         <target>Two-factor authentication enabled.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_flash_issued_codes_kept">
-        <source>issue_totp_flash_issued_codes_kept</source>
+      <trans-unit id="enroll_totp_flash_enrolled_codes_kept">
+        <source>enroll_totp_flash_enrolled_codes_kept</source>
         <target>Two-factor authentication enabled. Your existing backup codes are still valid.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_backup_codes_title">
-        <source>issue_totp_backup_codes_title</source>
+      <trans-unit id="enroll_totp_backup_codes_title">
+        <source>enroll_totp_backup_codes_title</source>
         <target>Save Your Backup Codes</target>
       </trans-unit>
-      <trans-unit id="issue_totp_backup_codes_instructions">
-        <source>issue_totp_backup_codes_instructions</source>
+      <trans-unit id="enroll_totp_backup_codes_instructions">
+        <source>enroll_totp_backup_codes_instructions</source>
         <target>Backup codes can be used to access your account if you lose your device and cannot receive two-factor authentication codes.</target>
       </trans-unit>
-      <trans-unit id="issue_totp_backup_codes_warning">
-        <source>issue_totp_backup_codes_warning</source>
+      <trans-unit id="enroll_totp_backup_codes_warning">
+        <source>enroll_totp_backup_codes_warning</source>
         <target>To keep your account secure, never share these codes. We strongly recommend saving them in a secure password manager. Please do this now, as these codes will only be shown once.</target>
       </trans-unit>
       <trans-unit id="backup_codes_button_copy">
@@ -177,8 +173,8 @@
         <source>two_factor_settings_button_disable</source>
         <target>Disable 2FA</target>
       </trans-unit>
-      <trans-unit id="two_factor_settings_flash_revoked">
-        <source>two_factor_settings_flash_revoked</source>
+      <trans-unit id="two_factor_settings_flash_unenrolled">
+        <source>two_factor_settings_flash_unenrolled</source>
         <target>Two-factor authentication disabled.</target>
       </trans-unit>
       <trans-unit id="two_factor_settings_section_backup_codes_title">
@@ -195,7 +191,11 @@
       </trans-unit>
       <trans-unit id="two_factor_settings_section_devices_instructions">
         <source>two_factor_settings_section_devices_instructions</source>
-        <target>Sign out of all trusted devices. Use this if your account is compromised or you lost a device connected to this account. You will need to enter a verification code the next time you sign in.</target>
+        <target>View and revoke the devices you've trusted to skip two-factor authentication.</target>
+      </trans-unit>
+      <trans-unit id="two_factor_settings_button_view_devices">
+        <source>two_factor_settings_button_view_devices</source>
+        <target>View</target>
       </trans-unit>
       <trans-unit id="regenerate_backup_codes_title">
         <source>regenerate_backup_codes_title</source>
@@ -209,13 +209,141 @@
         <source>show_label_trusted_devices</source>
         <target>Remembered devices</target>
       </trans-unit>
-      <trans-unit id="show_button_revoke_device_trust">
-        <source>show_button_revoke_device_trust</source>
-        <target>Sign out of all devices</target>
+      <trans-unit id="trusted_devices_title">
+        <source>trusted_devices_title</source>
+        <target>Trusted devices</target>
       </trans-unit>
-      <trans-unit id="revoke_device_trust_flash_success">
-        <source>revoke_device_trust_flash_success</source>
-        <target>You've been signed out of all remembered devices.</target>
+      <trans-unit id="trusted_devices_instructions">
+        <source>trusted_devices_instructions</source>
+        <target>Here are the devices where two-factor authentication (2FA) is skipped for the next %days% days. You can revoke access for a device you don't recognize.</target>
+      </trans-unit>
+      <trans-unit id="trusted_devices_empty">
+        <source>trusted_devices_empty</source>
+        <target>No trusted devices.</target>
+      </trans-unit>
+      <trans-unit id="trusted_devices_unknown_device">
+        <source>trusted_devices_unknown_device</source>
+        <target>Unknown device</target>
+      </trans-unit>
+      <trans-unit id="trusted_devices_button_revoke">
+        <source>trusted_devices_button_revoke</source>
+        <target>Revoke</target>
+      </trans-unit>
+      <trans-unit id="trusted_devices_section_revoke_all_instructions">
+        <source>trusted_devices_section_revoke_all_instructions</source>
+        <target>Revoke every trusted device at once if you think your account is compromised. You'll need to enter a verification code the next time you sign in from any of them.</target>
+      </trans-unit>
+      <trans-unit id="trusted_devices_button_revoke_all">
+        <source>trusted_devices_button_revoke_all</source>
+        <target>Revoke all devices</target>
+      </trans-unit>
+      <trans-unit id="trusted_devices_flash_revoked">
+        <source>trusted_devices_flash_revoked</source>
+        <target>Device revoked.</target>
+      </trans-unit>
+      <trans-unit id="trusted_devices_flash_revoked_all">
+        <source>trusted_devices_flash_revoked_all</source>
+        <target>All devices revoked.</target>
+      </trans-unit>
+      <trans-unit id="change_password_title">
+        <source>change_password_title</source>
+        <target>Change password</target>
+      </trans-unit>
+      <trans-unit id="change_label_current_password">
+        <source>change_label_current_password</source>
+        <target>Current password</target>
+      </trans-unit>
+      <trans-unit id="change_label_new_password">
+        <source>change_label_new_password</source>
+        <target>New password (at least %min% characters)</target>
+      </trans-unit>
+      <trans-unit id="change_help_new_password">
+        <source>change_help_new_password</source>
+        <target>Passwords must be at least %min% characters.</target>
+      </trans-unit>
+      <trans-unit id="change_label_new_password_confirm">
+        <source>change_label_new_password_confirm</source>
+        <target>Confirm your new password</target>
+      </trans-unit>
+      <trans-unit id="change_password_button_submit">
+        <source>change_password_button_submit</source>
+        <target>Change password</target>
+      </trans-unit>
+      <trans-unit id="change_password_flash_changed">
+        <source>change_password_flash_changed</source>
+        <target>Password changed.</target>
+      </trans-unit>
+      <trans-unit id="change_error_invalid_current_password">
+        <source>change_error_invalid_current_password</source>
+        <target>Your current password is incorrect.</target>
+      </trans-unit>
+      <trans-unit id="change_error_same_password">
+        <source>change_error_same_password</source>
+        <target>This must be different from your current password.</target>
+      </trans-unit>
+      <trans-unit id="change_full_name_title">
+        <source>change_full_name_title</source>
+        <target>Change your name</target>
+      </trans-unit>
+      <trans-unit id="change_full_name_label">
+        <source>change_full_name_label</source>
+        <target>Full name</target>
+      </trans-unit>
+      <trans-unit id="change_full_name_button_submit">
+        <source>change_full_name_button_submit</source>
+        <target>Change your name</target>
+      </trans-unit>
+      <trans-unit id="change_full_name_flash_changed">
+        <source>change_full_name_flash_changed</source>
+        <target>Name changed.</target>
+      </trans-unit>
+      <trans-unit id="request_email_change_step_indicator">
+        <source>request_email_change_step_indicator</source>
+        <target>Step 1 of 2</target>
+      </trans-unit>
+      <trans-unit id="request_email_change_title">
+        <source>request_email_change_title</source>
+        <target>Change your email address</target>
+      </trans-unit>
+      <trans-unit id="request_email_change_label_current_email">
+        <source>request_email_change_label_current_email</source>
+        <target>Current email address</target>
+      </trans-unit>
+      <trans-unit id="request_email_change_label_new_email">
+        <source>request_email_change_label_new_email</source>
+        <target>New email address</target>
+      </trans-unit>
+      <trans-unit id="request_email_change_button_submit">
+        <source>request_email_change_button_submit</source>
+        <target>Change email address</target>
+      </trans-unit>
+      <trans-unit id="change_email_error_already_in_use">
+        <source>change_email_error_already_in_use</source>
+        <target>This email address is already in use.</target>
+      </trans-unit>
+      <trans-unit id="change_email_error_too_recent">
+        <source>change_email_error_too_recent</source>
+        <target>Please wait before requesting another email change.</target>
+      </trans-unit>
+      <trans-unit id="change_email_confirm_step_indicator">
+        <source>change_email_confirm_step_indicator</source>
+        <target>Step 2 of 2</target>
+      </trans-unit>
+      <trans-unit id="change_email_confirm_title">
+        <source>change_email_confirm_title</source>
+        <target>Verify your new email address</target>
+      </trans-unit>
+      <trans-unit id="change_email_confirm_message_sent">
+        <source>change_email_confirm_message_sent</source>
+        <target>To verify your new email, we've sent a code to %email%</target>
+      </trans-unit>
+      <trans-unit id="change_email_confirm_button_submit">
+        <source>change_email_confirm_button_submit</source>
+        <target>Change email address</target>
+      </trans-unit>
+      <trans-unit id="change_email_flash_changed">
+        <source>change_email_flash_changed</source>
+        <target>Email address changed.</target>
       </trans-unit>
     </body>
   </file>

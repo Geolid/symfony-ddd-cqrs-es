@@ -6,7 +6,7 @@ namespace Iam\Tests\Authentication\Application\ApiKeyIssuance;
 
 use Iam\Authentication\Application\ApiKeyIssuance\ApiKeyIssuerInterface;
 use Iam\Authentication\Application\AuthenticationUniqueKey;
-use Iam\Authentication\Application\Command\IssueApiKeyCredential\Exception\ApiKeyCredentialLabelAlreadyInUseException;
+use Iam\Authentication\Application\Command\IssueApiKey\Exception\ApiKeyCredentialLabelAlreadyInUseException;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;

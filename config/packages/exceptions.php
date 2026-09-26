@@ -20,15 +20,19 @@ use Fulfilment\Shipping\Application\Manifesting\Exception\ManifestPostponedExcep
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
 use Iam\Authentication\Application\BreachDatabase\Exception\CompromisedPasswordException;
-use Iam\Authentication\Application\Command\IssueApiKeyCredential\Exception\ApiKeyCredentialLabelAlreadyInUseException;
+use Iam\Authentication\Application\Command\IssueApiKey\Exception\ApiKeyCredentialLabelAlreadyInUseException;
 use Iam\Authentication\Application\CredentialVerification\Exception\ApiKeyCredentialRevokedException;
 use Iam\Authentication\Application\CredentialVerification\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialOwnedByAnotherIdentityException;
+use Iam\Authentication\Domain\PasswordCredential\Exception\InvalidCurrentPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordResetRequestedTooRecentlyException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
+use Iam\Identity\Application\Command\ChangeEmail\Exception\IdentityEmailAlreadyInUseException as ChangeEmailIdentityEmailAlreadyInUseException;
 use Iam\Identity\Application\Command\RegisterIdentity\Exception\IdentityEmailAlreadyInUseException;
+use Iam\Identity\Application\Command\RequestEmailChange\Exception\IdentityEmailAlreadyInUseException as RequestEmailChangeIdentityEmailAlreadyInUseException;
 use Iam\Identity\Domain\Exception\ConfirmationRequestedTooRecentlyException;
+use Iam\Identity\Domain\Exception\EmailChangeRequestedTooRecentlyException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyConfirmedException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherCustomerException;
@@ -67,12 +71,16 @@ return static function (ContainerConfigurator $container): void {
             IdentityAlreadyErasedException::class => ['log_level' => 'info', 'status_code' => 409],
             IdentityAlreadyConfirmedException::class => ['log_level' => 'info', 'status_code' => 409],
             IdentityEmailAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
+            RequestEmailChangeIdentityEmailAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
+            ChangeEmailIdentityEmailAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
             ConfirmationRequestedTooRecentlyException::class => ['log_level' => 'info', 'status_code' => 429],
+            EmailChangeRequestedTooRecentlyException::class => ['log_level' => 'info', 'status_code' => 429],
             IdentityNotAuthenticatableException::class => ['log_level' => 'info', 'status_code' => 409],
             ApiKeyCredentialRevokedException::class => ['log_level' => 'info', 'status_code' => 409],
             ApiKeyCredentialOwnedByAnotherIdentityException::class => ['log_level' => 'info', 'status_code' => 403],
             ApiKeyCredentialLabelAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
             PasswordResetRequestedTooRecentlyException::class => ['log_level' => 'info', 'status_code' => 429],
+            InvalidCurrentPasswordException::class => ['log_level' => 'info', 'status_code' => 422],
             SamePasswordException::class => ['log_level' => 'info', 'status_code' => 422],
             WeakPasswordException::class => ['log_level' => 'info', 'status_code' => 422],
             CompromisedPasswordException::class => ['log_level' => 'info', 'status_code' => 422],

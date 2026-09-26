@@ -1,0 +1,54 @@
+{% extends 'account/security/_layout.html.twig' %}
+{% trans_default_domain 'account_security' %}
+{% import 'account/security/_breadcrumb.html.twig' as security %}
+
+{% block title %}{{ 'trusted_devices_title'|trans }}{% endblock %}
+
+{% block content %}
+    {{ security.trail([
+        {label: 'two_factor_settings_title'|trans, url: path('storefront_account_security_two_factor_settings')},
+        {label: 'trusted_devices_title'|trans},
+    ]) }}
+
+    <h1>{{ 'trusted_devices_title'|trans }}</h1>
+
+    <p>{{ 'trusted_devices_instructions'|trans({'%days%': trustedDeviceLifetimeDays}) }}</p>
+
+    {% if trustedDevices is empty %}
+        <p>{{ 'trusted_devices_empty'|trans }}</p>
+    {% else %}
+        <div class="trusted-devices">
+            {% for trustedDevice in trustedDevices %}
+                {% set agent = device_agent(trustedDevice.userAgent) %}
+                <article class="trusted-device-card">
+                    <div>
+                        <twig:ux:icon name="{{ agent.icon }}" class="icon" />
+                        <div>
+                            <strong>{{ agent.label }}</strong> &mdash; IP: {{ trustedDevice.ip }}
+                            <br>
+                            <small>{{ trustedDevice.trustedAt|date('d/m/Y H:i') }}</small>
+                        </div>
+                    </div>
+                    <form method="post" action="{{ path('storefront_account_security_revoke_trusted_device', {id: trustedDevice.id}) }}">
+                        <input type="hidden" name="_token" value="{{ csrf_token('revoke_trusted_device_' ~ trustedDevice.id) }}">
+                        <button type="submit" class="outline pico-background-red-500">{{ 'trusted_devices_button_revoke'|trans }}</button>
+                    </form>
+                </article>
+            {% endfor %}
+        </div>
+
+        <hr>
+
+        <article class="settings-sections">
+            <div>
+                <p class="icon-text"><twig:ux:icon name="warning" class="icon icon-warning" /> {{ 'trusted_devices_section_revoke_all_instructions'|trans }}</p>
+            </div>
+            <form method="post" action="{{ path('storefront_account_security_revoke_trusted_devices') }}">
+                <input type="hidden" name="_token" value="{{ csrf_token('revoke_trusted_devices') }}">
+                <button type="submit" class="outline pico-background-red-500">{{ 'trusted_devices_button_revoke_all'|trans }}</button>
+            </form>
+        </article>
+    {% endif %}
+
+    <p><a href="{{ path('storefront_account_security_two_factor_settings') }}">&larr; {{ 'backup_codes_link_back'|trans }}</a></p>
+{% endblock %}

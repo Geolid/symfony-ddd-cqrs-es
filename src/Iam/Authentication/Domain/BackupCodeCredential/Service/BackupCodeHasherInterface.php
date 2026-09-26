@@ -8,5 +8,5 @@ interface BackupCodeHasherInterface
 {
     public function hash(#[\SensitiveParameter] string $code): string;
 
-    public function verify(#[\SensitiveParameter] string $code, string $hashedCode): bool;
+    public function verify(string $hashedCode, #[\SensitiveParameter] string $plainCode): bool;
 }
