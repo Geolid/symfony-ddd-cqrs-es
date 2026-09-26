@@ -331,15 +331,15 @@
       </trans-unit>
       <trans-unit id="change_email_confirm_title">
         <source>change_email_confirm_title</source>
-        <target>Confirmez votre nouvelle adresse e-mail</target>
+        <target>Vérifiez votre nouvelle adresse e-mail</target>
       </trans-unit>
       <trans-unit id="change_email_confirm_message_sent">
         <source>change_email_confirm_message_sent</source>
-        <target>Pour confirmer votre nouvelle adresse e-mail, nous avons envoyé un code à %email%</target>
+        <target>Pour vérifier votre nouvelle adresse e-mail, nous avons envoyé un code à %email%</target>
       </trans-unit>
       <trans-unit id="change_email_confirm_button_submit">
         <source>change_email_confirm_button_submit</source>
-        <target>Confirmer l'adresse e-mail</target>
+        <target>Changer l'adresse e-mail</target>
       </trans-unit>
       <trans-unit id="change_email_flash_changed">
         <source>change_email_flash_changed</source>
