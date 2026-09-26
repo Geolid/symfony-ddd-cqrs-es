@@ -303,7 +303,7 @@
       </trans-unit>
       <trans-unit id="request_email_change_title">
         <source>request_email_change_title</source>
-        <target>Modifier votre adresse e-mail</target>
+        <target>Changer votre adresse e-mail</target>
       </trans-unit>
       <trans-unit id="request_email_change_label_current_email">
         <source>request_email_change_label_current_email</source>
@@ -315,7 +315,7 @@
       </trans-unit>
       <trans-unit id="request_email_change_button_submit">
         <source>request_email_change_button_submit</source>
-        <target>Modifier l'adresse e-mail</target>
+        <target>Changer l'adresse e-mail</target>
       </trans-unit>
       <trans-unit id="change_email_error_already_in_use">
         <source>change_email_error_already_in_use</source>
