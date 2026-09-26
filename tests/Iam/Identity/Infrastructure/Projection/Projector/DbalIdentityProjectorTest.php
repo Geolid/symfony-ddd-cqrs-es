@@ -118,6 +118,30 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itProjectsOnIdentityEmailChanged(): void
+    {
+        // Given
+        $otherBuilder = IdentityBuilder::new();
+        $other = $otherBuilder->create();
+        $this->store($other);
+
+        $newEmail = IdentityBuilder::sample('email')->value;
+        $identity = IdentityBuilder::new()->emailChanged($newEmail)->create();
+
+        // When
+        $this->store($identity);
+
+        // Then
+        $row = $this->fetchRow($identity->id->toString());
+        self::assertNotFalse($row);
+        self::assertSame($newEmail, $row['email']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame($otherBuilder['email']->value, $otherRow['email']);
+    }
+
+    #[Test]
     public function itProjectsOnIdentitySuspended(): void
     {
         // Given

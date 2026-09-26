@@ -1,0 +1,29 @@
+{% extends 'account/security/_layout.html.twig' %}
+{% trans_default_domain 'account_security' %}
+{% import 'account/security/_breadcrumb.html.twig' as security %}
+
+{% block title %}{{ 'change_email_confirm_title'|trans }}{% endblock %}
+
+{% block content %}
+    {{ security.trail([
+        {label: 'request_email_change_title'|trans, url: path('storefront_account_security_request_email_change')},
+        {label: 'change_email_confirm_title'|trans},
+    ]) }}
+
+    <small>{{ 'change_email_confirm_step_indicator'|trans }}</small>
+    <h1>{{ 'change_email_confirm_title'|trans }}</h1>
+
+    <p>{{ 'change_email_confirm_message_sent'|trans({'%email%': newEmail}) }}</p>
+
+    {{ form_start(form) }}
+        {{ form_errors(form) }}
+        {{ form_widget(form) }}
+        <button type="submit">{{ 'change_email_confirm_button_submit'|trans }}</button>
+    {{ form_end(form) }}
+
+    <twig:ui:SubmitLink
+        actionUrl="{{ path('storefront_account_security_change_email_resend') }}"
+        csrfId="change_email_resend"
+        label="{{ 'button_resend'|trans({}, 'verification_code') }}"
+    />
+{% endblock %}

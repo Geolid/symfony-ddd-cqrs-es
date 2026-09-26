@@ -24,7 +24,7 @@
             <dt>{{ 'show_label_email'|trans }}</dt>
             <dd>{{ user.getUserIdentifier() }}</dd>
         </dl>
-        <button type="button" class="outline" disabled>{{ 'link_modify'|trans({}, 'messages') }}</button>
+        <a href="{{ path('storefront_account_security_request_email_change') }}" role="button" class="outline">{{ 'link_modify'|trans({}, 'messages') }}</a>
 
         <hr>
 
