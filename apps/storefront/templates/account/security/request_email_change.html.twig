@@ -1,0 +1,25 @@
+{% extends 'account/security/_layout.html.twig' %}
+{% trans_default_domain 'account_security' %}
+{% import 'account/security/_breadcrumb.html.twig' as security %}
+
+{% block title %}{{ 'request_email_change_title'|trans }}{% endblock %}
+
+{% block content %}
+    {{ security.trail([
+        {label: 'request_email_change_title'|trans},
+    ]) }}
+
+    <small>{{ 'request_email_change_step_indicator'|trans }}</small>
+    <h1>{{ 'request_email_change_title'|trans }}</h1>
+
+    <dl>
+        <dt>{{ 'request_email_change_label_current_email'|trans }}</dt>
+        <dd>{{ currentEmail }}</dd>
+    </dl>
+
+    {{ form_start(form) }}
+        {{ form_errors(form) }}
+        {{ form_rest(form) }}
+        <button type="submit">{{ 'request_email_change_button_submit'|trans }}</button>
+    {{ form_end(form) }}
+{% endblock %}

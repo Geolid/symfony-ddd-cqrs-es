@@ -16,18 +16,28 @@ use Iam\Authentication\Application\Query\ListTrustedDevicesByIdentity\ListTruste
 use Iam\Authentication\Application\TotpEnrollment\TotpEnrollerInterface;
 use Iam\Authentication\Application\TotpEnrollment\TotpProvisioningInterface;
 use Iam\Authentication\Domain\TotpCredential\Exception\InvalidTotpCodeException;
+use Iam\Identity\Application\Command\ChangeEmail\ChangeEmail;
+use Iam\Identity\Application\Command\ChangeEmail\Exception\IdentityEmailAlreadyInUseException;
 use Iam\Identity\Application\Command\ChangeFullName\ChangeFullName;
+use Iam\Identity\Application\Command\RequestEmailChange\RequestEmailChange;
+use Iam\Identity\Domain\Exception\EmailChangeRequestedTooRecentlyException;
+use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
+use Storefront\Form\ChangeEmail\ChangeEmailFormData;
+use Storefront\Form\ChangeEmail\ChangeEmailType;
 use Storefront\Form\ChangeFullName\ChangeFullNameFormData;
 use Storefront\Form\ChangeFullName\ChangeFullNameType;
 use Storefront\Form\ChangePassword\ChangePasswordFormData;
 use Storefront\Form\ChangePassword\ChangePasswordType;
 use Storefront\Form\FormExceptionMapper;
+use Storefront\Form\RequestEmailChange\RequestEmailChangeFormData;
+use Storefront\Form\RequestEmailChange\RequestEmailChangeType;
 use Storefront\Form\TwoFactorConfirm\TwoFactorConfirmFormData;
 use Storefront\Form\TwoFactorConfirm\TwoFactorConfirmType;
 use Storefront\Security\PasswordUser;
+use Storefront\Security\RateLimiter\VerificationCodeRateLimiter;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Form\FormInterface;
@@ -45,6 +55,7 @@ final class SecurityController extends AbstractController
 {
     private const string SESSION_KEY = 'storefront.totp_enrollment_secret';
     private const string ISSUER = 'Storefront';
+    private const string EMAIL_CHANGE_SESSION_KEY = 'storefront.email_change_new_email';
 
     public function __construct(
         private readonly QueryBusInterface $queryBus,
@@ -54,6 +65,8 @@ final class SecurityController extends AbstractController
         private readonly BackupCodeRegeneratorInterface $backupCodeRegenerator,
         private readonly FormExceptionMapper $formExceptionMapper,
         private readonly TranslatorInterface $translator,
+        private readonly VerificationCodeRateLimiter $rateLimiter,
+        private readonly ClockInterface $clock,
         #[Autowire(param: 'iam.authentication.trusted_device_lifetime')]
         private readonly int $trustedDeviceLifetime,
     ) {
@@ -84,6 +97,118 @@ final class SecurityController extends AbstractController
         }
 
         return $this->render('account/security/change_full_name.html.twig', ['form' => $form]);
+    }
+
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
+    #[Route(path: ['en' => '/email/change', 'fr' => '/e-mail/modifier'], name: 'request_email_change', methods: ['GET', 'POST'])]
+    public function requestEmailChange(Request $request, #[CurrentUser] PasswordUser $user): Response
+    {
+        $formData = new RequestEmailChangeFormData();
+        $form = $this->createForm(RequestEmailChangeType::class, $formData)->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                $this->commandBus->dispatch(new RequestEmailChange($user->identityId(), (string) $formData->newEmail));
+                $request->getSession()->set(self::EMAIL_CHANGE_SESSION_KEY, (string) $formData->newEmail);
+
+                return $this->redirectToRoute('storefront_account_security_change_email');
+            } catch (ApplicationExceptionInterface|\DomainException $e) {
+                if (!$this->formExceptionMapper->map($form, $e)) {
+                    throw $e;
+                }
+            }
+        }
+
+        return $this->render('account/security/request_email_change.html.twig', [
+            'form' => $form,
+            'currentEmail' => $user->getUserIdentifier(),
+        ]);
+    }
+
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
+    #[Route(path: ['en' => '/email/change/confirm', 'fr' => '/e-mail/modifier/confirmer'], name: 'change_email', methods: ['GET', 'POST'])]
+    public function changeEmail(Request $request, #[CurrentUser] PasswordUser $user): Response
+    {
+        $session = $request->getSession();
+        /** @var non-empty-string|null $newEmail */
+        $newEmail = $session->get(self::EMAIL_CHANGE_SESSION_KEY);
+
+        if (null === $newEmail) {
+            return $this->redirectToRoute('storefront_account_security_request_email_change');
+        }
+
+        $formData = new ChangeEmailFormData();
+        $form = $this->createForm(ChangeEmailType::class, $formData)->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            try {
+                $this->commandBus->dispatch(new ChangeEmail($user->identityId(), $newEmail, (string) $formData->code));
+            } catch (IdentityEmailAlreadyInUseException) {
+                $session->remove(self::EMAIL_CHANGE_SESSION_KEY);
+                $this->addFlash('error', $this->translator->trans('change_email_error_already_in_use', domain: 'account_security'));
+
+                return $this->redirectToRoute('storefront_account_security_request_email_change');
+            } catch (ApplicationExceptionInterface|\DomainException $e) {
+                if (!$this->formExceptionMapper->map($form, $e)) {
+                    throw $e;
+                }
+
+                return $this->render('account/security/change_email.html.twig', ['form' => $form, 'newEmail' => $newEmail]);
+            }
+
+            $session->remove(self::EMAIL_CHANGE_SESSION_KEY);
+            $this->addFlash('success', $this->translator->trans('change_email_flash_changed', domain: 'account_security'));
+
+            return $this->redirectToRoute('storefront_account_security_show');
+        }
+
+        return $this->render('account/security/change_email.html.twig', ['form' => $form, 'newEmail' => $newEmail]);
+    }
+
+    /**
+     * @throws ApplicationExceptionInterface
+     * @throws \DomainException
+     */
+    #[Route(path: ['en' => '/email/change/resend', 'fr' => '/e-mail/modifier/renvoyer'], name: 'change_email_resend', methods: ['POST'])]
+    public function changeEmailResend(Request $request, #[CurrentUser] PasswordUser $user): RedirectResponse
+    {
+        if (!$this->isCsrfTokenValid('change_email_resend', (string) $request->request->get('_token'))) {
+            $this->addFlash('error', $this->translator->trans('flash_failed', domain: 'verification_code'));
+
+            return $this->redirectToRoute('storefront_account_security_change_email');
+        }
+
+        $session = $request->getSession();
+        /** @var non-empty-string|null $newEmail */
+        $newEmail = $session->get(self::EMAIL_CHANGE_SESSION_KEY);
+
+        if (null === $newEmail) {
+            return $this->redirectToRoute('storefront_account_security_request_email_change');
+        }
+
+        $retryAt = $this->rateLimiter->consume($request, $user->identityId(), 'change_email');
+        if (null !== $retryAt) {
+            $minutes = (int) ceil(($retryAt->getTimestamp() - $this->clock->now()->getTimestamp()) / 60);
+            $this->addFlash('error', $this->translator->trans('flash_rate_limited', ['%minutes%' => $minutes], domain: 'verification_code'));
+
+            return $this->redirectToRoute('storefront_account_security_change_email');
+        }
+
+        try {
+            $this->commandBus->dispatch(new RequestEmailChange($user->identityId(), $newEmail));
+            $this->addFlash('success', $this->translator->trans('flash_sent', domain: 'verification_code'));
+        } catch (EmailChangeRequestedTooRecentlyException $e) {
+            $seconds = max(1, $e->retryAt->getTimestamp() - $this->clock->now()->getTimestamp());
+            $this->addFlash('error', $this->translator->trans('flash_too_recent', ['%seconds%' => $seconds], domain: 'verification_code'));
+        }
+
+        return $this->redirectToRoute('storefront_account_security_change_email');
     }
 
     /**

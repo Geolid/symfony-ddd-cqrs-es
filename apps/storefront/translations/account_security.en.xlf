@@ -297,6 +297,54 @@
         <source>change_full_name_flash_changed</source>
         <target>Name changed.</target>
       </trans-unit>
+      <trans-unit id="request_email_change_step_indicator">
+        <source>request_email_change_step_indicator</source>
+        <target>Step 1 of 2</target>
+      </trans-unit>
+      <trans-unit id="request_email_change_title">
+        <source>request_email_change_title</source>
+        <target>Change your email address</target>
+      </trans-unit>
+      <trans-unit id="request_email_change_label_current_email">
+        <source>request_email_change_label_current_email</source>
+        <target>Current email address</target>
+      </trans-unit>
+      <trans-unit id="request_email_change_label_new_email">
+        <source>request_email_change_label_new_email</source>
+        <target>New email address</target>
+      </trans-unit>
+      <trans-unit id="request_email_change_button_submit">
+        <source>request_email_change_button_submit</source>
+        <target>Change email address</target>
+      </trans-unit>
+      <trans-unit id="change_email_error_already_in_use">
+        <source>change_email_error_already_in_use</source>
+        <target>This email address is already in use.</target>
+      </trans-unit>
+      <trans-unit id="change_email_error_too_recent">
+        <source>change_email_error_too_recent</source>
+        <target>Please wait before requesting another email change.</target>
+      </trans-unit>
+      <trans-unit id="change_email_confirm_step_indicator">
+        <source>change_email_confirm_step_indicator</source>
+        <target>Step 2 of 2</target>
+      </trans-unit>
+      <trans-unit id="change_email_confirm_title">
+        <source>change_email_confirm_title</source>
+        <target>Confirm your new email address</target>
+      </trans-unit>
+      <trans-unit id="change_email_confirm_message_sent">
+        <source>change_email_confirm_message_sent</source>
+        <target>To confirm your new email, we've sent a code to %email%</target>
+      </trans-unit>
+      <trans-unit id="change_email_confirm_button_submit">
+        <source>change_email_confirm_button_submit</source>
+        <target>Confirm email address</target>
+      </trans-unit>
+      <trans-unit id="change_email_flash_changed">
+        <source>change_email_flash_changed</source>
+        <target>Email address changed.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>
