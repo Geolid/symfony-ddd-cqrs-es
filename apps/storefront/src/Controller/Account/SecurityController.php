@@ -20,8 +20,6 @@ use Iam\Identity\Application\Command\ChangeEmail\ChangeEmail;
 use Iam\Identity\Application\Command\ChangeEmail\Exception\IdentityEmailAlreadyInUseException;
 use Iam\Identity\Application\Command\ChangeFullName\ChangeFullName;
 use Iam\Identity\Application\Command\RequestEmailChange\RequestEmailChange;
-use Iam\Identity\Domain\Exception\EmailChangeRequestedTooRecentlyException;
-use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
@@ -37,7 +35,7 @@ use Storefront\Form\RequestEmailChange\RequestEmailChangeType;
 use Storefront\Form\TwoFactorConfirm\TwoFactorConfirmFormData;
 use Storefront\Form\TwoFactorConfirm\TwoFactorConfirmType;
 use Storefront\Security\PasswordUser;
-use Storefront\Security\RateLimiter\VerificationCodeRateLimiter;
+use Storefront\Security\RateLimiter\VerificationCodeResendFlow;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Form\FormInterface;
@@ -65,8 +63,7 @@ final class SecurityController extends AbstractController
         private readonly BackupCodeRegeneratorInterface $backupCodeRegenerator,
         private readonly FormExceptionMapper $formExceptionMapper,
         private readonly TranslatorInterface $translator,
-        private readonly VerificationCodeRateLimiter $rateLimiter,
-        private readonly ClockInterface $clock,
+        private readonly VerificationCodeResendFlow $resendFlow,
         #[Autowire(param: 'iam.authentication.trusted_device_lifetime')]
         private readonly int $trustedDeviceLifetime,
     ) {
@@ -192,21 +189,12 @@ final class SecurityController extends AbstractController
             return $this->redirectToRoute('storefront_account_security_request_email_change');
         }
 
-        $retryAt = $this->rateLimiter->consume($request, $user->identityId(), 'change_email');
-        if (null !== $retryAt) {
-            $minutes = (int) ceil(($retryAt->getTimestamp() - $this->clock->now()->getTimestamp()) / 60);
-            $this->addFlash('error', $this->translator->trans('flash_rate_limited', ['%minutes%' => $minutes], domain: 'verification_code'));
-
-            return $this->redirectToRoute('storefront_account_security_change_email');
-        }
-
-        try {
-            $this->commandBus->dispatch(new RequestEmailChange($user->identityId(), $newEmail));
-            $this->addFlash('success', $this->translator->trans('flash_sent', domain: 'verification_code'));
-        } catch (EmailChangeRequestedTooRecentlyException $e) {
-            $seconds = max(1, $e->retryAt->getTimestamp() - $this->clock->now()->getTimestamp());
-            $this->addFlash('error', $this->translator->trans('flash_too_recent', ['%seconds%' => $seconds], domain: 'verification_code'));
-        }
+        $this->resendFlow->attempt(
+            $request,
+            $user->identityId(),
+            'change_email',
+            fn () => $this->commandBus->dispatch(new RequestEmailChange($user->identityId(), $newEmail)),
+        );
 
         return $this->redirectToRoute('storefront_account_security_change_email');
     }

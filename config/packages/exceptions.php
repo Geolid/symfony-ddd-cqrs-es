@@ -25,14 +25,11 @@ use Iam\Authentication\Application\CredentialVerification\Exception\ApiKeyCreden
 use Iam\Authentication\Application\CredentialVerification\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialOwnedByAnotherIdentityException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\InvalidCurrentPasswordException;
-use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordResetRequestedTooRecentlyException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Identity\Application\Command\ChangeEmail\Exception\IdentityEmailAlreadyInUseException as ChangeEmailIdentityEmailAlreadyInUseException;
 use Iam\Identity\Application\Command\RegisterIdentity\Exception\IdentityEmailAlreadyInUseException;
 use Iam\Identity\Application\Command\RequestEmailChange\Exception\IdentityEmailAlreadyInUseException as RequestEmailChangeIdentityEmailAlreadyInUseException;
-use Iam\Identity\Domain\Exception\ConfirmationRequestedTooRecentlyException;
-use Iam\Identity\Domain\Exception\EmailChangeRequestedTooRecentlyException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyConfirmedException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherCustomerException;
@@ -46,6 +43,7 @@ use Shared\Domain\Exception\AggregateAlreadyExistsException;
 use Shared\Domain\Exception\AggregateNotFoundException;
 use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
 use Shared\Domain\Exception\VerificationCodeNotFoundException;
+use Shared\Domain\Exception\VerificationCodeRequestedTooRecentlyException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerAddressesNotCompletedException as CheckoutCustomerAddressesNotCompletedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerErasureRequestedException as CheckoutCustomerErasureRequestedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerNotRegisteredException as CheckoutCustomerNotRegisteredException;
@@ -73,13 +71,10 @@ return static function (ContainerConfigurator $container): void {
             IdentityEmailAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
             RequestEmailChangeIdentityEmailAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
             ChangeEmailIdentityEmailAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
-            ConfirmationRequestedTooRecentlyException::class => ['log_level' => 'info', 'status_code' => 429],
-            EmailChangeRequestedTooRecentlyException::class => ['log_level' => 'info', 'status_code' => 429],
             IdentityNotAuthenticatableException::class => ['log_level' => 'info', 'status_code' => 409],
             ApiKeyCredentialRevokedException::class => ['log_level' => 'info', 'status_code' => 409],
             ApiKeyCredentialOwnedByAnotherIdentityException::class => ['log_level' => 'info', 'status_code' => 403],
             ApiKeyCredentialLabelAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
-            PasswordResetRequestedTooRecentlyException::class => ['log_level' => 'info', 'status_code' => 429],
             InvalidCurrentPasswordException::class => ['log_level' => 'info', 'status_code' => 422],
             SamePasswordException::class => ['log_level' => 'info', 'status_code' => 422],
             WeakPasswordException::class => ['log_level' => 'info', 'status_code' => 422],
@@ -112,6 +107,7 @@ return static function (ContainerConfigurator $container): void {
             MailerException::class => ['log_level' => 'error', 'status_code' => 502],
             VerificationCodeNotFoundException::class => ['log_level' => 'info', 'status_code' => 404],
             VerificationCodeAttemptsExceededException::class => ['log_level' => 'info', 'status_code' => 429],
+            VerificationCodeRequestedTooRecentlyException::class => ['log_level' => 'info', 'status_code' => 429],
             ApplicationExceptionInterface::class => ['log_level' => 'error', 'status_code' => 500],
 
             // WARNING: Must be the last entries. (Order matters: first match wins)
