@@ -28,8 +28,11 @@ use Iam\Authentication\Domain\PasswordCredential\Exception\InvalidCurrentPasswor
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordResetRequestedTooRecentlyException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
+use Iam\Identity\Application\Command\ChangeEmail\Exception\IdentityEmailAlreadyInUseException as ChangeEmailIdentityEmailAlreadyInUseException;
 use Iam\Identity\Application\Command\RegisterIdentity\Exception\IdentityEmailAlreadyInUseException;
+use Iam\Identity\Application\Command\RequestEmailChange\Exception\IdentityEmailAlreadyInUseException as RequestEmailChangeIdentityEmailAlreadyInUseException;
 use Iam\Identity\Domain\Exception\ConfirmationRequestedTooRecentlyException;
+use Iam\Identity\Domain\Exception\EmailChangeRequestedTooRecentlyException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyConfirmedException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherCustomerException;
