@@ -28,20 +28,30 @@ final class ChangeEmailHandlerTest extends AbstractIntegrationTestCase
 
     private NativeCodeChallenger $codeChallenger;
 
+    private UniquenessRegistryInterface $uniqueness;
+
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->identityFinder = $this->service(IdentityFinderInterface::class);
         $this->codeChallenger = $this->service(NativeCodeChallenger::class);
+        $this->uniqueness = $this->service(UniquenessRegistryInterface::class);
     }
 
     #[Test]
     public function itChanges(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->create();
+        $builder = IdentityBuilder::new();
+        $identity = $builder->create();
         $this->store($identity);
+        $oldEmail = $builder['email']->value;
+        $this->uniqueness->claim(
+            UniqueKey::for(IdentityUniqueKey::EMAIL),
+            $oldEmail,
+            $identity->id->toString(),
+        );
         $newEmail = IdentityBuilder::sample('email')->value;
         $code = $this->codeChallenger->issue(VerificationCodeKey::for(IdentityVerificationCodePurpose::EMAIL_CHANGE, $identity->id->toString()), Clock::get()->now());
 
@@ -51,6 +61,8 @@ final class ChangeEmailHandlerTest extends AbstractIntegrationTestCase
         // Then
         $result = $this->identityFinder->ofId($identity->id->toString());
         self::assertSame($newEmail, $result->email);
+
+        self::assertFalse($this->uniqueness->isClaimed(UniqueKey::for(IdentityUniqueKey::EMAIL), $oldEmail));
     }
 
     #[Test]
@@ -62,7 +74,7 @@ final class ChangeEmailHandlerTest extends AbstractIntegrationTestCase
         $code = $this->codeChallenger->issue(VerificationCodeKey::for(IdentityVerificationCodePurpose::EMAIL_CHANGE, $identity->id->toString()), Clock::get()->now());
 
         $email = IdentityBuilder::sample('email')->value;
-        $this->service(UniquenessRegistryInterface::class)->claim(
+        $this->uniqueness->claim(
             UniqueKey::for(IdentityUniqueKey::EMAIL),
             $email,
             Uuid::uuid7()->toString(),
