@@ -42,11 +42,11 @@ final class DbalTotpCredentialFinderTest extends AbstractIntegrationTestCase
         self::assertSame($credential->id->toString(), $result->id);
         self::assertSame($builder['identityId'], $result->identityId);
         self::assertSame(
-            $builder['issuedAt']->format(\DateTimeInterface::ATOM),
-            $result->issuedAt->format(\DateTimeInterface::ATOM),
+            $builder['enrolledAt']->format(\DateTimeInterface::ATOM),
+            $result->enrolledAt->format(\DateTimeInterface::ATOM),
         );
-        self::assertFalse($result->revoked);
-        self::assertNull($result->revokedAt);
+        self::assertFalse($result->unenrolled);
+        self::assertNull($result->unenrolledAt);
         self::assertSame($this->cipher->encrypt($builder['secret']), $result->encryptedSecret);
     }
 
@@ -80,10 +80,10 @@ final class DbalTotpCredentialFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFindsNothingWhenRevoked(): void
+    public function itFindsNothingWhenUnenrolled(): void
     {
         // Given
-        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher)->revoked();
+        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher)->unenrolled();
         $credential = $builder->create();
         $this->store($credential);
 
@@ -95,7 +95,7 @@ final class DbalTotpCredentialFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFindsNothingWhenNotIssued(): void
+    public function itFindsNothingWhenNotEnrolled(): void
     {
         // When
         $result = $this->finder->activeOfIdentityOrNull(TotpCredentialBuilder::sample('identityId'));

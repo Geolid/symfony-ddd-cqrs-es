@@ -6,16 +6,21 @@ namespace Iam\Tests\Identity\Domain;
 
 use Iam\Identity\Domain\Event\IdentityConfirmationRequested;
 use Iam\Identity\Domain\Event\IdentityConfirmed;
+use Iam\Identity\Domain\Event\IdentityEmailChanged;
+use Iam\Identity\Domain\Event\IdentityEmailChangeRequested;
 use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\Event\IdentityErasureCancelled;
 use Iam\Identity\Domain\Event\IdentityErasureRequested;
+use Iam\Identity\Domain\Event\IdentityFullNameChanged;
 use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Identity\Domain\Event\IdentitySuspended;
 use Iam\Identity\Domain\Exception\ConfirmationRequestedTooRecentlyException;
+use Iam\Identity\Domain\Exception\EmailChangeRequestedTooRecentlyException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyConfirmedException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\InvalidConfirmationCodeException;
+use Iam\Identity\Domain\Exception\InvalidEmailChangeCodeException;
 use Iam\Identity\Domain\Identity;
 use Iam\Identity\Domain\ValueObject\Email;
 use Iam\Identity\Domain\ValueObject\FullName;
@@ -37,6 +42,9 @@ final class IdentityTest extends AggregateRootTestCase
     private \DateTimeImmutable $registeredAt;
     private \DateTimeImmutable $confirmedAt;
     private string $confirmationCode;
+    private \DateTimeImmutable $fullNameChangedAt;
+    private \DateTimeImmutable $emailChangeRequestedAt;
+    private \DateTimeImmutable $emailChangedAt;
     private CodeChallengerInterface $codeChallenger;
     private \DateTimeImmutable $suspendedAt;
     private \DateTimeImmutable $reactivatedAt;
@@ -56,6 +64,9 @@ final class IdentityTest extends AggregateRootTestCase
         $this->registeredAt = IdentityBuilder::sample('registeredAt');
         $this->confirmedAt = IdentityBuilder::sample('confirmedAt');
         $this->confirmationCode = IdentityBuilder::sample('confirmationCode');
+        $this->fullNameChangedAt = IdentityBuilder::sample('fullNameChangedAt');
+        $this->emailChangeRequestedAt = IdentityBuilder::sample('emailChangeRequestedAt');
+        $this->emailChangedAt = IdentityBuilder::sample('emailChangedAt');
         $this->codeChallenger = new FakeCodeChallenger();
         $this->suspendedAt = IdentityBuilder::sample('suspendedAt');
         $this->reactivatedAt = IdentityBuilder::sample('reactivatedAt');
@@ -121,6 +132,127 @@ final class IdentityTest extends AggregateRootTestCase
             ->given($this->registered())
             ->when(fn (Identity $identity) => $identity->confirm('wrong', new FakeCodeChallenger(), $this->confirmedAt))
             ->expectsException(InvalidConfirmationCodeException::class);
+    }
+
+    #[Test]
+    public function itChangesFullName(): void
+    {
+        $newFullName = IdentityBuilder::sample('fullName');
+
+        $this
+            ->given($this->registered())
+            ->when(fn (Identity $identity) => $identity->changeFullName($newFullName, $this->fullNameChangedAt))
+            ->then(new IdentityFullNameChanged($this->id, $newFullName, $this->fullNameChangedAt));
+    }
+
+    #[Test]
+    public function itDoesNotChangeFullNameWhenSame(): void
+    {
+        $this
+            ->given($this->registered())
+            ->when(fn (Identity $identity) => $identity->changeFullName($this->fullName, $this->fullNameChangedAt))
+            ->then();
+    }
+
+    #[Test]
+    public function itCannotChangeFullNameWhenErased(): void
+    {
+        $this
+            ->given(
+                $this->registered(),
+                $this->erasureRequested(),
+                $this->erased(),
+            )
+            ->when(fn (Identity $identity) => $identity->changeFullName(IdentityBuilder::sample('fullName'), $this->fullNameChangedAt))
+            ->expectsException(IdentityAlreadyErasedException::class);
+    }
+
+    #[Test]
+    public function itRequestsEmailChange(): void
+    {
+        $newEmail = IdentityBuilder::sample('email');
+
+        $this
+            ->given($this->registered())
+            ->when(fn (Identity $identity) => $identity->requestEmailChange($newEmail, $this->emailChangeRequestedAt))
+            ->then(new IdentityEmailChangeRequested($this->id, $newEmail, $this->emailChangeRequestedAt));
+    }
+
+    #[Test]
+    public function itDoesNotRequestEmailChangeWhenSame(): void
+    {
+        $this
+            ->given($this->registered())
+            ->when(fn (Identity $identity) => $identity->requestEmailChange($this->email, $this->emailChangeRequestedAt))
+            ->then();
+    }
+
+    #[Test]
+    public function itCannotRequestEmailChangeWhenErased(): void
+    {
+        $this
+            ->given(
+                $this->registered(),
+                $this->erasureRequested(),
+                $this->erased(),
+            )
+            ->when(fn (Identity $identity) => $identity->requestEmailChange(IdentityBuilder::sample('email'), $this->emailChangeRequestedAt))
+            ->expectsException(IdentityAlreadyErasedException::class);
+    }
+
+    #[Test]
+    public function itCannotRequestEmailChangeTooSoon(): void
+    {
+        $this
+            ->given(
+                $this->registered(),
+                new IdentityEmailChangeRequested($this->id, IdentityBuilder::sample('email'), $this->emailChangeRequestedAt),
+            )
+            ->when(fn (Identity $identity) => $identity->requestEmailChange(IdentityBuilder::sample('email'), $this->emailChangeRequestedAt->modify('+1 second')))
+            ->expectsException(EmailChangeRequestedTooRecentlyException::class)
+            ->expectsExceptionMessage('requested too recently');
+    }
+
+    #[Test]
+    public function itChangesEmail(): void
+    {
+        $newEmail = IdentityBuilder::sample('email');
+
+        $this
+            ->given($this->registered())
+            ->when(fn (Identity $identity) => $identity->changeEmail(FakeCodeChallenger::CODE, $this->codeChallenger, $newEmail, $this->emailChangedAt))
+            ->then(new IdentityEmailChanged($this->id, $newEmail, $this->emailChangedAt));
+    }
+
+    #[Test]
+    public function itDoesNotChangeEmailWhenSame(): void
+    {
+        $this
+            ->given($this->registered())
+            ->when(fn (Identity $identity) => $identity->changeEmail(FakeCodeChallenger::CODE, $this->codeChallenger, $this->email, $this->emailChangedAt))
+            ->then();
+    }
+
+    #[Test]
+    public function itCannotChangeEmailWhenErased(): void
+    {
+        $this
+            ->given(
+                $this->registered(),
+                $this->erasureRequested(),
+                $this->erased(),
+            )
+            ->when(fn (Identity $identity) => $identity->changeEmail(FakeCodeChallenger::CODE, $this->codeChallenger, IdentityBuilder::sample('email'), $this->emailChangedAt))
+            ->expectsException(IdentityAlreadyErasedException::class);
+    }
+
+    #[Test]
+    public function itCannotChangeEmailWithInvalidCode(): void
+    {
+        $this
+            ->given($this->registered())
+            ->when(fn (Identity $identity) => $identity->changeEmail('wrong', new FakeCodeChallenger(), IdentityBuilder::sample('email'), $this->emailChangedAt))
+            ->expectsException(InvalidEmailChangeCodeException::class);
     }
 
     #[Test]

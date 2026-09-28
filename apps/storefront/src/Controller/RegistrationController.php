@@ -4,14 +4,12 @@ declare(strict_types=1);
 
 namespace Storefront\Controller;
 
-use Iam\Authentication\Application\Command\DefinePasswordCredential\DefinePasswordCredential;
+use Iam\Authentication\Application\Command\DefinePassword\DefinePassword;
 use Iam\Identity\Application\Command\ConfirmIdentity\ConfirmIdentity;
 use Iam\Identity\Application\Command\RegisterIdentity\Exception\IdentityEmailAlreadyInUseException;
 use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
-use Iam\Identity\Application\Command\RequestConfirmation\RequestConfirmation;
-use Iam\Identity\Domain\Exception\ConfirmationRequestedTooRecentlyException;
+use Iam\Identity\Application\Command\RequestIdentityConfirmation\RequestIdentityConfirmation;
 use Iam\Identity\Domain\Exception\IdentityAlreadyConfirmedException;
-use Psr\Clock\ClockInterface;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -20,7 +18,7 @@ use Storefront\Form\Confirmation\ConfirmationType;
 use Storefront\Form\FormExceptionMapper;
 use Storefront\Form\Register\RegisterFormData;
 use Storefront\Form\Register\RegisterType;
-use Storefront\Security\RateLimiter\VerificationCodeRateLimiter;
+use Storefront\Security\RateLimiter\VerificationCodeResendFlow;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -33,12 +31,13 @@ use Symfony\Contracts\Translation\TranslatorInterface;
 #[Route(path: ['en' => '/register', 'fr' => '/inscription'], name: 'storefront_registration_')]
 final class RegistrationController extends AbstractController
 {
+    private const string VERIFICATION_CODE_PURPOSE = 'confirm';
+
     public function __construct(
         private readonly CommandBusInterface $commandBus,
         private readonly TranslatorInterface $translator,
         private readonly FormExceptionMapper $formExceptionMapper,
-        private readonly ClockInterface $clock,
-        private readonly VerificationCodeRateLimiter $rateLimiter,
+        private readonly VerificationCodeResendFlow $resendFlow,
     ) {
     }
 
@@ -68,7 +67,7 @@ final class RegistrationController extends AbstractController
                 return $this->redirectToRoute('storefront_signin_identify');
             }
 
-            $this->commandBus->dispatch(new DefinePasswordCredential($identityId, (string) $formData->password));
+            $this->commandBus->dispatch(new DefinePassword($identityId, (string) $formData->password));
 
             return $this->redirectToRoute('storefront_registration_confirm', ['identityId' => $identityId]);
         }
@@ -89,7 +88,7 @@ final class RegistrationController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             try {
                 $this->commandBus->dispatch(new ConfirmIdentity($identityId, (string) $formData->code));
-                $this->rateLimiter->reset($request, $identityId, 'confirm');
+                $this->resendFlow->reset($request, $identityId, self::VERIFICATION_CODE_PURPOSE);
                 $this->addFlash('success', $this->translator->trans('confirm_flash_confirmed', domain: 'registration'));
 
                 return $this->redirectToRoute('storefront_signin_identify');
@@ -120,20 +119,13 @@ final class RegistrationController extends AbstractController
             return $this->redirectToRoute('storefront_registration_confirm', ['identityId' => $identityId]);
         }
 
-        $retryAt = $this->rateLimiter->consume($request, $identityId, 'confirm');
-        if (null !== $retryAt) {
-            $minutes = (int) ceil(($retryAt->getTimestamp() - $this->clock->now()->getTimestamp()) / 60);
-            $this->addFlash('error', $this->translator->trans('flash_rate_limited', ['%minutes%' => $minutes], domain: 'verification_code'));
-
-            return $this->redirectToRoute('storefront_registration_confirm', ['identityId' => $identityId]);
-        }
-
         try {
-            $this->commandBus->dispatch(new RequestConfirmation($identityId));
-            $this->addFlash('success', $this->translator->trans('flash_sent', domain: 'verification_code'));
-        } catch (ConfirmationRequestedTooRecentlyException $e) {
-            $seconds = max(1, $e->retryAt->getTimestamp() - $this->clock->now()->getTimestamp());
-            $this->addFlash('error', $this->translator->trans('flash_too_recent', ['%seconds%' => $seconds], domain: 'verification_code'));
+            $this->resendFlow->attempt(
+                $request,
+                $identityId,
+                self::VERIFICATION_CODE_PURPOSE,
+                fn () => $this->commandBus->dispatch(new RequestIdentityConfirmation($identityId)),
+            );
         } catch (IdentityAlreadyConfirmedException) {
             $this->addFlash('success', $this->translator->trans('confirm_resend_flash_already_confirmed', domain: 'registration'));
 

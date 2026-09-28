@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Iam\Authentication\Application\Command\ResetPassword;
 
+use Iam\Authentication\Application\BreachDatabase\CompromisedPasswordGatewayInterface;
+use Iam\Authentication\Application\BreachDatabase\Exception\CompromisedPasswordException;
 use Iam\Authentication\Application\CredentialVerification\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Application\Finder\Identity\Exception\IdentityResultNotFoundException;
 use Iam\Authentication\Application\Finder\Identity\IdentityFinderInterface;
@@ -31,6 +33,7 @@ final readonly class ResetPasswordHandler
         private IdentityFinderInterface $identityFinder,
         private CodeChallengerInterface $codeChallenger,
         private PasswordStrengthSpecificationInterface $passwordStrengthSpecification,
+        private CompromisedPasswordGatewayInterface $compromisedPasswordGateway,
         private PasswordHasherInterface $hasher,
         private ClockInterface $clock,
     ) {
@@ -44,6 +47,7 @@ final readonly class ResetPasswordHandler
      * @throws VerificationCodeNotFoundException
      * @throws VerificationCodeAttemptsExceededException
      * @throws WeakPasswordException
+     * @throws CompromisedPasswordException
      * @throws SamePasswordException
      * @throws PasswordCredentialAlreadyExistsException
      */
@@ -55,11 +59,17 @@ final readonly class ResetPasswordHandler
             throw IdentityNotAuthenticatableException::forIdentity($command->identityId);
         }
 
+        $newPassword = Password::fromString($command->newPassword);
+
+        if ($this->compromisedPasswordGateway->isCompromised($newPassword)) {
+            throw CompromisedPasswordException::forIdentity($command->identityId);
+        }
+
         $credential = $this->repository->load(PasswordCredentialId::forIdentity($command->identityId));
         $credential->resetPassword(
             $command->code,
             $this->codeChallenger,
-            Password::fromString($command->newPassword),
+            $newPassword,
             $this->passwordStrengthSpecification,
             $this->hasher,
             $this->clock->now(),

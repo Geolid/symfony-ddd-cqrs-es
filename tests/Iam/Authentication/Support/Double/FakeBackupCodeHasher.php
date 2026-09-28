@@ -15,8 +15,8 @@ final class FakeBackupCodeHasher implements BackupCodeHasherInterface
         return self::PREFIX.$code;
     }
 
-    public function verify(#[\SensitiveParameter] string $code, string $hashedCode): bool
+    public function verify(string $hashedCode, #[\SensitiveParameter] string $plainCode): bool
     {
-        return self::PREFIX.$code === $hashedCode;
+        return self::PREFIX.$plainCode === $hashedCode;
     }
 }

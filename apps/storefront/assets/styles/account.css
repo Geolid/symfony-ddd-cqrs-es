@@ -57,3 +57,43 @@
   color: var(--pico-color-red-500);
 }
 
+.trusted-devices {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pico-spacing);
+  margin-bottom: var(--pico-spacing);
+}
+
+.trusted-device-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--pico-spacing);
+  margin: 0;
+  padding: var(--pico-spacing);
+  background-color: var(--pico-code-background-color);
+  border-radius: var(--pico-border-radius);
+}
+
+.trusted-device-card > div {
+  display: flex;
+  align-items: center;
+  gap: var(--pico-spacing);
+}
+
+.trusted-device-card form {
+  margin: 0;
+}
+
+.trusted-device-card .icon {
+  width: 1.5rem;
+  height: 1.5rem;
+  color: var(--pico-muted-color);
+}
+
+.trusted-device-card .outline.pico-background-red-500 {
+  background-color: transparent;
+  border-color: var(--pico-color-red-500);
+  color: var(--pico-color-red-500);
+}
+

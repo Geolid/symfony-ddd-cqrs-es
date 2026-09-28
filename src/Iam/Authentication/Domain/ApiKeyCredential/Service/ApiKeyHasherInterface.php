@@ -8,5 +8,5 @@ interface ApiKeyHasherInterface
 {
     public function hash(#[\SensitiveParameter] string $secret): string;
 
-    public function verify(string $hashedSecret, #[\SensitiveParameter] string $secret): bool;
+    public function verify(string $hashedSecret, #[\SensitiveParameter] string $plainSecret): bool;
 }

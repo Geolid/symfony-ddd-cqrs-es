@@ -8,9 +8,9 @@ use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface
 
 final readonly class FakePasswordHasher implements PasswordHasherInterface
 {
-    public function hash(#[\SensitiveParameter] string $plainPassword): string
+    public function hash(#[\SensitiveParameter] string $password): string
     {
-        return 'hashed:'.$plainPassword;
+        return 'hashed:'.$password;
     }
 
     public function verify(string $hashedPassword, #[\SensitiveParameter] string $plainPassword): bool

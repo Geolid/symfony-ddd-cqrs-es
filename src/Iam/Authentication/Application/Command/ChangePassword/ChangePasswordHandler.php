@@ -6,6 +6,7 @@ namespace Iam\Authentication\Application\Command\ChangePassword;
 
 use Iam\Authentication\Application\BreachDatabase\CompromisedPasswordGatewayInterface;
 use Iam\Authentication\Application\BreachDatabase\Exception\CompromisedPasswordException;
+use Iam\Authentication\Domain\PasswordCredential\Exception\InvalidCurrentPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialAlreadyExistsException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialNotFoundException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
@@ -32,6 +33,7 @@ final readonly class ChangePasswordHandler
 
     /**
      * @throws PasswordCredentialNotFoundException
+     * @throws InvalidCurrentPasswordException
      * @throws WeakPasswordException
      * @throws CompromisedPasswordException
      * @throws SamePasswordException
@@ -39,14 +41,14 @@ final readonly class ChangePasswordHandler
      */
     public function __invoke(ChangePassword $command): void
     {
-        $password = Password::fromString($command->password);
+        $newPassword = Password::fromString($command->newPassword);
 
-        if ($this->compromisedPasswordGateway->isCompromised($password)) {
+        if ($this->compromisedPasswordGateway->isCompromised($newPassword)) {
             throw CompromisedPasswordException::forIdentity($command->identityId);
         }
 
         $credential = $this->repository->load(PasswordCredentialId::forIdentity($command->identityId));
-        $credential->change($password, $this->passwordStrengthSpecification, $this->hasher, $this->clock->now());
+        $credential->change($command->currentPassword, $newPassword, $this->passwordStrengthSpecification, $this->hasher, $this->clock->now());
 
         $this->repository->save($credential);
     }

@@ -6,7 +6,7 @@ namespace Iam\Authentication\Domain\BackupCodeCredential;
 
 use Iam\Authentication\Domain\BackupCodeCredential\Entity\BackupCode;
 use Iam\Authentication\Domain\BackupCodeCredential\Event\BackupCodeCredentialConsumed;
-use Iam\Authentication\Domain\BackupCodeCredential\Event\BackupCodeCredentialIssued;
+use Iam\Authentication\Domain\BackupCodeCredential\Event\BackupCodeCredentialGenerated;
 use Iam\Authentication\Domain\BackupCodeCredential\Event\BackupCodeCredentialRegenerated;
 use Iam\Authentication\Domain\BackupCodeCredential\Exception\InvalidBackupCodeException;
 use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeHasherInterface;
@@ -31,20 +31,20 @@ final class BackupCodeCredential implements AggregateRoot, AggregateRootMetadata
     /**
      * @param list<non-empty-string> $plainBackupCodes
      */
-    public static function issue(
+    public static function generate(
         BackupCodeCredentialId $id,
         string $identityId,
         #[\SensitiveParameter]
         array $plainBackupCodes,
         BackupCodeHasherInterface $backupCodeHasher,
-        \DateTimeImmutable $issuedAt,
+        \DateTimeImmutable $generatedAt,
     ): self {
         $self = new self();
-        $self->recordThat(new BackupCodeCredentialIssued(
+        $self->recordThat(new BackupCodeCredentialGenerated(
             id: $id,
             identityId: $identityId,
             backupCodes: self::hashBackupCodes($plainBackupCodes, $backupCodeHasher),
-            issuedAt: $issuedAt,
+            generatedAt: $generatedAt,
         ));
 
         return $self;
@@ -76,7 +76,7 @@ final class BackupCodeCredential implements AggregateRoot, AggregateRootMetadata
         \DateTimeImmutable $consumedAt,
     ): void {
         foreach ($this->backupCodes as $backupCode) {
-            if (!$backupCode->isConsumed() && $backupCodeHasher->verify($code, $backupCode->hashedCode)) {
+            if (!$backupCode->isConsumed() && $backupCodeHasher->verify($backupCode->hashedCode, $code)) {
                 $this->recordThat(new BackupCodeCredentialConsumed(
                     id: $this->id,
                     hashedCode: $backupCode->hashedCode,
@@ -91,7 +91,7 @@ final class BackupCodeCredential implements AggregateRoot, AggregateRootMetadata
     }
 
     #[Apply]
-    private function applyIssued(BackupCodeCredentialIssued $event): void
+    private function applyGenerated(BackupCodeCredentialGenerated $event): void
     {
         $this->id = $event->id;
         $this->backupCodes = $event->backupCodes;

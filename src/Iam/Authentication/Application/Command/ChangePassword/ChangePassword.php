@@ -11,7 +11,9 @@ final readonly class ChangePassword implements CommandInterface
     public function __construct(
         public string $identityId,
         #[\SensitiveParameter]
-        public string $password,
+        public string $currentPassword,
+        #[\SensitiveParameter]
+        public string $newPassword,
     ) {
     }
 }
