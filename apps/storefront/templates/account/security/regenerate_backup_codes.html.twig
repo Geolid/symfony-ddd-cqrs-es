@@ -1,0 +1,22 @@
+{% extends 'account/security/_layout.html.twig' %}
+{% trans_default_domain 'account_security' %}
+{% import 'account/security/_breadcrumb.html.twig' as security %}
+
+{% block title %}{{ 'regenerate_backup_codes_title'|trans }}{% endblock %}
+
+{% block content %}
+    {{ security.trail([
+        {label: 'two_factor_settings_title'|trans, url: path('storefront_account_security_two_factor_settings')},
+        {label: 'two_factor_settings_section_backup_codes_title'|trans},
+    ]) }}
+
+    <h1>{{ 'regenerate_backup_codes_title'|trans }}</h1>
+
+    <article>
+        <p>{{ 'regenerate_backup_codes_instructions'|trans }}</p>
+
+        {{ include('account/security/_backup_codes.html.twig', {backupCodes: backupCodes}) }}
+
+        <p><a href="{{ path('storefront_account_security_two_factor_settings') }}">&larr; {{ 'backup_codes_link_back'|trans }}</a></p>
+    </article>
+{% endblock %}

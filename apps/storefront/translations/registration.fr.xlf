@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" target-language="fr" datatype="plaintext" original="registration">
+    <header>
+      <tool tool-id="symfony" tool-name="Symfony"/>
+    </header>
+    <body>
+      <trans-unit id="register_title">
+        <source>register_title</source>
+        <target>Créer un compte</target>
+      </trans-unit>
+      <trans-unit id="register_subtitle">
+        <source>register_subtitle</source>
+        <target>Tous les champs sont obligatoires</target>
+      </trans-unit>
+      <trans-unit id="register_label_email">
+        <source>register_label_email</source>
+        <target>E-mail</target>
+      </trans-unit>
+      <trans-unit id="register_label_full_name">
+        <source>register_label_full_name</source>
+        <target>Votre nom</target>
+      </trans-unit>
+      <trans-unit id="register_placeholder_full_name">
+        <source>register_placeholder_full_name</source>
+        <target>Prénom et nom</target>
+      </trans-unit>
+      <trans-unit id="register_label_password">
+        <source>register_label_password</source>
+        <target>Mot de passe (au moins %min% caractères)</target>
+      </trans-unit>
+      <trans-unit id="register_help_password">
+        <source>register_help_password</source>
+        <target>Les mots de passe doivent au moins avoir %min% caractères.</target>
+      </trans-unit>
+      <trans-unit id="register_label_password_confirm">
+        <source>register_label_password_confirm</source>
+        <target>Entrez le mot de passe à nouveau</target>
+      </trans-unit>
+      <trans-unit id="register_button_submit">
+        <source>register_button_submit</source>
+        <target>Continuer</target>
+      </trans-unit>
+      <trans-unit id="register_text_already_customer">
+        <source>register_text_already_customer</source>
+        <target>Déjà client(e) ?</target>
+      </trans-unit>
+      <trans-unit id="register_link_identify_instead">
+        <source>register_link_identify_instead</source>
+        <target>Identifiez-vous à la place</target>
+      </trans-unit>
+      <trans-unit id="confirm_title">
+        <source>confirm_title</source>
+        <target>Vérifiez l'adresse e-mail</target>
+      </trans-unit>
+      <trans-unit id="confirm_message_sent">
+        <source>confirm_message_sent</source>
+        <target>Pour vérifier votre e-mail, nous avons envoyé un code à %email%</target>
+      </trans-unit>
+      <trans-unit id="confirm_button_submit">
+        <source>confirm_button_submit</source>
+        <target>Créez votre compte</target>
+      </trans-unit>
+      <trans-unit id="confirm_flash_confirmed">
+        <source>confirm_flash_confirmed</source>
+        <target>Compte créé, vous pouvez vous identifier.</target>
+      </trans-unit>
+      <trans-unit id="confirm_resend_flash_already_confirmed">
+        <source>confirm_resend_flash_already_confirmed</source>
+        <target>Votre compte est déjà confirmé, vous pouvez vous identifier.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

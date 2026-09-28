@@ -62,7 +62,8 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new ResetPassword($identity->id->toString(), $code, self::NEW_PASSWORD));
 
         // Then
-        $result = $this->passwordCredentialFinder->ofIdentity($identity->id->toString());
+        $result = $this->passwordCredentialFinder->ofIdentityOrNull($identity->id->toString());
+        self::assertNotNull($result);
         self::assertTrue($this->hasher->verify($result->passwordHash, self::NEW_PASSWORD));
     }
 

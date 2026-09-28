@@ -32,13 +32,16 @@ final readonly class RehashPasswordHandler
      */
     public function __invoke(RehashPassword $command): void
     {
-        $current = $this->passwordCredentialFinder->ofIdentity($command->identityId);
+        $credentialId = PasswordCredentialId::forIdentity($command->identityId);
+
+        $current = $this->passwordCredentialFinder->ofIdentityOrNull($command->identityId)
+            ?? throw PasswordCredentialResultNotFoundException::forIdentity($command->identityId);
 
         if (!$this->hasher->needsRehash($current->passwordHash)) {
             return;
         }
 
-        $credential = $this->repository->load(PasswordCredentialId::forIdentity($command->identityId));
+        $credential = $this->repository->load($credentialId);
         $credential->rehash($command->password, $this->hasher, $this->clock->now());
 
         $this->repository->save($credential);

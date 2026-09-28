@@ -15,7 +15,7 @@ final class ValidUniqueValue extends Constraint
         self::DOMAIN_UNIQUE_CONSTRAINT => 'DOMAIN_UNIQUE_CONSTRAINT',
     ];
 
-    public string $message = 'Value "{{ value }}" is already in use for {{ key }}.';
+    public string $message = 'value_already_in_use';
 
     /**
      * @param list<string> $scope
@@ -24,11 +24,15 @@ final class ValidUniqueValue extends Constraint
         public \BackedEnum $key,
         public array $scope = [],
         public ?string $excludeSubjectIdPropertyPath = null,
-        mixed $options = null,
+        ?string $message = null,
         ?array $groups = null,
         mixed $payload = null,
     ) {
-        parent::__construct($options, $groups, $payload);
+        parent::__construct(groups: $groups, payload: $payload);
+
+        if (null !== $message) {
+            $this->message = $message;
+        }
     }
 
     public function validatedBy(): string

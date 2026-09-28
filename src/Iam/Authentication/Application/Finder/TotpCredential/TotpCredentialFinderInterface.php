@@ -13,5 +13,5 @@ interface TotpCredentialFinderInterface
      */
     public function ofId(string $id): TotpCredentialResult;
 
-    public function confirmedOfIdentityOrNull(string $identityId): ?TotpCredentialResult;
+    public function activeOfIdentityOrNull(string $identityId): ?TotpCredentialResult;
 }

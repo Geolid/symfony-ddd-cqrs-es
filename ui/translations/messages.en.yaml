@@ -1,6 +1,0 @@
-pagination:
-    button_previous: Previous
-    button_next: Next
-    page_of: 'Page %current% of %last%'
-confirm_modal:
-    button_cancel: Cancel

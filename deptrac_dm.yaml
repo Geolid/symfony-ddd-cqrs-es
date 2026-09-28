@@ -8,9 +8,9 @@ deptrac:
   cache_file: var/.deptrac_dm.cache
 
   layers:
-    - name: Web
+    - name: Storefront
       collectors:
-        - { type: directory, value: 'apps/web/.*' }
+        - { type: directory, value: 'apps/storefront/.*' }
 
     - name: Api
       collectors:
@@ -39,7 +39,7 @@ deptrac:
 
   # Deptrac draws which BCs a Delivery Mechanism may see; PHPat seals how (DeliveryMechanismTest: through its own exposed surface only).
   ruleset:
-    Web:          [ Shopping.Checkout, Sales.Ordering, Catalog.Listing, Finance.Payment, Iam.Identity, Iam.Authentication, Shared, Vendors, Ui ]
+    Storefront:   [ Iam.Identity, Iam.Authentication, Shared, Vendors ]
     Api:          [ Catalog.Listing, Iam.Identity, Iam.Authentication, Shared, Vendors ]
     Cli:          [ Shopping.Checkout, Sales.Ordering, Fulfilment.Shipping, Finance.Payment, Iam.Identity, Iam.Authentication, Shared, Vendors ]
     Webhook:      [ Fulfilment.Shipping, Sales.Ordering, Finance.Payment, Shared, Vendors ]

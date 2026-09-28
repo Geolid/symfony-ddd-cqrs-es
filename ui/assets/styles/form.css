@@ -1,0 +1,14 @@
+:root {
+  --pico-form-label-font-weight: bold;
+}
+
+.form-error {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--pico-spacing) * .5);
+  padding: calc(var(--pico-spacing) * .75) var(--pico-spacing);
+  margin-bottom: var(--pico-spacing);
+  background-color: var(--pico-background-color);
+  border: var(--pico-border-width) solid var(--pico-del-color);
+  border-radius: var(--pico-border-radius);
+}

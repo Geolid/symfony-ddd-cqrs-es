@@ -1,0 +1,13 @@
+<nav aria-label="breadcrumb">
+    <ul>
+        {% for item in items %}
+            <li>
+                {% if item.url is defined and not loop.last %}
+                    <a href="{{ item.url }}">{{ item.label }}</a>
+                {% else %}
+                    {{ item.label }}
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+</nav>

@@ -8,7 +8,6 @@ use Doctrine\DBAL\Query\QueryBuilder;
 use Iam\Authentication\Application\Finder\TotpCredential\Exception\TotpCredentialResultNotFoundException;
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInterface;
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialResult;
-use Iam\Authentication\Application\TotpCredentialStatus;
 use Iam\Authentication\Infrastructure\Projection\Projector\DbalTotpCredentialProjector;
 use Shared\Infrastructure\Projection\Finder\AbstractDbalFinder;
 
@@ -26,20 +25,20 @@ final class DbalTotpCredentialFinder extends AbstractDbalFinder implements TotpC
         )->one() ?? throw TotpCredentialResultNotFoundException::forId($id);
     }
 
-    public function confirmedOfIdentityOrNull(string $identityId): ?TotpCredentialResult
+    public function activeOfIdentityOrNull(string $identityId): ?TotpCredentialResult
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($identityId): void {
-                $qb->andWhere('identity_id = :identityId AND status = :confirmed')
+                $qb->andWhere('identity_id = :identityId AND revoked = :revoked')
                     ->setParameter('identityId', $identityId)
-                    ->setParameter('confirmed', TotpCredentialStatus::CONFIRMED);
+                    ->setParameter('revoked', false);
             },
         )->one();
     }
 
     protected function configureBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'identity_id', 'encrypted_secret', 'enrolled_at', 'status', 'confirmed_at', 'revoked_at')
+        $qb->select('id', 'identity_id', 'encrypted_secret', 'issued_at', 'revoked', 'revoked_at')
             ->from(DbalTotpCredentialProjector::TABLE);
     }
 

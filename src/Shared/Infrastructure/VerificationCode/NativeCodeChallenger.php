@@ -8,14 +8,18 @@ use Shared\Application\VerificationCode\VerificationCodeStoreInterface;
 use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
 use Shared\Domain\Exception\VerificationCodeNotFoundException;
 use Shared\Domain\Service\CodeChallengerInterface;
+use Shared\Domain\Service\NumericCodeGeneratorInterface;
 use Shared\Domain\ValueObject\VerificationCodeKey;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Webmozart\Assert\Assert;
 
 final readonly class NativeCodeChallenger implements CodeChallengerInterface
 {
+    private const int DIGITS = 6;
+
     public function __construct(
         private VerificationCodeStoreInterface $store,
+        private NumericCodeGeneratorInterface $numericCodeGenerator,
         #[Autowire('%env(CODE_CHALLENGER_HASH_SECRET)%')]
         #[\SensitiveParameter]
         private string $secret,
@@ -30,13 +34,7 @@ final readonly class NativeCodeChallenger implements CodeChallengerInterface
 
     public function issue(VerificationCodeKey $key, \DateTimeImmutable $now): string
     {
-        /*
-         * A one-off shift of either bound can only be observed by a test if the draw happens
-         * to land on that exact edge value — no test can force that deterministically.
-         *
-         * @infection-ignore-all
-         */
-        $code = \sprintf('%06d', random_int(0, 999999));
+        $code = $this->numericCodeGenerator->generate(self::DIGITS);
 
         $this->store->save($key, $this->hash($code), $now->modify($this->expiry));
 

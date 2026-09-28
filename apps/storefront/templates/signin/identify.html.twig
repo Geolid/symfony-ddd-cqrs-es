@@ -1,0 +1,11 @@
+{% extends 'layout_auth.html.twig' %}
+{% trans_default_domain 'signin' %}
+
+{% block title %}{{ 'identify_title'|trans }}{% endblock %}
+
+{% block content %}
+    {{ form_start(form) }}
+        {{ form_row(form.email) }}
+        <button type="submit">{{ 'identify_button_submit'|trans }}</button>
+    {{ form_end(form) }}
+{% endblock %}

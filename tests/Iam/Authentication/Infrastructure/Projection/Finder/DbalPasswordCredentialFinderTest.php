@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Infrastructure\Projection\Finder;
 
-use Iam\Authentication\Application\Finder\PasswordCredential\Exception\PasswordCredentialResultNotFoundException;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakePasswordHasher;
@@ -28,7 +27,7 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itGetsByIdentity(): void
+    public function itFindsByIdentity(): void
     {
         // Given
         $other = PasswordCredentialBuilder::new()
@@ -43,9 +42,11 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
         $this->store($other, $credential);
 
         // When
-        $result = $this->finder->ofIdentity($builder['identityId']);
+        $result = $this->finder->ofIdentityOrNull($builder['identityId']);
+        $nothing = $this->finder->ofIdentityOrNull(PasswordCredentialBuilder::sample('identityId'));
 
         // Then
+        self::assertNotNull($result);
         self::assertSame($credential->id->toString(), $result->id);
         self::assertSame($builder['identityId'], $result->identityId);
         self::assertSame(
@@ -54,18 +55,10 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
         );
         self::assertSame(
             $builder['definedAt']->format(\DateTimeInterface::ATOM),
-            $result->passwordChangedAt->format(\DateTimeInterface::ATOM),
+            $result->changedAt->format(\DateTimeInterface::ATOM),
         );
         self::assertSame($this->hasher->hash($builder['password']->value), $result->passwordHash);
-    }
 
-    #[Test]
-    public function itThrowsWhenIdentityNotFound(): void
-    {
-        // Then
-        $this->expectException(PasswordCredentialResultNotFoundException::class);
-
-        // When
-        $this->finder->ofIdentity(PasswordCredentialBuilder::sample('identityId'));
+        self::assertNull($nothing);
     }
 }

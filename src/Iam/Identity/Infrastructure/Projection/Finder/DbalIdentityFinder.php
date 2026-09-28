@@ -28,13 +28,13 @@ final class DbalIdentityFinder extends AbstractPaginatableDbalFinder implements 
         )->one() ?? throw IdentityResultNotFoundException::forId($id);
     }
 
-    public function ofEmail(string $email): IdentityResult
+    public function ofEmailOrNull(string $email): ?IdentityResult
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($email): void {
                 $qb->andWhere('email = :email')->setParameter('email', $email);
             },
-        )->one() ?? throw IdentityResultNotFoundException::forEmail($email);
+        )->one();
     }
 
     public function pendingBefore(\DateTimeImmutable $cutoff): static

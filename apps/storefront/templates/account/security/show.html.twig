@@ -1,0 +1,45 @@
+{% extends 'account/security/_layout.html.twig' %}
+{% trans_default_domain 'account_security' %}
+
+{% block title %}{{ 'show_title'|trans }}{% endblock %}
+
+{% block content %}
+    <twig:ui:Breadcrumb :items="[
+        {label: 'title'|trans({}, 'account'), url: path('storefront_account_show')},
+        {label: 'show_title'|trans},
+    ]" />
+
+    <h1>{{ 'show_title'|trans }}</h1>
+
+    <article class="settings-sections">
+        <dl>
+            <dt>{{ 'show_label_name'|trans }}</dt>
+            <dd>{{ user.fullName }}</dd>
+        </dl>
+        <button type="button" class="outline" disabled>{{ 'link_modify'|trans({}, 'messages') }}</button>
+
+        <hr>
+
+        <dl>
+            <dt>{{ 'show_label_email'|trans }}</dt>
+            <dd>{{ user.getUserIdentifier() }}</dd>
+        </dl>
+        <button type="button" class="outline" disabled>{{ 'link_modify'|trans({}, 'messages') }}</button>
+
+        <hr>
+
+        <dl>
+            <dt>{{ 'show_label_password'|trans }}</dt>
+            <dd>••••••••••••••••</dd>
+        </dl>
+        <button type="button" class="outline" disabled>{{ 'link_modify'|trans({}, 'messages') }}</button>
+
+        <hr>
+
+        <dl>
+            <dt>{{ 'show_label_two_factor'|trans }}</dt>
+            <dd>{{ 'show_two_factor_description'|trans }}</dd>
+        </dl>
+        <a href="{{ path('storefront_account_security_two_factor_settings') }}" role="button" class="outline">{{ 'show_button_configure_two_factor'|trans }}</a>
+    </article>
+{% endblock %}

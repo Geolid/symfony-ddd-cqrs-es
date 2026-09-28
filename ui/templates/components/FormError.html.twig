@@ -1,0 +1,4 @@
+<div class="form-error {{ attributes.render('class') }}" {{ attributes.without('class') }}>
+    <twig:ux:icon name="error" class="icon icon-error" />
+    <small>{% block content %}{% endblock %}</small>
+</div>

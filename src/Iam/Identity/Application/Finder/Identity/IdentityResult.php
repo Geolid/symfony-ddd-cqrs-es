@@ -24,4 +24,9 @@ final readonly class IdentityResult
         public ErasureStatus $erasureStatus,
     ) {
     }
+
+    public function isAuthenticatable(): bool
+    {
+        return $this->verificationStatus->isConfirmed() && $this->moderationStatus->isActive();
+    }
 }

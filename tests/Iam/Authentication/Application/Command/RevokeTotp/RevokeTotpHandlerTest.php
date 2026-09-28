@@ -7,7 +7,6 @@ namespace Iam\Tests\Authentication\Application\Command\RevokeTotp;
 use Iam\Authentication\Application\AuthenticationUniqueKey;
 use Iam\Authentication\Application\Command\RevokeTotp\RevokeTotp;
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInterface;
-use Iam\Authentication\Application\TotpCredentialStatus;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialNotFoundException;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialOwnedByAnotherIdentityException;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpCipherInterface;
@@ -49,7 +48,7 @@ final class RevokeTotpHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         $result = $this->finder->ofId($credential->id->toString());
-        self::assertSame(TotpCredentialStatus::REVOKED, $result->status);
+        self::assertTrue($result->revoked);
 
         self::assertFalse($this->uniqueness->isClaimed($identityKey, $builder['identityId']));
     }

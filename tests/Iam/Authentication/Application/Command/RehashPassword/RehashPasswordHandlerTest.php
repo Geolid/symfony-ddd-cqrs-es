@@ -41,13 +41,15 @@ final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
         $credential = $builder->create();
         $this->store($credential);
 
-        $before = $this->finder->ofIdentity($builder['identityId']);
+        $before = $this->finder->ofIdentityOrNull($builder['identityId']);
+        self::assertNotNull($before);
 
         // When
         $this->dispatch(new RehashPassword($builder['identityId'], $builder['password']->value));
 
         // Then
-        $after = $this->finder->ofIdentity($builder['identityId']);
+        $after = $this->finder->ofIdentityOrNull($builder['identityId']);
+        self::assertNotNull($after);
         self::assertNotSame($before->passwordHash, $after->passwordHash);
     }
 
@@ -61,13 +63,15 @@ final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
         $credential = $builder->create();
         $this->store($credential);
 
-        $before = $this->finder->ofIdentity($builder['identityId']);
+        $before = $this->finder->ofIdentityOrNull($builder['identityId']);
+        self::assertNotNull($before);
 
         // When
         $this->dispatch(new RehashPassword($builder['identityId'], $builder['password']->value));
 
         // Then
-        $after = $this->finder->ofIdentity($builder['identityId']);
+        $after = $this->finder->ofIdentityOrNull($builder['identityId']);
+        self::assertNotNull($after);
         self::assertSame($before->passwordHash, $after->passwordHash);
     }
 

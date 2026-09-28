@@ -11,7 +11,7 @@ final readonly class PasswordCredentialResult
         public string $identityId,
         public string $passwordHash,
         public \DateTimeImmutable $definedAt,
-        public \DateTimeImmutable $passwordChangedAt,
+        public \DateTimeImmutable $changedAt,
     ) {
     }
 }

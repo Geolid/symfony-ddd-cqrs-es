@@ -1,0 +1,13 @@
+{% extends 'layout_auth.html.twig' %}
+{% trans_default_domain 'signin' %}
+
+{% block title %}{{ 'create_account_title'|trans }}{% endblock %}
+{% block heading %}{{ 'create_account_heading'|trans }}{% endblock %}
+
+{% block content %}
+    <p>{{ 'create_account_subtitle'|trans }}</p>
+
+    <p>{{ email }} <a href="{{ path('storefront_signin_identify') }}">{{ 'link_modify'|trans({}, 'messages') }}</a></p>
+
+    <a href="{{ path('storefront_registration_register') }}" role="button">{{ 'create_account_button_create'|trans }}</a>
+{% endblock %}

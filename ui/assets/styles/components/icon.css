@@ -1,0 +1,33 @@
+.icon {
+  flex-shrink: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.icon-text {
+  display: inline-flex;
+  align-items: center;
+  gap: calc(var(--pico-spacing) * .5);
+}
+
+.icon-success {
+  color: var(--pico-ins-color);
+}
+
+.icon-error {
+  color: var(--pico-del-color);
+}
+
+.icon-warning {
+  color: var(--pico-color-amber-500);
+}
+
+.icon-info {
+  color: var(--pico-muted-color);
+}
+
+@media (prefers-color-scheme: dark) {
+  .icon-warning {
+    color: var(--pico-color-amber-300);
+  }
+}

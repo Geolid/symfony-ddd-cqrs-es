@@ -1,0 +1,4 @@
+<article class="toast {{ attributes.render('class') }}" {{ attributes.without('class') }} role="status">
+    <twig:ux:icon name="{{ this.icon }}" class="icon {{ this.colorClass }}" />
+    <small>{% block content %}{% endblock %}</small>
+</article>

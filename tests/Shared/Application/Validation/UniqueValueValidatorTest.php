@@ -175,9 +175,8 @@ final class UniqueValueValidatorTest extends ConstraintValidatorTestCase
 
     private function assertViolationRaised(): void
     {
-        $this->buildViolation('Value "{{ value }}" is already in use for {{ key }}.')
+        $this->buildViolation('value_already_in_use')
             ->setParameter('{{ value }}', 'reserved-value')
-            ->setParameter('{{ key }}', 'NAME')
             ->setCode(ValidUniqueValue::DOMAIN_UNIQUE_CONSTRAINT)
             ->assertRaised();
     }

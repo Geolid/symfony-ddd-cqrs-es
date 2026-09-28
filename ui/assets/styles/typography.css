@@ -1,0 +1,8 @@
+dt {
+  margin-bottom: calc(var(--pico-spacing) * .375);
+  font-weight: var(--pico-form-label-font-weight);
+}
+
+dd {
+  margin-left: 0;
+}

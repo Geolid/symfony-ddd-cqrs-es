@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" target-language="fr" datatype="plaintext" original="verification_code">
+    <header>
+      <tool tool-id="symfony" tool-name="Symfony"/>
+    </header>
+    <body>
+      <trans-unit id="label_code">
+        <source>label_code</source>
+        <target>Code de sécurité</target>
+      </trans-unit>
+      <trans-unit id="error_invalid">
+        <source>error_invalid</source>
+        <target>Code incorrect.</target>
+      </trans-unit>
+      <trans-unit id="error_not_found">
+        <source>error_not_found</source>
+        <target>Ce code a expiré.</target>
+      </trans-unit>
+      <trans-unit id="error_attempts_exceeded">
+        <source>error_attempts_exceeded</source>
+        <target>Trop de tentatives.</target>
+      </trans-unit>
+      <trans-unit id="flash_sent">
+        <source>flash_sent</source>
+        <target>Un code a été envoyé.</target>
+      </trans-unit>
+      <trans-unit id="flash_too_recent">
+        <source>flash_too_recent</source>
+        <target>Patientez %seconds% secondes avant de demander un nouveau code.</target>
+      </trans-unit>
+      <trans-unit id="button_resend">
+        <source>button_resend</source>
+        <target>Renvoyer le code</target>
+      </trans-unit>
+      <trans-unit id="flash_failed">
+        <source>flash_failed</source>
+        <target>Une erreur est survenue.</target>
+      </trans-unit>
+      <trans-unit id="flash_rate_limited">
+        <source>flash_rate_limited</source>
+        <target>Trop de codes demandés. Réessayez dans %minutes% minutes.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
