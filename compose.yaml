@@ -49,6 +49,14 @@ services:
   mailer:
     image: axllent/mailpit:v1.29.3
 
+  # Real Chromium for E2E (`castor qa:e2e`) — separate glibc container since `app` is
+  # Alpine/musl and Playwright's own browser binaries don't run there; `app` connects
+  # to it over the network instead of launching a local browser.
+  playwright:
+    build:
+      context: docker/playwright
+    profiles: [ e2e ]
+
   # Fake Acme/Globex vendor APIs + Globex checkout page.
   sandbox:
     build:

@@ -3,7 +3,7 @@ FROM php:8.5-fpm-alpine
 ARG USER_ID=1000
 ARG GROUP_ID=1000
 
-RUN apk add --no-cache icu-dev git sudo $PHPIZE_DEPS \
+RUN apk add --no-cache icu-dev git sudo nodejs npm $PHPIZE_DEPS \
     && docker-php-ext-configure intl \
     && docker-php-ext-install intl pdo_mysql \
     && pecl install pcov \

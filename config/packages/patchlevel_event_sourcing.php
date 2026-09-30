@@ -39,6 +39,19 @@ return static function (ContainerConfigurator $container): void {
         ]);
     }
 
+    if ('e2e' === $container->env()) {
+        $container->extension('patchlevel_event_sourcing', [
+            'subscription' => [
+                'catch_up' => true,
+                'throw_on_error' => true,
+                'run_after_aggregate_save' => [
+                    'enabled' => true,
+                    'groups' => [Publisher::GROUP, Projector::GROUP],
+                ],
+            ],
+        ]);
+    }
+
     if ('test' === $container->env()) {
         $container->extension('patchlevel_event_sourcing', [
             'store' => ['type' => 'in_memory'],
