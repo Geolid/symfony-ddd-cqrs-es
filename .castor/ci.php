@@ -20,9 +20,10 @@ function ci_static(): void
     qa_static();
 }
 
-#[AsTask(name: 'coverage', namespace: 'ci', description: 'Run test suite with coverage')]
+#[AsTask(name: 'coverage', namespace: 'ci', description: 'Warmup then run test suite with coverage')]
 function ci_coverage(): void
 {
+    warmup();
     qa_test(coverage: true);
 }
 

@@ -9,7 +9,6 @@ use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthS
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Playwright\Symfony\Client\PlaywrightKernelClient;
 use Storefront\Tests\Browser\AuthenticationExtensionInterface;
 use Storefront\Tests\Feature\Account\Security\Component\ChangeEmailForm;
 use Storefront\Tests\Feature\Account\Security\Component\RequestEmailChangeForm;
@@ -65,21 +64,7 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->playwrightBrowser();
-        try {
-            $this->goToChangeEmail($browser);
-        } catch (\Throwable $e) {
-            $client = $browser->client();
-            if ($client instanceof PlaywrightKernelClient) {
-                self::fail(\sprintf(
-                    'DIAG uri=%s status=%s: %s',
-                    $client->getLastSymfonyRequest()?->getUri() ?? 'null',
-                    $client->getLastSymfonyResponse()?->getStatusCode() ?? 'null',
-                    $e->getMessage(),
-                ));
-            }
-
-            throw $e;
-        }
+        $this->goToChangeEmail($browser);
 
         // When
         $browser->use(static function (ChangeEmailForm $form): void {
