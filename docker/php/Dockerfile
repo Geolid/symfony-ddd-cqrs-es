@@ -3,7 +3,7 @@ FROM php:8.5-fpm-alpine
 ARG USER_ID=1000
 ARG GROUP_ID=1000
 
-RUN apk add --no-cache icu-dev git sudo $PHPIZE_DEPS \
+RUN apk add --no-cache icu-dev git sudo nodejs npm gcompat chromium $PHPIZE_DEPS \
     && docker-php-ext-configure intl \
     && docker-php-ext-install intl pdo_mysql \
     && pecl install pcov \
@@ -12,7 +12,9 @@ RUN apk add --no-cache icu-dev git sudo $PHPIZE_DEPS \
     && git config --system --add safe.directory /srv \
     && addgroup -g ${GROUP_ID} app \
     && adduser -D -u ${USER_ID} -G app -h /home/app app \
-    && echo 'app ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/app
+    && echo 'app ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/app \
+    && mkdir -p /home/app/.cache /home/app/.config \
+    && chown app:app /home/app/.cache /home/app/.config
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 

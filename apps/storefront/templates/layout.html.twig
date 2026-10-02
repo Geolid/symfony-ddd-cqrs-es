@@ -37,7 +37,7 @@
                 </li>
                 <li>
                     {% if is_granted('IS_AUTHENTICATED_FULLY') %}
-                        <details class="dropdown">
+                        <details class="dropdown" data-testid="account-menu">
                             <summary>{{ 'greeting'|trans({'%fullName%': app.user.fullName}, 'layout') }}</summary>
                             <ul>
                                 <li><a href="{{ path('storefront_account_show') }}">{{ 'title'|trans({}, 'account') }}</a></li>
@@ -45,7 +45,7 @@
                             </ul>
                         </details>
                     {% else %}
-                        <a href="{{ path('storefront_signin_identify') }}">{{ 'greeting_anonymous'|trans({}, 'layout') }}</a>
+                        <a href="{{ path('storefront_signin_identify') }}" data-testid="signin-link">{{ 'greeting_anonymous'|trans({}, 'layout') }}</a>
                     {% endif %}
                 </li>
             </ul>

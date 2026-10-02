@@ -9,22 +9,22 @@
         {label: 'show_title'|trans},
     ]" />
 
-    <h1>{{ 'show_title'|trans }}</h1>
+    <h1 data-testid="account-security-title">{{ 'show_title'|trans }}</h1>
 
     <article class="settings-sections">
         <dl>
             <dt>{{ 'show_label_name'|trans }}</dt>
-            <dd>{{ user.fullName }}</dd>
+            <dd data-testid="full-name-value">{{ user.fullName }}</dd>
         </dl>
-        <a href="{{ path('storefront_account_security_change_full_name') }}" role="button" class="outline">{{ 'link_modify'|trans({}, 'messages') }}</a>
+        <a href="{{ path('storefront_account_security_change_full_name') }}" role="button" class="outline" data-testid="change-full-name-link">{{ 'link_modify'|trans({}, 'messages') }}</a>
 
         <hr>
 
         <dl>
             <dt>{{ 'show_label_email'|trans }}</dt>
-            <dd>{{ user.getUserIdentifier() }}</dd>
+            <dd data-testid="email-value">{{ user.getUserIdentifier() }}</dd>
         </dl>
-        <a href="{{ path('storefront_account_security_request_email_change') }}" role="button" class="outline">{{ 'link_modify'|trans({}, 'messages') }}</a>
+        <a href="{{ path('storefront_account_security_request_email_change') }}" role="button" class="outline" data-testid="request-email-change-link">{{ 'link_modify'|trans({}, 'messages') }}</a>
 
         <hr>
 
@@ -32,7 +32,7 @@
             <dt>{{ 'show_label_password'|trans }}</dt>
             <dd>••••••••••••••••</dd>
         </dl>
-        <a href="{{ path('storefront_account_security_change_password') }}" role="button" class="outline">{{ 'link_modify'|trans({}, 'messages') }}</a>
+        <a href="{{ path('storefront_account_security_change_password') }}" role="button" class="outline" data-testid="change-password-link">{{ 'link_modify'|trans({}, 'messages') }}</a>
 
         <hr>
 
@@ -40,6 +40,6 @@
             <dt>{{ 'show_label_two_factor'|trans }}</dt>
             <dd>{{ 'show_two_factor_description'|trans }}</dd>
         </dl>
-        <a href="{{ path('storefront_account_security_two_factor_settings') }}" role="button" class="outline">{{ 'show_button_configure_two_factor'|trans }}</a>
+        <a href="{{ path('storefront_account_security_two_factor_settings') }}" role="button" class="outline" data-testid="two-factor-settings-link">{{ 'show_button_configure_two_factor'|trans }}</a>
     </article>
 {% endblock %}

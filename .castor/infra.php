@@ -31,8 +31,23 @@ function vendor(
         );
     }
 
+    playwright_install();
     assets();
     warmup();
+}
+
+#[AsTask(name: 'playwright-install', description: 'Install Playwright browsers')]
+function playwright_install(): void
+{
+    fingerprint(
+        callback: static fn () => compose_exec([
+            'vendor/bin/playwright-install',
+            ...(getenv('CI') ? ['--with-deps'] : []),
+            'chromium',
+        ]),
+        id: 'playwright',
+        fingerprint: hasher()->writeFile('composer.lock', FileHashStrategy::Content)->finish(),
+    );
 }
 
 #[AsTask(description: 'Install bundle and AssetMapper assets')]

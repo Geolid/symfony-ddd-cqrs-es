@@ -6,7 +6,7 @@
 {% block content %}
     <p class="u-muted">{{ 'register_subtitle'|trans }}</p>
 
-    {{ form_start(form) }}
+    {{ form_start(form, {attr: {'data-testid': 'register-form'}}) }}
         {{ form_errors(form) }}
         <dl>
             <dt>{{ 'register_label_email'|trans }}</dt>

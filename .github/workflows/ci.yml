@@ -44,6 +44,7 @@ jobs:
           path: |
             vendor
             ui/assets/vendor
+            !vendor/playwright-php/playwright/bin/node_modules
           retention-days: 1
 
   static:
@@ -111,6 +112,14 @@ jobs:
           path: .
 
       - run: chmod -R +x vendor/bin
+
+      - name: DIAG asset-map
+        run: |
+          find ui/assets/vendor apps/storefront/assets -maxdepth 2
+          php bin/console debug:asset-map --env=test --appId=storefront 2>&1 | grep -i auth || echo "DIAG: auth not found in asset-map"
+
+      - name: castor playwright-install
+        run: castor playwright-install
 
       - name: castor ci:coverage
         run: castor ci:coverage
