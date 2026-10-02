@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "463b1e085829a759cc2963c9fe4c1e5e",
+    "content-hash": "75d253d0b520936bbc64bbbc26c54787",
     "packages": [
         {
             "name": "api-platform/core",
@@ -922,16 +922,16 @@
         },
         {
             "name": "doctrine/lexer",
-            "version": "3.0.2",
+            "version": "3.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/doctrine/lexer.git",
-                "reference": "e96fe45e92a54233726014a7cc7340abf29bb14c"
+                "reference": "71d305eaa6480d3d3460c7d053d1da7749fa9cca"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/doctrine/lexer/zipball/e96fe45e92a54233726014a7cc7340abf29bb14c",
-                "reference": "e96fe45e92a54233726014a7cc7340abf29bb14c",
+                "url": "https://api.github.com/repos/doctrine/lexer/zipball/71d305eaa6480d3d3460c7d053d1da7749fa9cca",
+                "reference": "71d305eaa6480d3d3460c7d053d1da7749fa9cca",
                 "shasum": ""
             },
             "require": {
@@ -977,7 +977,7 @@
             ],
             "support": {
                 "issues": "https://github.com/doctrine/lexer/issues",
-                "source": "https://github.com/doctrine/lexer/tree/3.0.2"
+                "source": "https://github.com/doctrine/lexer/tree/3.0.3"
             },
             "funding": [
                 {
@@ -993,7 +993,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-06-14T20:44:06+00:00"
+            "time": "2026-10-01T06:59:29+00:00"
         },
         {
             "name": "doctrine/migrations",
@@ -10314,194 +10314,6 @@
     ],
     "packages-dev": [
         {
-            "name": "behat/behat",
-            "version": "v4.0.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Behat/Behat.git",
-                "reference": "3f65b57a8e52c7d2c45e219ecaf5900a995946bf"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Behat/Behat/zipball/3f65b57a8e52c7d2c45e219ecaf5900a995946bf",
-                "reference": "3f65b57a8e52c7d2c45e219ecaf5900a995946bf",
-                "shasum": ""
-            },
-            "require": {
-                "behat/gherkin": "^4.18.0",
-                "composer-runtime-api": "^2.2",
-                "composer/xdebug-handler": "^1.4 || ^2.0 || ^3.0",
-                "cucumber/tag-expressions": "^11.0",
-                "ext-mbstring": "*",
-                "php": ">=8.2 <8.6",
-                "psr/container": "^1.0 || ^2.0",
-                "symfony/config": "^5.4 || ^6.4 || ^7.0 || ^8.0",
-                "symfony/console": "^5.4.9 || ^6.4 || ^7.0 || ^8.0",
-                "symfony/dependency-injection": "^5.4 || ^6.4 || ^7.0 || ^8.0",
-                "symfony/event-dispatcher": "^5.4 || ^6.4 || ^7.0 || ^8.0",
-                "symfony/translation": "^5.4 || ^6.4 || ^7.0 || ^8.0",
-                "symfony/yaml": "^5.4 || ^6.4 || ^7.0 || ^8.0"
-            },
-            "require-dev": {
-                "opis/json-schema": "^2.5",
-                "php-cs-fixer/shim": "^3.89",
-                "phpstan/phpstan": "2.1.46",
-                "phpunit/phpunit": "^11.5",
-                "rector/rector": "2.3.9",
-                "sebastian/diff": "^6.0",
-                "symfony/filesystem": "^5.4 || ^6.4 || ^7.0 || ^8.0",
-                "symfony/polyfill-php84": "^1.31",
-                "symfony/process": "^5.4 || ^6.4 || ^7.0 || ^8.0"
-            },
-            "suggest": {
-                "ext-dom": "Needed to output test results in JUnit format."
-            },
-            "bin": [
-                "bin/behat"
-            ],
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Behat\\Hook\\": "src/Behat/Hook/",
-                    "Behat\\Step\\": "src/Behat/Step/",
-                    "Behat\\Behat\\": "src/Behat/Behat/",
-                    "Behat\\Config\\": "src/Behat/Config/",
-                    "Behat\\Testwork\\": "src/Behat/Testwork/",
-                    "Behat\\Transformation\\": "src/Behat/Transformation/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Konstantin Kudryashov",
-                    "email": "ever.zet@gmail.com",
-                    "homepage": "http://everzet.com"
-                }
-            ],
-            "description": "Scenario-oriented BDD framework for PHP",
-            "homepage": "https://behat.org/",
-            "keywords": [
-                "Agile",
-                "BDD",
-                "ScenarioBDD",
-                "Scrum",
-                "StoryBDD",
-                "User story",
-                "business",
-                "development",
-                "documentation",
-                "examples",
-                "symfony",
-                "testing"
-            ],
-            "support": {
-                "issues": "https://github.com/Behat/Behat/issues",
-                "source": "https://github.com/Behat/Behat/tree/v4.0.0"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/acoulton",
-                    "type": "github"
-                },
-                {
-                    "url": "https://github.com/carlos-granados",
-                    "type": "github"
-                },
-                {
-                    "url": "https://github.com/stof",
-                    "type": "github"
-                }
-            ],
-            "time": "2026-09-28T16:13:53+00:00"
-        },
-        {
-            "name": "behat/gherkin",
-            "version": "v4.18.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/Behat/Gherkin.git",
-                "reference": "496248b29d9d7848311a263c2d17c1860e4c7b6c"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/Behat/Gherkin/zipball/496248b29d9d7848311a263c2d17c1860e4c7b6c",
-                "reference": "496248b29d9d7848311a263c2d17c1860e4c7b6c",
-                "shasum": ""
-            },
-            "require": {
-                "composer-runtime-api": "^2.2",
-                "php": ">=8.1 <8.6"
-            },
-            "require-dev": {
-                "cucumber/gherkin-monorepo": "dev-gherkin-v42.0.1",
-                "friendsofphp/php-cs-fixer": "^3.77",
-                "mikey179/vfsstream": "^1.6",
-                "phpstan/extension-installer": "^1",
-                "phpstan/phpstan": "2.2.14",
-                "phpstan/phpstan-deprecation-rules": "^2.0",
-                "phpstan/phpstan-phpunit": "^2",
-                "phpunit/phpunit": "^10.5",
-                "symfony/yaml": "^5.4 || ^6.4 || ^7.0"
-            },
-            "suggest": {
-                "symfony/yaml": "If you want to parse features, represented in YAML files"
-            },
-            "type": "library",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "4.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "Behat\\Gherkin\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Konstantin Kudryashov",
-                    "email": "ever.zet@gmail.com",
-                    "homepage": "https://everzet.com"
-                }
-            ],
-            "description": "Gherkin DSL parser for PHP",
-            "homepage": "https://behat.org/",
-            "keywords": [
-                "BDD",
-                "Behat",
-                "Cucumber",
-                "DSL",
-                "gherkin",
-                "parser"
-            ],
-            "support": {
-                "issues": "https://github.com/Behat/Gherkin/issues",
-                "source": "https://github.com/Behat/Gherkin/tree/v4.18.0"
-            },
-            "funding": [
-                {
-                    "url": "https://github.com/acoulton",
-                    "type": "github"
-                },
-                {
-                    "url": "https://github.com/carlos-granados",
-                    "type": "github"
-                },
-                {
-                    "url": "https://github.com/stof",
-                    "type": "github"
-                }
-            ],
-            "time": "2026-09-25T21:26:10+00:00"
-        },
-        {
             "name": "behat/mink",
             "version": "v1.13.0",
             "source": {
@@ -11096,49 +10908,6 @@
             "time": "2024-05-06T16:37:16+00:00"
         },
         {
-            "name": "cucumber/tag-expressions",
-            "version": "v11.0.1",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/cucumber/tag-expressions-php.git",
-                "reference": "d88e12c03a2069b4336156dc7831a6b78cce5e1d"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/cucumber/tag-expressions-php/zipball/d88e12c03a2069b4336156dc7831a6b78cce5e1d",
-                "reference": "d88e12c03a2069b4336156dc7831a6b78cce5e1d",
-                "shasum": ""
-            },
-            "require": {
-                "ext-mbstring": "*",
-                "php": "^8.1"
-            },
-            "require-dev": {
-                "friendsofphp/php-cs-fixer": "^3.75",
-                "phpstan/phpstan": "^2.1",
-                "phpstan/phpstan-phpunit": "^2.0",
-                "phpunit/phpunit": "^10.5.46 || ^11.5 || ^13.0",
-                "symfony/yaml": "^6.4 || ^7.2 || ^8.0"
-            },
-            "type": "library",
-            "autoload": {
-                "psr-4": {
-                    "Cucumber\\TagExpressions\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "description": "Cucumber Tag Expressions parser",
-            "homepage": "https://github.com/cucumber/tag-expressions",
-            "support": {
-                "issues": "https://github.com/cucumber/tag-expressions/issues",
-                "source": "https://github.com/cucumber/tag-expressions-php/tree/v11.0.1"
-            },
-            "time": "2026-03-24T10:42:49+00:00"
-        },
-        {
             "name": "dama/doctrine-test-bundle",
             "version": "v8.6.0",
             "source": {
@@ -11531,74 +11300,6 @@
                 }
             ],
             "time": "2025-08-14T07:29:31+00:00"
-        },
-        {
-            "name": "friends-of-behat/symfony-extension",
-            "version": "v2.7.0",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/FriendsOfBehat/SymfonyExtension.git",
-                "reference": "a587fe1e5a70f3ccb73dc423947fc6ec4fd905a3"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/FriendsOfBehat/SymfonyExtension/zipball/a587fe1e5a70f3ccb73dc423947fc6ec4fd905a3",
-                "reference": "a587fe1e5a70f3ccb73dc423947fc6ec4fd905a3",
-                "shasum": ""
-            },
-            "require": {
-                "behat/behat": "^3.31 || ^4.0",
-                "php": "^8.3",
-                "symfony/dependency-injection": "^7.4 || ^8.0",
-                "symfony/http-kernel": "^7.4 || ^8.0"
-            },
-            "require-dev": {
-                "behat/mink": "^1.9",
-                "behat/mink-browserkit-driver": "^2.0",
-                "behat/mink-selenium2-driver": "^1.3",
-                "friends-of-behat/mink-extension": "^2.5 || ^3.0",
-                "friends-of-behat/page-object-extension": "^0.3.2",
-                "friends-of-behat/service-container-extension": "^1.1 || ^2.0",
-                "sylius-labs/coding-standard": ">=4.1.1, <=4.2.1",
-                "symfony/browser-kit": "^7.4 || ^8.0",
-                "symfony/framework-bundle": "^7.4 || ^8.0",
-                "symfony/process": "^7.4 || ^8.0",
-                "symfony/yaml": "^7.4 || ^8.0",
-                "vimeo/psalm": "^6.0"
-            },
-            "suggest": {
-                "behat/mink": "^1.9",
-                "behat/mink-browserkit-driver": "^2.0",
-                "friends-of-behat/mink-extension": "^2.5 || ^3.0"
-            },
-            "type": "symfony-bundle",
-            "extra": {
-                "branch-alias": {
-                    "dev-master": "2.2-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "FriendsOfBehat\\SymfonyExtension\\": "src/"
-                }
-            },
-            "notification-url": "https://packagist.org/downloads/",
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "Kamil Kokot",
-                    "email": "kamil@kokot.me",
-                    "homepage": "https://kamilkokot.com"
-                }
-            ],
-            "description": "Integrates Behat with Symfony.",
-            "support": {
-                "issues": "https://github.com/FriendsOfBehat/SymfonyExtension/issues",
-                "source": "https://github.com/FriendsOfBehat/SymfonyExtension/tree/v2.7.0"
-            },
-            "time": "2026-07-16T15:08:49+00:00"
         },
         {
             "name": "friendsofphp/php-cs-fixer",
@@ -16844,6 +16545,77 @@
                 }
             ],
             "time": "2022-08-31T14:56:15+00:00"
+        },
+        {
+            "name": "zenstruck/mailer-test",
+            "version": "v1.5.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/zenstruck/mailer-test.git",
+                "reference": "221fe3c1bc46ee9229f7e01b7e67dec91fe0f4f7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/zenstruck/mailer-test/zipball/221fe3c1bc46ee9229f7e01b7e67dec91fe0f4f7",
+                "reference": "221fe3c1bc46ee9229f7e01b7e67dec91fe0f4f7",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.0",
+                "symfony/framework-bundle": "^5.4|^6.0|^7.0|^8.0",
+                "symfony/mailer": "^5.4|^6.0|^7.0|^8.0",
+                "zenstruck/assert": "^1.0",
+                "zenstruck/callback": "^1.1"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^2.1.31",
+                "phpunit/phpunit": "^9.6.21",
+                "symfony/console": "^5.4|^6.0|^7.0|^8.0",
+                "symfony/messenger": "^5.4|^6.0|^7.0|^8.0",
+                "symfony/phpunit-bridge": "^6.0|^7.0|^8.0",
+                "symfony/var-dumper": "^5.4|^6.0|^7.0|^8.0",
+                "symfony/yaml": "^5.4|^6.0|^7.0|^8.0",
+                "zenstruck/browser": "^1.0"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Zenstruck\\Mailer\\Test\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Kevin Bond",
+                    "email": "kevinbond@gmail.com"
+                }
+            ],
+            "description": "Alternative, opinionated helpers for testing emails sent with symfony/mailer.",
+            "homepage": "https://github.com/zenstruck/mailer-test",
+            "keywords": [
+                "dev",
+                "mailer",
+                "symfony",
+                "test"
+            ],
+            "support": {
+                "issues": "https://github.com/zenstruck/mailer-test/issues",
+                "source": "https://github.com/zenstruck/mailer-test/tree/v1.5.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/kbond",
+                    "type": "github"
+                },
+                {
+                    "url": "https://github.com/nikophil",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-01-08T15:54:21+00:00"
         }
     ],
     "aliases": [],

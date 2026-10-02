@@ -112,6 +112,9 @@ jobs:
 
       - run: chmod -R +x vendor/bin
 
+      - name: castor playwright-install
+        run: castor playwright-install
+
       - name: castor ci:coverage
         run: castor ci:coverage
 
@@ -124,31 +127,6 @@ jobs:
 
       - name: castor ci:mutation
         run: castor ci:mutation
-
-  e2e:
-    name: E2E (Behat + Playwright)
-    needs: static
-    runs-on: ubuntu-latest
-    env:
-      CI: '' # castor's compose_exec() picks the docker-compose path only when CI is unset
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - uses: shivammathur/setup-php@f3e473d116dcccaddc5834248c87452386958240 # 2.37.2
-        with:
-          php-version: '8.5'
-          tools: composer:v2, castor
-          coverage: none
-
-      - name: castor start
-        run: castor start
-
-      - run: docker compose --profile e2e up -d playwright
-
-      - run: castor sh "vendor/bin/playwright-install"
-
-      - name: castor qa:e2e
-        run: castor qa:e2e
 
   upload-coverage-php:
     name: Upload Coverage (PHP)

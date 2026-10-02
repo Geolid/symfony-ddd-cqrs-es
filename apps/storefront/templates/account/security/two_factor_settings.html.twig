@@ -7,20 +7,20 @@
 {% block content %}
     {{ security.trail([{label: 'two_factor_settings_title'|trans}]) }}
 
-    <h1>{{ 'two_factor_settings_title'|trans }}</h1>
+    <h1 data-testid="two-factor-settings-title">{{ 'two_factor_settings_title'|trans }}</h1>
 
     <article class="settings-sections">
         <dl>
             <dt>{{ 'two_factor_settings_section_backup_codes_title'|trans }}</dt>
             <dd>
                 <p>{{ 'two_factor_settings_section_backup_codes_instructions'|trans }}</p>
-                <small>
+                <small data-testid="backup-codes-remaining">
                     {{ 'show_backup_codes_generated_at'|trans({'%date%': (backupCodeCredential.regeneratedAt ?? backupCodeCredential.generatedAt)|date('d/m/Y')}) }}
                     {{ 'show_backup_codes_remaining'|trans({'%count%': backupCodeCredential.remainingCount}) }}
                 </small>
             </dd>
         </dl>
-        <form method="post" action="{{ path('storefront_account_security_regenerate_backup_codes') }}">
+        <form method="post" action="{{ path('storefront_account_security_regenerate_backup_codes') }}" data-testid="regenerate-backup-codes-form">
             <input type="hidden" name="_token" value="{{ csrf_token('regenerate_backup_codes') }}">
             <button type="submit" class="outline">{{ 'two_factor_settings_button_regenerate'|trans }}</button>
         </form>
@@ -31,7 +31,7 @@
             <dt>{{ 'show_label_trusted_devices'|trans }}</dt>
             <dd>{{ 'two_factor_settings_section_devices_instructions'|trans }}</dd>
         </dl>
-        <a href="{{ path('storefront_account_security_trusted_devices') }}" role="button" class="outline">{{ 'two_factor_settings_button_view_devices'|trans }}</a>
+        <a href="{{ path('storefront_account_security_trusted_devices') }}" role="button" class="outline" data-testid="trusted-devices-link">{{ 'two_factor_settings_button_view_devices'|trans }}</a>
 
         <hr>
 
@@ -42,7 +42,7 @@
                 <p class="icon-text"><twig:ux:icon name="warning" class="icon icon-warning" /> {{ 'two_factor_settings_section_disable_warning'|trans }}</p>
             </dd>
         </dl>
-        <form method="post" action="{{ path('storefront_account_security_unenroll_totp') }}">
+        <form method="post" action="{{ path('storefront_account_security_unenroll_totp') }}" data-testid="unenroll-totp-form">
             <input type="hidden" name="_token" value="{{ csrf_token('unenroll_totp') }}">
             <button type="submit" class="outline pico-background-red-500">{{ 'two_factor_settings_button_disable'|trans }}</button>
         </form>

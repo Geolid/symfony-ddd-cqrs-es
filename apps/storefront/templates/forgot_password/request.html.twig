@@ -6,7 +6,7 @@
 {% block content %}
     <p>{{ 'request_subtitle'|trans }}</p>
 
-    {{ form_start(form) }}
+    {{ form_start(form, {attr: {'data-testid': 'forgot-password-request-form'}}) }}
         {{ form_errors(form) }}
         {{ form_row(form.email) }}
         <button type="submit">{{ 'request_button_submit'|trans }}</button>

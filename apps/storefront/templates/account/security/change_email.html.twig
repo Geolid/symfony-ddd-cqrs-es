@@ -15,7 +15,7 @@
 
     <p>{{ 'change_email_confirm_message_sent'|trans({'%email%': newEmail}) }}</p>
 
-    {{ form_start(form) }}
+    {{ form_start(form, {attr: {'data-testid': 'change-email-form'}}) }}
         {{ form_errors(form) }}
         {{ form_widget(form) }}
         <button type="submit">{{ 'change_email_confirm_button_submit'|trans }}</button>
@@ -25,5 +25,6 @@
         actionUrl="{{ path('storefront_account_security_change_email_resend') }}"
         csrfId="change_email_resend"
         label="{{ 'button_resend'|trans({}, 'verification_code') }}"
+        data-testid="change-email-resend-link"
     />
 {% endblock %}

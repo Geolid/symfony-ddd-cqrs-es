@@ -1,7 +1,7 @@
 <div data-controller="backup-codes" data-backup-codes-filename-value="backup-codes.txt">
-    <div class="backup-codes">
+    <div class="backup-codes" data-testid="backup-codes">
         {% for backupCode in backupCodes %}
-            <code data-backup-codes-target="code">{{ backupCode }}</code>
+            <code data-backup-codes-target="code" data-testid="backup-code">{{ backupCode }}</code>
         {% endfor %}
     </div>
 

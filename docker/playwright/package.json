@@ -1,7 +1,0 @@
-{
-    "name": "storefront-e2e-playwright-server",
-    "private": true,
-    "dependencies": {
-        "playwright": "1.63.0"
-    }
-}
