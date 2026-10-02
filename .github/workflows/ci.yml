@@ -44,6 +44,7 @@ jobs:
           path: |
             vendor
             ui/assets/vendor
+            !vendor/playwright-php/playwright/bin/node_modules
           retention-days: 1
 
   static:
