@@ -65,17 +65,21 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->playwrightBrowser();
-        $browser->visit('/signin');
-        $client = $browser->client();
-        if ($client instanceof PlaywrightKernelClient) {
-            fwrite(\STDERR, \sprintf(
-                "[DIAG] uri=%s status=%s content=%s\n",
-                $client->getLastSymfonyRequest()?->getUri() ?? 'null',
-                $client->getLastSymfonyResponse()?->getStatusCode() ?? 'null',
-                substr($client->getLastSymfonyResponse()?->getContent() ?: '', 0, 300),
-            ));
+        try {
+            $this->goToChangeEmail($browser);
+        } catch (\Throwable $e) {
+            $client = $browser->client();
+            if ($client instanceof PlaywrightKernelClient) {
+                self::fail(\sprintf(
+                    'DIAG uri=%s status=%s: %s',
+                    $client->getLastSymfonyRequest()?->getUri() ?? 'null',
+                    $client->getLastSymfonyResponse()?->getStatusCode() ?? 'null',
+                    $e->getMessage(),
+                ));
+            }
+
+            throw $e;
         }
-        $this->goToChangeEmail($browser);
 
         // When
         $browser->use(static function (ChangeEmailForm $form): void {
