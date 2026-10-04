@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\Account\Security\Component;
 
+use Symfony\Component\BrowserKit\AbstractBrowser;
 use Zenstruck\Browser\Component;
 
 final class ChangeEmailForm extends Component
@@ -25,6 +26,16 @@ final class ChangeEmailForm extends Component
     public function clickResend(): self
     {
         $this->browser()->click('[data-testid="change-email-resend-link"]');
+
+        return $this;
+    }
+
+    public function submitResendWithInvalidToken(): self
+    {
+        $this->browser()->use(static function (AbstractBrowser $client): void {
+            $form = $client->getCrawler()->filter('form[data-controller="submit-link"]')->form(['_token' => 'invalid']);
+            $client->submit($form);
+        });
 
         return $this;
     }

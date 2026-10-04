@@ -76,6 +76,24 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    public function itRefusesInvalidCsrfToken(): void
+    {
+        // Given
+        $browser = $this->activeBrowser();
+        $this->goToChangeEmail($browser);
+        $browser->interceptRedirects();
+
+        // When
+        $browser->use(static function (ChangeEmailForm $form): void {
+            $form->submitResendWithInvalidToken();
+        });
+
+        // Then
+        $browser->assertRedirectedTo('/account/security/email/change/confirm')
+            ->assertSeeIn('[data-testid="flash-error"]', 'flash_failed');
+    }
+
+    #[Test]
     public function itRequiresAuthentication(): void
     {
         // Given

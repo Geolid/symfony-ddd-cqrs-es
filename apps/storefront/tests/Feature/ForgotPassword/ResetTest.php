@@ -166,6 +166,24 @@ final class ResetTest extends AbstractStorefrontTestCase
         $this->mailer()->assertSentEmailCount(2);
     }
 
+    #[Test]
+    public function itRefusesInvalidCsrfToken(): void
+    {
+        // Given
+        $browser = $this->activeBrowser()->interceptRedirects();
+        $identityId = $this->givenResetRequested();
+        $browser->visit("/forgot-password/{$identityId}/reset");
+
+        // When
+        $browser->use(static function (ResetForm $reset): void {
+            $reset->submitResendWithInvalidToken();
+        });
+
+        // Then
+        $browser->assertRedirectedTo("/forgot-password/{$identityId}/reset")
+            ->assertSeeIn('[data-testid="flash-error"]', 'flash_failed');
+    }
+
     private function givenResetRequested(bool $suspended = false): string
     {
         $identityBuilder = $suspended

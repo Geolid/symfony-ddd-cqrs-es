@@ -113,6 +113,24 @@ final class ConfirmTest extends AbstractStorefrontTestCase
             ->assertSeeIn('[data-testid="flash-success"]', 'confirm_resend_flash_already_confirmed');
     }
 
+    #[Test]
+    public function itRefusesInvalidCsrfToken(): void
+    {
+        // Given
+        $browser = $this->activeBrowser()->interceptRedirects();
+        $identityId = $this->givenPendingConfirmation();
+        $browser->visit("/register/{$identityId}/confirm");
+
+        // When
+        $browser->use(static function (ConfirmForm $confirm): void {
+            $confirm->submitResendWithInvalidToken();
+        });
+
+        // Then
+        $browser->assertRedirectedTo("/register/{$identityId}/confirm")
+            ->assertSeeIn('[data-testid="flash-error"]', 'flash_failed');
+    }
+
     private function givenPendingConfirmation(): string
     {
         $identityBuilder = IdentityBuilder::new()->confirmationRequested();

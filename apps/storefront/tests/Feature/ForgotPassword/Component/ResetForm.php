@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\ForgotPassword\Component;
 
+use Symfony\Component\BrowserKit\AbstractBrowser;
 use Zenstruck\Browser\Component;
 
 final class ResetForm extends Component
@@ -41,6 +42,16 @@ final class ResetForm extends Component
     public function clickResend(): self
     {
         $this->browser()->click('[data-testid="reset-password-resend-link"]');
+
+        return $this;
+    }
+
+    public function submitResendWithInvalidToken(): self
+    {
+        $this->browser()->use(static function (AbstractBrowser $client): void {
+            $form = $client->getCrawler()->filter('form[data-controller="submit-link"]')->form(['_token' => 'invalid']);
+            $client->submit($form);
+        });
 
         return $this;
     }
