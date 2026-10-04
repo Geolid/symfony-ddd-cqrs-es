@@ -23,6 +23,8 @@ function qa_test(
 ): void {
     // No APP_ENV forwarded: phpunit.dist.xml forces it to "test" itself, and that
     // force loses to a real, externally-set APP_ENV env var.
+    $browserHeaded = '1' === ($_SERVER['BROWSER_HEADED'] ?? null);
+
     with(static fn () => compose_exec([
         'vendor/bin/paratest', '--processes', '8', '--display-all-issues',
         ...(!$coverage ? ['--no-coverage'] : []),
@@ -30,7 +32,8 @@ function qa_test(
         ...(null !== $suite ? ['--testsuite', $suite] : []),
         ...(null !== $target ? [$target] : []),
     ]), environment: [
-        'BROWSER_HEADED' => is_string($_SERVER['BROWSER_HEADED'] ?? null) ? $_SERVER['BROWSER_HEADED'] : '0',
+        'BROWSER_HEADED' => $browserHeaded ? '1' : '0',
+        'PLAYWRIGHT_HEADLESS' => $browserHeaded ? 'false' : 'true',
     ], context: new Context());
 }
 
