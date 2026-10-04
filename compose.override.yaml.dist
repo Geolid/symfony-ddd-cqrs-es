@@ -8,11 +8,9 @@ services:
     environment:
       COMPOSER_CACHE_DIR: /home/app/.cache/composer
       COMPOSER_HOME: /home/app/.config/composer
-      DISPLAY: ${DISPLAY:-}
     volumes:
       - ~/.cache/composer:/home/app/.cache/composer
       - ~/.config/composer:/home/app/.config/composer
-      - /tmp/.X11-unix:/tmp/.X11-unix
 
   db:
     ports:

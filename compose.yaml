@@ -20,8 +20,11 @@ services:
         condition: service_healthy
       valkey:
         condition: service_healthy
+    environment:
+      DISPLAY: ${DISPLAY:-}
     volumes:
       - ./:/srv/
+      - /tmp/.X11-unix:/tmp/.X11-unix
     command: [ 'php-fpm' ]
 
   db:
