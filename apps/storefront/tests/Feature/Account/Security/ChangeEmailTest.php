@@ -9,12 +9,10 @@ use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthS
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Playwright\Symfony\Client\Interception\AssetServer;
 use Storefront\Tests\Browser\AuthenticationExtensionInterface;
 use Storefront\Tests\Feature\Account\Security\Component\ChangeEmailForm;
 use Storefront\Tests\Feature\Account\Security\Component\RequestEmailChangeForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
-use Symfony\Component\AssetMapper\AssetMapperInterface;
 use Symfony\Component\Clock\Clock;
 use Zenstruck\Browser;
 
@@ -63,22 +61,6 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
 
     #[Test]
     public function itResends(): void
-    {
-        // DIAG
-        $publicPath = $this->service(AssetMapperInterface::class)->getPublicPath('storefront/auth.js');
-        $assetServer = $this->service(AssetServer::class);
-        $url = 'http://localhost'.($publicPath ?? '');
-        $handled = $assetServer->handle($url);
-        self::fail(\sprintf(
-            'DIAG publicPath=%s supports=%s handle=%s',
-            $publicPath ?? 'null',
-            $assetServer->supports($url) ? 'true' : 'false',
-            null !== $handled ? 'non-null' : 'null',
-        ));
-    }
-
-    #[Test]
-    public function itReallyResends(): void
     {
         // Given
         $browser = $this->playwrightBrowser();

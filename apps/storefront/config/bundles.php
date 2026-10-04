@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Playwright\Symfony\PlaywrightSymfonyBundle;
 use Scheb\TwoFactorBundle\SchebTwoFactorBundle;
 use Symfony\Bundle\SecurityBundle\SecurityBundle;
 use Symfony\Bundle\TwigBundle\TwigBundle;
@@ -12,6 +13,7 @@ use Symfony\UX\TwigComponent\TwigComponentBundle;
 use Zenstruck\Mailer\Test\ZenstruckMailerTestBundle;
 
 return [
+    PlaywrightSymfonyBundle::class => ['test' => true],
     SchebTwoFactorBundle::class => ['all' => true],
     SecurityBundle::class => ['all' => true],
     StimulusBundle::class => ['all' => true],
