@@ -51,13 +51,13 @@ abstract class AbstractStorefrontTestCase extends WebTestCase
 
     /**
      * Uniform across backends (`StorefrontKernelBrowser`/`StorefrontPlaywrightBrowser` both carry
-     * every Extension's own interface) — real, headed Chromium (`BROWSER_HEADED=1`, rendered on
-     * the host through the `app` container's own X11 forwarding) only for a deliberate, manual
-     * run; everyday/CI runs stay on the fast KernelBrowser.
+     * every Extension's own interface) — real, headed Chromium (`PLAYWRIGHT_HEADLESS=false`,
+     * rendered on the host through the `app` container's own X11 forwarding) only for a
+     * deliberate, manual run; everyday/CI runs stay on the fast KernelBrowser.
      */
     protected function activeBrowser(): Browser&AuthenticationExtensionInterface&RegistrationExtensionInterface
     {
-        if ('1' === getenv('BROWSER_HEADED')) {
+        if ('false' === getenv('PLAYWRIGHT_HEADLESS')) {
             return $this->playwrightBrowser();
         }
 
