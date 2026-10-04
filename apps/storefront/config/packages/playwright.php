@@ -10,6 +10,7 @@ return static function (ContainerConfigurator $container): void {
             'browsers' => [
                 'default' => [
                     'headless' => '%env(not:default::BROWSER_HEADED)%',
+                    'slowmo_ms' => '1' === getenv('BROWSER_HEADED') ? 300 : 0,
                 ],
             ],
         ]);

@@ -29,7 +29,9 @@ function qa_test(
         ...(null !== $filter ? ['--filter', $filter] : []),
         ...(null !== $suite ? ['--testsuite', $suite] : []),
         ...(null !== $target ? [$target] : []),
-    ]), context: new Context());
+    ]), environment: [
+        'BROWSER_HEADED' => is_string($_SERVER['BROWSER_HEADED'] ?? null) ? $_SERVER['BROWSER_HEADED'] : '0',
+    ], context: new Context());
 }
 
 #[AsTask(name: 'mutation', namespace: 'qa', description: 'Run mutation testing scoped to the diff')]

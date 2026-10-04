@@ -45,6 +45,7 @@ function default_context(): Context
     return new Context(environment: [
         'APP_ENV' => is_string($_SERVER['APP_ENV'] ?? null) ? $_SERVER['APP_ENV'] : 'dev',
         'APP_DEBUG' => is_string($_SERVER['APP_DEBUG'] ?? null) ? $_SERVER['APP_DEBUG'] : '1',
+        'BROWSER_HEADED' => is_string($_SERVER['BROWSER_HEADED'] ?? null) ? $_SERVER['BROWSER_HEADED'] : '0',
     ]);
 }
 

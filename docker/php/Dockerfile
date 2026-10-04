@@ -13,8 +13,8 @@ RUN apk add --no-cache icu-dev git sudo nodejs npm gcompat chromium $PHPIZE_DEPS
     && addgroup -g ${GROUP_ID} app \
     && adduser -D -u ${USER_ID} -G app -h /home/app app \
     && echo 'app ALL=(ALL) NOPASSWD:ALL' > /etc/sudoers.d/app \
-    && mkdir -p /home/app/.cache /home/app/.config \
-    && chown app:app /home/app/.cache /home/app/.config
+    && mkdir -p /home/app/.cache/ms-playwright /home/app/.config \
+    && chown -R app:app /home/app/.cache /home/app/.config
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
