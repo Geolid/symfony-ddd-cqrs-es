@@ -19,15 +19,18 @@ use Zenstruck\Browser\Test\HasBrowser;
 use Zenstruck\Mailer\Test\InteractsWithMailer;
 
 /**
- * @method StorefrontKernelBrowser     browser()
- * @method StorefrontPlaywrightBrowser playwrightBrowser()
+ * @method StorefrontKernelBrowser browser()
  */
 abstract class AbstractStorefrontTestCase extends WebTestCase
 {
     use EventSourcingTrait;
-    use HasBrowser;
+    use HasBrowser {
+        playwrightBrowser as private traitPlaywrightBrowser;
+    }
     use InteractsWithMailer;
     use ServiceLocatorTrait;
+
+    private ?StorefrontPlaywrightBrowser $playwrightBrowser = null;
 
     public static function setUpBeforeClass(): void
     {
@@ -35,6 +38,44 @@ abstract class AbstractStorefrontTestCase extends WebTestCase
 
         $_SERVER['KERNEL_BROWSER_CLASS'] = StorefrontKernelBrowser::class;
         $_SERVER['PLAYWRIGHT_BROWSER_CLASS'] = StorefrontPlaywrightBrowser::class;
+    }
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        if (false !== getenv('PLAYWRIGHT_HEADLESS')) {
+            $this->playwrightBrowser()->client()->context()?->tracing()->start([
+                'screenshots' => true,
+                'snapshots' => true,
+            ]);
+        }
+    }
+
+    protected function tearDown(): void
+    {
+        if (false !== getenv('PLAYWRIGHT_HEADLESS')) {
+            $this->playwrightBrowser()->client()->context()?->tracing()->stop([
+                'path' => \sprintf('%s/var/traces/%s__%s.zip', getcwd(), str_replace('\\', '_', static::class), $this->name()),
+            ]);
+        }
+
+        parent::tearDown();
+    }
+
+    /**
+     * Memoized: the trait's own method builds a brand-new session on every call, which would give
+     * setUp()'s tracing start and the test's own actions two unrelated contexts.
+     */
+    protected function playwrightBrowser(): StorefrontPlaywrightBrowser
+    {
+        if (null === $this->playwrightBrowser) {
+            $browser = $this->traitPlaywrightBrowser();
+            \assert($browser instanceof StorefrontPlaywrightBrowser);
+            $this->playwrightBrowser = $browser;
+        }
+
+        return $this->playwrightBrowser;
     }
 
     /**
@@ -51,13 +92,13 @@ abstract class AbstractStorefrontTestCase extends WebTestCase
 
     /**
      * Uniform across backends (`StorefrontKernelBrowser`/`StorefrontPlaywrightBrowser` both carry
-     * every Extension's own interface) — real, headed Chromium (`PLAYWRIGHT_HEADLESS=false`,
-     * rendered on the host through the `app` container's own X11 forwarding) only for a
-     * deliberate, manual run; everyday/CI runs stay on the fast KernelBrowser.
+     * every Extension's own interface) — any value set for `PLAYWRIGHT_HEADLESS` switches to real
+     * Chromium, auto-traced to `var/traces/` (replayable with `npx playwright show-trace`); unset,
+     * everyday/CI runs stay on the fast KernelBrowser.
      */
     protected function activeBrowser(): Browser&AuthenticationExtensionInterface&RegistrationExtensionInterface
     {
-        if ('false' === getenv('PLAYWRIGHT_HEADLESS')) {
+        if (false !== getenv('PLAYWRIGHT_HEADLESS')) {
             return $this->playwrightBrowser();
         }
 

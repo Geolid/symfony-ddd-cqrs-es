@@ -29,9 +29,9 @@ function qa_test(
         ...(null !== $filter ? ['--filter', $filter] : []),
         ...(null !== $suite ? ['--testsuite', $suite] : []),
         ...(null !== $target ? [$target] : []),
-    ]), environment: [
-        'PLAYWRIGHT_HEADLESS' => is_string($_SERVER['PLAYWRIGHT_HEADLESS'] ?? null) ? $_SERVER['PLAYWRIGHT_HEADLESS'] : 'true',
-    ], context: new Context());
+    ]), environment: is_string($_SERVER['PLAYWRIGHT_HEADLESS'] ?? null) ? [
+        'PLAYWRIGHT_HEADLESS' => $_SERVER['PLAYWRIGHT_HEADLESS'],
+    ] : [], context: new Context());
 }
 
 #[AsTask(name: 'mutation', namespace: 'qa', description: 'Run mutation testing scoped to the diff')]
