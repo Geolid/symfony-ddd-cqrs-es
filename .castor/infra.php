@@ -36,9 +36,10 @@ function vendor(
     warmup();
 }
 
-#[AsTask(name: 'playwright-install', description: 'Install Playwright browsers')]
+#[AsTask(name: 'playwright', description: 'Install Playwright browsers')]
 function playwright_install(): void
 {
+    io()->comment('playwright');
     fingerprint(
         callback: static fn () => compose_exec([
             'vendor/bin/playwright-install',

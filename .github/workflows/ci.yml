@@ -113,8 +113,8 @@ jobs:
 
       - run: chmod -R +x vendor/bin
 
-      - name: castor playwright-install
-        run: castor playwright-install
+      - name: castor playwright
+        run: castor playwright
 
       - name: castor ci:coverage
         run: castor ci:coverage
