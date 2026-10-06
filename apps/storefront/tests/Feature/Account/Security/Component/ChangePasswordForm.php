@@ -25,7 +25,7 @@ final class ChangePasswordForm extends Component
 
     public function submit(): self
     {
-        $this->browser()->click('[data-testid="change-password-form"] button[type="submit"]');
+        $this->browser()->click('[data-testid="change-password-submit"]');
 
         return $this;
     }

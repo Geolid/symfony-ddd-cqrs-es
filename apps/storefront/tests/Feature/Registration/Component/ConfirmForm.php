@@ -18,7 +18,7 @@ final class ConfirmForm extends Component
 
     public function submit(): self
     {
-        $this->browser()->click('[data-testid="confirm-form"] button[type="submit"]');
+        $this->browser()->click('[data-testid="confirm-submit"]');
 
         return $this;
     }
@@ -33,7 +33,7 @@ final class ConfirmForm extends Component
     public function submitResendWithInvalidToken(): self
     {
         $this->browser()->use(static function (AbstractBrowser $client): void {
-            $form = $client->getCrawler()->filter('form[data-controller="submit-link"]')->form(['_token' => 'invalid']);
+            $form = $client->getCrawler()->filter('[data-testid="confirm-resend-form"]')->form(['_token' => 'invalid']);
             $client->submit($form);
         });
 

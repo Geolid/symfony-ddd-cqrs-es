@@ -17,7 +17,7 @@ final class IdentifyForm extends Component
 
     public function submit(): self
     {
-        $this->browser()->click('[data-testid="identify-form"] button[type="submit"]');
+        $this->browser()->click('[data-testid="identify-submit"]');
 
         return $this;
     }

@@ -17,7 +17,7 @@ final class VerifyForm extends Component
 
     public function submit(): self
     {
-        $this->browser()->click('[data-testid="verify-form"] button[type="submit"]');
+        $this->browser()->click('[data-testid="verify-submit"]');
 
         return $this;
     }

@@ -13,7 +13,7 @@
             <dd>{{ form.email.vars.value }} <a href="{{ path('storefront_signin_identify') }}">{{ 'link_modify'|trans({}, 'messages') }}</a></dd>
         </dl>
         {{ form_rest(form) }}
-        <button type="submit">{{ 'register_button_submit'|trans }}</button>
+        <button type="submit" data-testid="register-submit">{{ 'register_button_submit'|trans }}</button>
     {{ form_end(form) }}
 
     <p><strong>{{ 'register_text_already_customer'|trans }}</strong><br><a href="{{ path('storefront_signin_identify') }}">{{ 'register_link_identify_instead'|trans }}</a></p>

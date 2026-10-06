@@ -19,7 +19,7 @@
             <input type="hidden" name="{{ csrfParameterName }}" value="{{ csrf_token(csrfTokenId) }}">
         {% endif %}
 
-        <button type="submit">{{ 'button_submit'|trans({}, 'two_factor_challenge') }}</button>
+        <button type="submit" data-testid="two-factor-submit">{{ 'button_submit'|trans({}, 'two_factor_challenge') }}</button>
     </form>
 
     {% for provider in availableTwoFactorProviders %}

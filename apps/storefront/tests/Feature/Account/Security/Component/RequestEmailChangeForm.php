@@ -17,7 +17,7 @@ final class RequestEmailChangeForm extends Component
 
     public function submit(): self
     {
-        $this->browser()->click('[data-testid="request-email-change-form"] button[type="submit"]');
+        $this->browser()->click('[data-testid="request-email-change-submit"]');
 
         return $this;
     }

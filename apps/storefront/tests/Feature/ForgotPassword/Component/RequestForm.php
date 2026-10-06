@@ -17,7 +17,7 @@ final class RequestForm extends Component
 
     public function submit(): self
     {
-        $this->browser()->click('[data-testid="forgot-password-request-form"] button[type="submit"]');
+        $this->browser()->click('[data-testid="forgot-password-request-submit"]');
 
         return $this;
     }

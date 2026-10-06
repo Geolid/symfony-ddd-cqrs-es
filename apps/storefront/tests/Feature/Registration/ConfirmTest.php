@@ -77,7 +77,7 @@ final class ConfirmTest extends AbstractStorefrontTestCase
     public function itResends(): void
     {
         // Given
-        $browser = $this->playwrightBrowser();
+        $browser = $this->activeBrowser();
         $identityId = $this->givenPendingConfirmation();
         $browser->visit("/register/{$identityId}/confirm");
 
@@ -94,7 +94,7 @@ final class ConfirmTest extends AbstractStorefrontTestCase
     public function itResendsWhenAlreadyConfirmed(): void
     {
         // Given
-        $browser = $this->playwrightBrowser();
+        $browser = $this->activeBrowser();
         $identityId = $this->givenPendingConfirmation();
         $browser->visit("/register/{$identityId}/confirm");
         $browser->use(function (ConfirmForm $confirm): void {

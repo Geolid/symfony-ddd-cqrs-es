@@ -63,7 +63,7 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
     public function itResends(): void
     {
         // Given
-        $browser = $this->playwrightBrowser();
+        $browser = $this->activeBrowser();
         $this->goToChangeEmail($browser);
 
         // When

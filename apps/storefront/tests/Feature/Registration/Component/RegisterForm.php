@@ -33,7 +33,7 @@ final class RegisterForm extends Component
 
     public function submit(): self
     {
-        $this->browser()->click('[data-testid="register-form"] button[type="submit"]');
+        $this->browser()->click('[data-testid="register-submit"]');
 
         return $this;
     }

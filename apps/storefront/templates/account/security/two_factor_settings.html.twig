@@ -22,7 +22,7 @@
         </dl>
         <form method="post" action="{{ path('storefront_account_security_regenerate_backup_codes') }}" data-testid="regenerate-backup-codes-form">
             <input type="hidden" name="_token" value="{{ csrf_token('regenerate_backup_codes') }}">
-            <button type="submit" class="outline">{{ 'two_factor_settings_button_regenerate'|trans }}</button>
+            <button type="submit" class="outline" data-testid="regenerate-backup-codes-submit">{{ 'two_factor_settings_button_regenerate'|trans }}</button>
         </form>
 
         <hr>
@@ -44,7 +44,7 @@
         </dl>
         <form method="post" action="{{ path('storefront_account_security_unenroll_totp') }}" data-testid="unenroll-totp-form">
             <input type="hidden" name="_token" value="{{ csrf_token('unenroll_totp') }}">
-            <button type="submit" class="outline pico-background-red-500">{{ 'two_factor_settings_button_disable'|trans }}</button>
+            <button type="submit" class="outline pico-background-red-500" data-testid="unenroll-totp-submit">{{ 'two_factor_settings_button_disable'|trans }}</button>
         </form>
     </article>
 {% endblock %}

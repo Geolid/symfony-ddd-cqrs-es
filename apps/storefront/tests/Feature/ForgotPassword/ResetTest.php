@@ -153,7 +153,7 @@ final class ResetTest extends AbstractStorefrontTestCase
     public function itResends(): void
     {
         // Given
-        $browser = $this->playwrightBrowser();
+        $browser = $this->activeBrowser();
         $identityId = $this->givenResetRequested();
         $browser->visit("/forgot-password/{$identityId}/reset");
 

@@ -46,7 +46,7 @@ final class TrustedDevicesTest extends AbstractStorefrontTestCase
         $browser->interceptRedirects();
 
         // When
-        $browser->click('[data-testid="revoke-trusted-device-form"] button[type="submit"]');
+        $browser->click('[data-testid="revoke-trusted-device-submit"]');
 
         // Then
         $browser->assertRedirectedTo('/account/security/2fa/devices')
@@ -63,7 +63,7 @@ final class TrustedDevicesTest extends AbstractStorefrontTestCase
         $browser->interceptRedirects();
 
         // When
-        $browser->click('[data-testid="revoke-trusted-devices-form"] button[type="submit"]');
+        $browser->click('[data-testid="revoke-trusted-devices-submit"]');
 
         // Then
         $browser->assertRedirectedTo('/account/security/2fa/devices')

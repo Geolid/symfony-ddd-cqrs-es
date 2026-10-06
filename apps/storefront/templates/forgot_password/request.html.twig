@@ -9,6 +9,6 @@
     {{ form_start(form, {attr: {'data-testid': 'forgot-password-request-form'}}) }}
         {{ form_errors(form) }}
         {{ form_row(form.email) }}
-        <button type="submit">{{ 'request_button_submit'|trans }}</button>
+        <button type="submit" data-testid="forgot-password-request-submit">{{ 'request_button_submit'|trans }}</button>
     {{ form_end(form) }}
 {% endblock %}

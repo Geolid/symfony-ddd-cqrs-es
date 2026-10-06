@@ -34,7 +34,7 @@ final class ResetForm extends Component
 
     public function submit(): self
     {
-        $this->browser()->click('[data-testid="reset-password-form"] button[type="submit"]');
+        $this->browser()->click('[data-testid="reset-password-submit"]');
 
         return $this;
     }
@@ -49,7 +49,7 @@ final class ResetForm extends Component
     public function submitResendWithInvalidToken(): self
     {
         $this->browser()->use(static function (AbstractBrowser $client): void {
-            $form = $client->getCrawler()->filter('form[data-controller="submit-link"]')->form(['_token' => 'invalid']);
+            $form = $client->getCrawler()->filter('[data-testid="reset-password-resend-form"]')->form(['_token' => 'invalid']);
             $client->submit($form);
         });
 

@@ -17,7 +17,7 @@ final class EnrollTotpForm extends Component
 
     public function submit(): self
     {
-        $this->browser()->click('[data-testid="enroll-totp-form"] button[type="submit"]');
+        $this->browser()->click('[data-testid="enroll-totp-submit"]');
 
         return $this;
     }

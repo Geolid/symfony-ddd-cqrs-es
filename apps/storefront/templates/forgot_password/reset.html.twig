@@ -12,13 +12,14 @@
         {{ form_errors(form.newPassword) }}
         {{ form_row(form.newPassword.first) }}
         {{ form_row(form.newPassword.second) }}
-        <button type="submit">{{ 'reset_button_submit'|trans }}</button>
+        <button type="submit" data-testid="reset-password-submit">{{ 'reset_button_submit'|trans }}</button>
     {{ form_end(form) }}
 
     <twig:ui:SubmitLink
         actionUrl="{{ path('storefront_forgot_password_reset_resend', {identityId: identityId}) }}"
         csrfId="password_reset_resend"
         label="{{ 'button_resend'|trans({}, 'verification_code') }}"
+        formTestId="reset-password-resend-form"
         data-testid="reset-password-resend-link"
     />
 {% endblock %}

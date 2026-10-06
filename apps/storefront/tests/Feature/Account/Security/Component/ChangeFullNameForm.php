@@ -17,7 +17,7 @@ final class ChangeFullNameForm extends Component
 
     public function submit(): self
     {
-        $this->browser()->click('[data-testid="change-full-name-form"] button[type="submit"]');
+        $this->browser()->click('[data-testid="change-full-name-submit"]');
 
         return $this;
     }

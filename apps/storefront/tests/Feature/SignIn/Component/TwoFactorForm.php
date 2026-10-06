@@ -24,7 +24,7 @@ final class TwoFactorForm extends Component
 
     public function submit(): self
     {
-        $this->browser()->click('[data-testid="two-factor-form"] button[type="submit"]');
+        $this->browser()->click('[data-testid="two-factor-submit"]');
 
         return $this;
     }

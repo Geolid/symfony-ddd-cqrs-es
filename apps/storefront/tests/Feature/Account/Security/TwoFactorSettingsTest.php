@@ -47,7 +47,7 @@ final class TwoFactorSettingsTest extends AbstractStorefrontTestCase
         $browser->visit('/account/security/2fa/settings');
 
         // When
-        $browser->click('[data-testid="regenerate-backup-codes-form"] button[type="submit"]');
+        $browser->click('[data-testid="regenerate-backup-codes-submit"]');
 
         // Then
         $browser->assertSuccessful()
@@ -64,7 +64,7 @@ final class TwoFactorSettingsTest extends AbstractStorefrontTestCase
         $browser->interceptRedirects();
 
         // When
-        $browser->click('[data-testid="unenroll-totp-form"] button[type="submit"]');
+        $browser->click('[data-testid="unenroll-totp-submit"]');
 
         // Then
         $browser->assertRedirectedTo('/account/security')
