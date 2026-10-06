@@ -22,6 +22,8 @@ services:
         condition: service_healthy
     environment:
       DISPLAY: ${DISPLAY:-}
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     volumes:
       - ./:/srv/
       - /tmp/.X11-unix:/tmp/.X11-unix

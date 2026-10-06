@@ -15,12 +15,13 @@ use function Castor\with;
 #[AsListener(event: BeforeExecuteTaskEvent::class)]
 function qa_test_ensure_playwright(BeforeExecuteTaskEvent $event): void
 {
-    if (in_array($event->task->getName(), ['qa', 'qa:test'], true)) {
+    if ([] !== $event->task->getAttributes(NeedsPlaywright::class)) {
         playwright();
     }
 }
 
 #[AsTask(name: 'test', namespace: 'qa', description: 'Run test suite')]
+#[NeedsPlaywright]
 function qa_test(
     #[AsOption(description: 'Filter tests by name')]
     ?string $filter = null,
@@ -39,9 +40,7 @@ function qa_test(
         ...(null !== $filter ? ['--filter', $filter] : []),
         ...(null !== $suite ? ['--testsuite', $suite] : []),
         ...(null !== $target ? [$target] : []),
-    ]), environment: is_string($_SERVER['PLAYWRIGHT_HEADLESS'] ?? null) ? [
-        'PLAYWRIGHT_HEADLESS' => $_SERVER['PLAYWRIGHT_HEADLESS'],
-    ] : [], context: new Context());
+    ]), context: new Context());
 }
 
 #[AsTask(name: 'mutation', namespace: 'qa', description: 'Run mutation testing scoped to the diff')]

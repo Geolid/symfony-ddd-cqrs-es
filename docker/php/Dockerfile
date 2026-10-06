@@ -3,12 +3,12 @@ FROM php:8.5-fpm-alpine
 ARG USER_ID=1000
 ARG GROUP_ID=1000
 
-RUN apk add --no-cache icu-dev git sudo nodejs npm gcompat chromium $PHPIZE_DEPS \
+RUN apk add --no-cache icu-dev git sudo nodejs npm gcompat chromium $PHPIZE_DEPS linux-headers \
     && docker-php-ext-configure intl \
     && docker-php-ext-install intl pdo_mysql \
-    && pecl install pcov \
-    && docker-php-ext-enable pcov \
-    && apk del $PHPIZE_DEPS \
+    && pecl install pcov xdebug \
+    && docker-php-ext-enable pcov xdebug \
+    && apk del $PHPIZE_DEPS linux-headers \
     && git config --system --add safe.directory /srv \
     && addgroup -g ${GROUP_ID} app \
     && adduser -D -u ${USER_ID} -G app -h /home/app app \
@@ -24,5 +24,12 @@ RUN { \
         echo 'date.timezone=UTC'; \
         echo 'memory_limit=1G'; \
     } > /usr/local/etc/php/conf.d/app.ini
+
+RUN { \
+        echo 'xdebug.mode=off'; \
+        echo 'xdebug.start_with_request=yes'; \
+        echo 'xdebug.client_host=host.docker.internal'; \
+        echo 'xdebug.discover_client_host=false'; \
+    } > /usr/local/etc/php/conf.d/xdebug.ini
 
 WORKDIR /srv

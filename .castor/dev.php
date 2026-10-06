@@ -4,9 +4,12 @@ declare(strict_types=1);
 
 use Castor\Attribute\AsArgsAfterOptionEnd;
 use Castor\Attribute\AsArgument;
+use Castor\Attribute\AsOption;
 use Castor\Attribute\AsTask;
+use Castor\Context;
 
 use function Castor\fs;
+use function Castor\with;
 
 #[AsTask(description: 'Install and start the full project')]
 function start(): void
@@ -60,4 +63,25 @@ function cc(
 function dump_server(): void
 {
     console(['server:dump']);
+}
+
+#[AsTask(name: 'debug-test', description: 'Run a test with Xdebug and a visible browser')]
+#[NeedsPlaywright]
+function debug_test(
+    #[AsOption(description: 'Filter tests by name')]
+    ?string $filter = null,
+    #[AsOption(description: 'Run a specific test suite')]
+    ?string $suite = null,
+    #[AsArgument(description: 'Target test file or directory')]
+    ?string $target = null,
+): void {
+    with(static fn () => compose_exec([
+        'vendor/bin/phpunit', '--display-all-issues', '--no-coverage',
+        ...(null !== $filter ? ['--filter', $filter] : []),
+        ...(null !== $suite ? ['--testsuite', $suite] : []),
+        ...(null !== $target ? [$target] : []),
+    ]), environment: [
+        'PLAYWRIGHT_HEADLESS' => 'false',
+        'XDEBUG_MODE' => 'debug',
+    ], context: new Context());
 }
