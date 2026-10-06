@@ -14,18 +14,20 @@ fulfilment (shipping), after-sales (return).
 Castor = Docker proxy, reads .env files and inline shell vars.
 
 ```bash
-castor list                                        # tasks
-castor sh [<cmd>]                                  # shell in app container
+castor list                                        # see every task (this is a curated subset)
+castor start                                       # bootstrap: docker + vendor + db + assets
+castor vendor [<pkg>] [--dev]                      # composer install, or require a package
+castor sh [<cmd>]                                  # shell / exec in app container
 castor cc [<dm>]                                   # cache clear + warmup (default: all DMs)
-castor qa:test [options] [<target>]                # PHPUnit
-castor qa:mutation [--coverage]                    # Infection, diff-scoped
-castor qa:stan [--app=<dm>] [<target>]             # PHPStan (default: all)
-castor qa:deptrac [--scope=bc|layers|dm]           # architecture checks (default: all)
-castor qa:cs [--type=php|twig] [--fix] [<target>]  # lint (default: check)
-castor qa:rector [--fix] [<target>]                # Rector (default: check)
-castor qa:static                                   # all static checks
-castor qa                                          # static + test + mutation
-castor assets [<dm>]                               # install assets (default: all DMs)
+castor docker:logs <service>                       # tail a service's logs
+castor db:reset                                    # wipe + fresh DB
+castor qa:cs [--type=php|twig] [--fix] [<target>]  # coding standards (targeted)
+castor qa:stan [--app=<dm>] [<target>]             # PHPStan (targeted)
+castor qa:deptrac [--scope=bc|layers|dm]           # architecture boundaries (targeted)
+castor qa:rector [--fix] [<target>]                # Rector refactoring rules (targeted)
+castor qa:test [options] [<target>]                # PHPUnit (targeted)
+castor qa:static                                   # all static checks (gate)
+castor qa                                          # static + test + mutation (gate, before PR)
 ```
 
 ## Structure (Monorepo)
