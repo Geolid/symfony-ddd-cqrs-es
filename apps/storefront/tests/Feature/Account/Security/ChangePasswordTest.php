@@ -4,34 +4,32 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\Account\Security;
 
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
-use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Storefront\Tests\Browser\AuthenticationExtensionInterface;
 use Storefront\Tests\Feature\Account\Security\Component\ChangePasswordForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
-use Zenstruck\Browser;
+use Storefront\Tests\Support\Story\IdentityStory;
 
 final class ChangePasswordTest extends AbstractStorefrontTestCase
 {
+    use IdentityStory;
+
     #[Test]
     public function itChanges(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $password = $this->signInAs($browser);
-        $browser->visit('/account/security/password/change');
+        $credential = $this->confirmedIdentity();
+        $browser->signInAs($credential->email, $credential->password);
+        $browser->visitRoute('storefront_account_security_change_password');
         $browser->interceptRedirects();
 
         // When
-        $browser->use(static function (ChangePasswordForm $form) use ($password): void {
-            $form->fillCurrentPassword($password)->fillNewPassword('Flamingo-73-Juniper!')->submit();
+        $browser->use(static function (ChangePasswordForm $form) use ($credential): void {
+            $form->fillCurrentPassword($credential->password)->fillNewPassword('Flamingo-73-Juniper!')->submit();
         });
 
         // Then
-        $browser->assertRedirectedTo('/signin')
+        $browser->assertRedirectedToRoute('storefront_signin_identify')
             ->assertSeeIn('[data-testid="flash-success"]', 'change_password_flash_changed');
     }
 
@@ -40,8 +38,9 @@ final class ChangePasswordTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $this->signInAs($browser);
-        $browser->visit('/account/security/password/change');
+        $credential = $this->confirmedIdentity();
+        $browser->signInAs($credential->email, $credential->password);
+        $browser->visitRoute('storefront_account_security_change_password');
 
         // When
         $browser->use(static function (ChangePasswordForm $form): void {
@@ -59,12 +58,13 @@ final class ChangePasswordTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $password = $this->signInAs($browser);
-        $browser->visit('/account/security/password/change');
+        $credential = $this->confirmedIdentity();
+        $browser->signInAs($credential->email, $credential->password);
+        $browser->visitRoute('storefront_account_security_change_password');
 
         // When
-        $browser->use(static function (ChangePasswordForm $form) use ($password): void {
-            $form->fillCurrentPassword($password)->fillNewPassword($password)->submit();
+        $browser->use(static function (ChangePasswordForm $form) use ($credential): void {
+            $form->fillCurrentPassword($credential->password)->fillNewPassword($credential->password)->submit();
         });
 
         // Then
@@ -80,23 +80,9 @@ final class ChangePasswordTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser()->interceptRedirects();
 
         // When
-        $browser->visit('/account/security/password/change');
+        $browser->visitRoute('storefront_account_security_change_password');
 
         // Then
-        $browser->assertRedirectedTo('/signin');
-    }
-
-    private function signInAs(Browser&AuthenticationExtensionInterface $browser): string
-    {
-        $identityBuilder = IdentityBuilder::new()->confirmed();
-        $identity = $identityBuilder->create();
-        $passwordBuilder = PasswordCredentialBuilder::new()
-            ->withIdentityId($identity->id->toString())
-            ->withHasher($this->service(PasswordHasherInterface::class))
-            ->withPasswordStrength($this->service(PasswordStrengthSpecificationInterface::class));
-        $this->store($identity, $passwordBuilder->create());
-        $browser->signInAs($identityBuilder['email']->value, $passwordBuilder['password']->value);
-
-        return $passwordBuilder['password']->value;
+        $browser->assertRedirectedToRoute('storefront_signin_identify');
     }
 }

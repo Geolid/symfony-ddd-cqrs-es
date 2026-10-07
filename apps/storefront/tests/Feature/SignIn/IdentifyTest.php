@@ -8,9 +8,12 @@ use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\SignIn\Component\IdentifyForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
+use Storefront\Tests\Support\Story\IdentityStory;
 
 final class IdentifyTest extends AbstractStorefrontTestCase
 {
+    use IdentityStory;
+
     #[Test]
     public function itShowsIdentify(): void
     {
@@ -18,7 +21,7 @@ final class IdentifyTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser();
 
         // When
-        $browser->visit('/signin');
+        $browser->visitRoute('storefront_signin_identify');
 
         // Then
         $browser->assertSuccessful()
@@ -29,7 +32,7 @@ final class IdentifyTest extends AbstractStorefrontTestCase
     public function itShowsCreateAccount(): void
     {
         // Given
-        $browser = $this->activeBrowser()->visit('/signin');
+        $browser = $this->activeBrowser()->visitRoute('storefront_signin_identify');
 
         // When
         $browser->use(static function (IdentifyForm $identify): void {
@@ -46,16 +49,16 @@ final class IdentifyTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $given = $this->givenUnconfirmedIdentity();
+        $identity = $this->unconfirmedIdentity();
 
         // When
-        $browser->visit('/signin')
-            ->use(static function (IdentifyForm $identify) use ($given): void {
-                $identify->fillEmail($given->email)->submit();
+        $browser->visitRoute('storefront_signin_identify')
+            ->use(static function (IdentifyForm $identify) use ($identity): void {
+                $identify->fillEmail($identity->email)->submit();
             });
 
         // Then
-        $browser->assertRedirectedTo($this->path('storefront_registration_confirm', ['identityId' => $given->id]));
+        $browser->assertRedirectedToRoute('storefront_registration_confirm', ['identityId' => $identity->id]);
     }
 
     #[Test]
@@ -63,23 +66,23 @@ final class IdentifyTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $given = $this->givenConfirmedIdentity();
+        $identity = $this->confirmedIdentityWithoutCredential();
 
         // When
-        $browser->visit('/signin')
-            ->use(static function (IdentifyForm $identify) use ($given): void {
-                $identify->fillEmail($given->email)->submit();
+        $browser->visitRoute('storefront_signin_identify')
+            ->use(static function (IdentifyForm $identify) use ($identity): void {
+                $identify->fillEmail($identity->email)->submit();
             });
 
         // Then
-        $browser->assertRedirectedTo($this->path('storefront_signin_verify'));
+        $browser->assertRedirectedToRoute('storefront_signin_verify');
     }
 
     #[Test]
     public function itRefusesMalformedEmail(): void
     {
         // Given
-        $browser = $this->activeBrowser()->visit('/signin');
+        $browser = $this->activeBrowser()->visitRoute('storefront_signin_identify');
 
         // When
         $browser->use(static function (IdentifyForm $identify): void {
@@ -90,35 +93,5 @@ final class IdentifyTest extends AbstractStorefrontTestCase
         $browser->use(static function (IdentifyForm $identify): void {
             $identify->assertEmailError();
         });
-    }
-
-    private function givenUnconfirmedIdentity(): GivenIdentity
-    {
-        $identityBuilder = IdentityBuilder::new();
-        $identity = $identityBuilder->create();
-        $this->store($identity);
-
-        return new GivenIdentity($identity->id->toString(), $identityBuilder['email']->value);
-    }
-
-    private function givenConfirmedIdentity(): GivenIdentity
-    {
-        $identityBuilder = IdentityBuilder::new()->confirmed();
-        $identity = $identityBuilder->create();
-        $this->store($identity);
-
-        return new GivenIdentity($identity->id->toString(), $identityBuilder['email']->value);
-    }
-}
-
-/**
- * @internal
- */
-final readonly class GivenIdentity
-{
-    public function __construct(
-        public string $id,
-        public string $email,
-    ) {
     }
 }

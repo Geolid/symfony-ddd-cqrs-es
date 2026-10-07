@@ -4,33 +4,28 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\Account\Security;
 
-use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
-use Iam\Identity\Domain\Identity;
-use Iam\Tests\Authentication\Support\Builder\BackupCodeCredentialBuilder;
-use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use OTPHP\TOTP;
 use PHPUnit\Framework\Attributes\Test;
-use Storefront\Tests\Browser\AuthenticationExtensionInterface;
 use Storefront\Tests\Feature\Account\Security\Component\EnrollTotpForm;
 use Storefront\Tests\Feature\SignIn\Component\TwoFactorForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
+use Storefront\Tests\Support\Story\IdentityStory;
 use Symfony\Component\Clock\Clock;
-use Zenstruck\Browser;
 
 final class EnrollTotpTest extends AbstractStorefrontTestCase
 {
+    use IdentityStory;
+
     #[Test]
     public function itShows(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $this->signInAs($browser);
+        $credential = $this->confirmedIdentity();
+        $browser->signInAs($credential->email, $credential->password);
 
         // When
-        $browser->visit('/account/security/2fa/settings');
+        $browser->visitRoute('storefront_account_security_two_factor_settings');
 
         // Then
         $browser->assertSuccessful()
@@ -42,8 +37,9 @@ final class EnrollTotpTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $this->signInAs($browser);
-        $browser->visit('/account/security/2fa/settings');
+        $credential = $this->confirmedIdentity();
+        $browser->signInAs($credential->email, $credential->password);
+        $browser->visitRoute('storefront_account_security_two_factor_settings');
 
         // When
         $browser->use(function (EnrollTotpForm $enroll): void {
@@ -61,8 +57,12 @@ final class EnrollTotpTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $this->signInAsWithExistingBackupCodes($browser);
-        $browser->visit('/account/security/2fa/settings');
+        $credential = $this->confirmedIdentityWithBackupCodes();
+        $browser->signInAs($credential->email, $credential->password);
+        $browser->use(static function (TwoFactorForm $twoFactor) use ($credential): void {
+            $twoFactor->fillCode($credential->plainBackupCodes[0])->submit();
+        });
+        $browser->visitRoute('storefront_account_security_two_factor_settings');
 
         // When
         $browser->use(function (EnrollTotpForm $enroll): void {
@@ -80,8 +80,9 @@ final class EnrollTotpTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $this->signInAs($browser);
-        $browser->visit('/account/security/2fa/settings');
+        $credential = $this->confirmedIdentity();
+        $browser->signInAs($credential->email, $credential->password);
+        $browser->visitRoute('storefront_account_security_two_factor_settings');
 
         // When
         $browser->use(static function (EnrollTotpForm $enroll): void {
@@ -99,10 +100,10 @@ final class EnrollTotpTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser()->interceptRedirects();
 
         // When
-        $browser->visit('/account/security/2fa/settings');
+        $browser->visitRoute('storefront_account_security_two_factor_settings');
 
         // Then
-        $browser->assertRedirectedTo('/signin');
+        $browser->assertRedirectedToRoute('storefront_signin_identify');
     }
 
     private function totpCode(string $secret): string
@@ -110,38 +111,5 @@ final class EnrollTotpTest extends AbstractStorefrontTestCase
         \assert('' !== $secret);
 
         return TOTP::createFromSecret($secret, Clock::get())->now();
-    }
-
-    private function signInAs(Browser&AuthenticationExtensionInterface $browser): void
-    {
-        $identityBuilder = IdentityBuilder::new()->confirmed();
-        $identity = $identityBuilder->create();
-        $passwordBuilder = $this->passwordCredentialFor($identity);
-        $this->store($identity, $passwordBuilder->create());
-        $browser->signInAs($identityBuilder['email']->value, $passwordBuilder['password']->value);
-    }
-
-    private function signInAsWithExistingBackupCodes(Browser&AuthenticationExtensionInterface $browser): void
-    {
-        $identityBuilder = IdentityBuilder::new()->confirmed();
-        $identity = $identityBuilder->create();
-        $passwordBuilder = $this->passwordCredentialFor($identity);
-        $backupCodeBuilder = BackupCodeCredentialBuilder::new()
-            ->withIdentityId($identity->id->toString())
-            ->withBackupCodeHasher($this->service(BackupCodeHasherInterface::class));
-        $this->store($identity, $passwordBuilder->create(), $backupCodeBuilder->create());
-        $browser->signInAs($identityBuilder['email']->value, $passwordBuilder['password']->value);
-
-        $browser->use(static function (TwoFactorForm $twoFactor) use ($backupCodeBuilder): void {
-            $twoFactor->fillCode($backupCodeBuilder['plainBackupCodes'][0])->submit();
-        });
-    }
-
-    private function passwordCredentialFor(Identity $identity): PasswordCredentialBuilder
-    {
-        return PasswordCredentialBuilder::new()
-            ->withIdentityId($identity->id->toString())
-            ->withHasher($this->service(PasswordHasherInterface::class))
-            ->withPasswordStrength($this->service(PasswordStrengthSpecificationInterface::class));
     }
 }

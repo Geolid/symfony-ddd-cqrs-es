@@ -45,7 +45,7 @@ final class VerifyForm extends Component
 
     public function assertEmailPrefilled(string $email): self
     {
-        $this->browser()->assertElementAttributeContains('input[name="email"]', 'value', $email);
+        $this->browser()->assertSeeIn('[data-testid="verify-email"]', $email);
 
         return $this;
     }

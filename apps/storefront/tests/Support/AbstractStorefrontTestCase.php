@@ -5,8 +5,6 @@ declare(strict_types=1);
 namespace Storefront\Tests\Support;
 
 use Bootstrap\Kernel;
-use Storefront\Tests\Browser\AuthenticationExtensionInterface;
-use Storefront\Tests\Browser\RegistrationExtensionInterface;
 use Storefront\Tests\Browser\StorefrontKernelBrowser;
 use Storefront\Tests\Browser\StorefrontPlaywrightBrowser;
 use Support\TestCase\EventSourcingTrait;
@@ -14,7 +12,6 @@ use Support\TestCase\ServiceLocatorTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use Zenstruck\Browser;
 use Zenstruck\Browser\Test\HasBrowser;
 use Zenstruck\Mailer\Test\InteractsWithMailer;
 
@@ -49,19 +46,13 @@ abstract class AbstractStorefrontTestCase extends WebTestCase
         );
     }
 
-    /**
-     * Uniform across backends (`StorefrontKernelBrowser`/`StorefrontPlaywrightBrowser` both carry
-     * every Extension's own interface) — any value set for `PLAYWRIGHT_HEADLESS` switches to real
-     * Chromium; zenstruck/browser's own PHPUnit extension then auto-saves HTML/screenshot/console
-     * log to `var/browser/` on failure, with no extra code here. Unset, everyday/CI runs stay on
-     * the fast KernelBrowser.
-     */
-    protected function activeBrowser(): Browser&AuthenticationExtensionInterface&RegistrationExtensionInterface
+    protected function activeBrowser(): StorefrontKernelBrowser|StorefrontPlaywrightBrowser
     {
-        if (false !== getenv('PLAYWRIGHT_HEADLESS')) {
+        if ('playwright' === getenv('ACTIVE_BROWSER')) {
             return $this->playwrightBrowser();
         }
 
+        /* `disableReboot()` preserves in-memory event store between KernelBrowser requests. */
         return $this->browser()->disableReboot();
     }
 

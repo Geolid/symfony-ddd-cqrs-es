@@ -81,6 +81,7 @@ function debug_test(
         ...(null !== $suite ? ['--testsuite', $suite] : []),
         ...(null !== $target ? [$target] : []),
     ]), environment: [
+        'ACTIVE_BROWSER' => 'playwright',
         'PLAYWRIGHT_HEADLESS' => 'false',
         'XDEBUG_MODE' => 'debug',
     ], context: new Context());

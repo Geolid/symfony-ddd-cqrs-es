@@ -4,29 +4,29 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\Account\Security;
 
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
-use Storefront\Tests\Browser\AuthenticationExtensionInterface;
 use Storefront\Tests\Feature\Account\Security\Component\RequestEmailChangeForm;
 use Storefront\Tests\Feature\Registration\Component\RegisterForm;
+use Storefront\Tests\Feature\SignIn\Component\IdentifyForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
-use Symfony\Component\Clock\Clock;
-use Zenstruck\Browser;
+use Storefront\Tests\Support\Story\IdentityStory;
 
 final class RequestEmailChangeTest extends AbstractStorefrontTestCase
 {
+    use IdentityStory;
+
     #[Test]
     public function itShows(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $this->signInAs($browser);
+        $credential = $this->identityEligibleForEmailChange();
+        $browser->signInAs($credential->email, $credential->password);
 
         // When
-        $browser->visit('/account/security/email/change');
+        $browser->visitRoute('storefront_account_security_request_email_change');
 
         // Then
         $browser->assertSuccessful()
@@ -38,8 +38,9 @@ final class RequestEmailChangeTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $this->signInAs($browser);
-        $browser->visit('/account/security/email/change');
+        $credential = $this->identityEligibleForEmailChange();
+        $browser->signInAs($credential->email, $credential->password);
+        $browser->visitRoute('storefront_account_security_request_email_change');
         $browser->interceptRedirects();
         $newEmail = IdentityBuilder::sample('email')->value;
 
@@ -49,7 +50,7 @@ final class RequestEmailChangeTest extends AbstractStorefrontTestCase
         });
 
         // Then
-        $browser->assertRedirectedTo('/account/security/email/change/confirm');
+        $browser->assertRedirectedToRoute('storefront_account_security_change_email');
     }
 
     #[Test]
@@ -58,14 +59,19 @@ final class RequestEmailChangeTest extends AbstractStorefrontTestCase
         // Given
         $browser = $this->activeBrowser();
         $otherEmail = IdentityBuilder::sample('email')->value;
-        $browser->goToRegister($otherEmail);
+        $browser->visitRoute('storefront_signin_identify');
+        $browser->use(static function (IdentifyForm $identify) use ($otherEmail): void {
+            $identify->fillEmail($otherEmail)->submit();
+        });
+        $browser->click('[data-testid="create-account-button"]');
         $browser->use(static function (RegisterForm $register): void {
             $register->fillFullName(IdentityBuilder::sample('fullName')->value)
                 ->fillPassword(PasswordCredentialBuilder::sample('password')->value)
                 ->submit();
         });
-        $this->signInAs($browser);
-        $browser->visit('/account/security/email/change');
+        $credential = $this->identityEligibleForEmailChange();
+        $browser->signInAs($credential->email, $credential->password);
+        $browser->visitRoute('storefront_account_security_request_email_change');
 
         // When
         $browser->use(static function (RequestEmailChangeForm $form) use ($otherEmail): void {
@@ -85,21 +91,9 @@ final class RequestEmailChangeTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser()->interceptRedirects();
 
         // When
-        $browser->visit('/account/security/email/change');
+        $browser->visitRoute('storefront_account_security_request_email_change');
 
         // Then
-        $browser->assertRedirectedTo('/signin');
-    }
-
-    private function signInAs(Browser&AuthenticationExtensionInterface $browser): void
-    {
-        $identityBuilder = IdentityBuilder::new()->withRegisteredAt(Clock::get()->now()->modify('-1 hour'))->confirmed();
-        $identity = $identityBuilder->create();
-        $passwordBuilder = PasswordCredentialBuilder::new()
-            ->withIdentityId($identity->id->toString())
-            ->withHasher($this->service(PasswordHasherInterface::class))
-            ->withPasswordStrength($this->service(PasswordStrengthSpecificationInterface::class));
-        $this->store($identity, $passwordBuilder->create());
-        $browser->signInAs($identityBuilder['email']->value, $passwordBuilder['password']->value);
+        $browser->assertRedirectedToRoute('storefront_signin_identify');
     }
 }

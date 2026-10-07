@@ -8,6 +8,7 @@ use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\Registration\Component\RegisterForm;
+use Storefront\Tests\Feature\SignIn\Component\IdentifyForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
 
 final class RegisterTest extends AbstractStorefrontTestCase
@@ -21,7 +22,11 @@ final class RegisterTest extends AbstractStorefrontTestCase
         $email = IdentityBuilder::sample('email')->value;
         $fullName = IdentityBuilder::sample('fullName')->value;
         $password = PasswordCredentialBuilder::sample('password')->value;
-        $browser->goToRegister($email);
+        $browser->visitRoute('storefront_signin_identify');
+        $browser->use(static function (IdentifyForm $identify) use ($email): void {
+            $identify->fillEmail($email)->submit();
+        });
+        $browser->click('[data-testid="create-account-button"]');
 
         // When
         $browser->use(static function (RegisterForm $register) use ($fullName, $password): void {
@@ -48,7 +53,11 @@ final class RegisterTest extends AbstractStorefrontTestCase
         $email = IdentityBuilder::sample('email')->value;
         $fullName = IdentityBuilder::sample('fullName')->value;
         $password = PasswordCredentialBuilder::sample('password')->value;
-        $browser->goToRegister($email);
+        $browser->visitRoute('storefront_signin_identify');
+        $browser->use(static function (IdentifyForm $identify) use ($email): void {
+            $identify->fillEmail($email)->submit();
+        });
+        $browser->click('[data-testid="create-account-button"]');
 
         // When
         $browser->use(static function (RegisterForm $register) use ($fullName, $password): void {
@@ -72,13 +81,17 @@ final class RegisterTest extends AbstractStorefrontTestCase
         $email = IdentityBuilder::sample('email')->value;
         $fullName = IdentityBuilder::sample('fullName')->value;
         $password = PasswordCredentialBuilder::sample('password')->value;
-        $browser->goToRegister($email);
+        $browser->visitRoute('storefront_signin_identify');
+        $browser->use(static function (IdentifyForm $identify) use ($email): void {
+            $identify->fillEmail($email)->submit();
+        });
+        $browser->click('[data-testid="create-account-button"]');
         $browser->use(static function (RegisterForm $register) use ($fullName, $password): void {
             $register->fillFullName($fullName)->fillPassword($password)->submit();
         });
 
         // When
-        $browser->visit('/register');
+        $browser->visitRoute('storefront_registration_register');
         $browser->use(static function (RegisterForm $register) use ($fullName, $password): void {
             $register->fillFullName($fullName)->fillPassword($password)->submit();
         });

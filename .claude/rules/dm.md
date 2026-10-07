@@ -52,6 +52,7 @@ paths:
 **NEVER**
 - Unit-test a Delivery Mechanism — integration only.
 - Substitute a shared-mechanism test on one surface for another surface's own access-contract test.
+- Wrap a browser action sequence (navigate/fill/submit/click) in a private method or a shared capability merely to shorten a test, even when that exact sequence repeats within the same file or across files — a test's whole scenario must read top to bottom with no need to leave the method. The one exception is a capability that gates real application state (e.g. being authenticated) rather than saving lines: it earns its place as a native verb on the Browser object itself (same tier as `visit`/`click`), never introduced just because 2+ scenarios happen to share the same steps.
 
 ### Conventions
 
@@ -74,3 +75,8 @@ The name describes the interaction with that Delivery Mechanism's own surface (H
 
 **Webhook** (notification received from the external system):
 - Reception success `itAccepts*` / failure `itFailsTo*`, `itRejects*`
+
+#### Browser (E2E)
+
+- A reusable Browser-level action (navigating by route name, asserting an authenticated/anonymous state) lives in its own `Browser/Capability/<Name>Trait` trait, composed onto the DM's own Browser subclasses — never a free function nor duplicated per test file. Every other trait in the repo is named `XTrait`; a Browser capability follows the same convention, kept in its own `Capability/` subfolder to separate it from the concrete Browser classes composing it.
+- Route-based navigation and redirect assertions resolve the route and act on it in one call (`visitRoute()`, `assertRedirectedToRoute()`) rather than exposing a bare resolved path — every real call site immediately chains resolve→act, so there's never a need for the path string on its own.

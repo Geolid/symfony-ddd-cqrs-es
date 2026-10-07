@@ -4,30 +4,23 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\Account\Security;
 
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
-use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\Account\Security\Component\ChangeFullNameForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
+use Storefront\Tests\Support\Story\IdentityStory;
 
 final class ChangeFullNameTest extends AbstractStorefrontTestCase
 {
+    use IdentityStory;
+
     #[Test]
     public function itChanges(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $identityBuilder = IdentityBuilder::new()->confirmed();
-        $identity = $identityBuilder->create();
-        $passwordBuilder = PasswordCredentialBuilder::new()
-            ->withIdentityId($identity->id->toString())
-            ->withHasher($this->service(PasswordHasherInterface::class))
-            ->withPasswordStrength($this->service(PasswordStrengthSpecificationInterface::class));
-        $this->store($identity, $passwordBuilder->create());
-        $browser->signInAs($identityBuilder['email']->value, $passwordBuilder['password']->value);
-        $browser->visit('/account/security/name/change');
+        $credential = $this->confirmedIdentity();
+        $browser->signInAs($credential->email, $credential->password);
+        $browser->visitRoute('storefront_account_security_change_full_name');
         $browser->interceptRedirects();
 
         // When
@@ -36,7 +29,7 @@ final class ChangeFullNameTest extends AbstractStorefrontTestCase
         });
 
         // Then
-        $browser->assertRedirectedTo('/account/security')
+        $browser->assertRedirectedToRoute('storefront_account_security_show')
             ->assertSeeIn('[data-testid="flash-success"]', 'change_full_name_flash_changed')
             ->assertSeeIn('[data-testid="full-name-value"]', 'Jamie Rivers');
     }
@@ -48,9 +41,9 @@ final class ChangeFullNameTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser()->interceptRedirects();
 
         // When
-        $browser->visit('/account/security/name/change');
+        $browser->visitRoute('storefront_account_security_change_full_name');
 
         // Then
-        $browser->assertRedirectedTo('/signin');
+        $browser->assertRedirectedToRoute('storefront_signin_identify');
     }
 }

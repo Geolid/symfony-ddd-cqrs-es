@@ -9,7 +9,7 @@
             <twig:ui:FormError data-testid="verify-error">{{- error.messageKey|trans(error.messageData, 'security') -}}</twig:ui:FormError>
         {% endif %}
 
-        <p>{{ email }} <a href="{{ path('storefront_signin_identify') }}">{{ 'link_modify'|trans({}, 'messages') }}</a></p>
+        <p><span data-testid="verify-email">{{ email }}</span> <a href="{{ path('storefront_signin_identify') }}">{{ 'link_modify'|trans({}, 'messages') }}</a></p>
         <input type="hidden" name="email" value="{{ email }}">
 
         <div class="grid">

@@ -4,17 +4,16 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\ForgotPassword;
 
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
-use Iam\Identity\Domain\Identity;
-use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\ForgotPassword\Component\RequestForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
+use Storefront\Tests\Support\Story\IdentityStory;
 
 final class RequestTest extends AbstractStorefrontTestCase
 {
+    use IdentityStory;
+
     #[Test]
     public function itShowsRequest(): void
     {
@@ -22,7 +21,7 @@ final class RequestTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser();
 
         // When
-        $browser->visit('/forgot-password');
+        $browser->visitRoute('storefront_forgot_password_request');
 
         // Then
         $browser->assertSuccessful()
@@ -34,18 +33,16 @@ final class RequestTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $identityBuilder = IdentityBuilder::new();
-        $identity = $identityBuilder->create();
-        $this->store($identity);
-        $browser->visit('/forgot-password');
+        $identity = $this->unconfirmedIdentity();
+        $browser->visitRoute('storefront_forgot_password_request');
 
         // When
-        $browser->use(static function (RequestForm $request) use ($identityBuilder): void {
-            $request->fillEmail($identityBuilder['email']->value)->submit();
+        $browser->use(static function (RequestForm $request) use ($identity): void {
+            $request->fillEmail($identity->email)->submit();
         });
 
         // Then
-        $browser->assertRedirectedTo("/register/{$identity->id->toString()}/confirm");
+        $browser->assertRedirectedToRoute('storefront_registration_confirm', ['identityId' => $identity->id]);
     }
 
     #[Test]
@@ -53,18 +50,16 @@ final class RequestTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $identityBuilder = IdentityBuilder::new()->confirmed();
-        $identity = $identityBuilder->create();
-        $this->store($identity, $this->passwordCredentialFor($identity)->create());
-        $browser->visit('/forgot-password');
+        $credential = $this->confirmedIdentity();
+        $browser->visitRoute('storefront_forgot_password_request');
 
         // When
-        $browser->use(static function (RequestForm $request) use ($identityBuilder): void {
-            $request->fillEmail($identityBuilder['email']->value)->submit();
+        $browser->use(static function (RequestForm $request) use ($credential): void {
+            $request->fillEmail($credential->email)->submit();
         });
 
         // Then
-        $browser->assertRedirectedTo("/forgot-password/{$identity->id->toString()}/reset");
+        $browser->assertRedirectedToRoute('storefront_forgot_password_reset', ['identityId' => $credential->id]);
     }
 
     #[Test]
@@ -72,7 +67,7 @@ final class RequestTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $browser->visit('/forgot-password');
+        $browser->visitRoute('storefront_forgot_password_request');
 
         // When
         $browser->use(static function (RequestForm $request): void {
@@ -90,25 +85,15 @@ final class RequestTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $identityBuilder = IdentityBuilder::new()->confirmed()->suspended();
-        $identity = $identityBuilder->create();
-        $this->store($identity, $this->passwordCredentialFor($identity)->create());
-        $browser->visit('/forgot-password');
+        $credential = $this->suspendedIdentity();
+        $browser->visitRoute('storefront_forgot_password_request');
 
         // When
-        $browser->use(static function (RequestForm $request) use ($identityBuilder): void {
-            $request->fillEmail($identityBuilder['email']->value)->submit();
+        $browser->use(static function (RequestForm $request) use ($credential): void {
+            $request->fillEmail($credential->email)->submit();
         });
 
         // Then
         $browser->assertStatus(409);
-    }
-
-    private function passwordCredentialFor(Identity $identity): PasswordCredentialBuilder
-    {
-        return PasswordCredentialBuilder::new()
-            ->withIdentityId($identity->id->toString())
-            ->withHasher($this->service(PasswordHasherInterface::class))
-            ->withPasswordStrength($this->service(PasswordStrengthSpecificationInterface::class));
     }
 }
