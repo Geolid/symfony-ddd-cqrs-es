@@ -121,10 +121,16 @@ jobs:
           path: ~/.cache/ms-playwright
           key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}-chromium
 
-      - uses: playwright-php/setup-playwright@40187dca138215a6ab5fb1bcf11948998a7ea4d3 # v1.0.0
-        with:
-          playwright-version: ${{ steps.playwright.outputs.version }}
-          browsers: chromium
+      - name: Install Playwright CLI
+        env:
+          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
+        run: |
+          set -euo pipefail
+          npm i -g --no-audit --no-fund "playwright@${{ steps.playwright.outputs.version }}"
+          echo "NODE_PATH=$(npm root -g)" >> "$GITHUB_ENV"
+
+      - name: Install Chromium browser
+        run: playwright install --with-deps chromium
 
       - name: castor ci:coverage
         run: castor ci:coverage
