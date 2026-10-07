@@ -13,7 +13,7 @@ use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Symfony\Component\Clock\Clock;
 
-trait IdentityStory
+trait IdentityStoryTrait
 {
     abstract protected function service(string $serviceId): object;
 
@@ -54,7 +54,7 @@ trait IdentityStory
         return new RegisteredIdentity($identity->id->toString(), $identityBuilder['email']->value);
     }
 
-    protected function confirmationRequested(): RegisteredIdentity
+    protected function confirmationRequestedIdentity(): RegisteredIdentity
     {
         $identityBuilder = IdentityBuilder::new()->confirmationRequested();
         $identity = $identityBuilder->create();
@@ -63,12 +63,12 @@ trait IdentityStory
         return new RegisteredIdentity($identity->id->toString(), $identityBuilder['email']->value);
     }
 
-    protected function passwordResetRequested(): RegisteredIdentity
+    protected function passwordResetRequestedIdentity(): RegisteredIdentity
     {
         return $this->passwordResetRequestedFor(IdentityBuilder::new()->confirmed());
     }
 
-    protected function passwordResetRequestedForSuspendedAccount(): RegisteredIdentity
+    protected function passwordResetRequestedIdentityForSuspendedAccount(): RegisteredIdentity
     {
         return $this->passwordResetRequestedFor(IdentityBuilder::new()->confirmed()->suspended());
     }

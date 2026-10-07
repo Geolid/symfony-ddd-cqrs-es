@@ -8,11 +8,11 @@ use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\SignIn\Component\IdentifyForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
-use Storefront\Tests\Support\Story\IdentityStory;
+use Storefront\Tests\Support\Story\IdentityStoryTrait;
 
 final class IdentifyTest extends AbstractStorefrontTestCase
 {
-    use IdentityStory;
+    use IdentityStoryTrait;
 
     #[Test]
     public function itShowsIdentify(): void

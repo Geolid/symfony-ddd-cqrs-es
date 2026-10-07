@@ -8,11 +8,11 @@ use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\SignIn\Component\IdentifyForm;
 use Storefront\Tests\Feature\SignIn\Component\VerifyForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
-use Storefront\Tests\Support\Story\IdentityStory;
+use Storefront\Tests\Support\Story\IdentityStoryTrait;
 
 final class VerifyTest extends AbstractStorefrontTestCase
 {
-    use IdentityStory;
+    use IdentityStoryTrait;
 
     #[Test]
     public function itShowsVerify(): void

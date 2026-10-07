@@ -7,24 +7,26 @@ namespace Storefront\Tests\Feature\Registration;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\Registration\Component\ConfirmForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
-use Storefront\Tests\Support\Story\IdentityStory;
+use Storefront\Tests\Support\Story\IdentityStoryTrait;
+use Storefront\Tests\Support\VerificationCodeTrait;
 
 final class ConfirmTest extends AbstractStorefrontTestCase
 {
-    use IdentityStory;
+    use IdentityStoryTrait;
+    use VerificationCodeTrait;
 
     #[Test]
     public function itConfirms(): void
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $identity = $this->confirmationRequested();
+        $identity = $this->confirmationRequestedIdentity();
 
         $browser->visitRoute('storefront_registration_confirm', ['identityId' => $identity->id]);
 
         // When
         $browser->use(function (ConfirmForm $confirm): void {
-            $confirm->fillCode($this->confirmationCode())->submit();
+            $confirm->fillCode($this->verificationCode())->submit();
         });
 
         // Then
@@ -37,7 +39,7 @@ final class ConfirmTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $identity = $this->confirmationRequested();
+        $identity = $this->confirmationRequestedIdentity();
 
         $browser->visitRoute('storefront_registration_confirm', ['identityId' => $identity->id]);
 
@@ -57,7 +59,7 @@ final class ConfirmTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $identity = $this->confirmationRequested();
+        $identity = $this->confirmationRequestedIdentity();
 
         $browser->visitRoute('storefront_registration_confirm', ['identityId' => $identity->id]);
 
@@ -69,7 +71,7 @@ final class ConfirmTest extends AbstractStorefrontTestCase
 
         // When
         $browser->use(function (ConfirmForm $confirm): void {
-            $confirm->fillCode($this->confirmationCode())->submit();
+            $confirm->fillCode($this->verificationCode())->submit();
         });
 
         // Then
@@ -83,7 +85,7 @@ final class ConfirmTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $identity = $this->confirmationRequested();
+        $identity = $this->confirmationRequestedIdentity();
 
         $browser->visitRoute('storefront_registration_confirm', ['identityId' => $identity->id]);
 
@@ -101,11 +103,11 @@ final class ConfirmTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $identity = $this->confirmationRequested();
+        $identity = $this->confirmationRequestedIdentity();
 
         $browser->visitRoute('storefront_registration_confirm', ['identityId' => $identity->id]);
         $browser->use(function (ConfirmForm $confirm): void {
-            $confirm->fillCode($this->confirmationCode())->submit();
+            $confirm->fillCode($this->verificationCode())->submit();
         });
 
         $browser->visitRoute('storefront_registration_confirm', ['identityId' => $identity->id]);
@@ -126,7 +128,7 @@ final class ConfirmTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $identity = $this->confirmationRequested();
+        $identity = $this->confirmationRequestedIdentity();
 
         $browser->visitRoute('storefront_registration_confirm', ['identityId' => $identity->id]);
 
@@ -138,16 +140,5 @@ final class ConfirmTest extends AbstractStorefrontTestCase
         // Then
         $browser->assertRedirectedToRoute('storefront_registration_confirm', ['identityId' => $identity->id])
             ->assertSeeIn('[data-testid="flash-error"]', 'flash_failed');
-    }
-
-    private function confirmationCode(): string
-    {
-        $body = $this->mailer()->sentEmails()->last()->getTextBody();
-        \assert(\is_string($body));
-
-        $matched = preg_match('/(\d{6})/', $body, $matches);
-        \assert(1 === $matched);
-
-        return $matches[1];
     }
 }

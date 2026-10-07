@@ -9,11 +9,13 @@ use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\Account\Security\Component\ChangeEmailForm;
 use Storefront\Tests\Feature\Account\Security\Component\RequestEmailChangeForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
-use Storefront\Tests\Support\Story\IdentityStory;
+use Storefront\Tests\Support\Story\IdentityStoryTrait;
+use Storefront\Tests\Support\VerificationCodeTrait;
 
 final class ChangeEmailTest extends AbstractStorefrontTestCase
 {
-    use IdentityStory;
+    use IdentityStoryTrait;
+    use VerificationCodeTrait;
 
     #[Test]
     public function itChanges(): void
@@ -32,7 +34,7 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
 
         // When
         $browser->use(function (ChangeEmailForm $form): void {
-            $form->fillCode($this->confirmationCode())->submit();
+            $form->fillCode($this->verificationCode())->submit();
         });
 
         // Then
@@ -129,16 +131,5 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
 
         // Then
         $browser->assertRedirectedToRoute('storefront_signin_identify');
-    }
-
-    private function confirmationCode(): string
-    {
-        $body = $this->mailer()->sentEmails()->last()->getTextBody();
-        \assert(\is_string($body));
-
-        $matched = preg_match('/(\d{6})/', $body, $matches);
-        \assert(1 === $matched);
-
-        return $matches[1];
     }
 }

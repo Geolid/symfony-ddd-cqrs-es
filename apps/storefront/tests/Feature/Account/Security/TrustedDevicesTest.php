@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\Account\Security;
 
-use OTPHP\TOTP;
 use PHPUnit\Framework\Attributes\Test;
-use Storefront\Tests\Feature\SignIn\Component\TwoFactorForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
-use Storefront\Tests\Support\Story\TotpEnabledIdentityStory;
-use Symfony\Component\Clock\Clock;
+use Storefront\Tests\Support\Story\TotpEnabledIdentityStoryTrait;
 
 final class TrustedDevicesTest extends AbstractStorefrontTestCase
 {
-    use TotpEnabledIdentityStory;
+    use TotpEnabledIdentityStoryTrait;
 
     #[Test]
     public function itShows(): void
@@ -23,9 +20,7 @@ final class TrustedDevicesTest extends AbstractStorefrontTestCase
         $credential = $this->confirmedIdentityWithTotp();
         $browser->signInAs($credential->email, $credential->password);
 
-        $browser->use(function (TwoFactorForm $twoFactor) use ($credential): void {
-            $twoFactor->fillCode($this->totpCode($credential->totpSecret))->checkTrustDevice()->submit();
-        });
+        $browser->completeTwoFactorChallenge($browser->totpCode($credential->totpSecret), trustDevice: true);
 
         // When
         $browser->visitRoute('storefront_account_security_trusted_devices');
@@ -43,9 +38,7 @@ final class TrustedDevicesTest extends AbstractStorefrontTestCase
         $credential = $this->confirmedIdentityWithTotp();
         $browser->signInAs($credential->email, $credential->password);
 
-        $browser->use(function (TwoFactorForm $twoFactor) use ($credential): void {
-            $twoFactor->fillCode($this->totpCode($credential->totpSecret))->checkTrustDevice()->submit();
-        });
+        $browser->completeTwoFactorChallenge($browser->totpCode($credential->totpSecret), trustDevice: true);
         $browser->visitRoute('storefront_account_security_trusted_devices');
         $browser->interceptRedirects();
 
@@ -65,9 +58,7 @@ final class TrustedDevicesTest extends AbstractStorefrontTestCase
         $credential = $this->confirmedIdentityWithTotp();
         $browser->signInAs($credential->email, $credential->password);
 
-        $browser->use(function (TwoFactorForm $twoFactor) use ($credential): void {
-            $twoFactor->fillCode($this->totpCode($credential->totpSecret))->checkTrustDevice()->submit();
-        });
+        $browser->completeTwoFactorChallenge($browser->totpCode($credential->totpSecret), trustDevice: true);
         $browser->visitRoute('storefront_account_security_trusted_devices');
         $browser->interceptRedirects();
 
@@ -90,12 +81,5 @@ final class TrustedDevicesTest extends AbstractStorefrontTestCase
 
         // Then
         $browser->assertRedirectedToRoute('storefront_signin_identify');
-    }
-
-    private function totpCode(string $secret): string
-    {
-        \assert('' !== $secret);
-
-        return TOTP::createFromSecret($secret, Clock::get())->now();
     }
 }

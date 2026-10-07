@@ -8,11 +8,11 @@ use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\ForgotPassword\Component\RequestForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
-use Storefront\Tests\Support\Story\IdentityStory;
+use Storefront\Tests\Support\Story\IdentityStoryTrait;
 
 final class RequestTest extends AbstractStorefrontTestCase
 {
-    use IdentityStory;
+    use IdentityStoryTrait;
 
     #[Test]
     public function itShowsRequest(): void

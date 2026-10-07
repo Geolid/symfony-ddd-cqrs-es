@@ -11,11 +11,11 @@ use Storefront\Tests\Feature\Account\Security\Component\RequestEmailChangeForm;
 use Storefront\Tests\Feature\Registration\Component\RegisterForm;
 use Storefront\Tests\Feature\SignIn\Component\IdentifyForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
-use Storefront\Tests\Support\Story\IdentityStory;
+use Storefront\Tests\Support\Story\IdentityStoryTrait;
 
 final class RequestEmailChangeTest extends AbstractStorefrontTestCase
 {
-    use IdentityStory;
+    use IdentityStoryTrait;
 
     #[Test]
     public function itShows(): void

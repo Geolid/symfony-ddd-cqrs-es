@@ -14,7 +14,7 @@ use Iam\Tests\Authentication\Support\Builder\TotpCredentialBuilder;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 
-trait TotpEnabledIdentityStory
+trait TotpEnabledIdentityStoryTrait
 {
     abstract protected function service(string $serviceId): object;
 

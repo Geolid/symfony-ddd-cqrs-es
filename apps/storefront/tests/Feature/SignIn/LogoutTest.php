@@ -6,11 +6,11 @@ namespace Storefront\Tests\Feature\SignIn;
 
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
-use Storefront\Tests\Support\Story\IdentityStory;
+use Storefront\Tests\Support\Story\IdentityStoryTrait;
 
 final class LogoutTest extends AbstractStorefrontTestCase
 {
-    use IdentityStory;
+    use IdentityStoryTrait;
 
     #[Test]
     public function itLogsOut(): void

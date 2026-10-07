@@ -4,17 +4,14 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\Account\Security;
 
-use OTPHP\TOTP;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\Account\Security\Component\EnrollTotpForm;
-use Storefront\Tests\Feature\SignIn\Component\TwoFactorForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
-use Storefront\Tests\Support\Story\IdentityStory;
-use Symfony\Component\Clock\Clock;
+use Storefront\Tests\Support\Story\IdentityStoryTrait;
 
 final class EnrollTotpTest extends AbstractStorefrontTestCase
 {
-    use IdentityStory;
+    use IdentityStoryTrait;
 
     #[Test]
     public function itShows(): void
@@ -43,8 +40,8 @@ final class EnrollTotpTest extends AbstractStorefrontTestCase
         $browser->visitRoute('storefront_account_security_two_factor_settings');
 
         // When
-        $browser->use(function (EnrollTotpForm $enroll): void {
-            $enroll->fillCode($this->totpCode($enroll->secret()))->submit();
+        $browser->use(static function (EnrollTotpForm $enroll) use ($browser): void {
+            $enroll->fillCode($browser->totpCode($enroll->secret()))->submit();
         });
 
         // Then
@@ -61,14 +58,12 @@ final class EnrollTotpTest extends AbstractStorefrontTestCase
         $credential = $this->confirmedIdentityWithBackupCodes();
         $browser->signInAs($credential->email, $credential->password);
 
-        $browser->use(static function (TwoFactorForm $twoFactor) use ($credential): void {
-            $twoFactor->fillCode($credential->plainBackupCodes[0])->submit();
-        });
+        $browser->completeTwoFactorChallenge($credential->plainBackupCodes[0]);
         $browser->visitRoute('storefront_account_security_two_factor_settings');
 
         // When
-        $browser->use(function (EnrollTotpForm $enroll): void {
-            $enroll->fillCode($this->totpCode($enroll->secret()))->submit();
+        $browser->use(static function (EnrollTotpForm $enroll) use ($browser): void {
+            $enroll->fillCode($browser->totpCode($enroll->secret()))->submit();
         });
 
         // Then
@@ -107,12 +102,5 @@ final class EnrollTotpTest extends AbstractStorefrontTestCase
 
         // Then
         $browser->assertRedirectedToRoute('storefront_signin_identify');
-    }
-
-    private function totpCode(string $secret): string
-    {
-        \assert('' !== $secret);
-
-        return TOTP::createFromSecret($secret, Clock::get())->now();
     }
 }

@@ -8,18 +8,20 @@ use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\ForgotPassword\Component\ResetForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
-use Storefront\Tests\Support\Story\IdentityStory;
+use Storefront\Tests\Support\Story\IdentityStoryTrait;
+use Storefront\Tests\Support\VerificationCodeTrait;
 
 final class ResetTest extends AbstractStorefrontTestCase
 {
-    use IdentityStory;
+    use IdentityStoryTrait;
+    use VerificationCodeTrait;
 
     #[Test]
     public function itShowsReset(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $identity = $this->passwordResetRequested();
+        $identity = $this->passwordResetRequestedIdentity();
 
         // When
         $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $identity->id]);
@@ -34,13 +36,13 @@ final class ResetTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $identity = $this->passwordResetRequested();
+        $identity = $this->passwordResetRequestedIdentity();
 
         $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $identity->id]);
 
         // When
         $browser->use(function (ResetForm $reset): void {
-            $reset->fillCode($this->resetCode())->fillNewPassword('Flamingo-73-Juniper!')->submit();
+            $reset->fillCode($this->verificationCode())->fillNewPassword('Flamingo-73-Juniper!')->submit();
         });
 
         // Then
@@ -53,13 +55,13 @@ final class ResetTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $identity = $this->passwordResetRequested();
+        $identity = $this->passwordResetRequestedIdentity();
 
         $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $identity->id]);
 
         // When
         $browser->use(function (ResetForm $reset): void {
-            $reset->fillCode($this->resetCode())
+            $reset->fillCode($this->verificationCode())
                 ->fillMismatchedNewPassword('Flamingo-73-Juniper!', 'Different-99-Value!')
                 ->submit();
         });
@@ -75,13 +77,13 @@ final class ResetTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $identity = $this->passwordResetRequested();
+        $identity = $this->passwordResetRequestedIdentity();
 
         $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $identity->id]);
 
         // When
         $browser->use(function (ResetForm $reset): void {
-            $reset->fillCode($this->resetCode())->fillNewPassword(PasswordCredentialBuilder::sample('password')->value)->submit();
+            $reset->fillCode($this->verificationCode())->fillNewPassword(PasswordCredentialBuilder::sample('password')->value)->submit();
         });
 
         // Then
@@ -95,7 +97,7 @@ final class ResetTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $identity = $this->passwordResetRequested();
+        $identity = $this->passwordResetRequestedIdentity();
 
         $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $identity->id]);
 
@@ -115,7 +117,7 @@ final class ResetTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $identity = $this->passwordResetRequested();
+        $identity = $this->passwordResetRequestedIdentity();
 
         $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $identity->id]);
 
@@ -127,7 +129,7 @@ final class ResetTest extends AbstractStorefrontTestCase
 
         // When
         $browser->use(function (ResetForm $reset): void {
-            $reset->fillCode($this->resetCode())->fillNewPassword('Flamingo-73-Juniper!')->submit();
+            $reset->fillCode($this->verificationCode())->fillNewPassword('Flamingo-73-Juniper!')->submit();
         });
 
         // Then
@@ -141,13 +143,13 @@ final class ResetTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $identity = $this->passwordResetRequestedForSuspendedAccount();
+        $identity = $this->passwordResetRequestedIdentityForSuspendedAccount();
 
         $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $identity->id]);
 
         // When
         $browser->use(function (ResetForm $reset): void {
-            $reset->fillCode($this->resetCode())->fillNewPassword('Flamingo-73-Juniper!')->submit();
+            $reset->fillCode($this->verificationCode())->fillNewPassword('Flamingo-73-Juniper!')->submit();
         });
 
         // Then
@@ -159,7 +161,7 @@ final class ResetTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $identity = $this->passwordResetRequested();
+        $identity = $this->passwordResetRequestedIdentity();
 
         $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $identity->id]);
 
@@ -177,7 +179,7 @@ final class ResetTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $identity = $this->passwordResetRequested();
+        $identity = $this->passwordResetRequestedIdentity();
 
         $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $identity->id]);
 
@@ -189,16 +191,5 @@ final class ResetTest extends AbstractStorefrontTestCase
         // Then
         $browser->assertRedirectedToRoute('storefront_forgot_password_reset', ['identityId' => $identity->id])
             ->assertSeeIn('[data-testid="flash-error"]', 'flash_failed');
-    }
-
-    private function resetCode(): string
-    {
-        $body = $this->mailer()->sentEmails()->last()->getTextBody();
-        \assert(\is_string($body));
-
-        $matched = preg_match('/(\d{6})/', $body, $matches);
-        \assert(1 === $matched);
-
-        return $matches[1];
     }
 }
