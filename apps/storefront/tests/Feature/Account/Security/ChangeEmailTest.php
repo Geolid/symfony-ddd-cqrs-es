@@ -74,9 +74,10 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser();
         $credential = $this->identityEligibleForEmailChange();
         $browser->signInAs($credential->email, $credential->password);
+        $newEmail = IdentityBuilder::sample('email')->value;
         $browser->visitRoute('storefront_account_security_request_email_change');
-        $browser->use(static function (RequestEmailChangeForm $requestEmailChangeForm): void {
-            $requestEmailChangeForm->fillNewEmail(IdentityBuilder::sample('email')->value)->submit();
+        $browser->use(static function (RequestEmailChangeForm $requestEmailChangeForm) use ($newEmail): void {
+            $requestEmailChangeForm->fillNewEmail($newEmail)->submit();
         });
 
         // When
@@ -85,7 +86,10 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
         });
 
         // Then
-        $this->mailer()->assertSentEmailCount(2);
+        $this->mailer()
+            ->assertSentEmailCount(2)
+            ->sentEmails()->whereTo($newEmail)->last()
+            ->assertSubject('Confirm your new email address');
     }
 
     #[Test]

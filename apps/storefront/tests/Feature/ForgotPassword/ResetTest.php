@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\ForgotPassword;
 
+use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\ForgotPassword\Component\ResetForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
@@ -77,7 +78,7 @@ final class ResetTest extends AbstractStorefrontTestCase
 
         // When
         $browser->use(function (ResetForm $reset): void {
-            $reset->fillCode($this->resetCode())->fillNewPassword('Marmoset-42-Zephyr!')->submit();
+            $reset->fillCode($this->resetCode())->fillNewPassword(PasswordCredentialBuilder::sample('password')->value)->submit();
         });
 
         // Then
@@ -161,7 +162,10 @@ final class ResetTest extends AbstractStorefrontTestCase
         });
 
         // Then
-        $this->mailer()->assertSentEmailCount(2);
+        $this->mailer()
+            ->assertSentEmailCount(2)
+            ->sentEmails()->whereTo($identity->email)->last()
+            ->assertSubject('Reset your password');
     }
 
     #[Test]

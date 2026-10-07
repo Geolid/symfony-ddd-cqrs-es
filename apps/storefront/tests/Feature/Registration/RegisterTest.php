@@ -18,7 +18,6 @@ final class RegisterTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-
         $email = IdentityBuilder::sample('email')->value;
         $fullName = IdentityBuilder::sample('fullName')->value;
         $password = PasswordCredentialBuilder::sample('password')->value;
@@ -38,10 +37,10 @@ final class RegisterTest extends AbstractStorefrontTestCase
             ->assertSuccessful()
             ->assertSeeElement('[data-testid="confirm-form"]');
 
-        $this
-            ->mailer()
+        $this->mailer()
             ->assertSentEmailCount(1)
-            ->assertEmailSentTo($email, 'Confirm your email address');
+            ->sentEmails()->whereTo($email)->last()
+            ->assertSubject('Confirm your email address');
     }
 
     #[Test]
@@ -49,7 +48,6 @@ final class RegisterTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-
         $email = IdentityBuilder::sample('email')->value;
         $fullName = IdentityBuilder::sample('fullName')->value;
         $password = PasswordCredentialBuilder::sample('password')->value;
@@ -77,7 +75,6 @@ final class RegisterTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-
         $email = IdentityBuilder::sample('email')->value;
         $fullName = IdentityBuilder::sample('fullName')->value;
         $password = PasswordCredentialBuilder::sample('password')->value;
