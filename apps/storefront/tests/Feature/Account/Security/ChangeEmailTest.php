@@ -91,10 +91,7 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
         });
 
         // Then
-        $this->mailer()
-            ->assertSentEmailCount(2)
-            ->sentEmails()->whereTo($newEmail)->last()
-            ->assertSubject('Confirm your new email address');
+        $this->assertEmailSent(2, $newEmail, 'Confirm your new email address');
     }
 
     #[Test]

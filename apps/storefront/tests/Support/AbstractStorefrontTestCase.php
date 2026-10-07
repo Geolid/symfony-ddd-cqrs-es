@@ -63,4 +63,12 @@ abstract class AbstractStorefrontTestCase extends WebTestCase
     {
         return $this->service(UrlGeneratorInterface::class)->generate($route, $params);
     }
+
+    protected function assertEmailSent(int $totalCount, string $recipient, string $subject): void
+    {
+        $this->mailer()
+            ->assertSentEmailCount($totalCount)
+            ->sentEmails()->whereTo($recipient)->last()
+            ->assertSubject($subject);
+    }
 }

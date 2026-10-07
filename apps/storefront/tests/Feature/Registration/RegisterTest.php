@@ -38,10 +38,7 @@ final class RegisterTest extends AbstractStorefrontTestCase
             ->assertSuccessful()
             ->assertSeeElement('[data-testid="confirm-form"]');
 
-        $this->mailer()
-            ->assertSentEmailCount(1)
-            ->sentEmails()->whereTo($email)->last()
-            ->assertSubject('Confirm your email address');
+        $this->assertEmailSent(1, $email, 'Confirm your email address');
     }
 
     #[Test]

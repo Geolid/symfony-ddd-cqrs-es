@@ -93,10 +93,7 @@ final class ConfirmTest extends AbstractStorefrontTestCase
         });
 
         // Then
-        $this->mailer()
-            ->assertSentEmailCount(2)
-            ->sentEmails()->whereTo($identity->email)->last()
-            ->assertSubject('Confirm your email address');
+        $this->assertEmailSent(2, $identity->email, 'Confirm your email address');
     }
 
     #[Test]

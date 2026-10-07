@@ -169,10 +169,7 @@ final class ResetTest extends AbstractStorefrontTestCase
         });
 
         // Then
-        $this->mailer()
-            ->assertSentEmailCount(2)
-            ->sentEmails()->whereTo($identity->email)->last()
-            ->assertSubject('Reset your password');
+        $this->assertEmailSent(2, $identity->email, 'Reset your password');
     }
 
     #[Test]
