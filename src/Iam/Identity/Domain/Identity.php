@@ -65,7 +65,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     private ErasureState $erasureState;
     private \DateTimeImmutable $registeredAt;
     private \DateTimeImmutable $confirmationRequestedAt;
-    private \DateTimeImmutable $emailChangeRequestedAt;
+    private ?\DateTimeImmutable $emailChangeRequestedAt = null;
 
     public static function register(IdentityId $id, FullName $fullName, Email $email, \DateTimeImmutable $registeredAt): self
     {
@@ -142,6 +142,8 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
 
         $cooldownCalculator = new CooldownCalculator();
         if (!new CooldownElapsedSpecification($cooldownCalculator, $requestedAt)->isSatisfiedBy($this->emailChangeRequestedAt)) {
+            \assert(null !== $this->emailChangeRequestedAt);
+
             throw EmailChangeRequestedTooRecentlyException::forId($this->id, $cooldownCalculator->retryAt($this->emailChangeRequestedAt));
         }
 
@@ -317,7 +319,6 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         $this->erasureState = ErasureState::RETAINED;
         $this->registeredAt = $event->registeredAt;
         $this->confirmationRequestedAt = $event->registeredAt;
-        $this->emailChangeRequestedAt = $event->registeredAt;
     }
 
     #[Apply]

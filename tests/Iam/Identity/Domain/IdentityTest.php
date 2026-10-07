@@ -179,6 +179,18 @@ final class IdentityTest extends AggregateRootTestCase
     }
 
     #[Test]
+    public function itRequestsEmailChangeWhenNoPriorRequest(): void
+    {
+        $newEmail = IdentityBuilder::sample('email');
+        $requestedAt = $this->registeredAt->modify('+1 second');
+
+        $this
+            ->given($this->registered())
+            ->when(static fn (Identity $identity) => $identity->requestEmailChange($newEmail, $requestedAt))
+            ->then(new IdentityEmailChangeRequested($this->id, $newEmail, $requestedAt));
+    }
+
+    #[Test]
     public function itDoesNotRequestEmailChangeWhenSame(): void
     {
         $this
