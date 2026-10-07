@@ -22,6 +22,7 @@ final class TrustedDevicesTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser();
         $credential = $this->confirmedIdentityWithTotp();
         $browser->signInAs($credential->email, $credential->password);
+
         $browser->use(function (TwoFactorForm $twoFactor) use ($credential): void {
             $twoFactor->fillCode($this->totpCode($credential->totpSecret))->checkTrustDevice()->submit();
         });
@@ -41,6 +42,7 @@ final class TrustedDevicesTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser();
         $credential = $this->confirmedIdentityWithTotp();
         $browser->signInAs($credential->email, $credential->password);
+
         $browser->use(function (TwoFactorForm $twoFactor) use ($credential): void {
             $twoFactor->fillCode($this->totpCode($credential->totpSecret))->checkTrustDevice()->submit();
         });
@@ -62,6 +64,7 @@ final class TrustedDevicesTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser();
         $credential = $this->confirmedIdentityWithTotp();
         $browser->signInAs($credential->email, $credential->password);
+
         $browser->use(function (TwoFactorForm $twoFactor) use ($credential): void {
             $twoFactor->fillCode($this->totpCode($credential->totpSecret))->checkTrustDevice()->submit();
         });

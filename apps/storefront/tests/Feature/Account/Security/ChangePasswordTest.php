@@ -20,6 +20,7 @@ final class ChangePasswordTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser();
         $credential = $this->confirmedIdentity();
         $browser->signInAs($credential->email, $credential->password);
+
         $browser->visitRoute('storefront_account_security_change_password');
         $browser->interceptRedirects();
 
@@ -40,6 +41,7 @@ final class ChangePasswordTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser();
         $credential = $this->confirmedIdentity();
         $browser->signInAs($credential->email, $credential->password);
+
         $browser->visitRoute('storefront_account_security_change_password');
 
         // When
@@ -60,6 +62,7 @@ final class ChangePasswordTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser();
         $credential = $this->confirmedIdentity();
         $browser->signInAs($credential->email, $credential->password);
+
         $browser->visitRoute('storefront_account_security_change_password');
 
         // When

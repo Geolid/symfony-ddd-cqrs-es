@@ -19,6 +19,7 @@ final class ConfirmTest extends AbstractStorefrontTestCase
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
         $identity = $this->confirmationRequested();
+
         $browser->visitRoute('storefront_registration_confirm', ['identityId' => $identity->id]);
 
         // When
@@ -37,6 +38,7 @@ final class ConfirmTest extends AbstractStorefrontTestCase
         // Given
         $browser = $this->activeBrowser();
         $identity = $this->confirmationRequested();
+
         $browser->visitRoute('storefront_registration_confirm', ['identityId' => $identity->id]);
 
         // When
@@ -56,6 +58,7 @@ final class ConfirmTest extends AbstractStorefrontTestCase
         // Given
         $browser = $this->activeBrowser();
         $identity = $this->confirmationRequested();
+
         $browser->visitRoute('storefront_registration_confirm', ['identityId' => $identity->id]);
 
         for ($i = 0; $i < 3; ++$i) {
@@ -81,6 +84,7 @@ final class ConfirmTest extends AbstractStorefrontTestCase
         // Given
         $browser = $this->activeBrowser();
         $identity = $this->confirmationRequested();
+
         $browser->visitRoute('storefront_registration_confirm', ['identityId' => $identity->id]);
 
         // When
@@ -101,10 +105,12 @@ final class ConfirmTest extends AbstractStorefrontTestCase
         // Given
         $browser = $this->activeBrowser();
         $identity = $this->confirmationRequested();
+
         $browser->visitRoute('storefront_registration_confirm', ['identityId' => $identity->id]);
         $browser->use(function (ConfirmForm $confirm): void {
             $confirm->fillCode($this->confirmationCode())->submit();
         });
+
         $browser->visitRoute('storefront_registration_confirm', ['identityId' => $identity->id]);
 
         // When
@@ -124,6 +130,7 @@ final class ConfirmTest extends AbstractStorefrontTestCase
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
         $identity = $this->confirmationRequested();
+
         $browser->visitRoute('storefront_registration_confirm', ['identityId' => $identity->id]);
 
         // When

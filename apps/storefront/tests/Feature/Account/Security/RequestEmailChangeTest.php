@@ -40,6 +40,7 @@ final class RequestEmailChangeTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser();
         $credential = $this->identityEligibleForEmailChange();
         $browser->signInAs($credential->email, $credential->password);
+
         $browser->visitRoute('storefront_account_security_request_email_change');
         $browser->interceptRedirects();
         $newEmail = IdentityBuilder::sample('email')->value;
@@ -69,8 +70,10 @@ final class RequestEmailChangeTest extends AbstractStorefrontTestCase
                 ->fillPassword(PasswordCredentialBuilder::sample('password')->value)
                 ->submit();
         });
+
         $credential = $this->identityEligibleForEmailChange();
         $browser->signInAs($credential->email, $credential->password);
+
         $browser->visitRoute('storefront_account_security_request_email_change');
 
         // When

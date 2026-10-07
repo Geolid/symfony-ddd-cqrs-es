@@ -19,6 +19,7 @@ final class LogoutTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser();
         $credential = $this->confirmedIdentity();
         $browser->signInAs($credential->email, $credential->password);
+
         $browser->interceptRedirects();
 
         // When
@@ -26,6 +27,7 @@ final class LogoutTest extends AbstractStorefrontTestCase
 
         // Then
         $browser->assertRedirectedToRoute('storefront_signin_identify');
+
         $browser->visitRoute('storefront_home_show')->assertNotSignedIn();
     }
 }

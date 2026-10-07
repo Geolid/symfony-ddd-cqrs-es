@@ -34,6 +34,7 @@ final class RequestTest extends AbstractStorefrontTestCase
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
         $identity = $this->unconfirmedIdentity();
+
         $browser->visitRoute('storefront_forgot_password_request');
 
         // When
@@ -51,6 +52,7 @@ final class RequestTest extends AbstractStorefrontTestCase
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
         $credential = $this->confirmedIdentity();
+
         $browser->visitRoute('storefront_forgot_password_request');
 
         // When
@@ -86,6 +88,7 @@ final class RequestTest extends AbstractStorefrontTestCase
         // Given
         $browser = $this->activeBrowser();
         $credential = $this->suspendedIdentity();
+
         $browser->visitRoute('storefront_forgot_password_request');
 
         // When

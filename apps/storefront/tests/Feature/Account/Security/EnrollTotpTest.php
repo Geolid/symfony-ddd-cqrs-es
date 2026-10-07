@@ -39,6 +39,7 @@ final class EnrollTotpTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser();
         $credential = $this->confirmedIdentity();
         $browser->signInAs($credential->email, $credential->password);
+
         $browser->visitRoute('storefront_account_security_two_factor_settings');
 
         // When
@@ -59,6 +60,7 @@ final class EnrollTotpTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser();
         $credential = $this->confirmedIdentityWithBackupCodes();
         $browser->signInAs($credential->email, $credential->password);
+
         $browser->use(static function (TwoFactorForm $twoFactor) use ($credential): void {
             $twoFactor->fillCode($credential->plainBackupCodes[0])->submit();
         });
@@ -82,6 +84,7 @@ final class EnrollTotpTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser();
         $credential = $this->confirmedIdentity();
         $browser->signInAs($credential->email, $credential->password);
+
         $browser->visitRoute('storefront_account_security_two_factor_settings');
 
         // When

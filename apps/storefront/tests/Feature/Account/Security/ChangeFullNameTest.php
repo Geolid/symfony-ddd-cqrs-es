@@ -21,6 +21,7 @@ final class ChangeFullNameTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser();
         $credential = $this->confirmedIdentity();
         $browser->signInAs($credential->email, $credential->password);
+
         $browser->visitRoute('storefront_account_security_change_full_name');
         $browser->interceptRedirects();
         $newFullName = IdentityBuilder::sample('fullName')->value;

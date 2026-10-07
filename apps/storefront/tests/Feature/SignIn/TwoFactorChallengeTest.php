@@ -39,6 +39,7 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser();
         $credential = $this->confirmedIdentityWithTotp();
         $browser->signInAs($credential->email, $credential->password);
+
         $browser->interceptRedirects();
 
         // When
@@ -99,6 +100,7 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser();
         $credential = $this->confirmedIdentityWithTotp();
         $browser->signInAs($credential->email, $credential->password);
+
         $browser->use(function (TwoFactorForm $twoFactor) use ($credential): void {
             $twoFactor->fillCode($this->totpCode($credential->totpSecret))->checkTrustDevice()->submit();
         });
@@ -125,6 +127,7 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser();
         $credential = $this->confirmedIdentityWithTotp();
         $browser->signInAs($credential->email, $credential->password);
+
         $browser->use(function (TwoFactorForm $twoFactor) use ($credential): void {
             $twoFactor->fillCode($this->totpCode($credential->totpSecret))->submit();
         });

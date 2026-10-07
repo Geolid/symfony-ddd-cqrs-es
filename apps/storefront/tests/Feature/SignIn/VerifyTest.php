@@ -53,6 +53,7 @@ final class VerifyTest extends AbstractStorefrontTestCase
         // Given
         $browser = $this->activeBrowser();
         $credential = $this->confirmedIdentity();
+
         $browser->visitRoute('storefront_signin_identify');
         $browser->use(static function (IdentifyForm $identify) use ($credential): void {
             $identify->fillEmail($credential->email)->submit();
@@ -74,6 +75,7 @@ final class VerifyTest extends AbstractStorefrontTestCase
         // Given
         $browser = $this->activeBrowser();
         $credential = $this->confirmedIdentity();
+
         $browser->visitRoute('storefront_signin_identify');
         $browser->use(static function (IdentifyForm $identify) use ($credential): void {
             $identify->fillEmail($credential->email)->submit();
@@ -96,6 +98,7 @@ final class VerifyTest extends AbstractStorefrontTestCase
         // Given
         $browser = $this->activeBrowser();
         $credential = $this->suspendedIdentity();
+
         $browser->visitRoute('storefront_signin_identify');
         $browser->use(static function (IdentifyForm $identify) use ($credential): void {
             $identify->fillEmail($credential->email)->submit();
@@ -118,6 +121,7 @@ final class VerifyTest extends AbstractStorefrontTestCase
         // Given
         $browser = $this->activeBrowser();
         $credential = $this->confirmedIdentity();
+
         $browser->visitRoute('storefront_signin_identify');
         $browser->use(static function (IdentifyForm $identify) use ($credential): void {
             $identify->fillEmail($credential->email)->submit();

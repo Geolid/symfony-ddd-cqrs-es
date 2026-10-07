@@ -22,6 +22,7 @@ final class TwoFactorSettingsTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser();
         $credential = $this->confirmedIdentityWithTotpAndBackupCodes();
         $browser->signInAs($credential->email, $credential->password);
+
         $browser->use(function (TwoFactorForm $twoFactor) use ($credential): void {
             $twoFactor->fillCode($this->totpCode($credential->totpSecret))->submit();
         });
@@ -41,6 +42,7 @@ final class TwoFactorSettingsTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser();
         $credential = $this->confirmedIdentityWithTotpAndBackupCodes();
         $browser->signInAs($credential->email, $credential->password);
+
         $browser->use(function (TwoFactorForm $twoFactor) use ($credential): void {
             $twoFactor->fillCode($this->totpCode($credential->totpSecret))->submit();
         });
@@ -61,6 +63,7 @@ final class TwoFactorSettingsTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser();
         $credential = $this->confirmedIdentityWithTotpAndBackupCodes();
         $browser->signInAs($credential->email, $credential->password);
+
         $browser->use(function (TwoFactorForm $twoFactor) use ($credential): void {
             $twoFactor->fillCode($this->totpCode($credential->totpSecret))->submit();
         });
