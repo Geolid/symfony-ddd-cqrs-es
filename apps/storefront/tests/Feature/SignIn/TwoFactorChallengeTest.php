@@ -9,21 +9,18 @@ use Storefront\Tests\Feature\SignIn\Component\IdentifyForm;
 use Storefront\Tests\Feature\SignIn\Component\TwoFactorForm;
 use Storefront\Tests\Feature\SignIn\Component\VerifyForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
-use Storefront\Tests\Support\Story\TotpEnabledIdentityStoryTrait;
 
 final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
 {
-    use TotpEnabledIdentityStoryTrait;
-
     #[Test]
     public function itShowsTwoFactorChallenge(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentityWithTotp();
+        $account = $this->account()->confirmed()->withPassword()->withTotp()->create();
 
         // When
-        $browser->signInAs($credential->email, $credential->password);
+        $browser->signInAs($account->email, $account->password());
 
         // Then
         $browser->assertSuccessful()
@@ -35,14 +32,14 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentityWithTotp();
-        $browser->signInAs($credential->email, $credential->password);
+        $account = $this->account()->confirmed()->withPassword()->withTotp()->create();
+        $browser->signInAs($account->email, $account->password());
 
         $browser->interceptRedirects();
 
         // When
-        $browser->use(static function (TwoFactorForm $twoFactor) use ($browser, $credential): void {
-            $twoFactor->fillCode($browser->totpCode($credential->totpSecret))->submit();
+        $browser->use(static function (TwoFactorForm $twoFactor) use ($browser, $account): void {
+            $twoFactor->fillCode($browser->totpCode($account->totpSecret()))->submit();
         });
 
         // Then
@@ -54,8 +51,8 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentityWithTotp();
-        $browser->signInAs($credential->email, $credential->password);
+        $account = $this->account()->confirmed()->withPassword()->withTotp()->create();
+        $browser->signInAs($account->email, $account->password());
 
         // When
         $browser->use(static function (TwoFactorForm $twoFactor): void {
@@ -73,8 +70,8 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentityWithTotp();
-        $browser->signInAs($credential->email, $credential->password);
+        $account = $this->account()->confirmed()->withPassword()->withTotp()->create();
+        $browser->signInAs($account->email, $account->password());
 
         for ($i = 0; $i < 3; ++$i) {
             $browser->use(static function (TwoFactorForm $twoFactor): void {
@@ -83,8 +80,8 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
         }
 
         // When
-        $browser->use(static function (TwoFactorForm $twoFactor) use ($browser, $credential): void {
-            $twoFactor->fillCode($browser->totpCode($credential->totpSecret))->submit();
+        $browser->use(static function (TwoFactorForm $twoFactor) use ($browser, $account): void {
+            $twoFactor->fillCode($browser->totpCode($account->totpSecret()))->submit();
         });
 
         // Then
@@ -96,20 +93,20 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentityWithTotp();
-        $browser->signInAs($credential->email, $credential->password);
+        $account = $this->account()->confirmed()->withPassword()->withTotp()->create();
+        $browser->signInAs($account->email, $account->password());
 
-        $browser->completeTwoFactorChallenge($browser->totpCode($credential->totpSecret), trustDevice: true);
+        $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()), trustDevice: true);
         $browser->visitRoute('_logout_main');
         $browser->visitRoute('storefront_signin_identify');
-        $browser->use(static function (IdentifyForm $identify) use ($credential): void {
-            $identify->fillEmail($credential->email)->submit();
+        $browser->use(static function (IdentifyForm $identify) use ($account): void {
+            $identify->fillEmail($account->email)->submit();
         });
         $browser->interceptRedirects();
 
         // When
-        $browser->use(static function (VerifyForm $verify) use ($credential): void {
-            $verify->fillPassword($credential->password)->submit();
+        $browser->use(static function (VerifyForm $verify) use ($account): void {
+            $verify->fillPassword($account->password())->submit();
         });
 
         // Then
@@ -121,14 +118,14 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentityWithTotp();
-        $browser->signInAs($credential->email, $credential->password);
+        $account = $this->account()->confirmed()->withPassword()->withTotp()->create();
+        $browser->signInAs($account->email, $account->password());
 
-        $browser->completeTwoFactorChallenge($browser->totpCode($credential->totpSecret));
+        $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()));
         $browser->visitRoute('_logout_main');
 
         // When
-        $browser->signInAs($credential->email, $credential->password);
+        $browser->signInAs($account->email, $account->password());
 
         // Then
         $browser->assertSuccessful()

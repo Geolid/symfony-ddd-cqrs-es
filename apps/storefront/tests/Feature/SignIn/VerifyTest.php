@@ -8,29 +8,26 @@ use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\SignIn\Component\IdentifyForm;
 use Storefront\Tests\Feature\SignIn\Component\VerifyForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
-use Storefront\Tests\Support\Story\IdentityStoryTrait;
 
 final class VerifyTest extends AbstractStorefrontTestCase
 {
-    use IdentityStoryTrait;
-
     #[Test]
     public function itShowsVerify(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentity();
+        $account = $this->account()->confirmed()->withPassword()->create();
 
         // When
         $browser->visitRoute('storefront_signin_identify');
-        $browser->use(static function (IdentifyForm $identify) use ($credential): void {
-            $identify->fillEmail($credential->email)->submit();
+        $browser->use(static function (IdentifyForm $identify) use ($account): void {
+            $identify->fillEmail($account->email)->submit();
         });
 
         // Then
         $browser->assertSuccessful()
-            ->use(static function (VerifyForm $verify) use ($credential): void {
-                $verify->assertEmailPrefilled($credential->email);
+            ->use(static function (VerifyForm $verify) use ($account): void {
+                $verify->assertEmailPrefilled($account->email);
             });
     }
 
@@ -52,17 +49,17 @@ final class VerifyTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentity();
+        $account = $this->account()->confirmed()->withPassword()->create();
 
         $browser->visitRoute('storefront_signin_identify');
-        $browser->use(static function (IdentifyForm $identify) use ($credential): void {
-            $identify->fillEmail($credential->email)->submit();
+        $browser->use(static function (IdentifyForm $identify) use ($account): void {
+            $identify->fillEmail($account->email)->submit();
         });
         $browser->interceptRedirects();
 
         // When
-        $browser->use(static function (VerifyForm $verify) use ($credential): void {
-            $verify->fillPassword($credential->password)->submit();
+        $browser->use(static function (VerifyForm $verify) use ($account): void {
+            $verify->fillPassword($account->password())->submit();
         });
 
         // Then
@@ -74,11 +71,11 @@ final class VerifyTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentity();
+        $account = $this->account()->confirmed()->withPassword()->create();
 
         $browser->visitRoute('storefront_signin_identify');
-        $browser->use(static function (IdentifyForm $identify) use ($credential): void {
-            $identify->fillEmail($credential->email)->submit();
+        $browser->use(static function (IdentifyForm $identify) use ($account): void {
+            $identify->fillEmail($account->email)->submit();
         });
 
         // When
@@ -87,8 +84,8 @@ final class VerifyTest extends AbstractStorefrontTestCase
         });
 
         // Then
-        $browser->use(static function (VerifyForm $verify) use ($credential): void {
-            $verify->assertInvalidCredentialsError()->assertEmailPrefilled($credential->email);
+        $browser->use(static function (VerifyForm $verify) use ($account): void {
+            $verify->assertInvalidCredentialsError()->assertEmailPrefilled($account->email);
         });
     }
 
@@ -97,16 +94,16 @@ final class VerifyTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->suspendedIdentity();
+        $account = $this->account()->confirmed()->suspended()->withPassword()->create();
 
         $browser->visitRoute('storefront_signin_identify');
-        $browser->use(static function (IdentifyForm $identify) use ($credential): void {
-            $identify->fillEmail($credential->email)->submit();
+        $browser->use(static function (IdentifyForm $identify) use ($account): void {
+            $identify->fillEmail($account->email)->submit();
         });
 
         // When
-        $browser->use(static function (VerifyForm $verify) use ($credential): void {
-            $verify->fillPassword($credential->password)->submit();
+        $browser->use(static function (VerifyForm $verify) use ($account): void {
+            $verify->fillPassword($account->password())->submit();
         });
 
         // Then
@@ -120,11 +117,11 @@ final class VerifyTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentity();
+        $account = $this->account()->confirmed()->withPassword()->create();
 
         $browser->visitRoute('storefront_signin_identify');
-        $browser->use(static function (IdentifyForm $identify) use ($credential): void {
-            $identify->fillEmail($credential->email)->submit();
+        $browser->use(static function (IdentifyForm $identify) use ($account): void {
+            $identify->fillEmail($account->email)->submit();
         });
 
         for ($i = 0; $i < 3; ++$i) {
@@ -134,8 +131,8 @@ final class VerifyTest extends AbstractStorefrontTestCase
         }
 
         // When
-        $browser->use(static function (VerifyForm $verify) use ($credential): void {
-            $verify->fillPassword($credential->password)->submit();
+        $browser->use(static function (VerifyForm $verify) use ($account): void {
+            $verify->fillPassword($account->password())->submit();
         });
 
         // Then

@@ -8,12 +8,10 @@ use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\ForgotPassword\Component\ResetForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
-use Storefront\Tests\Support\Story\IdentityStoryTrait;
 use Storefront\Tests\Support\VerificationCodeTrait;
 
 final class ResetTest extends AbstractStorefrontTestCase
 {
-    use IdentityStoryTrait;
     use VerificationCodeTrait;
 
     #[Test]
@@ -21,10 +19,10 @@ final class ResetTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $identity = $this->passwordResetRequestedIdentity();
+        $account = $this->account()->confirmed()->withPassword()->passwordResetRequested()->create();
 
         // When
-        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $identity->id]);
+        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
 
         // Then
         $browser->assertSuccessful()
@@ -36,9 +34,9 @@ final class ResetTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $identity = $this->passwordResetRequestedIdentity();
+        $account = $this->account()->confirmed()->withPassword()->passwordResetRequested()->create();
 
-        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $identity->id]);
+        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
 
         // When
         $browser->use(function (ResetForm $reset): void {
@@ -55,9 +53,9 @@ final class ResetTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $identity = $this->passwordResetRequestedIdentity();
+        $account = $this->account()->confirmed()->withPassword()->passwordResetRequested()->create();
 
-        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $identity->id]);
+        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
 
         // When
         $browser->use(function (ResetForm $reset): void {
@@ -77,9 +75,9 @@ final class ResetTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $identity = $this->passwordResetRequestedIdentity();
+        $account = $this->account()->confirmed()->withPassword()->passwordResetRequested()->create();
 
-        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $identity->id]);
+        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
 
         // When
         $browser->use(function (ResetForm $reset): void {
@@ -97,9 +95,9 @@ final class ResetTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $identity = $this->passwordResetRequestedIdentity();
+        $account = $this->account()->confirmed()->withPassword()->passwordResetRequested()->create();
 
-        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $identity->id]);
+        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
 
         // When
         $browser->use(static function (ResetForm $reset): void {
@@ -117,9 +115,9 @@ final class ResetTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $identity = $this->passwordResetRequestedIdentity();
+        $account = $this->account()->confirmed()->withPassword()->passwordResetRequested()->create();
 
-        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $identity->id]);
+        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
 
         for ($i = 0; $i < 3; ++$i) {
             $browser->use(static function (ResetForm $reset): void {
@@ -143,9 +141,9 @@ final class ResetTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $identity = $this->passwordResetRequestedIdentityForSuspendedAccount();
+        $account = $this->account()->confirmed()->suspended()->withPassword()->passwordResetRequested()->create();
 
-        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $identity->id]);
+        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
 
         // When
         $browser->use(function (ResetForm $reset): void {
@@ -161,9 +159,9 @@ final class ResetTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $identity = $this->passwordResetRequestedIdentity();
+        $account = $this->account()->confirmed()->withPassword()->passwordResetRequested()->create();
 
-        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $identity->id]);
+        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
 
         // When
         $browser->use(static function (ResetForm $reset): void {
@@ -171,7 +169,7 @@ final class ResetTest extends AbstractStorefrontTestCase
         });
 
         // Then
-        $this->assertEmailSent(2, $identity->email, 'Reset your password');
+        $this->assertEmailSent(2, $account->email, 'Reset your password');
     }
 
     #[Test]
@@ -179,9 +177,9 @@ final class ResetTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $identity = $this->passwordResetRequestedIdentity();
+        $account = $this->account()->confirmed()->withPassword()->passwordResetRequested()->create();
 
-        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $identity->id]);
+        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
 
         // When
         $browser->use(static function (ResetForm $reset): void {
@@ -189,7 +187,7 @@ final class ResetTest extends AbstractStorefrontTestCase
         });
 
         // Then
-        $browser->assertRedirectedToRoute('storefront_forgot_password_reset', ['identityId' => $identity->id])
+        $browser->assertRedirectedToRoute('storefront_forgot_password_reset', ['identityId' => $account->id])
             ->assertSeeIn('[data-testid="flash-error"]', 'flash_failed');
     }
 }

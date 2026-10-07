@@ -7,12 +7,10 @@ namespace Storefront\Tests\Feature\Registration;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\Registration\Component\ConfirmForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
-use Storefront\Tests\Support\Story\IdentityStoryTrait;
 use Storefront\Tests\Support\VerificationCodeTrait;
 
 final class ConfirmTest extends AbstractStorefrontTestCase
 {
-    use IdentityStoryTrait;
     use VerificationCodeTrait;
 
     #[Test]
@@ -20,9 +18,9 @@ final class ConfirmTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $identity = $this->confirmationRequestedIdentity();
+        $account = $this->account()->confirmationRequested()->create();
 
-        $browser->visitRoute('storefront_registration_confirm', ['identityId' => $identity->id]);
+        $browser->visitRoute('storefront_registration_confirm', ['identityId' => $account->id]);
 
         // When
         $browser->use(function (ConfirmForm $confirm): void {
@@ -39,9 +37,9 @@ final class ConfirmTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $identity = $this->confirmationRequestedIdentity();
+        $account = $this->account()->confirmationRequested()->create();
 
-        $browser->visitRoute('storefront_registration_confirm', ['identityId' => $identity->id]);
+        $browser->visitRoute('storefront_registration_confirm', ['identityId' => $account->id]);
 
         // When
         $browser->use(static function (ConfirmForm $confirm): void {
@@ -59,9 +57,9 @@ final class ConfirmTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $identity = $this->confirmationRequestedIdentity();
+        $account = $this->account()->confirmationRequested()->create();
 
-        $browser->visitRoute('storefront_registration_confirm', ['identityId' => $identity->id]);
+        $browser->visitRoute('storefront_registration_confirm', ['identityId' => $account->id]);
 
         for ($i = 0; $i < 3; ++$i) {
             $browser->use(static function (ConfirmForm $confirm): void {
@@ -85,9 +83,9 @@ final class ConfirmTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $identity = $this->confirmationRequestedIdentity();
+        $account = $this->account()->confirmationRequested()->create();
 
-        $browser->visitRoute('storefront_registration_confirm', ['identityId' => $identity->id]);
+        $browser->visitRoute('storefront_registration_confirm', ['identityId' => $account->id]);
 
         // When
         $browser->use(static function (ConfirmForm $confirm): void {
@@ -95,7 +93,7 @@ final class ConfirmTest extends AbstractStorefrontTestCase
         });
 
         // Then
-        $this->assertEmailSent(2, $identity->email, 'Confirm your email address');
+        $this->assertEmailSent(2, $account->email, 'Confirm your email address');
     }
 
     #[Test]
@@ -103,14 +101,14 @@ final class ConfirmTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $identity = $this->confirmationRequestedIdentity();
+        $account = $this->account()->confirmationRequested()->create();
 
-        $browser->visitRoute('storefront_registration_confirm', ['identityId' => $identity->id]);
+        $browser->visitRoute('storefront_registration_confirm', ['identityId' => $account->id]);
         $browser->use(function (ConfirmForm $confirm): void {
             $confirm->fillCode($this->verificationCode())->submit();
         });
 
-        $browser->visitRoute('storefront_registration_confirm', ['identityId' => $identity->id]);
+        $browser->visitRoute('storefront_registration_confirm', ['identityId' => $account->id]);
 
         // When
         $browser->interceptRedirects();
@@ -128,9 +126,9 @@ final class ConfirmTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $identity = $this->confirmationRequestedIdentity();
+        $account = $this->account()->confirmationRequested()->create();
 
-        $browser->visitRoute('storefront_registration_confirm', ['identityId' => $identity->id]);
+        $browser->visitRoute('storefront_registration_confirm', ['identityId' => $account->id]);
 
         // When
         $browser->use(static function (ConfirmForm $confirm): void {
@@ -138,7 +136,7 @@ final class ConfirmTest extends AbstractStorefrontTestCase
         });
 
         // Then
-        $browser->assertRedirectedToRoute('storefront_registration_confirm', ['identityId' => $identity->id])
+        $browser->assertRedirectedToRoute('storefront_registration_confirm', ['identityId' => $account->id])
             ->assertSeeIn('[data-testid="flash-error"]', 'flash_failed');
     }
 }

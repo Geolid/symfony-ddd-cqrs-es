@@ -6,21 +6,18 @@ namespace Storefront\Tests\Feature\Account\Security;
 
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
-use Storefront\Tests\Support\Story\TotpEnabledIdentityStoryTrait;
 
 final class TrustedDevicesTest extends AbstractStorefrontTestCase
 {
-    use TotpEnabledIdentityStoryTrait;
-
     #[Test]
     public function itShows(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentityWithTotp();
-        $browser->signInAs($credential->email, $credential->password);
+        $account = $this->account()->confirmed()->withPassword()->withTotp()->create();
+        $browser->signInAs($account->email, $account->password());
 
-        $browser->completeTwoFactorChallenge($browser->totpCode($credential->totpSecret), trustDevice: true);
+        $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()), trustDevice: true);
 
         // When
         $browser->visitRoute('storefront_account_security_trusted_devices');
@@ -35,10 +32,10 @@ final class TrustedDevicesTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentityWithTotp();
-        $browser->signInAs($credential->email, $credential->password);
+        $account = $this->account()->confirmed()->withPassword()->withTotp()->create();
+        $browser->signInAs($account->email, $account->password());
 
-        $browser->completeTwoFactorChallenge($browser->totpCode($credential->totpSecret), trustDevice: true);
+        $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()), trustDevice: true);
         $browser->visitRoute('storefront_account_security_trusted_devices');
         $browser->interceptRedirects();
 
@@ -55,10 +52,10 @@ final class TrustedDevicesTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentityWithTotp();
-        $browser->signInAs($credential->email, $credential->password);
+        $account = $this->account()->confirmed()->withPassword()->withTotp()->create();
+        $browser->signInAs($account->email, $account->password());
 
-        $browser->completeTwoFactorChallenge($browser->totpCode($credential->totpSecret), trustDevice: true);
+        $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()), trustDevice: true);
         $browser->visitRoute('storefront_account_security_trusted_devices');
         $browser->interceptRedirects();
 

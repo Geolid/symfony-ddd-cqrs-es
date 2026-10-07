@@ -7,6 +7,7 @@ namespace Storefront\Tests\Support;
 use Bootstrap\Kernel;
 use Storefront\Tests\Browser\StorefrontKernelBrowser;
 use Storefront\Tests\Browser\StorefrontPlaywrightBrowser;
+use Storefront\Tests\Support\Builder\AccountBuilder;
 use Support\TestCase\EventSourcingTrait;
 use Support\TestCase\ServiceLocatorTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
@@ -70,5 +71,10 @@ abstract class AbstractStorefrontTestCase extends WebTestCase
             ->assertSentEmailCount($totalCount)
             ->sentEmails()->whereTo($recipient)->last()
             ->assertSubject($subject);
+    }
+
+    protected function account(): AccountBuilder
+    {
+        return new AccountBuilder(service: $this->service(...), store: $this->store(...));
     }
 }

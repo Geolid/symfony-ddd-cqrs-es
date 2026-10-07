@@ -8,12 +8,9 @@ use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\SignIn\Component\IdentifyForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
-use Storefront\Tests\Support\Story\IdentityStoryTrait;
 
 final class IdentifyTest extends AbstractStorefrontTestCase
 {
-    use IdentityStoryTrait;
-
     #[Test]
     public function itShowsIdentify(): void
     {
@@ -49,16 +46,16 @@ final class IdentifyTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $identity = $this->unconfirmedIdentity();
+        $account = $this->account()->create();
 
         // When
         $browser->visitRoute('storefront_signin_identify')
-            ->use(static function (IdentifyForm $identify) use ($identity): void {
-                $identify->fillEmail($identity->email)->submit();
+            ->use(static function (IdentifyForm $identify) use ($account): void {
+                $identify->fillEmail($account->email)->submit();
             });
 
         // Then
-        $browser->assertRedirectedToRoute('storefront_registration_confirm', ['identityId' => $identity->id]);
+        $browser->assertRedirectedToRoute('storefront_registration_confirm', ['identityId' => $account->id]);
     }
 
     #[Test]
@@ -66,12 +63,12 @@ final class IdentifyTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $identity = $this->confirmedIdentityWithoutCredential();
+        $account = $this->account()->confirmed()->create();
 
         // When
         $browser->visitRoute('storefront_signin_identify')
-            ->use(static function (IdentifyForm $identify) use ($identity): void {
-                $identify->fillEmail($identity->email)->submit();
+            ->use(static function (IdentifyForm $identify) use ($account): void {
+                $identify->fillEmail($account->email)->submit();
             });
 
         // Then

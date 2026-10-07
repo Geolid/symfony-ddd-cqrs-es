@@ -7,26 +7,23 @@ namespace Storefront\Tests\Feature\Account\Security;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\Account\Security\Component\ChangePasswordForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
-use Storefront\Tests\Support\Story\IdentityStoryTrait;
 
 final class ChangePasswordTest extends AbstractStorefrontTestCase
 {
-    use IdentityStoryTrait;
-
     #[Test]
     public function itChanges(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentity();
-        $browser->signInAs($credential->email, $credential->password);
+        $account = $this->account()->confirmed()->withPassword()->create();
+        $browser->signInAs($account->email, $account->password());
 
         $browser->visitRoute('storefront_account_security_change_password');
         $browser->interceptRedirects();
 
         // When
-        $browser->use(static function (ChangePasswordForm $form) use ($credential): void {
-            $form->fillCurrentPassword($credential->password)->fillNewPassword('Flamingo-73-Juniper!')->submit();
+        $browser->use(static function (ChangePasswordForm $form) use ($account): void {
+            $form->fillCurrentPassword($account->password())->fillNewPassword('Flamingo-73-Juniper!')->submit();
         });
 
         // Then
@@ -39,8 +36,8 @@ final class ChangePasswordTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentity();
-        $browser->signInAs($credential->email, $credential->password);
+        $account = $this->account()->confirmed()->withPassword()->create();
+        $browser->signInAs($account->email, $account->password());
 
         $browser->visitRoute('storefront_account_security_change_password');
 
@@ -60,14 +57,14 @@ final class ChangePasswordTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentity();
-        $browser->signInAs($credential->email, $credential->password);
+        $account = $this->account()->confirmed()->withPassword()->create();
+        $browser->signInAs($account->email, $account->password());
 
         $browser->visitRoute('storefront_account_security_change_password');
 
         // When
-        $browser->use(static function (ChangePasswordForm $form) use ($credential): void {
-            $form->fillCurrentPassword($credential->password)->fillNewPassword($credential->password)->submit();
+        $browser->use(static function (ChangePasswordForm $form) use ($account): void {
+            $form->fillCurrentPassword($account->password())->fillNewPassword($account->password())->submit();
         });
 
         // Then

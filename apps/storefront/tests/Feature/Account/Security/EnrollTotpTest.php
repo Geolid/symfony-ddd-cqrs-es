@@ -7,19 +7,16 @@ namespace Storefront\Tests\Feature\Account\Security;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\Account\Security\Component\EnrollTotpForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
-use Storefront\Tests\Support\Story\IdentityStoryTrait;
 
 final class EnrollTotpTest extends AbstractStorefrontTestCase
 {
-    use IdentityStoryTrait;
-
     #[Test]
     public function itShows(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentity();
-        $browser->signInAs($credential->email, $credential->password);
+        $account = $this->account()->confirmed()->withPassword()->create();
+        $browser->signInAs($account->email, $account->password());
 
         // When
         $browser->visitRoute('storefront_account_security_two_factor_settings');
@@ -34,8 +31,8 @@ final class EnrollTotpTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentity();
-        $browser->signInAs($credential->email, $credential->password);
+        $account = $this->account()->confirmed()->withPassword()->create();
+        $browser->signInAs($account->email, $account->password());
 
         $browser->visitRoute('storefront_account_security_two_factor_settings');
 
@@ -55,10 +52,10 @@ final class EnrollTotpTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentityWithBackupCodes();
-        $browser->signInAs($credential->email, $credential->password);
+        $account = $this->account()->confirmed()->withPassword()->withBackupCodes()->create();
+        $browser->signInAs($account->email, $account->password());
 
-        $browser->completeTwoFactorChallenge($credential->plainBackupCodes[0]);
+        $browser->completeTwoFactorChallenge($account->plainBackupCodes()[0]);
         $browser->visitRoute('storefront_account_security_two_factor_settings');
 
         // When
@@ -77,8 +74,8 @@ final class EnrollTotpTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentity();
-        $browser->signInAs($credential->email, $credential->password);
+        $account = $this->account()->confirmed()->withPassword()->create();
+        $browser->signInAs($account->email, $account->password());
 
         $browser->visitRoute('storefront_account_security_two_factor_settings');
 

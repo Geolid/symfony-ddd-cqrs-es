@@ -8,19 +8,16 @@ use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\Account\Security\Component\ChangeFullNameForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
-use Storefront\Tests\Support\Story\IdentityStoryTrait;
 
 final class ChangeFullNameTest extends AbstractStorefrontTestCase
 {
-    use IdentityStoryTrait;
-
     #[Test]
     public function itChanges(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentity();
-        $browser->signInAs($credential->email, $credential->password);
+        $account = $this->account()->confirmed()->withPassword()->create();
+        $browser->signInAs($account->email, $account->password());
 
         $browser->visitRoute('storefront_account_security_change_full_name');
         $browser->interceptRedirects();

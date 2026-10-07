@@ -9,12 +9,10 @@ use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\Account\Security\Component\ChangeEmailForm;
 use Storefront\Tests\Feature\Account\Security\Component\RequestEmailChangeForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
-use Storefront\Tests\Support\Story\IdentityStoryTrait;
 use Storefront\Tests\Support\VerificationCodeTrait;
 
 final class ChangeEmailTest extends AbstractStorefrontTestCase
 {
-    use IdentityStoryTrait;
     use VerificationCodeTrait;
 
     #[Test]
@@ -22,8 +20,8 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentity();
-        $browser->signInAs($credential->email, $credential->password);
+        $account = $this->account()->confirmed()->withPassword()->create();
+        $browser->signInAs($account->email, $account->password());
 
         $newEmail = IdentityBuilder::sample('email')->value;
         $browser->visitRoute('storefront_account_security_request_email_change');
@@ -42,7 +40,7 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
             ->assertSeeIn('[data-testid="flash-success"]', 'change_email_flash_changed');
 
         $browser->followRedirects()
-            ->signInAs($newEmail, $credential->password)
+            ->signInAs($newEmail, $account->password())
             ->assertSignedIn();
 
         $browser->visitRoute('storefront_account_security_show');
@@ -54,8 +52,8 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentity();
-        $browser->signInAs($credential->email, $credential->password);
+        $account = $this->account()->confirmed()->withPassword()->create();
+        $browser->signInAs($account->email, $account->password());
 
         $browser->visitRoute('storefront_account_security_request_email_change');
         $browser->use(static function (RequestEmailChangeForm $requestEmailChangeForm): void {
@@ -78,8 +76,8 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentity();
-        $browser->signInAs($credential->email, $credential->password);
+        $account = $this->account()->confirmed()->withPassword()->create();
+        $browser->signInAs($account->email, $account->password());
 
         $newEmail = IdentityBuilder::sample('email')->value;
         $browser->visitRoute('storefront_account_security_request_email_change');
@@ -101,8 +99,8 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentity();
-        $browser->signInAs($credential->email, $credential->password);
+        $account = $this->account()->confirmed()->withPassword()->create();
+        $browser->signInAs($account->email, $account->password());
 
         $browser->visitRoute('storefront_account_security_request_email_change');
         $browser->use(static function (RequestEmailChangeForm $requestEmailChangeForm): void {

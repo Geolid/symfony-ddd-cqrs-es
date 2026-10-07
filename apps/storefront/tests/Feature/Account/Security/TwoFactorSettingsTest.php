@@ -6,21 +6,18 @@ namespace Storefront\Tests\Feature\Account\Security;
 
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
-use Storefront\Tests\Support\Story\TotpEnabledIdentityStoryTrait;
 
 final class TwoFactorSettingsTest extends AbstractStorefrontTestCase
 {
-    use TotpEnabledIdentityStoryTrait;
-
     #[Test]
     public function itShows(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentityWithTotpAndBackupCodes();
-        $browser->signInAs($credential->email, $credential->password);
+        $account = $this->account()->confirmed()->withPassword()->withTotp()->withBackupCodes()->create();
+        $browser->signInAs($account->email, $account->password());
 
-        $browser->completeTwoFactorChallenge($browser->totpCode($credential->totpSecret));
+        $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()));
 
         // When
         $browser->visitRoute('storefront_account_security_two_factor_settings');
@@ -35,10 +32,10 @@ final class TwoFactorSettingsTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentityWithTotpAndBackupCodes();
-        $browser->signInAs($credential->email, $credential->password);
+        $account = $this->account()->confirmed()->withPassword()->withTotp()->withBackupCodes()->create();
+        $browser->signInAs($account->email, $account->password());
 
-        $browser->completeTwoFactorChallenge($browser->totpCode($credential->totpSecret));
+        $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()));
         $browser->visitRoute('storefront_account_security_two_factor_settings');
 
         // When
@@ -54,10 +51,10 @@ final class TwoFactorSettingsTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentityWithTotpAndBackupCodes();
-        $browser->signInAs($credential->email, $credential->password);
+        $account = $this->account()->confirmed()->withPassword()->withTotp()->withBackupCodes()->create();
+        $browser->signInAs($account->email, $account->password());
 
-        $browser->completeTwoFactorChallenge($browser->totpCode($credential->totpSecret));
+        $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()));
         $browser->visitRoute('storefront_account_security_two_factor_settings');
         $browser->interceptRedirects();
 

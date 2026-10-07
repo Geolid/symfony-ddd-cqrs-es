@@ -6,19 +6,16 @@ namespace Storefront\Tests\Feature\SignIn;
 
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
-use Storefront\Tests\Support\Story\IdentityStoryTrait;
 
 final class LogoutTest extends AbstractStorefrontTestCase
 {
-    use IdentityStoryTrait;
-
     #[Test]
     public function itLogsOut(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->confirmedIdentity();
-        $browser->signInAs($credential->email, $credential->password);
+        $account = $this->account()->confirmed()->withPassword()->create();
+        $browser->signInAs($account->email, $account->password());
 
         $browser->interceptRedirects();
 
