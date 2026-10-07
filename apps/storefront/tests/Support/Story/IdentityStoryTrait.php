@@ -4,17 +4,13 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Support\Story;
 
-use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
-use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
-use Iam\Tests\Authentication\Support\Builder\BackupCodeCredentialBuilder;
-use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
-use Symfony\Component\Clock\Clock;
 
 trait IdentityStoryTrait
 {
+    use CredentialBuilderWiringTrait;
+
     abstract protected function service(string $serviceId): object;
 
     abstract protected function store(AggregateRoot ...$aggregates): void;
@@ -27,13 +23,6 @@ trait IdentityStoryTrait
     protected function suspendedIdentity(): Credential
     {
         return $this->identityWith(IdentityBuilder::new()->confirmed()->suspended());
-    }
-
-    protected function identityEligibleForEmailChange(): Credential
-    {
-        return $this->identityWith(
-            IdentityBuilder::new()->withRegisteredAt(Clock::get()->now()->modify('-1 hour'))->confirmed(),
-        );
     }
 
     protected function unconfirmedIdentity(): RegisteredIdentity
@@ -77,13 +66,8 @@ trait IdentityStoryTrait
     {
         $identityBuilder = IdentityBuilder::new()->confirmed();
         $identity = $identityBuilder->create();
-        $passwordBuilder = PasswordCredentialBuilder::new()
-            ->withIdentityId($identity->id->toString())
-            ->withHasher($this->service(PasswordHasherInterface::class))
-            ->withPasswordStrength($this->service(PasswordStrengthSpecificationInterface::class));
-        $backupCodeBuilder = BackupCodeCredentialBuilder::new()
-            ->withIdentityId($identity->id->toString())
-            ->withBackupCodeHasher($this->service(BackupCodeHasherInterface::class));
+        $passwordBuilder = $this->passwordCredentialBuilderFor($identity->id->toString());
+        $backupCodeBuilder = $this->backupCodeCredentialBuilderFor($identity->id->toString());
         $this->store($identity, $passwordBuilder->create(), $backupCodeBuilder->create());
 
         return new BackupCodeEnabledCredential(
@@ -96,10 +80,7 @@ trait IdentityStoryTrait
     private function identityWith(IdentityBuilder $identityBuilder): Credential
     {
         $identity = $identityBuilder->create();
-        $passwordBuilder = PasswordCredentialBuilder::new()
-            ->withIdentityId($identity->id->toString())
-            ->withHasher($this->service(PasswordHasherInterface::class))
-            ->withPasswordStrength($this->service(PasswordStrengthSpecificationInterface::class));
+        $passwordBuilder = $this->passwordCredentialBuilderFor($identity->id->toString());
         $this->store($identity, $passwordBuilder->create());
 
         return new Credential(
@@ -113,11 +94,7 @@ trait IdentityStoryTrait
     private function passwordResetRequestedFor(IdentityBuilder $identityBuilder): RegisteredIdentity
     {
         $identity = $identityBuilder->create();
-        $passwordBuilder = PasswordCredentialBuilder::new()
-            ->withIdentityId($identity->id->toString())
-            ->withHasher($this->service(PasswordHasherInterface::class))
-            ->withPasswordStrength($this->service(PasswordStrengthSpecificationInterface::class))
-            ->resetRequested();
+        $passwordBuilder = $this->passwordCredentialBuilderFor($identity->id->toString())->resetRequested();
         $this->store($identity, $passwordBuilder->create());
 
         return new RegisteredIdentity($identity->id->toString(), $identityBuilder['email']->value);

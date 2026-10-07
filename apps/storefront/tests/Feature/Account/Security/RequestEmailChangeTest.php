@@ -22,7 +22,7 @@ final class RequestEmailChangeTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->identityEligibleForEmailChange();
+        $credential = $this->confirmedIdentity();
         $browser->signInAs($credential->email, $credential->password);
 
         // When
@@ -38,7 +38,7 @@ final class RequestEmailChangeTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $credential = $this->identityEligibleForEmailChange();
+        $credential = $this->confirmedIdentity();
         $browser->signInAs($credential->email, $credential->password);
 
         $browser->visitRoute('storefront_account_security_request_email_change');
@@ -71,7 +71,7 @@ final class RequestEmailChangeTest extends AbstractStorefrontTestCase
                 ->submit();
         });
 
-        $credential = $this->identityEligibleForEmailChange();
+        $credential = $this->confirmedIdentity();
         $browser->signInAs($credential->email, $credential->password);
 
         $browser->visitRoute('storefront_account_security_request_email_change');
