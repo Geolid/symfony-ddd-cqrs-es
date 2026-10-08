@@ -56,8 +56,8 @@ function warmup(
     #[AsArgument(description: 'Restrict to a single DM (default: all)', autocomplete: 'autocomplete_apps')]
     ?string $app = null,
 ): void {
-    // Forced: Symfony only dumps the container XML phpstan-symfony needs when debug=true.
     io()->comment('shared');
+    // Forced: Symfony only dumps the container XML phpstan-symfony needs when APP_DEBUG=1.
     with(static fn () => console(['cache:warmup']), environment: ['APP_DEBUG' => '1'], context: context());
 
     foreach (resolve_apps($app) as $app) {
@@ -70,4 +70,10 @@ function warmup(
 function hooks(): void
 {
     compose_exec(['vendor/bin/captainhook', 'install', '-f', '-n']);
+}
+
+#[AsTask(name: 'playwright', description: 'Install Playwright browsers')]
+function playwright(): void
+{
+    compose_exec(['vendor/bin/playwright-install', 'chromium']);
 }

@@ -1,3 +1,18 @@
 a {
   --pico-text-decoration: none;
 }
+
+button.u-link {
+  width: auto;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--pico-primary);
+  font-family: inherit;
+  font-size: inherit;
+  cursor: pointer;
+}
+
+button.u-link:hover {
+  text-decoration: underline;
+}

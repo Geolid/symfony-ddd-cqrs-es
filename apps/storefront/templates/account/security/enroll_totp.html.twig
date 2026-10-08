@@ -27,18 +27,18 @@
                     <ol>
                         <li>{{ 'enroll_totp_manual_step1'|trans }}</li>
                         <li>{{ 'enroll_totp_manual_step2'|trans }}</li>
-                        <li>{{ 'enroll_totp_manual_step3'|trans }} <code>{{ secret|split('', 4)|join(' ') }}</code></li>
+                        <li>{{ 'enroll_totp_manual_step3'|trans }} <code data-testid="totp-secret">{{ secret|split('', 4)|join(' ') }}</code></li>
                         <li>{{ 'enroll_totp_manual_step4'|trans }}</li>
                     </ol>
                 </details>
             </li>
             <li>
                 <strong>{{ 'enroll_totp_step_enter_verb'|trans }}</strong> {{ 'enroll_totp_step_enter_rest'|trans }}
-                {{ form_start(form) }}
+                {{ form_start(form, {attr: {'data-testid': 'enroll-totp-form'}}) }}
                     <div class="u-mt">
                         {{ form_row(form.code, {label_attr: {class: 'u-visually-hidden'}}) }}
                     </div>
-                    <button type="submit">{{ 'enroll_totp_button_submit'|trans }}</button>
+                    <button type="submit" data-testid="enroll-totp-submit">{{ 'enroll_totp_button_submit'|trans }}</button>
                 {{ form_end(form) }}
             </li>
         </ol>

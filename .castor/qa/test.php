@@ -3,14 +3,25 @@
 declare(strict_types=1);
 
 use Castor\Attribute\AsArgument;
+use Castor\Attribute\AsListener;
 use Castor\Attribute\AsOption;
 use Castor\Attribute\AsTask;
 use Castor\Context;
+use Castor\Event\BeforeExecuteTaskEvent;
 use Symfony\Component\Console\Input\InputOption;
 
 use function Castor\with;
 
+#[AsListener(event: BeforeExecuteTaskEvent::class)]
+function qa_test_ensure_playwright(BeforeExecuteTaskEvent $event): void
+{
+    if ([] !== $event->task->getAttributes(NeedsPlaywright::class)) {
+        playwright();
+    }
+}
+
 #[AsTask(name: 'test', namespace: 'qa', description: 'Run test suite')]
+#[NeedsPlaywright]
 function qa_test(
     #[AsOption(description: 'Filter tests by name')]
     ?string $filter = null,

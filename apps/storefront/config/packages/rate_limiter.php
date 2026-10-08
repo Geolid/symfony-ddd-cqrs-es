@@ -29,4 +29,17 @@ return static function (ContainerConfigurator $container): void {
             ],
         ],
     ]);
+
+    if ('test' === $container->env()) {
+        $container->extension('framework', [
+            'cache' => [
+                'pools' => [
+                    'cache.rate_limiter' => [
+                        'adapter' => 'cache.adapter.redis',
+                        'provider' => 'shared.valkey.client',
+                    ],
+                ],
+            ],
+        ]);
+    }
 };

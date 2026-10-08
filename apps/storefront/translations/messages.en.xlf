@@ -9,6 +9,10 @@
         <source>link_modify</source>
         <target>Edit</target>
       </trans-unit>
+      <trans-unit id="flash_invalid_csrf_token">
+        <source>flash_invalid_csrf_token</source>
+        <target>Something went wrong. Please try again.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

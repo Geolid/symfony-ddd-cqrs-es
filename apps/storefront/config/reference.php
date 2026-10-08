@@ -890,7 +890,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         signing_algorithm?: scalar|Param|null, // Default: "sha256"
  *         routing?: array<string, array{ // Default: []
  *             service?: scalar|Param|null,
- *             secret?: scalar|Param|null, // The secret used to verify incoming request signatures. It must be set in production: with an empty value, requests from any sender are accepted. // Default: ""
+ *             secret?: scalar|Param|null, // The secret used to verify incoming request signatures. It must be set in production: with an empty value, depending on the parser, requests from any sender are accepted or every request is rejected. // Default: ""
  *         }>,
  *     },
  *     remote_event?: bool|array{ // RemoteEvent configuration
@@ -1260,6 +1260,46 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *         console?: array{
  *             excluded_commands?: list<scalar|Param|null>,
  *         },
+ *     },
+ * }
+ * @psalm-type PlaywrightConfig = array{
+ *     enabled?: bool|Param, // Enable Playwright Symfony integration // Default: true
+ *     intercepted_hosts?: list<scalar|Param|null>,
+ *     debug?: bool|Param, // Enable debug mode for Playwright integration // Default: "%kernel.debug%"
+ *     node_path?: scalar|Param|null, // Path to the Node.js executable running the Playwright server (auto-detected when null, can be overridden per browser) // Default: null
+ *     default_browser?: scalar|Param|null, // Name of the default Playwright browser to autowire // Default: "default"
+ *     base_url?: scalar|Param|null, // Base URL used when Playwright builds absolute URLs during tests (defaults to the PLAYWRIGHT_BASE_URL env var when defined, http://localhost otherwise) // Default: "%env(default::PLAYWRIGHT_BASE_URL)%"
+ *     debug_logging?: bool|Param, // Enable verbose Playwright logging without requiring environment variables // Default: false
+ *     browsers?: array<string, array{ // Default: {"default":{"type":"chromium","headless":true,"timeout_ms":30000,"slowmo_ms":0,"args":[],"env":[]}}
+ *         type?: "chromium"|"firefox"|"webkit"|Param, // Browser engine type // Default: "chromium"
+ *         headless?: bool|Param, // Default: true
+ *         timeout_ms?: int|Param, // Timeout in milliseconds for Playwright operations // Default: 30000
+ *         slowmo_ms?: int|Param, // Slow down every operation by the given milliseconds // Default: 0
+ *         args?: list<scalar|Param|null>,
+ *         env?: array<string, scalar|Param|null>,
+ *         node_path?: scalar|Param|null, // Override global node_path for this browser // Default: null
+ *         min_node_version?: scalar|Param|null, // Minimum Node.js version required to launch the server // Default: "20.0.0"
+ *         channel?: scalar|Param|null, // Browser distribution channel, e.g. chrome-beta or msedge // Default: null
+ *         screenshot_dir?: scalar|Param|null, // Default directory where page screenshots are saved // Default: null
+ *         downloads_dir?: scalar|Param|null, // Directory where downloads are stored // Default: null
+ *         videos_dir?: scalar|Param|null, // Directory where context videos are recorded // Default: null
+ *         tracing?: array{ // Record a Playwright trace for contexts created from this configuration
+ *             enabled?: bool|Param, // Default: false
+ *             dir?: scalar|Param|null, // Default: null
+ *             screenshots?: bool|Param, // Default: false
+ *             snapshots?: bool|Param, // Default: false
+ *         },
+ *         proxy?: array{ // Proxy applied to the browser
+ *             server?: scalar|Param|null, // Proxy server, e.g. http://host:port
+ *             username?: scalar|Param|null, // Default: null
+ *             password?: scalar|Param|null, // Default: null
+ *             bypass?: scalar|Param|null, // Comma-separated hosts to bypass // Default: null
+ *         },
+ *     }>,
+ *     assets?: array{ // Asset handling configuration used by the in-process dev server bridge
+ *         public_roots?: list<scalar|Param|null>,
+ *         prefixes?: list<scalar|Param|null>,
+ *         disable_cache?: bool|Param, // Disable HTTP caching of assets served via the bridge (useful for tests) // Default: true
  *     },
  * }
  * @psalm-type SchebTwoFactorConfig = array{
@@ -1694,6 +1734,7 @@ use Symfony\Component\Config\Loader\ParamConfigurator as Param;
  *     framework?: FrameworkConfig,
  *     monolog?: MonologConfig,
  *     patchlevel_event_sourcing?: PatchlevelEventSourcingConfig,
+ *     playwright?: PlaywrightConfig,
  *     scheb_two_factor?: SchebTwoFactorConfig,
  *     security?: SecurityConfig,
  *     stimulus?: StimulusConfig,
