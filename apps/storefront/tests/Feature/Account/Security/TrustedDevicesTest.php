@@ -6,6 +6,7 @@ namespace Storefront\Tests\Feature\Account\Security;
 
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
+use Symfony\Component\BrowserKit\AbstractBrowser;
 
 final class TrustedDevicesTest extends AbstractStorefrontTestCase
 {
@@ -48,6 +49,28 @@ final class TrustedDevicesTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    public function itRefusesRevokeWithInvalidCsrfToken(): void
+    {
+        // Given
+        $browser = $this->activeBrowser()->interceptRedirects();
+        $account = $this->account()->confirmed()->withPassword()->withTotp()->create();
+        $browser->signInAs($account->email, $account->password());
+
+        $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()), trustDevice: true);
+        $browser->visitRoute('storefront_account_security_trusted_devices');
+
+        // When
+        $browser->use(static function (AbstractBrowser $client): void {
+            $form = $client->getCrawler()->filter('[data-testid="revoke-trusted-device-form"]')->form(['_token' => 'invalid']);
+            $client->submit($form);
+        });
+
+        // Then
+        $browser->assertRedirectedToRoute('storefront_account_security_trusted_devices')
+            ->assertSeeIn('[data-testid="flash-error"]', 'flash_invalid_csrf_token');
+    }
+
+    #[Test]
     public function itRevokesAll(): void
     {
         // Given
@@ -65,6 +88,28 @@ final class TrustedDevicesTest extends AbstractStorefrontTestCase
         // Then
         $browser->assertRedirectedToRoute('storefront_account_security_trusted_devices')
             ->assertSeeIn('[data-testid="flash-success"]', 'trusted_devices_flash_revoked_all');
+    }
+
+    #[Test]
+    public function itRefusesRevokeAllWithInvalidCsrfToken(): void
+    {
+        // Given
+        $browser = $this->activeBrowser()->interceptRedirects();
+        $account = $this->account()->confirmed()->withPassword()->withTotp()->create();
+        $browser->signInAs($account->email, $account->password());
+
+        $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()), trustDevice: true);
+        $browser->visitRoute('storefront_account_security_trusted_devices');
+
+        // When
+        $browser->use(static function (AbstractBrowser $client): void {
+            $form = $client->getCrawler()->filter('[data-testid="revoke-trusted-devices-form"]')->form(['_token' => 'invalid']);
+            $client->submit($form);
+        });
+
+        // Then
+        $browser->assertRedirectedToRoute('storefront_account_security_trusted_devices')
+            ->assertSeeIn('[data-testid="flash-error"]', 'flash_invalid_csrf_token');
     }
 
     #[Test]

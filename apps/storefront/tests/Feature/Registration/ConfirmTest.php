@@ -33,6 +33,25 @@ final class ConfirmTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    public function itRefusesWhenErased(): void
+    {
+        // Given
+        $browser = $this->activeBrowser()->interceptRedirects();
+        $account = $this->account()->erased()->create();
+
+        $browser->visitRoute('storefront_registration_confirm', ['identityId' => $account->id]);
+
+        // When
+        $browser->use(static function (ConfirmForm $confirm): void {
+            $confirm->fillCode('000000')->submit();
+        });
+
+        // Then
+        $browser->assertRedirectedToRoute('storefront_signin_identify')
+            ->assertSeeIn('[data-testid="flash-error"]', 'confirm_error_expired');
+    }
+
+    #[Test]
     public function itRefusesIncorrectCode(): void
     {
         // Given
@@ -86,6 +105,7 @@ final class ConfirmTest extends AbstractStorefrontTestCase
         $account = $this->account()->confirmationRequested()->create();
 
         $browser->visitRoute('storefront_registration_confirm', ['identityId' => $account->id]);
+        $this->advanceClock('+2 minutes');
 
         // When
         $browser->use(static function (ConfirmForm $confirm): void {
@@ -137,6 +157,25 @@ final class ConfirmTest extends AbstractStorefrontTestCase
 
         // Then
         $browser->assertRedirectedToRoute('storefront_registration_confirm', ['identityId' => $account->id])
-            ->assertSeeIn('[data-testid="flash-error"]', 'flash_failed');
+            ->assertSeeIn('[data-testid="flash-error"]', 'flash_invalid_csrf_token');
+    }
+
+    #[Test]
+    public function itRefusesResendWhenErased(): void
+    {
+        // Given
+        $browser = $this->activeBrowser()->interceptRedirects();
+        $account = $this->account()->erased()->create();
+
+        $browser->visitRoute('storefront_registration_confirm', ['identityId' => $account->id]);
+
+        // When
+        $browser->use(static function (ConfirmForm $confirm): void {
+            $confirm->clickResend();
+        });
+
+        // Then
+        $browser->assertRedirectedToRoute('storefront_signin_identify')
+            ->assertSeeIn('[data-testid="flash-error"]', 'confirm_error_expired');
     }
 }

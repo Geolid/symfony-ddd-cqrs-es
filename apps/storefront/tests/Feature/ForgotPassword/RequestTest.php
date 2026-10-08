@@ -59,6 +59,7 @@ final class RequestTest extends AbstractStorefrontTestCase
 
         // Then
         $browser->assertRedirectedToRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
+        $this->assertEmailSent(1, $account->email, 'Reset your password');
     }
 
     #[Test]
@@ -83,7 +84,7 @@ final class RequestTest extends AbstractStorefrontTestCase
     public function itRejectsSuspendedAccount(): void
     {
         // Given
-        $browser = $this->activeBrowser();
+        $browser = $this->activeBrowser()->interceptRedirects();
         $account = $this->account()->confirmed()->suspended()->withPassword()->create();
 
         $browser->visitRoute('storefront_forgot_password_request');
@@ -94,6 +95,7 @@ final class RequestTest extends AbstractStorefrontTestCase
         });
 
         // Then
-        $browser->assertStatus(409);
+        $browser->assertRedirectedToRoute('storefront_signin_identify')
+            ->assertSeeIn('[data-testid="flash-error"]', 'reset_flash_not_authenticatable');
     }
 }

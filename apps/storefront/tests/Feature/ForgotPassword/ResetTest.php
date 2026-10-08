@@ -71,23 +71,21 @@ final class ResetTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    public function itRefusesSamePassword(): void
+    public function itRejectsSuspendedAccount(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmed()->withPassword()->passwordResetRequested()->create();
+        $account = $this->account()->confirmed()->suspended()->withPassword()->passwordResetRequested()->create();
 
         $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
 
         // When
         $browser->use(function (ResetForm $reset): void {
-            $reset->fillCode($this->verificationCode())->fillNewPassword(PasswordCredentialBuilder::sample('password')->value)->submit();
+            $reset->fillCode($this->verificationCode())->fillNewPassword('Flamingo-73-Juniper!')->submit();
         });
 
         // Then
-        $browser->use(static function (ResetForm $reset): void {
-            $reset->assertSamePasswordError();
-        });
+        $browser->assertSeeIn('[data-testid="flash-error"]', 'reset_flash_not_authenticatable');
     }
 
     #[Test]
@@ -137,21 +135,23 @@ final class ResetTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    public function itRejectsSuspendedAccount(): void
+    public function itRefusesSamePassword(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmed()->suspended()->withPassword()->passwordResetRequested()->create();
+        $account = $this->account()->confirmed()->withPassword()->passwordResetRequested()->create();
 
         $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
 
         // When
         $browser->use(function (ResetForm $reset): void {
-            $reset->fillCode($this->verificationCode())->fillNewPassword('Flamingo-73-Juniper!')->submit();
+            $reset->fillCode($this->verificationCode())->fillNewPassword(PasswordCredentialBuilder::sample('password')->value)->submit();
         });
 
         // Then
-        $browser->assertSeeIn('[data-testid="flash-error"]', 'reset_flash_not_authenticatable');
+        $browser->use(static function (ResetForm $reset): void {
+            $reset->assertSamePasswordError();
+        });
     }
 
     #[Test]
@@ -162,6 +162,7 @@ final class ResetTest extends AbstractStorefrontTestCase
         $account = $this->account()->confirmed()->withPassword()->passwordResetRequested()->create();
 
         $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
+        $this->advanceClock('+4 days');
 
         // When
         $browser->use(static function (ResetForm $reset): void {
@@ -188,6 +189,6 @@ final class ResetTest extends AbstractStorefrontTestCase
 
         // Then
         $browser->assertRedirectedToRoute('storefront_forgot_password_reset', ['identityId' => $account->id])
-            ->assertSeeIn('[data-testid="flash-error"]', 'flash_failed');
+            ->assertSeeIn('[data-testid="flash-error"]', 'flash_invalid_csrf_token');
     }
 }

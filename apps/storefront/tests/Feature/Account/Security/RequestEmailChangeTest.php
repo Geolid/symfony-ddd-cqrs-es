@@ -49,6 +49,7 @@ final class RequestEmailChangeTest extends AbstractStorefrontTestCase
 
         // Then
         $browser->assertRedirectedToRoute('storefront_account_security_change_email');
+        $this->assertEmailSent(1, $newEmail, 'Confirm your new email address');
     }
 
     #[Test]

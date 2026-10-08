@@ -11,6 +11,8 @@ use Storefront\Tests\Support\Builder\AccountBuilder;
 use Support\TestCase\EventSourcingTrait;
 use Support\TestCase\ServiceLocatorTrait;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
+use Symfony\Component\Clock\Clock;
+use Symfony\Component\Clock\MockClock;
 use Symfony\Component\HttpKernel\KernelInterface;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Zenstruck\Browser\Test\HasBrowser;
@@ -65,16 +67,20 @@ abstract class AbstractStorefrontTestCase extends WebTestCase
         return $this->service(UrlGeneratorInterface::class)->generate($route, $params);
     }
 
-    protected function assertEmailSent(int $totalCount, string $recipient, string $subject): void
+    protected function assertEmailSent(int $count, string $recipient, string $subject): void
     {
         $this->mailer()
-            ->assertSentEmailCount($totalCount)
-            ->sentEmails()->whereTo($recipient)->last()
-            ->assertSubject($subject);
+            ->sentEmails()->whereTo($recipient)->whereSubject($subject)
+            ->assertCount($count);
     }
 
     protected function account(): AccountBuilder
     {
         return new AccountBuilder(service: $this->service(...), store: $this->store(...));
+    }
+
+    protected function advanceClock(string $modifier): void
+    {
+        Clock::set(new MockClock(Clock::get()->now()->modify($modifier)));
     }
 }

@@ -117,6 +117,10 @@
         <source>enroll_totp_flash_invalid_code</source>
         <target>Invalid code.</target>
       </trans-unit>
+      <trans-unit id="enroll_totp_flash_already_enrolled">
+        <source>enroll_totp_flash_already_enrolled</source>
+        <target>Two-factor authentication is already enabled.</target>
+      </trans-unit>
       <trans-unit id="enroll_totp_flash_enrolled">
         <source>enroll_totp_flash_enrolled</source>
         <target>Two-factor authentication enabled.</target>

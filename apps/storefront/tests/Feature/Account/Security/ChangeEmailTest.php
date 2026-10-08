@@ -4,10 +4,13 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\Account\Security;
 
+use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\Account\Security\Component\ChangeEmailForm;
 use Storefront\Tests\Feature\Account\Security\Component\RequestEmailChangeForm;
+use Storefront\Tests\Feature\Registration\Component\RegisterForm;
+use Storefront\Tests\Feature\SignIn\Component\IdentifyForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
 use Storefront\Tests\Support\VerificationCodeTrait;
 
@@ -84,6 +87,7 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
         $browser->use(static function (RequestEmailChangeForm $requestEmailChangeForm) use ($newEmail): void {
             $requestEmailChangeForm->fillNewEmail($newEmail)->submit();
         });
+        $this->advanceClock('+2 minutes');
 
         // When
         $browser->use(static function (ChangeEmailForm $form): void {
@@ -115,7 +119,43 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
 
         // Then
         $browser->assertRedirectedToRoute('storefront_account_security_change_email')
-            ->assertSeeIn('[data-testid="flash-error"]', 'flash_failed');
+            ->assertSeeIn('[data-testid="flash-error"]', 'flash_invalid_csrf_token');
+    }
+
+    #[Test]
+    public function itRefusesResendWhenEmailAlreadyInUse(): void
+    {
+        // Given
+        $browser = $this->activeBrowser();
+        $account = $this->account()->confirmed()->withPassword()->create();
+        $browser->signInAs($account->email, $account->password());
+
+        $targetEmail = IdentityBuilder::sample('email')->value;
+        $browser->visitRoute('storefront_account_security_request_email_change');
+        $browser->use(static function (RequestEmailChangeForm $requestEmailChangeForm) use ($targetEmail): void {
+            $requestEmailChangeForm->fillNewEmail($targetEmail)->submit();
+        });
+
+        $browser->visitRoute('storefront_signin_identify');
+        $browser->use(static function (IdentifyForm $identify) use ($targetEmail): void {
+            $identify->fillEmail($targetEmail)->submit();
+        });
+        $browser->click('[data-testid="create-account-button"]');
+        $browser->use(static function (RegisterForm $register): void {
+            $register->fillFullName(IdentityBuilder::sample('fullName')->value)
+                ->fillPassword(PasswordCredentialBuilder::sample('password')->value)
+                ->submit();
+        });
+        $browser->interceptRedirects();
+
+        // When
+        $browser->use(static function (ChangeEmailForm $form): void {
+            $form->clickResend();
+        });
+
+        // Then
+        $browser->assertRedirectedToRoute('storefront_account_security_request_email_change')
+            ->assertSeeIn('[data-testid="flash-error"]', 'change_email_error_already_in_use');
     }
 
     #[Test]

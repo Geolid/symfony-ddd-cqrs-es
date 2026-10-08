@@ -49,6 +49,11 @@ final readonly class AccountBuilder
         return clone ($this, ['identityBuilder' => $this->identityBuilder->confirmationRequested()]);
     }
 
+    public function erased(): self
+    {
+        return clone ($this, ['identityBuilder' => $this->identityBuilder->erasureRequested()->erased()]);
+    }
+
     public function withPassword(): self
     {
         $hasher = ($this->service)(PasswordHasherInterface::class);
