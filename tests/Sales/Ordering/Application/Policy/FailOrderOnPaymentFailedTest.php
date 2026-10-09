@@ -10,7 +10,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\OrderStatus;
 use Sales\Ordering\Application\Policy\FailOrderOnPaymentFailed;
-use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
+use Sales\Tests\Ordering\Support\Factory\OrderFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -20,7 +20,7 @@ final class FailOrderOnPaymentFailedTest extends AbstractIntegrationTestCase
     public function itFails(): void
     {
         // Given
-        $order = OrderBuilder::new()->prepared()->create();
+        $order = OrderFactory::new()->prepared()->create();
         $this->store($order);
 
         // When

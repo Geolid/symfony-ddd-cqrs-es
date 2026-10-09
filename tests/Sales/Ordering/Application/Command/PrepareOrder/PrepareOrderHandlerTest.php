@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Sales\Tests\Ordering\Application\Command\PrepareOrder;
 
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\Command\PrepareOrder\PrepareOrder;
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\OrderStatus;
 use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
-use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
+use Sales\Tests\Ordering\Support\Factory\OrderFactory;
+use Sales\Tests\Ordering\Support\Factory\OrderIdFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class PrepareOrderHandlerTest extends AbstractIntegrationTestCase
@@ -28,7 +28,7 @@ final class PrepareOrderHandlerTest extends AbstractIntegrationTestCase
     public function itPreparesWhenConfirmed(): void
     {
         // Given
-        $order = OrderBuilder::new()->create();
+        $order = OrderFactory::new()->create();
         $this->store($order);
 
         // When
@@ -44,7 +44,7 @@ final class PrepareOrderHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenNotConfirmed(): void
     {
         // Given
-        $order = OrderBuilder::new()->create();
+        $order = OrderFactory::new()->create();
         $this->store($order);
 
         // When
@@ -58,7 +58,7 @@ final class PrepareOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = Uuid::uuid7()->toString();
+        $id = OrderIdFactory::new()->create()->toString();
 
         // Then
         $this->expectException(OrderNotFoundException::class);

@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Sales\Tests\Ordering\Application\Command\FailOrder;
 
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\Command\FailOrder\FailOrder;
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\OrderStatus;
 use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
-use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
+use Sales\Tests\Ordering\Support\Factory\OrderFactory;
+use Sales\Tests\Ordering\Support\Factory\OrderIdFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class FailOrderHandlerTest extends AbstractIntegrationTestCase
@@ -28,7 +28,7 @@ final class FailOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenConfirmed(): void
     {
         // Given
-        $order = OrderBuilder::new()->create();
+        $order = OrderFactory::new()->create();
         $this->store($order);
 
         // When
@@ -43,7 +43,7 @@ final class FailOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenPrepared(): void
     {
         // Given
-        $order = OrderBuilder::new()->prepared()->create();
+        $order = OrderFactory::new()->prepared()->create();
         $this->store($order);
 
         // When
@@ -58,7 +58,7 @@ final class FailOrderHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyFailed(): void
     {
         // Given
-        $order = OrderBuilder::new()->failed()->create();
+        $order = OrderFactory::new()->failed()->create();
         $this->store($order);
 
         // When
@@ -72,7 +72,7 @@ final class FailOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = Uuid::uuid7()->toString();
+        $id = OrderIdFactory::new()->create()->toString();
 
         // Then
         $this->expectException(OrderNotFoundException::class);

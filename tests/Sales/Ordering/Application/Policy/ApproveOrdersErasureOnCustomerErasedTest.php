@@ -9,7 +9,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\Policy\ApproveOrdersErasureOnCustomerErased;
-use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
+use Sales\Tests\Ordering\Support\Factory\OrderFactory;
 use Shared\Application\ErasureStatus;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
@@ -20,9 +20,9 @@ final class ApproveOrdersErasureOnCustomerErasedTest extends AbstractIntegration
     public function itApproves(): void
     {
         // Given
-        $other = OrderBuilder::new()->create();
+        $other = OrderFactory::new()->create();
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderBuilder::new()->withCustomerId($customerId)->create();
+        $order = OrderFactory::new()->withCustomerId($customerId)->create();
         $this->store($other, $order);
 
         // When
