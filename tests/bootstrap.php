@@ -15,8 +15,6 @@ UnitTestConfig::configure(faker: FoundryFaker::create());
 
 if ($_SERVER['APP_DEBUG']) {
     umask(0000);
-}
-
-if (!getenv('CI')) {
+} else {
     new Filesystem()->remove(__DIR__.'/../var/cache/test');
 }
