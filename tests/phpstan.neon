@@ -11,11 +11,12 @@ parameters:
     symfony:
         containerXmlPath: %currentWorkingDirectory%/var/cache/%env.APP_ENV%/Bootstrap_Kernel%env.APP_ENV_UCFIRST%DebugContainer.xml
 
+    faker:
+        providerClasses:
+            - Support\Faker\CountryCodeFakerProvider
+            - Support\Faker\CredentialFakerProvider
+
     ignoreErrors:
-        -
-            # CredentialFakerProvider methods are registered on the generator at runtime (FoundryFaker).
-            message: '#^Call to an undefined method Faker\\Generator::(apiKeySecret|totpSecret|backupCodes)\(\)\.$#'
-            identifier: method.notFound
         -
             # Same KernelTestCaseHelper indirection as above, reached from EventSourcingTrait::store().
             message: '#^Service "Patchlevel\\EventSourcing\\Repository\\RepositoryManager" is private\.$#'
