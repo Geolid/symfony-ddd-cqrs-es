@@ -22,7 +22,7 @@ use Zenstruck\Foundry\ObjectFactory;
 abstract class AbstractAggregateFactory extends ObjectFactory
 {
     /** @var \WeakMap<AggregateRoot, array<string, mixed>>|null */
-    private static ?\WeakMap $inputs = null;
+    private static ?\WeakMap $inputs = null; // @phpstan-ignore property.readOnlyByPhpDocDefaultValue
 
     /**
      * What the aggregate was built from: every attribute resolved for its creation, transitions' ones included.
@@ -50,6 +50,7 @@ abstract class AbstractAggregateFactory extends ObjectFactory
             throw new \LogicException('The aggregate root id is never read bare via sample() — call the id Value Object\'s own named factory (::fromString()/::forX()) directly instead.');
         }
 
+        /** @var array<string, mixed> $defaults */
         $defaults = self::new()->defaults();
 
         $value = \array_key_exists($name, $defaults) ? $defaults[$name] : throw new \OutOfBoundsException(\sprintf('"%s" is not an attribute of %s.', $name, static::class));
@@ -74,7 +75,16 @@ abstract class AbstractAggregateFactory extends ObjectFactory
     }
 
     /**
-     * @param array<string, mixed> $parameters
+     * @param callable(T, TInputs): mixed $transition
+     */
+    final protected function transition(callable $transition): static
+    {
+        /* @phpstan-ignore argument.type */
+        return $this->afterInstantiate($transition);
+    }
+
+    /**
+     * @param TInputs $parameters
      *
      * @return T
      */
@@ -83,7 +93,7 @@ abstract class AbstractAggregateFactory extends ObjectFactory
     protected function initialize(): static
     {
         return $this
-            ->instantiateWith(static fn (array $parameters): AggregateRoot => static::build($parameters))
+            ->instantiateWith(static fn (array $parameters): AggregateRoot => static::build($parameters)) // @phpstan-ignore argument.type
             ->afterInstantiate(static function (AggregateRoot $aggregate, array $parameters): void {
                 self::$inputs ??= new \WeakMap();
                 self::$inputs[$aggregate] = $parameters;

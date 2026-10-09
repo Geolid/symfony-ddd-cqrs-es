@@ -9,8 +9,6 @@ use Ramsey\Uuid\Uuid;
 use Zenstruck\Foundry\Object\Instantiator;
 use Zenstruck\Foundry\ObjectFactory;
 
-use function Zenstruck\Foundry\faker;
-
 /**
  * @extends ObjectFactory<IdentityId>
  */

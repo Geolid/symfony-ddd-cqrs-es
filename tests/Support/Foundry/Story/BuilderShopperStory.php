@@ -9,7 +9,9 @@ use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Shopping\Tests\Cart\Support\Builder\CartBuilder;
 use Zenstruck\Foundry\Attribute\AsFixture;
 
-/** SPIKE — same scenario as ShopperStory, composed from the existing test Builders (no Foundry factory). */
+/**
+ * SPIKE — same scenario as ShopperStory, composed from the existing test Builders (no Foundry factory).
+ */
 #[AsFixture(name: 'shoppers-builders', groups: ['demo'])]
 final class BuilderShopperStory extends AbstractAggregateStory
 {
@@ -17,7 +19,7 @@ final class BuilderShopperStory extends AbstractAggregateStory
     {
         $identity = IdentityFactory::new()->confirmed()->create();
         $customer = CustomerBuilder::new(['identityId' => $identity->id->toString()])->shippingAddressDefined()->create();
-        $cart = CartBuilder::new(['customerId' => (string) $customer->aggregateRootId()])->productAdded()->productAdded()->create();
+        $cart = CartBuilder::new(['customerId' => $customer->aggregateRootId()->toString()])->productAdded()->productAdded()->create();
 
         $this->persist($identity, $customer, $cart);
 

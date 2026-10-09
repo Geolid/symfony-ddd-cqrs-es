@@ -2,8 +2,8 @@
 
 declare(strict_types=1);
 
-use Symfony\Component\Dotenv\Dotenv;
 use Support\Foundry\FoundryFaker;
+use Symfony\Component\Dotenv\Dotenv;
 use Symfony\Component\Filesystem\Filesystem;
 use Zenstruck\Foundry\Test\UnitTestConfig;
 

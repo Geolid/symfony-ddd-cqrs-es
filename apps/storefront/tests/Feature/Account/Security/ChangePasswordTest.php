@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Storefront\Tests\Feature\Account\Security;
 
 use Iam\Tests\Support\Story\ConfirmedAccountStory;
-use Zenstruck\Foundry\Attribute\WithStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\Account\Security\Component\ChangePasswordForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
+use Zenstruck\Foundry\Attribute\WithStory;
 
 final class ChangePasswordTest extends AbstractStorefrontTestCase
 {

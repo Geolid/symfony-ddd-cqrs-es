@@ -6,7 +6,9 @@ namespace Iam\Tests\Support\Story;
 
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 
-/** Registered, confirmation code requested, never confirmed; no credential. */
+/**
+ * Registered, confirmation code requested, never confirmed; no credential.
+ */
 final class UnconfirmedRegistrationStory extends AbstractAccountStory
 {
     public function build(): void

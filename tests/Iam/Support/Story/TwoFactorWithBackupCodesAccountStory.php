@@ -8,7 +8,9 @@ use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeHasherInter
 use Iam\Tests\Authentication\Support\Factory\BackupCodeCredentialFactory;
 use Patchlevel\EventSourcing\Repository\RepositoryManager;
 
-/** The two-factor account, plus its backup codes. Builds on TwoFactorAccountStory. */
+/**
+ * The two-factor account, plus its backup codes. Builds on TwoFactorAccountStory.
+ */
 final class TwoFactorWithBackupCodesAccountStory extends AbstractAccountStory
 {
     public function __construct(

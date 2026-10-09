@@ -25,7 +25,7 @@ final class IdentityReactivatedPublisherTest extends AbstractIntegrationTestCase
         $event = $this->publishedEventOf(IdentityReactivatedIntegrationEvent::class);
         self::assertSame($identity->id->toString(), $event->identityId);
         self::assertSame(
-            $identity->reactivatedAt->format(\DateTimeInterface::ATOM),
+            $identity->reactivatedAt?->format(\DateTimeInterface::ATOM),
             $event->reactivatedAt->format(\DateTimeInterface::ATOM),
         );
     }

@@ -25,7 +25,7 @@ final class IdentityErasedPublisherTest extends AbstractIntegrationTestCase
         $event = $this->publishedEventOf(IdentityErasedIntegrationEvent::class);
         self::assertSame($identity->id->toString(), $event->identityId);
         self::assertSame(
-            $identity->erasedAt->format(\DateTimeInterface::ATOM),
+            $identity->erasedAt?->format(\DateTimeInterface::ATOM),
             $event->erasedAt->format(\DateTimeInterface::ATOM),
         );
     }

@@ -66,7 +66,7 @@ final class BackupCodeCredentialFactory extends AbstractAggregateFactory
         return $this->with(array_filter(
             ['regeneratedBackupCodes' => $plainBackupCodes, 'regeneratedAt' => $regeneratedAt],
             static fn (mixed $value): bool => null !== $value,
-        ))->afterInstantiate(
+        ))->transition(
             static function (BackupCodeCredential $credential, array $inputs): void {
                 $credential->regenerate($inputs['regeneratedBackupCodes'], self::hasherOf($inputs), $inputs['regeneratedAt']);
             },
@@ -78,7 +78,7 @@ final class BackupCodeCredentialFactory extends AbstractAggregateFactory
         return $this->with(array_filter(
             ['consumedBackupCode' => $plainCode, 'consumedAt' => $consumedAt],
             static fn (mixed $value): bool => null !== $value,
-        ))->afterInstantiate(
+        ))->transition(
             static function (BackupCodeCredential $credential, array $inputs): void {
                 $credential->consume($inputs['consumedBackupCode'], self::hasherOf($inputs), $inputs['consumedAt']);
             },
@@ -100,6 +100,8 @@ final class BackupCodeCredentialFactory extends AbstractAggregateFactory
     {
         // Both derive from the FINAL values, so a with([...]) override carries over.
         return parent::initialize()->beforeInstantiate(static function (array $parameters): array {
+            Assert::string($parameters['identityId']);
+            Assert::isNonEmptyList($parameters['plainBackupCodes']);
             $parameters['id'] ??= BackupCodeCredentialId::forIdentity($parameters['identityId']);
             $parameters['consumedBackupCode'] ??= $parameters['plainBackupCodes'][0];
 

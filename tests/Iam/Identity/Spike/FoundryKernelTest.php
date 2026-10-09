@@ -6,12 +6,14 @@ namespace Iam\Tests\Identity\Spike;
 
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\IdentityVerificationStatus;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\Foundry\CustomerFactory;
-use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
-/** SPIKE — throwaway. Same scenario as DbalIdentityFinderTest::itGetsById, built through Foundry. */
+/**
+ * SPIKE — throwaway. Same scenario as DbalIdentityFinderTest::itGetsById, built through Foundry.
+ */
 final class FoundryKernelTest extends AbstractIntegrationTestCase
 {
     #[Test]

@@ -8,7 +8,9 @@ use Iam\Authentication\Domain\TotpCredential\Service\TotpCipherInterface;
 use Iam\Tests\Authentication\Support\Factory\TotpCredentialFactory;
 use Patchlevel\EventSourcing\Repository\RepositoryManager;
 
-/** The confirmed account with a password, plus an enrolled TOTP. Builds on ConfirmedAccountStory. */
+/**
+ * The confirmed account with a password, plus an enrolled TOTP. Builds on ConfirmedAccountStory.
+ */
 final class TwoFactorAccountStory extends AbstractAccountStory
 {
     public function __construct(

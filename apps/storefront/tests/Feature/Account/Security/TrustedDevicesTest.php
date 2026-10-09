@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace Storefront\Tests\Feature\Account\Security;
 
 use Iam\Tests\Support\Story\TwoFactorAccountStory;
-use Zenstruck\Foundry\Attribute\WithStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
 use Symfony\Component\BrowserKit\AbstractBrowser;
+use Zenstruck\Foundry\Attribute\WithStory;
 
 final class TrustedDevicesTest extends AbstractStorefrontTestCase
 {

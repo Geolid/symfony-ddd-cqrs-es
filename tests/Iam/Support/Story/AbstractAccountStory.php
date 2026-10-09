@@ -15,7 +15,7 @@ abstract class AbstractAccountStory extends AbstractAggregateStory
 {
     final public static function account(): Account
     {
-        Assert::isInstanceOf($account = static::get('account'), Account::class);
+        Assert::isInstanceOf($account = self::get('account'), Account::class);
 
         return $account;
     }

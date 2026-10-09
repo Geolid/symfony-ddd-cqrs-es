@@ -158,8 +158,8 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($identity->id->toString());
         self::assertNotFalse($row);
         self::assertSame(IdentityModerationStatus::SUSPENDED->value, $row['moderation_status']);
-        self::assertSame($identity->suspensionReason->value, $row['reason']);
-        self::assertSame($identity->suspendedAt->format(self::DATE_FORMAT), $row['suspended_at']);
+        self::assertSame($identity->suspensionReason?->value, $row['reason']);
+        self::assertSame($identity->suspendedAt?->format(self::DATE_FORMAT), $row['suspended_at']);
         self::assertNull($row['reactivated_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
@@ -187,15 +187,15 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($identity->id->toString());
         self::assertNotFalse($row);
         self::assertSame(IdentityModerationStatus::ACTIVE->value, $row['moderation_status']);
-        self::assertSame($identity->reactivationReason->value, $row['reason']);
-        self::assertSame($identity->reactivatedAt->format(self::DATE_FORMAT), $row['reactivated_at']);
+        self::assertSame($identity->reactivationReason?->value, $row['reason']);
+        self::assertSame($identity->reactivatedAt?->format(self::DATE_FORMAT), $row['reactivated_at']);
         self::assertNull($row['suspended_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame(IdentityModerationStatus::SUSPENDED->value, $otherRow['moderation_status']);
-        self::assertSame($other->suspensionReason->value, $otherRow['reason']);
-        self::assertSame($other->suspendedAt->format(self::DATE_FORMAT), $otherRow['suspended_at']);
+        self::assertSame($other->suspensionReason?->value, $otherRow['reason']);
+        self::assertSame($other->suspendedAt?->format(self::DATE_FORMAT), $otherRow['suspended_at']);
         self::assertNull($otherRow['reactivated_at']);
     }
 

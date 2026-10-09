@@ -17,12 +17,14 @@ use function Zenstruck\Foundry\faker;
 /**
  * SPIKE — throwaway.
  *
- * @extends AbstractAggregateFactory<Cart, array<string, mixed>>
+ * @phpstan-type Inputs = array{id: CartId, customerId: string, startedAt: \DateTimeImmutable}
+ *
+ * @extends AbstractAggregateFactory<Cart, Inputs>
  */
 final class CartFactory extends AbstractAggregateFactory
 {
     /** @var list<string> factory-local state, carried over by Foundry's clone-per-call */
-    private array $addedProductIds = [];
+    private array $addedProductIds = []; // @phpstan-ignore property.readOnlyByPhpDocDefaultValue
 
     public static function class(): string
     {
@@ -35,9 +37,9 @@ final class CartFactory extends AbstractAggregateFactory
         $quantity ??= Quantity::of(faker()->numberBetween(1, 5));
 
         $factory = clone $this;
-        $factory->addedProductIds[] = $productId;
+        $factory->addedProductIds[] = $productId; // @phpstan-ignore property.readOnlyByPhpDocAssignNotInConstructor
 
-        return $factory->afterInstantiate(
+        return $factory->transition(
             static fn (Cart $cart) => $cart->addProduct($productId, $quantity, Clock::get()->now()->modify('+1 minute')),
         );
     }
@@ -47,7 +49,7 @@ final class CartFactory extends AbstractAggregateFactory
         $productId ??= array_last($this->addedProductIds);
         Assert::string($productId);
 
-        return $this->afterInstantiate(
+        return $this->transition(
             static fn (Cart $cart) => $cart->removeProduct($productId, Clock::get()->now()->modify('+2 minutes')),
         );
     }

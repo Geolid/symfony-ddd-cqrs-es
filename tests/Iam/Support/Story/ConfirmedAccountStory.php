@@ -10,7 +10,9 @@ use Iam\Tests\Authentication\Support\Factory\PasswordCredentialFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Patchlevel\EventSourcing\Repository\RepositoryManager;
 
-/** A confirmed identity that can sign in with a password. */
+/**
+ * A confirmed identity that can sign in with a password.
+ */
 final class ConfirmedAccountStory extends AbstractAccountStory
 {
     public function __construct(

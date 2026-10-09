@@ -10,7 +10,9 @@ use Iam\Tests\Authentication\Support\Factory\PasswordCredentialFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Patchlevel\EventSourcing\Repository\RepositoryManager;
 
-/** A confirmed identity with a password, which asked for a reset it has not used yet. */
+/**
+ * A confirmed identity with a password, which asked for a reset it has not used yet.
+ */
 final class PasswordResetRequestedAccountStory extends AbstractAccountStory
 {
     public function __construct(

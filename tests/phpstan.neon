@@ -13,14 +13,6 @@ parameters:
 
     ignoreErrors:
         -
-            # KernelTestCaseHelper reaches the container via KernelTestCase::getContainer(), which grants
-            # private-service access at runtime just like `test.service_container` does — but the
-            # extension only recognises that literal id, not this indirection.
-            message: '#^Service "Patchlevel\\EventSourcing\\Store\\InMemoryStore" is private\.$#'
-            identifier: symfonyContainer.privateService
-            paths:
-                - '**/ResetStateOnPreparationStarted.php'
-        -
             # Same KernelTestCaseHelper indirection as above, reached from EventSourcingTrait::store().
             message: '#^Service "Patchlevel\\EventSourcing\\Repository\\RepositoryManager" is private\.$#'
             identifier: symfonyContainer.privateService

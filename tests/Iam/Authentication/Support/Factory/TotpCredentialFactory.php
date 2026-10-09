@@ -60,7 +60,7 @@ final class TotpCredentialFactory extends AbstractAggregateFactory
 
     public function unenrolled(?\DateTimeImmutable $unenrolledAt = null): self
     {
-        return $this->with(array_filter(['unenrolledAt' => $unenrolledAt]))->afterInstantiate(
+        return $this->with(array_filter(['unenrolledAt' => $unenrolledAt]))->transition(
             static function (TotpCredential $credential, array $inputs): void {
                 $credential->unenroll($inputs['identityId'], $inputs['unenrolledAt']);
             },

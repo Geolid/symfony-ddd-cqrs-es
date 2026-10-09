@@ -82,7 +82,7 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
         $this->store($identity);
 
         // When
-        $this->dispatch(new SuspendIdentity($identity->id->toString(), $identity->suspensionReason->value));
+        $this->dispatch(new SuspendIdentity($identity->id->toString(), IdentityFactory::inputs($identity)['reason']->value));
 
         // Then
         self::expectNotToPerformAssertions();

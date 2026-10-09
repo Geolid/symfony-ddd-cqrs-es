@@ -31,8 +31,10 @@ final class FoundryStoryTest extends AbstractIntegrationTestCase
         $cart = ShopperStory::get('cart');
 
         self::assertInstanceOf(Identity::class, $identity);
+        self::assertInstanceOf(Customer::class, $customer);
+        self::assertInstanceOf(Cart::class, $cart);
         self::assertCount(1, ShopperStory::getPool('identities'));
-        self::assertTrue($repositories->get(Customer::class)->load($customer->aggregateRootId())->aggregateRootId()->equals(CustomerId::forIdentity($identity->id->toString())));
+        self::assertSame(CustomerId::forIdentity($identity->id->toString())->toString(), $repositories->get(Customer::class)->load($customer->aggregateRootId())->aggregateRootId()->toString());
         self::assertInstanceOf(Cart::class, $repositories->get(Cart::class)->load($cart->aggregateRootId()));
     }
 

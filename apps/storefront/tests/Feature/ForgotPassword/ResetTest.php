@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\ForgotPassword;
 
-use Iam\Tests\Support\Story\PasswordResetRequestedAccountStory;
-use Zenstruck\Foundry\Attribute\WithStory;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
+use Iam\Tests\Support\Story\PasswordResetRequestedAccountStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\ForgotPassword\Component\ResetForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
 use Storefront\Tests\Support\VerificationCodeTrait;
+use Zenstruck\Foundry\Attribute\WithStory;
 
 final class ResetTest extends AbstractStorefrontTestCase
 {

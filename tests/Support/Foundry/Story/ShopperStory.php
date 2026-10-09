@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Support\Foundry\Story;
 
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Support\Foundry\CartFactory;
 use Support\Foundry\CustomerFactory;
-use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Zenstruck\Foundry\Attribute\AsFixture;
 
-/** SPIKE — Identity (Iam) → Customer (Crm) → Cart (Shopping), linked by ids across three BCs. */
+/**
+ * SPIKE — Identity (Iam) → Customer (Crm) → Cart (Shopping), linked by ids across three BCs.
+ */
 #[AsFixture(name: 'shoppers', groups: ['demo'])]
 final class ShopperStory extends AbstractAggregateStory
 {

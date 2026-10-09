@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Storefront\Tests\Feature\Registration;
 
 use Iam\Tests\Support\Story\UnconfirmedRegistrationStory;
-use Zenstruck\Foundry\Attribute\WithStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\Registration\Component\ConfirmForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
 use Storefront\Tests\Support\VerificationCodeTrait;
+use Zenstruck\Foundry\Attribute\WithStory;
 
 final class ConfirmTest extends AbstractStorefrontTestCase
 {

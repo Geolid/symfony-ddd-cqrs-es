@@ -65,28 +65,28 @@ final class IdentityFactory extends AbstractAggregateFactory
 
     public function confirmed(?string $confirmationCode = null, ?\DateTimeImmutable $confirmedAt = null): self
     {
-        return $this->with(array_filter(['confirmationCode' => $confirmationCode, 'confirmedAt' => $confirmedAt]))->afterInstantiate(
+        return $this->with(array_filter(['confirmationCode' => $confirmationCode, 'confirmedAt' => $confirmedAt]))->transition(
             static fn (Identity $identity, array $inputs) => $identity->confirm($inputs['confirmationCode'], new FakeCodeChallenger(), $inputs['confirmedAt']),
         );
     }
 
     public function fullNameChanged(string $newFullName, ?\DateTimeImmutable $fullNameChangedAt = null): self
     {
-        return $this->with(array_filter(['fullNameChangedAt' => $fullNameChangedAt]))->afterInstantiate(
+        return $this->with(array_filter(['fullNameChangedAt' => $fullNameChangedAt]))->transition(
             static fn (Identity $identity, array $inputs) => $identity->changeFullName(FullName::fromString($newFullName), $inputs['fullNameChangedAt']),
         );
     }
 
     public function emailChangeRequested(string $newEmail, ?\DateTimeImmutable $requestedAt = null): self
     {
-        return $this->with(array_filter(['emailChangeRequestedAt' => $requestedAt]))->afterInstantiate(
+        return $this->with(array_filter(['emailChangeRequestedAt' => $requestedAt]))->transition(
             static fn (Identity $identity, array $inputs) => $identity->requestEmailChange(Email::fromString($newEmail), $inputs['emailChangeRequestedAt']),
         );
     }
 
     public function emailChanged(string $newEmail, ?\DateTimeImmutable $changedAt = null): self
     {
-        return $this->with(array_filter(['emailChangedAt' => $changedAt]))->afterInstantiate(
+        return $this->with(array_filter(['emailChangedAt' => $changedAt]))->transition(
             static fn (Identity $identity, array $inputs) => $identity->changeEmail(FakeCodeChallenger::CODE, new FakeCodeChallenger(), Email::fromString($newEmail), $inputs['emailChangedAt']),
         );
     }
@@ -96,7 +96,7 @@ final class IdentityFactory extends AbstractAggregateFactory
         return $this->with(array_filter([
             'reason' => null !== $reason ? Reason::fromString($reason) : null,
             'suspendedAt' => $suspendedAt,
-        ]))->afterInstantiate(
+        ]))->transition(
             static fn (Identity $identity, array $inputs) => $identity->suspend($inputs['reason'], $inputs['suspendedAt']),
         );
     }
@@ -106,35 +106,35 @@ final class IdentityFactory extends AbstractAggregateFactory
         return $this->with(array_filter([
             'reason' => null !== $reason ? Reason::fromString($reason) : null,
             'reactivatedAt' => $reactivatedAt,
-        ]))->afterInstantiate(
+        ]))->transition(
             static fn (Identity $identity, array $inputs) => $identity->reactivate($inputs['reason'], $inputs['reactivatedAt']),
         );
     }
 
     public function confirmationRequested(?\DateTimeImmutable $requestedAt = null): self
     {
-        return $this->with(array_filter(['confirmationRequestedAt' => $requestedAt]))->afterInstantiate(
+        return $this->with(array_filter(['confirmationRequestedAt' => $requestedAt]))->transition(
             static fn (Identity $identity, array $inputs) => $identity->requestConfirmation($inputs['confirmationRequestedAt']),
         );
     }
 
     public function erasureRequested(?\DateTimeImmutable $requestedAt = null): self
     {
-        return $this->with(array_filter(['requestedAt' => $requestedAt]))->afterInstantiate(
+        return $this->with(array_filter(['requestedAt' => $requestedAt]))->transition(
             static fn (Identity $identity, array $inputs) => $identity->requestErasure($inputs['requestedAt']),
         );
     }
 
     public function erasureCancelled(?\DateTimeImmutable $cancelledAt = null): self
     {
-        return $this->with(array_filter(['cancelledAt' => $cancelledAt]))->afterInstantiate(
+        return $this->with(array_filter(['cancelledAt' => $cancelledAt]))->transition(
             static fn (Identity $identity, array $inputs) => $identity->cancelErasure($inputs['cancelledAt']),
         );
     }
 
     public function erased(?\DateTimeImmutable $erasedAt = null): self
     {
-        return $this->with(array_filter(['erasedAt' => $erasedAt]))->afterInstantiate(
+        return $this->with(array_filter(['erasedAt' => $erasedAt]))->transition(
             static fn (Identity $identity, array $inputs) => $identity->erase($inputs['erasedAt']),
         );
     }

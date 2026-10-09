@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Spike;
 
 use Iam\Identity\Domain\Identity;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 
 use function Zenstruck\Foundry\faker;
 
@@ -22,7 +22,7 @@ final class FoundrySpikeTest extends TestCase
         $identity = IdentityFactory::new()->create();
 
         self::assertInstanceOf(Identity::class, $identity);
-        self::assertTrue($identity->aggregateRootId()->equals(IdentityFactory::inputs($identity)['id']));
+        self::assertSame(IdentityFactory::inputs($identity)['id']->toString(), $identity->aggregateRootId()->toString());
     }
 
     #[Test]

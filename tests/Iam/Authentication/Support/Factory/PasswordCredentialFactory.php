@@ -70,7 +70,7 @@ final class PasswordCredentialFactory extends AbstractAggregateFactory
         ?PasswordHasherInterface $hasher = null,
         ?\DateTimeImmutable $changedAt = null,
     ): self {
-        return $this->with(array_filter(['passwordStrength' => $passwordStrength, 'hasher' => $hasher, 'changedAt' => $changedAt]))->afterInstantiate(
+        return $this->with(array_filter(['passwordStrength' => $passwordStrength, 'hasher' => $hasher, 'changedAt' => $changedAt]))->transition(
             static fn (PasswordCredential $credential, array $inputs) => $credential->change(
                 $inputs['password']->value,
                 Password::fromString($newPassword),
@@ -83,7 +83,7 @@ final class PasswordCredentialFactory extends AbstractAggregateFactory
 
     public function resetRequested(?\DateTimeImmutable $requestedAt = null): self
     {
-        return $this->with(array_filter(['requestedAt' => $requestedAt]))->afterInstantiate(
+        return $this->with(array_filter(['requestedAt' => $requestedAt]))->transition(
             static fn (PasswordCredential $credential, array $inputs) => $credential->requestReset($inputs['requestedAt']),
         );
     }
@@ -94,7 +94,7 @@ final class PasswordCredentialFactory extends AbstractAggregateFactory
         ?PasswordHasherInterface $hasher = null,
         ?\DateTimeImmutable $resetAt = null,
     ): self {
-        return $this->with(array_filter(['passwordStrength' => $passwordStrength, 'hasher' => $hasher, 'resetAt' => $resetAt]))->afterInstantiate(
+        return $this->with(array_filter(['passwordStrength' => $passwordStrength, 'hasher' => $hasher, 'resetAt' => $resetAt]))->transition(
             static fn (PasswordCredential $credential, array $inputs) => $credential->resetPassword(
                 FakeCodeChallenger::CODE,
                 new FakeCodeChallenger(),
@@ -108,7 +108,7 @@ final class PasswordCredentialFactory extends AbstractAggregateFactory
 
     public function rehashed(string $plainPassword, ?PasswordHasherInterface $hasher = null, ?\DateTimeImmutable $rehashedAt = null): self
     {
-        return $this->with(array_filter(['hasher' => $hasher, 'rehashedAt' => $rehashedAt]))->afterInstantiate(
+        return $this->with(array_filter(['hasher' => $hasher, 'rehashedAt' => $rehashedAt]))->transition(
             static fn (PasswordCredential $credential, array $inputs) => $credential->rehash($plainPassword, self::hasherOf($inputs), $inputs['rehashedAt']),
         );
     }
@@ -129,6 +129,7 @@ final class PasswordCredentialFactory extends AbstractAggregateFactory
     {
         // The id derives from the FINAL identityId, so a with(['identityId' => ...]) override carries over.
         return parent::initialize()->beforeInstantiate(static function (array $parameters): array {
+            Assert::string($parameters['identityId']);
             $parameters['id'] ??= PasswordCredentialId::forIdentity($parameters['identityId']);
 
             return $parameters;

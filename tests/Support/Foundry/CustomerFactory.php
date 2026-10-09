@@ -11,13 +11,22 @@ use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 use Symfony\Component\Clock\Clock;
+use Webmozart\Assert\Assert;
 
 use function Zenstruck\Foundry\faker;
 
 /**
  * SPIKE — throwaway.
  *
- * @extends AbstractAggregateFactory<Customer, array<string, mixed>>
+ * @phpstan-type Inputs = array{
+ *     id: CustomerId,
+ *     identityId: string,
+ *     registeredAt: \DateTimeImmutable,
+ *     shippingAddress: PostalAddress,
+ *     shippingAddressDefinedAt: \DateTimeImmutable,
+ * }
+ *
+ * @extends AbstractAggregateFactory<Customer, Inputs>
  */
 final class CustomerFactory extends AbstractAggregateFactory
 {
@@ -33,7 +42,7 @@ final class CustomerFactory extends AbstractAggregateFactory
             static fn (mixed $value): bool => null !== $value,
         ));
 
-        return $factory->afterInstantiate(
+        return $factory->transition(
             static fn (Customer $customer, array $parameters) => $customer->defineShippingAddress($parameters['shippingAddress'], $parameters['shippingAddressDefinedAt']),
         );
     }
@@ -48,6 +57,7 @@ final class CustomerFactory extends AbstractAggregateFactory
         // id derives from the FINAL identityId, so a with(['identityId' => ...]) override carries over.
         return parent::initialize()->beforeInstantiate(
             static function (array $parameters): array {
+                Assert::string($parameters['identityId']);
                 $parameters['id'] ??= CustomerId::forIdentity($parameters['identityId']);
 
                 return $parameters;
