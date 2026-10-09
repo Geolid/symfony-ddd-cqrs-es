@@ -12,7 +12,7 @@ use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Exception\InvalidEmailChangeCodeException;
 use Iam\Identity\Domain\ValueObject\IdentityVerificationCodePurpose;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
@@ -43,16 +43,16 @@ final class ChangeEmailHandlerTest extends AbstractIntegrationTestCase
     public function itChanges(): void
     {
         // Given
-        $builder = IdentityBuilder::new();
-        $identity = $builder->create();
+        $factory = IdentityFactory::new();
+        $identity = $factory->create();
         $this->store($identity);
-        $oldEmail = $builder['email']->value;
+        $oldEmail = $identity->email->value;
         $this->uniqueness->claim(
             UniqueKey::for(IdentityUniqueKey::EMAIL),
             $oldEmail,
             $identity->id->toString(),
         );
-        $newEmail = IdentityBuilder::sample('email')->value;
+        $newEmail = IdentityFactory::sample('email')->value;
         $code = $this->codeChallenger->issue(VerificationCodeKey::for(IdentityVerificationCodePurpose::EMAIL_CHANGE, $identity->id->toString()), Clock::get()->now());
 
         // When
@@ -69,11 +69,11 @@ final class ChangeEmailHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenEmailAlreadyInUse(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->create();
+        $identity = IdentityFactory::new()->create();
         $this->store($identity);
         $code = $this->codeChallenger->issue(VerificationCodeKey::for(IdentityVerificationCodePurpose::EMAIL_CHANGE, $identity->id->toString()), Clock::get()->now());
 
-        $email = IdentityBuilder::sample('email')->value;
+        $email = IdentityFactory::sample('email')->value;
         $this->uniqueness->claim(
             UniqueKey::for(IdentityUniqueKey::EMAIL),
             $email,
@@ -98,14 +98,14 @@ final class ChangeEmailHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new ChangeEmail($id, IdentityBuilder::sample('email')->value, $code));
+        $this->dispatch(new ChangeEmail($id, IdentityFactory::sample('email')->value, $code));
     }
 
     #[Test]
     public function itFailsWhenErased(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->erasureRequested()->erased()->create();
+        $identity = IdentityFactory::new()->erasureRequested()->erased()->create();
         $this->store($identity);
         $code = $this->codeChallenger->issue(VerificationCodeKey::for(IdentityVerificationCodePurpose::EMAIL_CHANGE, $identity->id->toString()), Clock::get()->now());
 
@@ -113,14 +113,14 @@ final class ChangeEmailHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityAlreadyErasedException::class);
 
         // When
-        $this->dispatch(new ChangeEmail($identity->id->toString(), IdentityBuilder::sample('email')->value, $code));
+        $this->dispatch(new ChangeEmail($identity->id->toString(), IdentityFactory::sample('email')->value, $code));
     }
 
     #[Test]
     public function itFailsWhenCodeInvalid(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->create();
+        $identity = IdentityFactory::new()->create();
         $this->store($identity);
         $this->codeChallenger->issue(VerificationCodeKey::for(IdentityVerificationCodePurpose::EMAIL_CHANGE, $identity->id->toString()), Clock::get()->now());
 
@@ -128,6 +128,6 @@ final class ChangeEmailHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(InvalidEmailChangeCodeException::class);
 
         // When
-        $this->dispatch(new ChangeEmail($identity->id->toString(), IdentityBuilder::sample('email')->value, '000000'));
+        $this->dispatch(new ChangeEmail($identity->id->toString(), IdentityFactory::sample('email')->value, '000000'));
     }
 }

@@ -7,7 +7,7 @@ namespace Iam\Tests\Identity\Application\Policy;
 use Compliance\Erasing\Application\IntegrationEvent\ErasureRequested\ErasureRequestedIntegrationEvent;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Policy\RequestIdentityErasureOnErasureRequested;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\ErasureStatus;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -19,7 +19,7 @@ final class RequestIdentityErasureOnErasureRequestedTest extends AbstractIntegra
     public function itRequests(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->create();
+        $identity = IdentityFactory::new()->create();
         $this->store($identity);
 
         // When

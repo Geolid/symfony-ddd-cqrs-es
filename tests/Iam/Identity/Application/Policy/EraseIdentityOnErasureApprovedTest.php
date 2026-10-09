@@ -8,7 +8,7 @@ use Compliance\Erasing\Application\IntegrationEvent\ErasureApproved\ErasureAppro
 use Iam\Identity\Application\Finder\Identity\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Policy\EraseIdentityOnErasureApproved;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
@@ -19,7 +19,7 @@ final class EraseIdentityOnErasureApprovedTest extends AbstractIntegrationTestCa
     public function itErases(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->erasureRequested()->create();
+        $identity = IdentityFactory::new()->erasureRequested()->create();
         $this->store($identity);
 
         // Then

@@ -8,7 +8,7 @@ use Iam\Identity\Application\Command\ErasePendingIdentity\ErasePendingIdentity;
 use Iam\Identity\Application\Finder\Identity\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -30,7 +30,7 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $identity = IdentityBuilder::new()->withRegisteredAt($now->modify('-25 hours'))->create();
+        $identity = IdentityFactory::new()->withRegisteredAt($now->modify('-25 hours'))->create();
         $this->store($identity);
 
         // When
@@ -47,7 +47,7 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $identity = IdentityBuilder::new()->withRegisteredAt($now->modify('-25 hours'))->confirmed()->create();
+        $identity = IdentityFactory::new()->withRegisteredAt($now->modify('-25 hours'))->confirmed()->create();
         $this->store($identity);
 
         // When
@@ -63,7 +63,7 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $identity = IdentityBuilder::new()->withRegisteredAt($now->modify('-1 hour'))->create();
+        $identity = IdentityFactory::new()->withRegisteredAt($now->modify('-1 hour'))->create();
         $this->store($identity);
 
         // When
@@ -79,7 +79,7 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $identity = IdentityBuilder::new()
+        $identity = IdentityFactory::new()
             ->withRegisteredAt($now->modify('-25 hours'))
             ->erasureRequested()
             ->erased()

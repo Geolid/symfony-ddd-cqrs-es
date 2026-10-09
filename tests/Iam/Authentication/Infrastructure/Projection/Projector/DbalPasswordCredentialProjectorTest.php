@@ -11,7 +11,7 @@ use Iam\Authentication\Infrastructure\Projection\Projector\DbalPasswordCredentia
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakePasswordHasher;
 use Iam\Tests\Authentication\Support\Double\StubPasswordStrengthSpecification;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -158,7 +158,7 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
             ->create();
         $this->store($other);
 
-        $identity = IdentityBuilder::new()->erasureRequested()->erased()->create();
+        $identity = IdentityFactory::new()->erasureRequested()->erased()->create();
         $credential = PasswordCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withPasswordStrength($this->passwordStrength)

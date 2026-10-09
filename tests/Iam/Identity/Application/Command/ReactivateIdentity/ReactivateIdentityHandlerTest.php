@@ -9,7 +9,7 @@ use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\IdentityModerationStatus;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -21,11 +21,11 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itReactivates(): void
     {
         // Given
-        $reason = IdentityBuilder::sample('reason')->value;
+        $reason = IdentityFactory::sample('reason')->value;
         $now = Clock::get()->now();
 
-        $builder = IdentityBuilder::new()->confirmed()->suspended();
-        $identity = $builder->create();
+        $factory = IdentityFactory::new()->confirmed()->suspended();
+        $identity = $factory->create();
         $this->store($identity);
 
         // When
@@ -37,7 +37,7 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
         self::assertSame(IdentityModerationStatus::ACTIVE, $result->moderationStatus);
         self::assertSame($reason, $result->reason);
         self::assertSame(
-            $builder['registeredAt']->format(\DateTimeInterface::ATOM),
+            $identity->registeredAt->format(\DateTimeInterface::ATOM),
             $result->registeredAt->format(\DateTimeInterface::ATOM),
         );
         self::assertSame(
@@ -51,13 +51,13 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyActive(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->confirmed()->create();
+        $identity = IdentityFactory::new()->confirmed()->create();
         $this->store($identity);
 
         // When
         $this->dispatch(new ReactivateIdentity(
             $identity->id->toString(),
-            IdentityBuilder::sample('reason')->value,
+            IdentityFactory::sample('reason')->value,
         ));
 
         // Then
@@ -73,7 +73,7 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new ReactivateIdentity(
             Uuid::uuid7()->toString(),
-            IdentityBuilder::sample('reason')->value,
+            IdentityFactory::sample('reason')->value,
         ));
     }
 
@@ -81,7 +81,7 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenAlreadyErased(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->erasureRequested()->erased()->create();
+        $identity = IdentityFactory::new()->erasureRequested()->erased()->create();
         $this->store($identity);
 
         // Then
@@ -90,7 +90,7 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new ReactivateIdentity(
             $identity->id->toString(),
-            IdentityBuilder::sample('reason')->value,
+            IdentityFactory::sample('reason')->value,
         ));
     }
 }

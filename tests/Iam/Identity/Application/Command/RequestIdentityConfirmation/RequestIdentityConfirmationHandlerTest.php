@@ -11,7 +11,7 @@ use Iam\Identity\Domain\Exception\ConfirmationRequestedTooRecentlyException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyConfirmedException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -24,7 +24,7 @@ final class RequestIdentityConfirmationHandlerTest extends AbstractIntegrationTe
     {
         // Given
         $now = Clock::get()->now();
-        $identity = IdentityBuilder::new()->withRegisteredAt($now->modify('-1 hour'))->create();
+        $identity = IdentityFactory::new()->withRegisteredAt($now->modify('-1 hour'))->create();
         $this->store($identity);
 
         // When
@@ -53,7 +53,7 @@ final class RequestIdentityConfirmationHandlerTest extends AbstractIntegrationTe
     public function itFailsWhenAlreadyErased(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->erasureRequested()->erased()->create();
+        $identity = IdentityFactory::new()->erasureRequested()->erased()->create();
         $this->store($identity);
 
         // Then
@@ -67,7 +67,7 @@ final class RequestIdentityConfirmationHandlerTest extends AbstractIntegrationTe
     public function itFailsWhenAlreadyConfirmed(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->confirmed()->create();
+        $identity = IdentityFactory::new()->confirmed()->create();
         $this->store($identity);
 
         // Then
@@ -81,7 +81,7 @@ final class RequestIdentityConfirmationHandlerTest extends AbstractIntegrationTe
     public function itFailsWhenRequestedTooRecently(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->confirmationRequested()->create();
+        $identity = IdentityFactory::new()->confirmationRequested()->create();
         $this->store($identity);
 
         // Then

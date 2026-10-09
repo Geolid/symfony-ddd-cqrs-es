@@ -7,7 +7,7 @@ namespace Iam\Tests\Identity\Application\Policy;
 use Iam\Identity\Application\Policy\IssueConfirmationOnIdentityRegistered;
 use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Identity\Domain\ValueObject\IdentityId;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -23,9 +23,9 @@ final class IssueConfirmationOnIdentityRegisteredTest extends AbstractIntegratio
     {
         // Given
         $id = IdentityId::fromString(Uuid::uuid7()->toString());
-        $fullName = IdentityBuilder::sample('fullName');
-        $email = IdentityBuilder::sample('email');
-        $registeredAt = IdentityBuilder::sample('registeredAt');
+        $fullName = IdentityFactory::sample('fullName');
+        $email = IdentityFactory::sample('email');
+        $registeredAt = IdentityFactory::sample('registeredAt');
 
         // When
         $this->trigger(IssueConfirmationOnIdentityRegistered::class, new IdentityRegistered($id, $fullName, $email, $registeredAt));

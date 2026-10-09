@@ -8,7 +8,7 @@ use Iam\Identity\Application\Command\RegisterIdentity\Exception\IdentityEmailAlr
 use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\IdentityVerificationStatus;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -21,8 +21,8 @@ final class RegisterIdentityHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $id = Uuid::uuid7()->toString();
-        $fullName = IdentityBuilder::sample('fullName')->value;
-        $email = IdentityBuilder::sample('email')->value;
+        $fullName = IdentityFactory::sample('fullName')->value;
+        $email = IdentityFactory::sample('email')->value;
         $now = Clock::get()->now();
 
         // When
@@ -47,10 +47,10 @@ final class RegisterIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenEmailAlreadyInUse(): void
     {
         // Given
-        $email = IdentityBuilder::sample('email')->value;
+        $email = IdentityFactory::sample('email')->value;
         $this->dispatch(new RegisterIdentity(
             Uuid::uuid7()->toString(),
-            IdentityBuilder::sample('fullName')->value,
+            IdentityFactory::sample('fullName')->value,
             $email,
         ));
 
@@ -60,7 +60,7 @@ final class RegisterIdentityHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new RegisterIdentity(
             Uuid::uuid7()->toString(),
-            IdentityBuilder::sample('fullName')->value,
+            IdentityFactory::sample('fullName')->value,
             $email,
         ));
     }

@@ -11,13 +11,13 @@ use Iam\Authentication\Domain\TotpCredential\Service\TotpCipherInterface;
 use Iam\Tests\Authentication\Support\Builder\BackupCodeCredentialBuilder;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Authentication\Support\Builder\TotpCredentialBuilder;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Webmozart\Assert\Assert;
 
 final readonly class AccountBuilder
 {
-    private IdentityBuilder $identityBuilder;
+    private IdentityFactory $identityFactory;
 
     /**
      * @param \Closure(class-string): object   $service resolves a service by class-string, same contract as ServiceLocatorTrait::service()
@@ -26,32 +26,32 @@ final readonly class AccountBuilder
     public function __construct(
         private \Closure $service,
         private \Closure $store,
-        ?IdentityBuilder $identityBuilder = null,
+        ?IdentityFactory $identityFactory = null,
         private ?PasswordCredentialBuilder $passwordBuilder = null,
         private ?TotpCredentialBuilder $totpBuilder = null,
         private ?BackupCodeCredentialBuilder $backupCodeBuilder = null,
     ) {
-        $this->identityBuilder = $identityBuilder ?? IdentityBuilder::new();
+        $this->identityFactory = $identityFactory ?? IdentityFactory::new();
     }
 
     public function confirmed(): self
     {
-        return clone ($this, ['identityBuilder' => $this->identityBuilder->confirmed()]);
+        return clone ($this, ['identityFactory' => $this->identityFactory->confirmed()]);
     }
 
     public function suspended(): self
     {
-        return clone ($this, ['identityBuilder' => $this->identityBuilder->suspended()]);
+        return clone ($this, ['identityFactory' => $this->identityFactory->suspended()]);
     }
 
     public function confirmationRequested(): self
     {
-        return clone ($this, ['identityBuilder' => $this->identityBuilder->confirmationRequested()]);
+        return clone ($this, ['identityFactory' => $this->identityFactory->confirmationRequested()]);
     }
 
     public function erased(): self
     {
-        return clone ($this, ['identityBuilder' => $this->identityBuilder->erasureRequested()->erased()]);
+        return clone ($this, ['identityFactory' => $this->identityFactory->erasureRequested()->erased()]);
     }
 
     public function withPassword(): self
@@ -92,7 +92,7 @@ final readonly class AccountBuilder
 
     public function create(): Account
     {
-        $identity = $this->identityBuilder->create();
+        $identity = $this->identityFactory->create();
         $aggregates = [$identity];
 
         $password = null;
@@ -120,8 +120,8 @@ final readonly class AccountBuilder
 
         return new Account(
             $identity->id->toString(),
-            $this->identityBuilder['email']->value,
-            $this->identityBuilder['fullName']->value,
+            $identity->email->value,
+            $identity->fullName->value,
             $password,
             $totpSecret,
             $plainBackupCodes,

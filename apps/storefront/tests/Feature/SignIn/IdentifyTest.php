@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\SignIn;
 
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\SignIn\Component\IdentifyForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
@@ -33,7 +33,7 @@ final class IdentifyTest extends AbstractStorefrontTestCase
 
         // When
         $browser->use(static function (IdentifyForm $identify): void {
-            $identify->fillEmail(IdentityBuilder::sample('email')->value)->submit();
+            $identify->fillEmail(IdentityFactory::sample('email')->value)->submit();
         });
 
         // Then

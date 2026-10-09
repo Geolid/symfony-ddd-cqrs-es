@@ -8,7 +8,7 @@ use Iam\Identity\Application\IdentityUniqueKey;
 use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Infrastructure\Uniqueness\ReleaseEmailOnIdentityErased;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
@@ -32,7 +32,7 @@ final class ReleaseEmailOnIdentityErasedTest extends AbstractIntegrationTestCase
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
-        $email = IdentityBuilder::sample('email')->value;
+        $email = IdentityFactory::sample('email')->value;
         $this->uniqueness->claim(UniqueKey::for(IdentityUniqueKey::EMAIL), $email, $identityId);
 
         // When

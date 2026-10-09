@@ -7,7 +7,7 @@ namespace Iam\Tests\Authentication\Infrastructure\Projection\Projector;
 use Doctrine\DBAL\Connection;
 use Iam\Authentication\Infrastructure\Projection\Projector\DbalTrustedDeviceProjector;
 use Iam\Tests\Authentication\Support\Builder\TrustedDeviceBuilder;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -66,7 +66,7 @@ final class DbalTrustedDeviceProjectorTest extends AbstractIntegrationTestCase
         $other = TrustedDeviceBuilder::new()->create();
         $this->store($other);
 
-        $identity = IdentityBuilder::new()->erasureRequested()->erased()->create();
+        $identity = IdentityFactory::new()->erasureRequested()->erased()->create();
         $trustedDevice = TrustedDeviceBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->create();

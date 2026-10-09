@@ -6,7 +6,7 @@ namespace Iam\Tests\Identity\Infrastructure\Pii;
 
 use Iam\Identity\Domain\Event\IdentityReactivated;
 use Iam\Identity\Domain\Event\IdentitySuspended;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Patchlevel\EventSourcing\Serializer\EventSerializer;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use PHPUnit\Framework\Attributes\Test;
@@ -30,7 +30,7 @@ final class IdentityPiiErasureTest extends AbstractIntegrationTestCase
     public function itCryptoShredsSuspensionReasonOnErasure(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->confirmed()->suspended()->create();
+        $identity = IdentityFactory::new()->confirmed()->suspended()->create();
         $this->store($identity);
         $serialized = $this->serializedEventOf(
             IdentitySuspended::class,
@@ -50,7 +50,7 @@ final class IdentityPiiErasureTest extends AbstractIntegrationTestCase
     public function itCryptoShredsReactivationReasonOnErasure(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->confirmed()->suspended()->reactivated()->create();
+        $identity = IdentityFactory::new()->confirmed()->suspended()->reactivated()->create();
         $this->store($identity);
         $serialized = $this->serializedEventOf(
             IdentityReactivated::class,

@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Application\IntegrationEvent\IdentityRegistered;
 
 use Iam\Identity\Application\IntegrationEvent\IdentityRegistered\IdentityRegisteredIntegrationEvent;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -15,8 +15,8 @@ final class IdentityRegisteredPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $builder = IdentityBuilder::new();
-        $identity = $builder->create();
+        $factory = IdentityFactory::new();
+        $identity = $factory->create();
 
         // When
         $this->store($identity);
@@ -24,10 +24,10 @@ final class IdentityRegisteredPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(IdentityRegisteredIntegrationEvent::class);
         self::assertSame($identity->id->toString(), $event->identityId);
-        self::assertSame($builder['fullName']->value, $event->fullName);
-        self::assertSame($builder['email']->value, $event->email);
+        self::assertSame($identity->fullName->value, $event->fullName);
+        self::assertSame($identity->email->value, $event->email);
         self::assertSame(
-            $builder['registeredAt']->format(\DateTimeInterface::ATOM),
+            $identity->registeredAt->format(\DateTimeInterface::ATOM),
             $event->registeredAt->format(\DateTimeInterface::ATOM),
         );
     }

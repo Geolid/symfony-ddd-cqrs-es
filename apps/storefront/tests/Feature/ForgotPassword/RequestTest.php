@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\ForgotPassword;
 
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\ForgotPassword\Component\RequestForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
@@ -71,7 +71,7 @@ final class RequestTest extends AbstractStorefrontTestCase
 
         // When
         $browser->use(static function (RequestForm $request): void {
-            $request->fillEmail(IdentityBuilder::sample('email')->value)->submit();
+            $request->fillEmail(IdentityFactory::sample('email')->value)->submit();
         });
 
         // Then
