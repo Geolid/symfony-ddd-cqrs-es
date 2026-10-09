@@ -6,6 +6,7 @@
          failOnDeprecation="true"
          failOnNotice="true"
          failOnWarning="true"
+         displayDetailsOnAllIssues="true"
          bootstrap="tests/bootstrap.php"
          cacheDirectory="var/.phpunit.cache"
          executionOrder="depends,defects"

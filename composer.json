@@ -92,6 +92,7 @@
       "symfony/runtime": true
     },
     "bump-after-update": true,
+    "preferred-install": "dist",
     "sort-packages": true
   },
   "autoload": {

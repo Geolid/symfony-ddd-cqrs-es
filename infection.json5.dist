@@ -7,6 +7,9 @@
         ]
     },
     "timeout": 60,
+    "threads": "max",
+    "minMsi": 100,
+    "ignoreMsiWithNoMutations": true,
     "mutators": {
         "@default": true,
         "ArrayItemRemoval": {
