@@ -10,12 +10,14 @@ use Catalog\Listing\Domain\Event\ProductRepriced;
 use Catalog\Listing\Domain\Exception\ProductAlreadyDelistedException;
 use Catalog\Listing\Domain\Product;
 use Catalog\Listing\Domain\ValueObject\ProductId;
-use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
+use Catalog\Tests\Listing\Support\Factory\ProductIdFactory;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Label;
 use Shared\Domain\ValueObject\Money;
+use Shared\Tests\Support\Factory\LabelFactory;
+use Shared\Tests\Support\Factory\MoneyFactory;
+use Symfony\Component\Clock\Clock;
 
 final class ProductTest extends AggregateRootTestCase
 {
@@ -29,11 +31,12 @@ final class ProductTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->id = ProductId::fromString(Uuid::uuid7()->toString());
-        $this->label = ProductBuilder::sample('label');
-        $this->unitPrice = ProductBuilder::sample('unitPrice');
-        $this->listedAt = ProductBuilder::sample('listedAt');
-        $this->delistedAt = ProductBuilder::sample('delistedAt');
+        $this->id = ProductIdFactory::new()->create();
+        $this->label = LabelFactory::new()->create();
+        $this->unitPrice = MoneyFactory::new()->create();
+        $now = Clock::get()->now();
+        $this->listedAt = $now;
+        $this->delistedAt = $now->modify('+2 day');
     }
 
     #[Test]
@@ -48,8 +51,8 @@ final class ProductTest extends AggregateRootTestCase
     #[Test]
     public function itReprices(): void
     {
-        $repricedUnitPrice = ProductBuilder::sample('unitPrice');
-        $repricedAt = ProductBuilder::sample('repricedAt');
+        $repricedUnitPrice = MoneyFactory::new()->create();
+        $repricedAt = Clock::get()->now()->modify('+1 day');
 
         $this
             ->given($this->listed())
@@ -65,7 +68,7 @@ final class ProductTest extends AggregateRootTestCase
                 $this->listed(),
                 $this->delisted(),
             )
-            ->when(static fn (Product $product) => $product->reprice(ProductBuilder::sample('unitPrice'), ProductBuilder::sample('repricedAt')))
+            ->when(static fn (Product $product) => $product->reprice(MoneyFactory::new()->create(), Clock::get()->now()->modify('+1 day')))
             ->expectsException(ProductAlreadyDelistedException::class);
     }
 
@@ -86,7 +89,7 @@ final class ProductTest extends AggregateRootTestCase
                 $this->listed(),
                 $this->delisted(),
             )
-            ->when(static fn (Product $product) => $product->delist(ProductBuilder::sample('delistedAt')))
+            ->when(static fn (Product $product) => $product->delist(Clock::get()->now()->modify('+2 day')))
             ->then();
     }
 

@@ -7,9 +7,10 @@ namespace Catalog\Tests\Listing\Application\Command\RepriceProduct;
 use Catalog\Listing\Application\Command\RepriceProduct\RepriceProduct;
 use Catalog\Listing\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Listing\Domain\Exception\ProductNotFoundException;
-use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
+use Catalog\Tests\Listing\Support\Factory\ProductFactory;
+use Catalog\Tests\Listing\Support\Factory\ProductIdFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
+use Shared\Tests\Support\Factory\MoneyFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RepriceProductHandlerTest extends AbstractIntegrationTestCase
@@ -18,10 +19,10 @@ final class RepriceProductHandlerTest extends AbstractIntegrationTestCase
     public function itReprices(): void
     {
         // Given
-        $unitPriceInCents = ProductBuilder::sample('unitPrice')->cents;
+        $unitPriceInCents = MoneyFactory::new()->create()->cents;
         $newUnitPriceInCents = $unitPriceInCents + 100;
 
-        $product = ProductBuilder::new()->withUnitPriceInCents($unitPriceInCents)->create();
+        $product = ProductFactory::new()->withUnitPriceInCents($unitPriceInCents)->create();
         $this->store($product);
 
         // When
@@ -40,8 +41,8 @@ final class RepriceProductHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new RepriceProduct(
-            Uuid::uuid7()->toString(),
-            ProductBuilder::sample('unitPrice')->cents,
+            ProductIdFactory::new()->create()->toString(),
+            MoneyFactory::new()->create()->cents,
             'EUR',
         ));
     }

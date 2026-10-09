@@ -9,9 +9,9 @@ use Catalog\Listing\Application\Finder\Product\Exception\ProductResultNotFoundEx
 use Catalog\Listing\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Listing\Application\ListingUniqueKey;
 use Catalog\Listing\Domain\Exception\ProductNotFoundException;
-use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
+use Catalog\Tests\Listing\Support\Factory\ProductFactory;
+use Catalog\Tests\Listing\Support\Factory\ProductIdFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -31,17 +31,16 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
     public function itDelists(): void
     {
         // Given
-        $builder = ProductBuilder::new();
-        $product = $builder->create();
+        $product = ProductFactory::new()->create();
         $this->store($product);
         $labelKey = UniqueKey::for(ListingUniqueKey::LABEL);
-        $this->uniqueness->claim($labelKey, $builder['label']->value, $product->id->toString());
+        $this->uniqueness->claim($labelKey, $product->label->value, $product->id->toString());
 
         // When
         $this->dispatch(new DelistProduct($product->id->toString()));
 
         // Then
-        self::assertFalse($this->uniqueness->isClaimed($labelKey, $builder['label']->value));
+        self::assertFalse($this->uniqueness->isClaimed($labelKey, $product->label->value));
         $this->expectException(ProductResultNotFoundException::class);
 
         $this->service(ProductFinderInterface::class)->ofId($product->id->toString());
@@ -51,7 +50,7 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyDelisted(): void
     {
         // Given
-        $product = ProductBuilder::new()->delisted()->create();
+        $product = ProductFactory::new()->delisted()->create();
         $this->store($product);
 
         // When
@@ -68,6 +67,6 @@ final class DelistProductHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(ProductNotFoundException::class);
 
         // When
-        $this->dispatch(new DelistProduct(Uuid::uuid7()->toString()));
+        $this->dispatch(new DelistProduct(ProductIdFactory::new()->create()->toString()));
     }
 }

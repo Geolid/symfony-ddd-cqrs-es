@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Catalog\Tests\Listing\Application\IntegrationEvent\ProductDelisted;
 
 use Catalog\Listing\Application\IntegrationEvent\ProductDelisted\ProductDelistedIntegrationEvent;
-use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
+use Catalog\Tests\Listing\Support\Factory\ProductFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -15,8 +15,7 @@ final class ProductDelistedPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $builder = ProductBuilder::new()->delisted();
-        $product = $builder->create();
+        $product = ProductFactory::new()->delisted()->create();
 
         // When
         $this->store($product);
@@ -25,8 +24,8 @@ final class ProductDelistedPublisherTest extends AbstractIntegrationTestCase
         $event = $this->publishedEventOf(ProductDelistedIntegrationEvent::class);
         self::assertSame($product->id->toString(), $event->productId);
         self::assertSame(
-            $builder['delistedAt']->format(\DateTimeInterface::ATOM),
-            $event->delistedAt->format(\DateTimeInterface::ATOM),
+            $product->delistedAt?->format(\DateTimeInterface::ATOM),
+            $event->delistedAt?->format(\DateTimeInterface::ATOM),
         );
     }
 }
