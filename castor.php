@@ -7,7 +7,7 @@ defined('CASTOR_USE_CHDIR') || define('CASTOR_USE_CHDIR', true);
 use Castor\Attribute\AsContext;
 use Castor\Attribute\AsTask;
 use Castor\Context;
-use Symfony\Component\Console\Completion\CompletionInput;
+use Castor\Exception\ProblemException;
 use Symfony\Component\Process\ExecutableFinder;
 
 use function Castor\context;
@@ -16,14 +16,12 @@ use function Castor\import;
 use function Castor\io;
 use function Castor\load_dot_env;
 use function Castor\run;
+use function Castor\with;
 
 guard_min_version('1.7.0');
 
 import(__DIR__.'/.castor');
 
-// Populates $_SERVER/$_ENV (not putenv, by Symfony's own design) from .env -> .env.local ->
-// .env.$APP_ENV -> .env.$APP_ENV.local — the same cascade Symfony itself boots with. A real
-// env var already present wins over the file values.
 load_dot_env();
 
 #[AsTask(description: 'Show quick start guide', default: true)]
@@ -33,14 +31,14 @@ function about(): void
 
     io()->section('Quick Start');
     io()->listing([
-        'Run <comment>castor start</comment> to set up the project.',
+        'Run <comment>castor setup</comment> to set up the project.',
         'Run <comment>castor qa</comment> before opening a PR.',
         'Run <comment>castor list</comment> to display the command list.',
     ]);
 }
 
-#[AsContext(default: true)]
-function default_context(): Context
+#[AsContext(name: 'dev', default: true)]
+function dev_context(): Context
 {
     return new Context(environment: [
         'APP_ENV' => is_string($_SERVER['APP_ENV'] ?? null) ? $_SERVER['APP_ENV'] : 'dev',
@@ -48,25 +46,61 @@ function default_context(): Context
     ]);
 }
 
+#[AsContext(name: 'test')]
+function test_context(): Context
+{
+    return new Context(environment: [
+        'APP_ENV' => getenv('APP_ENV') ?: 'test',
+        ...array_filter(['FAKER_SEED' => getenv('FAKER_SEED'), 'FOUNDRY_FAKER_SEED' => getenv('FOUNDRY_FAKER_SEED')], is_string(...)),
+    ]);
+}
+
+#[AsContext(name: 'debug')]
+function debug_context(): Context
+{
+    return test_context()->withEnvironment([
+        'ACTIVE_BROWSER' => 'playwright',
+        'PLAYWRIGHT_HEADLESS' => 'false',
+        'XDEBUG_MODE' => 'debug',
+    ]);
+}
+
+#[AsContext(name: 'demo')]
+function demo_context(): Context
+{
+    return dev_context()->withEnvironment(['APP_ENV' => 'demo']);
+}
+
+function app_env(string $default = 'dev'): string
+{
+    return (string) (context()->environment['APP_ENV'] ?? $default);
+}
+
 /**
- * The ambient context's environment (see `with(..., environment: [...])`) is forwarded via
- * `-e` — `docker compose exec` doesn't inherit the host process' own env otherwise.
- * Executes bare (without docker-compose) in CI, inside a container, or if Docker is missing.
+ * Forwards the context's environment via `-e`. Runs bare in CI, inside a container, or without Docker.
  *
- * @param array<string> $args
+ * @param list<string> $args
  */
-function compose_exec(array $args, ?bool $tty = null): void
+function workspace_exec(array $args, ?bool $tty = null): void
 {
     $tty ??= context()->supportsInteraction;
 
+    run(workspace_command($args, $tty), context: context()->withTty($tty)->withPty($tty));
+}
+
+/**
+ * @param list<string> $args
+ *
+ * @return list<string>
+ */
+function workspace_command(array $args, bool $tty = false): array
+{
     $bare = getenv('CI')
         || file_exists('/.dockerenv')
         || null === new ExecutableFinder()->find('docker');
 
     if ($bare) {
-        run($args, context: context()->withTty($tty)->withPty($tty));
-
-        return;
+        return $args;
     }
 
     $uid = function_exists('posix_getuid') ? posix_getuid().':'.posix_getgid() : '1000:1000';
@@ -77,27 +111,41 @@ function compose_exec(array $args, ?bool $tty = null): void
     foreach (context()->environment as $key => $value) {
         $command = [...$command, '-e', "{$key}=".$value];
     }
-    $command = [...$command, '-u', $uid, 'app', ...$args];
 
-    run($command, context: context()->withTty($tty)->withPty($tty));
+    return [...$command, '-u', $uid, 'app', ...$args];
 }
 
 /**
- * @param array<string> $args
+ * @param list<string> $args
  */
 function console(array $args, ?bool $tty = null): void
 {
-    compose_exec(['php', 'bin/console', '--ansi', ...$args], $tty);
+    workspace_exec(['php', 'bin/console', '--ansi', ...$args], $tty);
 }
 
-function app_env(string $default = 'dev'): string
+/**
+ * @param callable(string): void $callback
+ * @param array<string, string>  $environment
+ */
+function for_each_app(?string $appId, callable $callback, array $environment = [], ?string $context = null): void
 {
-    return (string) (context()->environment['APP_ENV'] ?? $default);
+    foreach (resolve_apps($appId) as $app) {
+        with(static fn () => $callback($app), environment: ['APP_ID' => $app, ...$environment], context: null !== $context ? context($context) : context());
+    }
 }
 
-function app_debug(bool $default = true): bool
+/**
+ * One-element list for a valid $appId, every DM if null.
+ *
+ * @return list<string>
+ */
+function resolve_apps(?string $appId): array
 {
-    return (bool) (context()->environment['APP_DEBUG'] ?? $default);
+    $all = apps();
+
+    assert_one_of($appId, $all, 'DM');
+
+    return null !== $appId ? [$appId] : $all;
 }
 
 /**
@@ -109,33 +157,11 @@ function apps(): array
 }
 
 /**
- * @return list<string>
- */
-function autocomplete_apps(CompletionInput $input): array
-{
-    return apps();
-}
-
-/**
  * @param list<string> $allowed
  */
 function assert_one_of(?string $value, array $allowed, string $label): void
 {
     if (null !== $value && !in_array($value, $allowed, true)) {
-        throw new InvalidArgumentException(sprintf('Invalid %s "%s". Allowed values are: %s.', $label, $value, implode(', ', $allowed)));
+        throw new ProblemException(sprintf('Invalid %s "%s". Allowed values are: %s.', $label, $value, implode(', ', $allowed)));
     }
-}
-
-/**
- * Validates $app against apps() and resolves it to a one-element list, or every app if null.
- *
- * @return list<string>
- */
-function resolve_apps(?string $app): array
-{
-    $all = apps();
-
-    assert_one_of($app, $all, 'DM');
-
-    return null !== $app ? [$app] : $all;
 }

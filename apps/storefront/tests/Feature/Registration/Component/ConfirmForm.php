@@ -1,0 +1,61 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Storefront\Tests\Feature\Registration\Component;
+
+use Symfony\Component\BrowserKit\AbstractBrowser;
+use Zenstruck\Browser\Component;
+
+final class ConfirmForm extends Component
+{
+    public function fillCode(string $code): self
+    {
+        $this->browser()->fillField('confirmation_code', $code);
+
+        return $this;
+    }
+
+    public function submit(): self
+    {
+        $this->browser()->click('[data-testid="confirm-submit"]');
+
+        return $this;
+    }
+
+    public function clickResend(): self
+    {
+        $this->browser()->click('[data-testid="confirm-resend-link"]');
+
+        return $this;
+    }
+
+    public function submitResendWithInvalidToken(): self
+    {
+        $this->browser()->use(static function (AbstractBrowser $client): void {
+            $form = $client->getCrawler()->filter('[data-testid="confirm-resend-form"]')->form(['_token' => 'invalid']);
+            $client->submit($form);
+        });
+
+        return $this;
+    }
+
+    public function assertInvalidCodeError(): self
+    {
+        $this->browser()->assertSeeIn('[data-testid="confirmation_code-error"]', 'error_invalid');
+
+        return $this;
+    }
+
+    public function assertAttemptsExceededError(): self
+    {
+        $this->browser()->assertSeeIn('[data-testid="confirmation_code-error"]', 'error_attempts_exceeded');
+
+        return $this;
+    }
+
+    protected function preAssertions(): void
+    {
+        $this->browser()->assertSeeElement('[data-testid="confirm-form"]');
+    }
+}

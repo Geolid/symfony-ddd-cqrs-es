@@ -2,75 +2,92 @@
 
 declare(strict_types=1);
 
-use Castor\Attribute\AsArgument;
+use Castor\Attribute\AsArgsAfterOptionEnd;
+use Castor\Attribute\AsOption;
 use Castor\Attribute\AsTask;
 
+use function Castor\capture;
 use function Castor\io;
 
 #[AsTask(name: 'lint', namespace: 'qa', description: 'Run all linters')]
 function qa_lint(
-    #[AsArgument(description: 'Restrict to a single DM (default: all)', autocomplete: 'autocomplete_apps')]
-    ?string $app = null,
+    #[AsOption(name: 'app-id', description: 'Restrict to a single DM (default: all)', autocomplete: 'apps')]
+    ?string $appId = null,
 ): void {
-    qa_lint_container($app);
-    qa_lint_twig($app);
-    qa_lint_translations($app);
+    qa_lint_container($appId);
+    qa_lint_twig($appId);
+    qa_lint_translations($appId);
 }
 
+/**
+ * @param list<string> $args
+ */
 #[AsTask(name: 'container', namespace: 'qa:lint', description: 'Validate Symfony container for all DMs')]
 function qa_lint_container(
-    #[AsArgument(description: 'Restrict to a single DM (default: all)', autocomplete: 'autocomplete_apps')]
-    ?string $app = null,
+    #[AsOption(name: 'app-id', description: 'Restrict to a single DM (default: all)', autocomplete: 'apps')]
+    ?string $appId = null,
+    #[AsArgsAfterOptionEnd]
+    array $args = [],
 ): void {
-    foreach (resolve_apps($app) as $app) {
+    for_each_app($appId, static function (string $app) use ($args): void {
         io()->comment("DM: {$app}");
 
-        console(['lint:container', '--no-debug', "--appId={$app}"]);
-    }
+        console(['lint:container', '--no-debug', ...$args]);
+    }, context: 'test');
 }
 
-#[AsTask(name: 'translations', namespace: 'qa:lint', description: 'Check YAML syntax of translation files')]
+/**
+ * @param list<string> $args
+ */
+#[AsTask(name: 'translations', namespace: 'qa:lint', description: 'Check XLIFF syntax of translation files')]
 function qa_lint_translations(
-    #[AsArgument(description: 'Restrict to a single DM (default: all)', autocomplete: 'autocomplete_apps')]
-    ?string $app = null,
+    #[AsOption(name: 'app-id', description: 'Restrict to a single DM (default: all)', autocomplete: 'apps')]
+    ?string $appId = null,
+    #[AsArgsAfterOptionEnd]
+    array $args = [],
 ): void {
-    preg_match_all('/ui\/translations[^\'"]*/', (string) file_get_contents(__DIR__.'/../../config/packages/translation.php'), $sharedMatches);
+    for_each_app($appId, static function (string $app) use ($args): void {
+        $own = "apps/{$app}/translations";
 
-    foreach (resolve_apps($app) as $app) {
-        if (!is_file(__DIR__."/../../apps/{$app}/config/packages/translation.php")) {
-            continue;
+        if (!is_dir(__DIR__.'/../../'.$own)) {
+            return;
         }
 
-        $translationDirs = $sharedMatches[0];
-        if (is_dir(__DIR__."/../../apps/{$app}/translations")) {
-            $translationDirs[] = "apps/{$app}/translations";
-        }
+        /** @var array{'translator.default_path': string, 'kernel.project_dir': string} $parameters */
+        $parameters = json_decode(capture(workspace_command(['php', 'bin/console', 'debug:container', '--parameters', '--format=json'])), true, flags: \JSON_THROW_ON_ERROR);
+        $shared = substr($parameters['translator.default_path'], strlen($parameters['kernel.project_dir']) + 1);
+        $directories = $shared === $own ? [$own] : [$shared, $own];
 
-        io()->comment("DM: {$app} (".implode(', ', $translationDirs).')');
+        io()->comment("DM: {$app} (".implode(', ', $directories).')');
 
-        console(['lint:yaml', ...$translationDirs, "--appId={$app}"]);
-    }
+        console(['lint:xliff', ...$directories, ...$args]);
+    }, context: 'test');
 }
 
+/**
+ * @param list<string> $args
+ */
 #[AsTask(name: 'twig', namespace: 'qa:lint', description: 'Check Twig syntax of template files')]
 function qa_lint_twig(
-    #[AsArgument(description: 'Restrict to a single DM (default: all)', autocomplete: 'autocomplete_apps')]
-    ?string $app = null,
+    #[AsOption(name: 'app-id', description: 'Restrict to a single DM (default: all)', autocomplete: 'apps')]
+    ?string $appId = null,
+    #[AsArgsAfterOptionEnd]
+    array $args = [],
 ): void {
-    foreach (resolve_apps($app) as $app) {
-        $configFile = __DIR__."/../../apps/{$app}/config/packages/twig.php";
-        if (!is_file($configFile)) {
-            continue;
+    for_each_app($appId, static function (string $app) use ($args): void {
+        $own = "apps/{$app}/templates";
+
+        if (!is_dir(__DIR__.'/../../'.$own)) {
+            return;
         }
 
-        preg_match_all('/ui\/templates[^\'"]*/', (string) file_get_contents($configFile), $matches);
-        $templateDirs = $matches[0];
-        if (is_dir(__DIR__."/../../apps/{$app}/templates")) {
-            $templateDirs[] = "apps/{$app}/templates";
-        }
+        /** @var array{loader_paths: array<string, list<string>>} $debug */
+        $debug = json_decode(capture(workspace_command(['php', 'bin/console', 'debug:twig', '--format=json'])), true, flags: \JSON_THROW_ON_ERROR);
+        $shared = array_filter(array_merge(...array_values($debug['loader_paths'])), static fn (string $path): bool => !str_starts_with($path, 'vendor/') && $path !== $own);
+        $directories = [...$shared, $own];
 
-        io()->comment("DM: {$app} (".implode(', ', $templateDirs).')');
+        io()->comment("DM: {$app} (".implode(', ', $directories).')');
 
-        console(['lint:twig', ...$templateDirs, "--appId={$app}"]);
-    }
+        console(['lint:twig', ...$directories, ...$args]);
+    }, context: 'test');
 }

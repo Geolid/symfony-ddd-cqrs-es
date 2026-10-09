@@ -8,7 +8,7 @@ use Doctrine\DBAL\Connection;
 use Iam\Authentication\Infrastructure\Projection\Projector\DbalTotpCredentialProjector;
 use Iam\Tests\Authentication\Support\Builder\TotpCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakeTotpCipher;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -80,7 +80,7 @@ final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
         $other = TotpCredentialBuilder::new()->withCipher($this->cipher)->create();
         $this->store($other);
 
-        $identity = IdentityBuilder::new()->erasureRequested()->erased()->create();
+        $identity = IdentityFactory::new()->erasureRequested()->erased()->create();
         $credential = TotpCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withCipher($this->cipher)

@@ -8,6 +8,7 @@ use Endroid\QrCode\Builder\Builder;
 use Endroid\QrCode\Writer\SvgWriter;
 use Iam\Authentication\Application\BackupCodeRegeneration\BackupCodeRegeneratorInterface;
 use Iam\Authentication\Application\Command\ChangePassword\ChangePassword;
+use Iam\Authentication\Application\Command\EnrollTotp\Exception\TotpAlreadyEnrolledException;
 use Iam\Authentication\Application\Command\RevokeTrustedDevice\RevokeTrustedDevice;
 use Iam\Authentication\Application\Command\UnenrollTotp\UnenrollTotp;
 use Iam\Authentication\Application\Query\GetBackupCodeCredentialByIdentity\GetBackupCodeCredentialByIdentity;
@@ -19,6 +20,7 @@ use Iam\Authentication\Domain\TotpCredential\Exception\InvalidTotpCodeException;
 use Iam\Identity\Application\Command\ChangeEmail\ChangeEmail;
 use Iam\Identity\Application\Command\ChangeEmail\Exception\IdentityEmailAlreadyInUseException;
 use Iam\Identity\Application\Command\ChangeFullName\ChangeFullName;
+use Iam\Identity\Application\Command\RequestEmailChange\Exception\IdentityEmailAlreadyInUseException as RequestEmailChangeIdentityEmailAlreadyInUseException;
 use Iam\Identity\Application\Command\RequestEmailChange\RequestEmailChange;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -146,8 +148,9 @@ final class SecurityController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             try {
                 $this->commandBus->dispatch(new ChangeEmail($user->identityId(), $newEmail, (string) $formData->code));
-            } catch (IdentityEmailAlreadyInUseException) {
+
                 $session->remove(self::EMAIL_CHANGE_SESSION_KEY);
+            } catch (IdentityEmailAlreadyInUseException) {
                 $this->addFlash('error', $this->translator->trans('change_email_error_already_in_use', domain: 'account_security'));
 
                 return $this->redirectToRoute('storefront_account_security_request_email_change');
@@ -159,7 +162,6 @@ final class SecurityController extends AbstractController
                 return $this->render('account/security/change_email.html.twig', ['form' => $form, 'newEmail' => $newEmail]);
             }
 
-            $session->remove(self::EMAIL_CHANGE_SESSION_KEY);
             $this->addFlash('success', $this->translator->trans('change_email_flash_changed', domain: 'account_security'));
 
             return $this->redirectToRoute('storefront_account_security_show');
@@ -176,7 +178,7 @@ final class SecurityController extends AbstractController
     public function changeEmailResend(Request $request, #[CurrentUser] PasswordUser $user): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('change_email_resend', (string) $request->request->get('_token'))) {
-            $this->addFlash('error', $this->translator->trans('flash_failed', domain: 'verification_code'));
+            $this->addFlash('error', $this->translator->trans('flash_invalid_csrf_token', domain: 'messages'));
 
             return $this->redirectToRoute('storefront_account_security_change_email');
         }
@@ -189,12 +191,19 @@ final class SecurityController extends AbstractController
             return $this->redirectToRoute('storefront_account_security_request_email_change');
         }
 
-        $this->resendFlow->attempt(
-            $request,
-            $user->identityId(),
-            'change_email',
-            fn () => $this->commandBus->dispatch(new RequestEmailChange($user->identityId(), $newEmail)),
-        );
+        try {
+            $this->resendFlow->attempt(
+                $request,
+                $user->identityId(),
+                'change_email',
+                fn () => $this->commandBus->dispatch(new RequestEmailChange($user->identityId(), $newEmail)),
+            );
+        } catch (RequestEmailChangeIdentityEmailAlreadyInUseException) {
+            $session->remove(self::EMAIL_CHANGE_SESSION_KEY);
+            $this->addFlash('error', $this->translator->trans('change_email_error_already_in_use', domain: 'account_security'));
+
+            return $this->redirectToRoute('storefront_account_security_request_email_change');
+        }
 
         return $this->redirectToRoute('storefront_account_security_change_email');
     }
@@ -268,7 +277,9 @@ final class SecurityController extends AbstractController
     public function revokeTrustedDevice(string $id, Request $request, #[CurrentUser] PasswordUser $user): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('revoke_trusted_device_'.$id, (string) $request->request->get('_token'))) {
-            throw $this->createAccessDeniedException();
+            $this->addFlash('error', $this->translator->trans('flash_invalid_csrf_token', domain: 'messages'));
+
+            return $this->redirectToRoute('storefront_account_security_trusted_devices');
         }
 
         $this->commandBus->dispatch(new RevokeTrustedDevice($id, $user->identityId()));
@@ -286,7 +297,9 @@ final class SecurityController extends AbstractController
     public function revokeTrustedDevices(Request $request, #[CurrentUser] PasswordUser $user): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('revoke_trusted_devices', (string) $request->request->get('_token'))) {
-            throw $this->createAccessDeniedException();
+            $this->addFlash('error', $this->translator->trans('flash_invalid_csrf_token', domain: 'messages'));
+
+            return $this->redirectToRoute('storefront_account_security_trusted_devices');
         }
 
         foreach ($this->queryBus->ask(new ListTrustedDevicesByIdentity($user->identityId())) as $trustedDevice) {
@@ -306,7 +319,9 @@ final class SecurityController extends AbstractController
     public function unenrollTotp(Request $request, #[CurrentUser] PasswordUser $user): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('unenroll_totp', (string) $request->request->get('_token'))) {
-            throw $this->createAccessDeniedException();
+            $this->addFlash('error', $this->translator->trans('flash_invalid_csrf_token', domain: 'messages'));
+
+            return $this->redirectToRoute('storefront_account_security_two_factor_settings');
         }
 
         $totpCredential = $this->queryBus->ask(new GetTotpCredentialByIdentity($user->identityId()));
@@ -328,7 +343,9 @@ final class SecurityController extends AbstractController
     public function regenerateBackupCodes(Request $request, #[CurrentUser] PasswordUser $user): Response
     {
         if (!$this->isCsrfTokenValid('regenerate_backup_codes', (string) $request->request->get('_token'))) {
-            throw $this->createAccessDeniedException();
+            $this->addFlash('error', $this->translator->trans('flash_invalid_csrf_token', domain: 'messages'));
+
+            return $this->redirectToRoute('storefront_account_security_two_factor_settings');
         }
 
         $backupCodes = $this->backupCodeRegenerator->regenerateFor($user->identityId());
@@ -359,13 +376,16 @@ final class SecurityController extends AbstractController
         if ($form->isSubmitted() && $form->isValid()) {
             try {
                 $backupCodes = $this->totpEnroller->enrollFor($user->identityId(), $secret, (string) $formData->code);
+                $session->remove(self::SESSION_KEY);
             } catch (InvalidTotpCodeException) {
                 $this->addFlash('error', $this->translator->trans('enroll_totp_flash_invalid_code', domain: 'account_security'));
 
                 return $this->renderEnrollTotpForm($form, $secret, $provisioningUri);
-            }
+            } catch (TotpAlreadyEnrolledException) {
+                $this->addFlash('error', $this->translator->trans('enroll_totp_flash_already_enrolled', domain: 'account_security'));
 
-            $session->remove(self::SESSION_KEY);
+                return $this->redirectToRoute('storefront_account_security_two_factor_settings');
+            }
 
             if (null === $backupCodes) {
                 $this->addFlash('success', $this->translator->trans('enroll_totp_flash_enrolled_codes_kept', domain: 'account_security'));

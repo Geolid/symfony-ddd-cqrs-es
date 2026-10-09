@@ -10,7 +10,8 @@ use Iam\Identity\Application\Finder\Identity\IdentityResult;
 use Iam\Identity\Application\IdentityModerationStatus;
 use Iam\Identity\Application\IdentityVerificationStatus;
 use Iam\Identity\Domain\Identity;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
+use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\ErasureStatus;
@@ -32,9 +33,8 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
     public function itGetsById(): void
     {
         // Given
-        $other = IdentityBuilder::new()->create();
-        $builder = IdentityBuilder::new()->confirmed();
-        $identity = $builder->create();
+        $other = IdentityFactory::new()->create();
+        $identity = IdentityFactory::new()->confirmed()->create();
         $this->store($other, $identity);
 
         // When
@@ -42,17 +42,17 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
 
         // Then
         self::assertSame($identity->id->toString(), $result->id);
-        self::assertSame($builder['fullName']->value, $result->fullName);
-        self::assertSame($builder['email']->value, $result->email);
+        self::assertSame($identity->fullName->value, $result->fullName);
+        self::assertSame($identity->email->value, $result->email);
         self::assertSame(IdentityVerificationStatus::CONFIRMED, $result->verificationStatus);
         self::assertSame(IdentityModerationStatus::ACTIVE, $result->moderationStatus);
         self::assertNull($result->reason);
         self::assertSame(
-            $builder['registeredAt']->format(\DateTimeInterface::ATOM),
+            $identity->registeredAt->format(\DateTimeInterface::ATOM),
             $result->registeredAt->format(\DateTimeInterface::ATOM),
         );
         self::assertSame(
-            $builder['registeredAt']->format(\DateTimeInterface::ATOM),
+            $identity->registeredAt->format(\DateTimeInterface::ATOM),
             $result->confirmationRequestedAt->format(\DateTimeInterface::ATOM),
         );
         self::assertNull($result->suspendedAt);
@@ -67,19 +67,18 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
         $this->expectException(IdentityResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(Uuid::uuid7()->toString());
+        $this->finder()->ofId(IdentityIdFactory::new()->create()->toString());
     }
 
     #[Test]
     public function itFindsByEmail(): void
     {
         // Given
-        $builder = IdentityBuilder::new();
-        $identity = $builder->create();
+        $identity = IdentityFactory::new()->create();
         $this->store($identity);
 
         // When
-        $found = $this->finder()->ofEmailOrNull($builder['email']->value);
+        $found = $this->finder()->ofEmailOrNull($identity->email->value);
         $notFound = $this->finder()->ofEmailOrNull(SeededFaker::get()->unique()->safeEmail());
 
         // Then
@@ -129,7 +128,7 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
      */
     protected function seed(int $count): array
     {
-        $identities = IdentityBuilder::new()->many($count)->create();
+        $identities = IdentityFactory::new()->many($count)->create();
         $this->store(...$identities);
 
         return array_map(static fn (Identity $identity): string => $identity->id->toString(), $identities);
@@ -149,8 +148,8 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
         $smallerId = Uuid::uuid7($now)->toString();
         $largerId = Uuid::uuid7($now->modify('+1 hour'))->toString();
 
-        $first = IdentityBuilder::new()->withId($largerId)->withRegisteredAt($now)->create();
-        $second = IdentityBuilder::new()->withId($smallerId)->withRegisteredAt($now->modify('+1 hour'))->create();
+        $first = IdentityFactory::new()->withId($largerId)->withRegisteredAt($now)->create();
+        $second = IdentityFactory::new()->withId($smallerId)->withRegisteredAt($now->modify('+1 hour'))->create();
         $this->store($first, $second);
 
         return [$largerId, $smallerId];

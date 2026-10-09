@@ -8,7 +8,7 @@ use Doctrine\DBAL\Connection;
 use Iam\Authentication\Infrastructure\Projection\Projector\DbalApiKeyCredentialProjector;
 use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakeApiKeyHasher;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -81,7 +81,7 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
         $other = ApiKeyCredentialBuilder::new()->withHasher($this->hasher)->create();
         $this->store($other);
 
-        $identity = IdentityBuilder::new()->erasureRequested()->erased()->create();
+        $identity = IdentityFactory::new()->erasureRequested()->erased()->create();
         $credential = ApiKeyCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withHasher($this->hasher)

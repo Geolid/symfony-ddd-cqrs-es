@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Application\IntegrationEvent\IdentityConfirmed;
 
 use Iam\Identity\Application\IntegrationEvent\IdentityConfirmed\IdentityConfirmedIntegrationEvent;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -15,8 +15,8 @@ final class IdentityConfirmedPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $builder = IdentityBuilder::new()->confirmed();
-        $identity = $builder->create();
+        $factory = IdentityFactory::new()->confirmed();
+        $identity = $factory->create();
 
         // When
         $this->store($identity);
@@ -25,7 +25,7 @@ final class IdentityConfirmedPublisherTest extends AbstractIntegrationTestCase
         $event = $this->publishedEventOf(IdentityConfirmedIntegrationEvent::class);
         self::assertSame($identity->id->toString(), $event->identityId);
         self::assertSame(
-            $builder['confirmedAt']->format(\DateTimeInterface::ATOM),
+            $identity->confirmedAt?->format(\DateTimeInterface::ATOM),
             $event->confirmedAt->format(\DateTimeInterface::ATOM),
         );
     }

@@ -3,7 +3,7 @@
 {% block title %}{{ 'title'|trans({}, 'account') }}{% endblock %}
 
 {% block content %}
-    <h1>{{ 'title'|trans({}, 'account') }}</h1>
+    <h1 data-testid="account-title">{{ 'title'|trans({}, 'account') }}</h1>
 
-    <p><a href="{{ path('storefront_account_security_show') }}">{{ 'link_security'|trans({}, 'account') }}</a> — {{ 'card_security_description'|trans({}, 'account') }}</p>
+    <p><a href="{{ path('storefront_account_security_show') }}" data-testid="account-security-link">{{ 'link_security'|trans({}, 'account') }}</a> — {{ 'card_security_description'|trans({}, 'account') }}</p>
 {% endblock %}

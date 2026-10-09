@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Identity\Infrastructure\Pii;
 
-use Iam\Identity\Domain\Event\IdentityReactivated;
-use Iam\Identity\Domain\Event\IdentitySuspended;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
-use Patchlevel\EventSourcing\Serializer\EventSerializer;
+use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -16,53 +14,41 @@ final class IdentityPiiErasureTest extends AbstractIntegrationTestCase
 {
     private CipherKeyStore $cipherKeyStore;
 
-    private EventSerializer $serializer;
+    private IdentityRepositoryInterface $repository;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->cipherKeyStore = $this->service(CipherKeyStore::class);
-        $this->serializer = $this->service(EventSerializer::class);
+        $this->repository = $this->service(IdentityRepositoryInterface::class);
     }
 
     #[Test]
     public function itCryptoShredsSuspensionReasonOnErasure(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->confirmed()->suspended()->create();
+        $identity = IdentityFactory::new()->confirmed()->suspended()->create();
         $this->store($identity);
-        $serialized = $this->serializedEventOf(
-            IdentitySuspended::class,
-            static fn (IdentitySuspended $event): bool => $event->id->equals($identity->id),
-        );
 
         // When
         $this->cipherKeyStore->removeWithSubjectId($identity->id->toString());
 
         // Then
-        $rehydrated = $this->serializer->deserialize($serialized);
-        self::assertInstanceOf(IdentitySuspended::class, $rehydrated);
-        self::assertSame('erased', $rehydrated->reason->value);
+        self::assertSame('erased', $this->repository->load($identity->id)->suspensionReason?->value);
     }
 
     #[Test]
     public function itCryptoShredsReactivationReasonOnErasure(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->confirmed()->suspended()->reactivated()->create();
+        $identity = IdentityFactory::new()->confirmed()->suspended()->reactivated()->create();
         $this->store($identity);
-        $serialized = $this->serializedEventOf(
-            IdentityReactivated::class,
-            static fn (IdentityReactivated $event): bool => $event->id->equals($identity->id),
-        );
 
         // When
         $this->cipherKeyStore->removeWithSubjectId($identity->id->toString());
 
         // Then
-        $rehydrated = $this->serializer->deserialize($serialized);
-        self::assertInstanceOf(IdentityReactivated::class, $rehydrated);
-        self::assertSame('erased', $rehydrated->reason->value);
+        self::assertSame('erased', $this->repository->load($identity->id)->reactivationReason?->value);
     }
 }

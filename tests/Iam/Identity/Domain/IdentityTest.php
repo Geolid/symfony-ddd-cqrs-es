@@ -26,10 +26,10 @@ use Iam\Identity\Domain\ValueObject\Email;
 use Iam\Identity\Domain\ValueObject\FullName;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Reason;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
+use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Domain\Service\CodeChallengerInterface;
 use Shared\Tests\Support\Double\FakeCodeChallenger;
 
@@ -57,23 +57,23 @@ final class IdentityTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->id = IdentityId::fromString(Uuid::uuid7()->toString());
-        $this->fullName = IdentityBuilder::sample('fullName');
-        $this->email = IdentityBuilder::sample('email');
-        $this->reason = IdentityBuilder::sample('reason');
-        $this->registeredAt = IdentityBuilder::sample('registeredAt');
-        $this->confirmedAt = IdentityBuilder::sample('confirmedAt');
-        $this->confirmationCode = IdentityBuilder::sample('confirmationCode');
-        $this->fullNameChangedAt = IdentityBuilder::sample('fullNameChangedAt');
-        $this->emailChangeRequestedAt = IdentityBuilder::sample('emailChangeRequestedAt');
-        $this->emailChangedAt = IdentityBuilder::sample('emailChangedAt');
+        $this->id = IdentityIdFactory::new()->create();
+        $this->fullName = IdentityFactory::sample('fullName');
+        $this->email = IdentityFactory::sample('email');
+        $this->reason = IdentityFactory::sample('reason');
+        $this->registeredAt = IdentityFactory::sample('registeredAt');
+        $this->confirmedAt = IdentityFactory::sample('confirmedAt');
+        $this->confirmationCode = IdentityFactory::sample('confirmationCode');
+        $this->fullNameChangedAt = IdentityFactory::sample('fullNameChangedAt');
+        $this->emailChangeRequestedAt = IdentityFactory::sample('emailChangeRequestedAt');
+        $this->emailChangedAt = IdentityFactory::sample('emailChangedAt');
         $this->codeChallenger = new FakeCodeChallenger();
-        $this->suspendedAt = IdentityBuilder::sample('suspendedAt');
-        $this->reactivatedAt = IdentityBuilder::sample('reactivatedAt');
-        $this->requestedAt = IdentityBuilder::sample('requestedAt');
-        $this->cancelledAt = IdentityBuilder::sample('cancelledAt');
-        $this->erasedAt = IdentityBuilder::sample('erasedAt');
-        $this->confirmationRequestedAt = IdentityBuilder::sample('confirmationRequestedAt');
+        $this->suspendedAt = IdentityFactory::sample('suspendedAt');
+        $this->reactivatedAt = IdentityFactory::sample('reactivatedAt');
+        $this->requestedAt = IdentityFactory::sample('requestedAt');
+        $this->cancelledAt = IdentityFactory::sample('cancelledAt');
+        $this->erasedAt = IdentityFactory::sample('erasedAt');
+        $this->confirmationRequestedAt = IdentityFactory::sample('confirmationRequestedAt');
     }
 
     #[Test]
@@ -108,7 +108,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered(), $this->confirmed())
-            ->when(fn (Identity $identity) => $identity->confirm($this->confirmationCode, $this->codeChallenger, IdentityBuilder::sample('confirmedAt')))
+            ->when(fn (Identity $identity) => $identity->confirm($this->confirmationCode, $this->codeChallenger, IdentityFactory::sample('confirmedAt')))
             ->then();
     }
 
@@ -137,7 +137,7 @@ final class IdentityTest extends AggregateRootTestCase
     #[Test]
     public function itChangesFullName(): void
     {
-        $newFullName = IdentityBuilder::sample('fullName');
+        $newFullName = IdentityFactory::sample('fullName');
 
         $this
             ->given($this->registered())
@@ -163,19 +163,31 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->erasureRequested(),
                 $this->erased(),
             )
-            ->when(fn (Identity $identity) => $identity->changeFullName(IdentityBuilder::sample('fullName'), $this->fullNameChangedAt))
+            ->when(fn (Identity $identity) => $identity->changeFullName(IdentityFactory::sample('fullName'), $this->fullNameChangedAt))
             ->expectsException(IdentityAlreadyErasedException::class);
     }
 
     #[Test]
     public function itRequestsEmailChange(): void
     {
-        $newEmail = IdentityBuilder::sample('email');
+        $newEmail = IdentityFactory::sample('email');
 
         $this
             ->given($this->registered())
             ->when(fn (Identity $identity) => $identity->requestEmailChange($newEmail, $this->emailChangeRequestedAt))
             ->then(new IdentityEmailChangeRequested($this->id, $newEmail, $this->emailChangeRequestedAt));
+    }
+
+    #[Test]
+    public function itRequestsEmailChangeWhenNoPriorRequest(): void
+    {
+        $newEmail = IdentityFactory::sample('email');
+        $requestedAt = $this->registeredAt->modify('+1 second');
+
+        $this
+            ->given($this->registered())
+            ->when(static fn (Identity $identity) => $identity->requestEmailChange($newEmail, $requestedAt))
+            ->then(new IdentityEmailChangeRequested($this->id, $newEmail, $requestedAt));
     }
 
     #[Test]
@@ -196,7 +208,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->erasureRequested(),
                 $this->erased(),
             )
-            ->when(fn (Identity $identity) => $identity->requestEmailChange(IdentityBuilder::sample('email'), $this->emailChangeRequestedAt))
+            ->when(fn (Identity $identity) => $identity->requestEmailChange(IdentityFactory::sample('email'), $this->emailChangeRequestedAt))
             ->expectsException(IdentityAlreadyErasedException::class);
     }
 
@@ -206,9 +218,9 @@ final class IdentityTest extends AggregateRootTestCase
         $this
             ->given(
                 $this->registered(),
-                new IdentityEmailChangeRequested($this->id, IdentityBuilder::sample('email'), $this->emailChangeRequestedAt),
+                new IdentityEmailChangeRequested($this->id, IdentityFactory::sample('email'), $this->emailChangeRequestedAt),
             )
-            ->when(fn (Identity $identity) => $identity->requestEmailChange(IdentityBuilder::sample('email'), $this->emailChangeRequestedAt->modify('+1 second')))
+            ->when(fn (Identity $identity) => $identity->requestEmailChange(IdentityFactory::sample('email'), $this->emailChangeRequestedAt->modify('+1 second')))
             ->expectsException(EmailChangeRequestedTooRecentlyException::class)
             ->expectsExceptionMessage('requested too recently');
     }
@@ -216,7 +228,7 @@ final class IdentityTest extends AggregateRootTestCase
     #[Test]
     public function itChangesEmail(): void
     {
-        $newEmail = IdentityBuilder::sample('email');
+        $newEmail = IdentityFactory::sample('email');
 
         $this
             ->given($this->registered())
@@ -242,7 +254,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->erasureRequested(),
                 $this->erased(),
             )
-            ->when(fn (Identity $identity) => $identity->changeEmail(FakeCodeChallenger::CODE, $this->codeChallenger, IdentityBuilder::sample('email'), $this->emailChangedAt))
+            ->when(fn (Identity $identity) => $identity->changeEmail(FakeCodeChallenger::CODE, $this->codeChallenger, IdentityFactory::sample('email'), $this->emailChangedAt))
             ->expectsException(IdentityAlreadyErasedException::class);
     }
 
@@ -251,7 +263,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered())
-            ->when(fn (Identity $identity) => $identity->changeEmail('wrong', new FakeCodeChallenger(), IdentityBuilder::sample('email'), $this->emailChangedAt))
+            ->when(fn (Identity $identity) => $identity->changeEmail('wrong', new FakeCodeChallenger(), IdentityFactory::sample('email'), $this->emailChangedAt))
             ->expectsException(InvalidEmailChangeCodeException::class);
     }
 
@@ -282,7 +294,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->confirmed(),
                 $this->suspended(),
             )
-            ->when(fn (Identity $identity) => $identity->suspend(IdentityBuilder::sample('reason'), $this->suspendedAt))
+            ->when(fn (Identity $identity) => $identity->suspend(IdentityFactory::sample('reason'), $this->suspendedAt))
             ->then();
     }
 
@@ -320,7 +332,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->registered(),
                 $this->confirmed(),
             )
-            ->when(fn (Identity $identity) => $identity->reactivate(IdentityBuilder::sample('reason'), $this->reactivatedAt))
+            ->when(fn (Identity $identity) => $identity->reactivate(IdentityFactory::sample('reason'), $this->reactivatedAt))
             ->then();
     }
 
@@ -395,7 +407,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered(), $this->erasureRequested())
-            ->when(static fn (Identity $identity) => $identity->requestErasure(IdentityBuilder::sample('requestedAt')))
+            ->when(static fn (Identity $identity) => $identity->requestErasure(IdentityFactory::sample('requestedAt')))
             ->then();
     }
 
@@ -413,7 +425,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered())
-            ->when(static fn (Identity $identity) => $identity->cancelErasure(IdentityBuilder::sample('cancelledAt')))
+            ->when(static fn (Identity $identity) => $identity->cancelErasure(IdentityFactory::sample('cancelledAt')))
             ->then();
     }
 
@@ -431,7 +443,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered())
-            ->when(static fn (Identity $identity) => $identity->erase(IdentityBuilder::sample('erasedAt')))
+            ->when(static fn (Identity $identity) => $identity->erase(IdentityFactory::sample('erasedAt')))
             ->then();
     }
 
@@ -444,7 +456,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->erasureRequested(),
                 $this->erased(),
             )
-            ->when(static fn (Identity $identity) => $identity->erase(IdentityBuilder::sample('erasedAt')))
+            ->when(static fn (Identity $identity) => $identity->erase(IdentityFactory::sample('erasedAt')))
             ->then();
     }
 
@@ -462,7 +474,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered(), $this->confirmed())
-            ->when(static fn (Identity $identity) => $identity->erasePending(IdentityBuilder::sample('erasedAt')))
+            ->when(static fn (Identity $identity) => $identity->erasePending(IdentityFactory::sample('erasedAt')))
             ->then();
     }
 
@@ -484,7 +496,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->erasureRequested(),
                 $this->erased(),
             )
-            ->when(static fn (Identity $identity) => $identity->erasePending(IdentityBuilder::sample('erasedAt')))
+            ->when(static fn (Identity $identity) => $identity->erasePending(IdentityFactory::sample('erasedAt')))
             ->then();
     }
 

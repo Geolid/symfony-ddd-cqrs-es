@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 use Bootstrap\DependencyInjection\BoundedContextServiceLoader;
 use Itspire\MonologLoki\Handler\LokiHandler;
-use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
-use Patchlevel\Hydrator\Extension\Cryptography\Store\InMemoryCipherKeyStore;
 use Patchlevel\Hydrator\StackHydrator;
 use Predis\Client as PredisClient;
 use Psr\Log\LogLevel;
@@ -57,9 +55,6 @@ return static function (ContainerConfigurator $container): void {
         $queryBusAlias->public();
         $services->alias(LockFactory::class, 'lock.factory')->public();
         $services->get('shared.valkey.client')->public();
-
-        $services->set(InMemoryCipherKeyStore::class)->public();
-        $services->alias(CipherKeyStore::class, InMemoryCipherKeyStore::class);
     }
 
     if ('prod' === $container->env()) {

@@ -58,14 +58,25 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     public private(set) IdentityId $id;
-    private FullName $fullName;
-    private Email $email;
-    private IdentityVerificationState $verificationState;
-    private IdentityModerationState $moderationState;
-    private ErasureState $erasureState;
-    private \DateTimeImmutable $registeredAt;
-    private \DateTimeImmutable $confirmationRequestedAt;
-    private \DateTimeImmutable $emailChangeRequestedAt;
+    public private(set) FullName $fullName;
+    public private(set) Email $email;
+    public private(set) IdentityVerificationState $verificationState;
+    public private(set) IdentityModerationState $moderationState;
+    public private(set) ErasureState $erasureState;
+    public private(set) \DateTimeImmutable $registeredAt;
+    public private(set) \DateTimeImmutable $confirmationRequestedAt;
+    public private(set) ?\DateTimeImmutable $confirmedAt = null;
+    public private(set) ?\DateTimeImmutable $fullNameChangedAt = null;
+    public private(set) ?Email $pendingEmail = null;
+    public private(set) ?\DateTimeImmutable $emailChangeRequestedAt = null;
+    public private(set) ?\DateTimeImmutable $emailChangedAt = null;
+    public private(set) ?Reason $suspensionReason = null;
+    public private(set) ?\DateTimeImmutable $suspendedAt = null;
+    public private(set) ?Reason $reactivationReason = null;
+    public private(set) ?\DateTimeImmutable $reactivatedAt = null;
+    public private(set) ?\DateTimeImmutable $erasureRequestedAt = null;
+    public private(set) ?\DateTimeImmutable $erasureCancelledAt = null;
+    public private(set) ?\DateTimeImmutable $erasedAt = null;
 
     public static function register(IdentityId $id, FullName $fullName, Email $email, \DateTimeImmutable $registeredAt): self
     {
@@ -142,6 +153,8 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
 
         $cooldownCalculator = new CooldownCalculator();
         if (!new CooldownElapsedSpecification($cooldownCalculator, $requestedAt)->isSatisfiedBy($this->emailChangeRequestedAt)) {
+            \assert(null !== $this->emailChangeRequestedAt);
+
             throw EmailChangeRequestedTooRecentlyException::forId($this->id, $cooldownCalculator->retryAt($this->emailChangeRequestedAt));
         }
 
@@ -317,18 +330,19 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         $this->erasureState = ErasureState::RETAINED;
         $this->registeredAt = $event->registeredAt;
         $this->confirmationRequestedAt = $event->registeredAt;
-        $this->emailChangeRequestedAt = $event->registeredAt;
     }
 
     #[Apply]
     private function applyFullNameChanged(IdentityFullNameChanged $event): void
     {
         $this->fullName = $event->fullName;
+        $this->fullNameChangedAt = $event->changedAt;
     }
 
     #[Apply]
     private function applyEmailChangeRequested(IdentityEmailChangeRequested $event): void
     {
+        $this->pendingEmail = $event->email;
         $this->emailChangeRequestedAt = $event->requestedAt;
     }
 
@@ -336,42 +350,52 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     private function applyEmailChanged(IdentityEmailChanged $event): void
     {
         $this->email = $event->email;
+        $this->pendingEmail = null;
+        $this->emailChangedAt = $event->changedAt;
     }
 
     #[Apply]
     private function applyConfirmed(IdentityConfirmed $event): void
     {
         $this->verificationState = IdentityVerificationState::CONFIRMED;
+        $this->confirmedAt = $event->confirmedAt;
     }
 
     #[Apply]
     private function applyErasureRequested(IdentityErasureRequested $event): void
     {
         $this->erasureState = ErasureState::REQUESTED;
+        $this->erasureRequestedAt = $event->requestedAt;
     }
 
     #[Apply]
     private function applyErasureCancelled(IdentityErasureCancelled $event): void
     {
         $this->erasureState = ErasureState::RETAINED;
+        $this->erasureCancelledAt = $event->cancelledAt;
     }
 
     #[Apply]
     private function applyErased(IdentityErased $event): void
     {
         $this->erasureState = ErasureState::ERASED;
+        $this->erasedAt = $event->erasedAt;
     }
 
     #[Apply]
     private function applySuspended(IdentitySuspended $event): void
     {
         $this->moderationState = IdentityModerationState::SUSPENDED;
+        $this->suspensionReason = $event->reason;
+        $this->suspendedAt = $event->suspendedAt;
     }
 
     #[Apply]
     private function applyReactivated(IdentityReactivated $event): void
     {
         $this->moderationState = IdentityModerationState::ACTIVE;
+        $this->reactivationReason = $event->reason;
+        $this->reactivatedAt = $event->reactivatedAt;
     }
 
     #[Apply]

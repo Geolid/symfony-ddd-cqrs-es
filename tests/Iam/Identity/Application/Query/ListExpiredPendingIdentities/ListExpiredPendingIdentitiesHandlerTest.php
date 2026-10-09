@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Application\Query\ListExpiredPendingIdentities;
 
 use Iam\Identity\Application\Query\ListExpiredPendingIdentities\ListExpiredPendingIdentities;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
@@ -17,9 +17,9 @@ final class ListExpiredPendingIdentitiesHandlerTest extends AbstractIntegrationT
     {
         // Given
         $now = Clock::get()->now();
-        $fresh = IdentityBuilder::new()->withRegisteredAt($now->modify('-1 hour'))->create();
-        $active = IdentityBuilder::new()->withRegisteredAt($now->modify('-25 hours'))->confirmed()->create();
-        $expired = IdentityBuilder::new()->withRegisteredAt($now->modify('-25 hours'))->create();
+        $fresh = IdentityFactory::new()->withRegisteredAt($now->modify('-1 hour'))->create();
+        $active = IdentityFactory::new()->withRegisteredAt($now->modify('-25 hours'))->confirmed()->create();
+        $expired = IdentityFactory::new()->withRegisteredAt($now->modify('-25 hours'))->create();
         $this->store($fresh, $active, $expired);
 
         // When

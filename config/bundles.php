@@ -9,6 +9,7 @@ use Sentry\SentryBundle\SentryBundle;
 use Symfony\Bundle\DebugBundle\DebugBundle;
 use Symfony\Bundle\FrameworkBundle\FrameworkBundle;
 use Symfony\Bundle\MonologBundle\MonologBundle;
+use Zenstruck\Foundry\ZenstruckFoundryBundle;
 
 return [
     DAMADoctrineTestBundle::class => ['test' => true],
@@ -18,4 +19,5 @@ return [
     MonologBundle::class => ['all' => true],
     PatchlevelEventSourcingBundle::class => ['all' => true],
     SentryBundle::class => ['prod' => true],
+    ZenstruckFoundryBundle::class => ['dev' => true, 'demo' => true, 'test' => true],
 ];
