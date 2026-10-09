@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Infrastructure\Projection\Finder;
 
 use Iam\Authentication\Application\Finder\BackupCodeCredential\BackupCodeCredentialFinderInterface;
-use Iam\Tests\Authentication\Support\Builder\BackupCodeCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakeBackupCodeHasher;
+use Iam\Tests\Authentication\Support\Factory\BackupCodeCredentialFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DbalBackupCodeCredentialFinderTest extends AbstractIntegrationTestCase
@@ -27,31 +28,31 @@ final class DbalBackupCodeCredentialFinderTest extends AbstractIntegrationTestCa
     public function itFindsByIdentity(): void
     {
         // Given
-        $other = BackupCodeCredentialBuilder::new()->withBackupCodeHasher($this->backupCodeHasher)->create();
+        $other = BackupCodeCredentialFactory::new()->withBackupCodeHasher($this->backupCodeHasher)->create();
+        $plainBackupCodes = [bin2hex(random_bytes(5)), bin2hex(random_bytes(5))];
 
-        $builder = BackupCodeCredentialBuilder::new()->withBackupCodeHasher($this->backupCodeHasher);
-        $credential = $builder->create();
+        $credential = BackupCodeCredentialFactory::new()->withPlainBackupCodes($plainBackupCodes)->withBackupCodeHasher($this->backupCodeHasher)->create();
         $this->store($other, $credential);
 
         // When
-        $result = $this->finder->ofIdentityOrNull($builder['identityId']);
+        $result = $this->finder->ofIdentityOrNull($credential->identityId);
 
         // Then
         self::assertNotNull($result);
-        self::assertSame($builder['identityId'], $result->identityId);
+        self::assertSame($credential->identityId, $result->identityId);
         self::assertSame(
-            $builder['generatedAt']->format(\DateTimeInterface::ATOM),
+            $credential->generatedAt->format(\DateTimeInterface::ATOM),
             $result->generatedAt->format(\DateTimeInterface::ATOM),
         );
         self::assertNull($result->regeneratedAt);
-        self::assertSame(\count($builder['plainBackupCodes']), $result->remainingCount);
+        self::assertSame(\count($plainBackupCodes), $result->remainingCount);
     }
 
     #[Test]
     public function itFindsNothingWhenNotGenerated(): void
     {
         // When
-        $result = $this->finder->ofIdentityOrNull(BackupCodeCredentialBuilder::sample('identityId'));
+        $result = $this->finder->ofIdentityOrNull(Uuid::uuid7()->toString());
 
         // Then
         self::assertNull($result);

@@ -6,8 +6,8 @@ namespace Iam\Tests\Authentication\Infrastructure\Projection\Finder;
 
 use Iam\Authentication\Application\Finder\TotpCredential\Exception\TotpCredentialResultNotFoundException;
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInterface;
-use Iam\Tests\Authentication\Support\Builder\TotpCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakeTotpCipher;
+use Iam\Tests\Authentication\Support\Factory\TotpCredentialFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -29,10 +29,10 @@ final class DbalTotpCredentialFinderTest extends AbstractIntegrationTestCase
     public function itGetsById(): void
     {
         // Given
-        $other = TotpCredentialBuilder::new()->withCipher($this->cipher)->create();
+        $other = TotpCredentialFactory::new()->withCipher($this->cipher)->create();
+        $secret = bin2hex(random_bytes(32));
 
-        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher);
-        $credential = $builder->create();
+        $credential = TotpCredentialFactory::new()->withSecret($secret)->withCipher($this->cipher)->create();
         $this->store($other, $credential);
 
         // When
@@ -40,14 +40,14 @@ final class DbalTotpCredentialFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($credential->id->toString(), $result->id);
-        self::assertSame($builder['identityId'], $result->identityId);
+        self::assertSame($credential->identityId, $result->identityId);
         self::assertSame(
-            $builder['enrolledAt']->format(\DateTimeInterface::ATOM),
+            $credential->enrolledAt->format(\DateTimeInterface::ATOM),
             $result->enrolledAt->format(\DateTimeInterface::ATOM),
         );
         self::assertFalse($result->unenrolled);
         self::assertNull($result->unenrolledAt);
-        self::assertSame($this->cipher->encrypt($builder['secret']), $result->encryptedSecret);
+        self::assertSame($this->cipher->encrypt($secret), $result->encryptedSecret);
     }
 
     #[Test]
@@ -64,31 +64,29 @@ final class DbalTotpCredentialFinderTest extends AbstractIntegrationTestCase
     public function itFindsActiveByIdentity(): void
     {
         // Given
-        $other = TotpCredentialBuilder::new()->withCipher($this->cipher)->create();
+        $other = TotpCredentialFactory::new()->withCipher($this->cipher)->create();
 
-        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher);
-        $credential = $builder->create();
+        $credential = TotpCredentialFactory::new()->withCipher($this->cipher)->create();
         $this->store($other, $credential);
 
         // When
-        $result = $this->finder->activeOfIdentityOrNull($builder['identityId']);
+        $result = $this->finder->activeOfIdentityOrNull($credential->identityId);
 
         // Then
         self::assertNotNull($result);
         self::assertSame($credential->id->toString(), $result->id);
-        self::assertSame($builder['identityId'], $result->identityId);
+        self::assertSame($credential->identityId, $result->identityId);
     }
 
     #[Test]
     public function itFindsNothingWhenUnenrolled(): void
     {
         // Given
-        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher)->unenrolled();
-        $credential = $builder->create();
+        $credential = TotpCredentialFactory::new()->withCipher($this->cipher)->unenrolled()->create();
         $this->store($credential);
 
         // When
-        $result = $this->finder->activeOfIdentityOrNull($builder['identityId']);
+        $result = $this->finder->activeOfIdentityOrNull($credential->identityId);
 
         // Then
         self::assertNull($result);
@@ -98,7 +96,7 @@ final class DbalTotpCredentialFinderTest extends AbstractIntegrationTestCase
     public function itFindsNothingWhenNotEnrolled(): void
     {
         // When
-        $result = $this->finder->activeOfIdentityOrNull(TotpCredentialBuilder::sample('identityId'));
+        $result = $this->finder->activeOfIdentityOrNull(Uuid::uuid7()->toString());
 
         // Then
         self::assertNull($result);

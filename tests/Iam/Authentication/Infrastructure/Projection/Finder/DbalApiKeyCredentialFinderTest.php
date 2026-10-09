@@ -8,8 +8,9 @@ use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinde
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialResult;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\Exception\ApiKeyCredentialResultNotFoundException;
 use Iam\Authentication\Domain\ApiKeyCredential\ApiKeyCredential;
-use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakeApiKeyHasher;
+use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialFactory;
+use Iam\Tests\Authentication\Support\Factory\KeyIdFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
@@ -28,27 +29,27 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIterableFinderTestCas
     {
         // Given
         $hasher = new FakeApiKeyHasher();
-        $other = ApiKeyCredentialBuilder::new()->withHasher($hasher)->create();
+        $other = ApiKeyCredentialFactory::new()->withHasher($hasher)->create();
+        $secret = bin2hex(random_bytes(32));
 
-        $builder = ApiKeyCredentialBuilder::new()->withHasher($hasher);
-        $credential = $builder->create();
+        $credential = ApiKeyCredentialFactory::new()->withSecret($secret)->withHasher($hasher)->create();
         $this->store($other, $credential);
 
         // When
-        $result = $this->finder()->ofKeyId($builder['keyId']->value);
+        $result = $this->finder()->ofKeyId($credential->keyId->value);
 
         // Then
         self::assertSame($credential->id->toString(), $result->id);
-        self::assertSame($builder['identityId'], $result->identityId);
-        self::assertSame($builder['label']->value, $result->label);
-        self::assertSame($builder['keyId']->value, $result->keyId);
+        self::assertSame($credential->identityId, $result->identityId);
+        self::assertSame($credential->label->value, $result->label);
+        self::assertSame($credential->keyId->value, $result->keyId);
         self::assertFalse($result->revoked);
         self::assertSame(
-            $builder['issuedAt']->format(\DateTimeInterface::ATOM),
+            $credential->issuedAt->format(\DateTimeInterface::ATOM),
             $result->issuedAt->format(\DateTimeInterface::ATOM),
         );
         self::assertNull($result->revokedAt);
-        self::assertSame($hasher->hash($builder['secret']), $result->secretHash);
+        self::assertSame($hasher->hash($secret), $result->secretHash);
     }
 
     #[Test]
@@ -58,7 +59,7 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIterableFinderTestCas
         $this->expectException(ApiKeyCredentialResultNotFoundException::class);
 
         // When
-        $this->finder()->ofKeyId(ApiKeyCredentialBuilder::sample('keyId')->value);
+        $this->finder()->ofKeyId(KeyIdFactory::new()->create()->value);
     }
 
     #[Test]
@@ -66,10 +67,10 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIterableFinderTestCas
     {
         // Given
         $hasher = new FakeApiKeyHasher();
-        $other = ApiKeyCredentialBuilder::new()->withHasher($hasher)->create();
+        $other = ApiKeyCredentialFactory::new()->withHasher($hasher)->create();
 
-        $identityId = ApiKeyCredentialBuilder::sample('identityId');
-        $credential = ApiKeyCredentialBuilder::new()->withIdentityId($identityId)->withHasher($hasher)->create();
+        $identityId = Uuid::uuid7()->toString();
+        $credential = ApiKeyCredentialFactory::new()->withIdentityId($identityId)->withHasher($hasher)->create();
         $this->store($other, $credential);
 
         // When
@@ -90,7 +91,7 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIterableFinderTestCas
      */
     protected function seed(int $count): array
     {
-        $credentials = ApiKeyCredentialBuilder::new()->withHasher(new FakeApiKeyHasher())->many($count)->create();
+        $credentials = ApiKeyCredentialFactory::new()->withHasher(new FakeApiKeyHasher())->many($count)->create();
         $this->store(...$credentials);
 
         return array_map(static fn (ApiKeyCredential $credential): string => $credential->id->toString(), $credentials);
@@ -111,8 +112,8 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIterableFinderTestCas
         $largerId = Uuid::uuid7($now->modify('+1 hour'))->toString();
 
         $hasher = new FakeApiKeyHasher();
-        $first = ApiKeyCredentialBuilder::new()->withId($largerId)->withHasher($hasher)->withIssuedAt($now)->create();
-        $second = ApiKeyCredentialBuilder::new()->withId($smallerId)->withHasher($hasher)->withIssuedAt($now->modify('+1 hour'))->create();
+        $first = ApiKeyCredentialFactory::new()->withId($largerId)->withHasher($hasher)->withIssuedAt($now)->create();
+        $second = ApiKeyCredentialFactory::new()->withId($smallerId)->withHasher($hasher)->withIssuedAt($now->modify('+1 hour'))->create();
         $this->store($first, $second);
 
         return [$largerId, $smallerId];

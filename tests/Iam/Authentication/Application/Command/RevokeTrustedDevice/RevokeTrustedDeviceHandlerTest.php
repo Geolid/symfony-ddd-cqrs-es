@@ -8,7 +8,7 @@ use Iam\Authentication\Application\Command\RevokeTrustedDevice\RevokeTrustedDevi
 use Iam\Authentication\Application\Finder\TrustedDevice\TrustedDeviceFinderInterface;
 use Iam\Authentication\Domain\TrustedDevice\Exception\TrustedDeviceNotFoundException;
 use Iam\Authentication\Domain\TrustedDevice\Exception\TrustedDeviceOwnedByAnotherIdentityException;
-use Iam\Tests\Authentication\Support\Builder\TrustedDeviceBuilder;
+use Iam\Tests\Authentication\Support\Factory\TrustedDeviceFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -28,27 +28,25 @@ final class RevokeTrustedDeviceHandlerTest extends AbstractIntegrationTestCase
     public function itRevokes(): void
     {
         // Given
-        $builder = TrustedDeviceBuilder::new();
-        $trustedDevice = $builder->create();
+        $trustedDevice = TrustedDeviceFactory::new()->create();
         $this->store($trustedDevice);
 
         // When
-        $this->dispatch(new RevokeTrustedDevice($trustedDevice->id->toString(), $builder['identityId']));
+        $this->dispatch(new RevokeTrustedDevice($trustedDevice->id->toString(), $trustedDevice->identityId));
 
         // Then
-        self::assertCount(0, $this->finder->activeByIdentity($builder['identityId']));
+        self::assertCount(0, $this->finder->activeByIdentity($trustedDevice->identityId));
     }
 
     #[Test]
     public function itIgnoresWhenAlreadyRevoked(): void
     {
         // Given
-        $builder = TrustedDeviceBuilder::new()->revoked();
-        $trustedDevice = $builder->create();
+        $trustedDevice = TrustedDeviceFactory::new()->revoked()->create();
         $this->store($trustedDevice);
 
         // When
-        $this->dispatch(new RevokeTrustedDevice($trustedDevice->id->toString(), $builder['identityId']));
+        $this->dispatch(new RevokeTrustedDevice($trustedDevice->id->toString(), $trustedDevice->identityId));
 
         // Then
         self::expectNotToPerformAssertions();
@@ -63,7 +61,7 @@ final class RevokeTrustedDeviceHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new RevokeTrustedDevice(
             Uuid::uuid7()->toString(),
-            TrustedDeviceBuilder::sample('identityId'),
+            Uuid::uuid7()->toString(),
         ));
     }
 
@@ -71,7 +69,7 @@ final class RevokeTrustedDeviceHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenOwnedByAnotherIdentity(): void
     {
         // Given
-        $trustedDevice = TrustedDeviceBuilder::new()->create();
+        $trustedDevice = TrustedDeviceFactory::new()->create();
         $this->store($trustedDevice);
 
         // Then
@@ -80,7 +78,7 @@ final class RevokeTrustedDeviceHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new RevokeTrustedDevice(
             $trustedDevice->id->toString(),
-            TrustedDeviceBuilder::sample('identityId'),
+            Uuid::uuid7()->toString(),
         ));
     }
 }

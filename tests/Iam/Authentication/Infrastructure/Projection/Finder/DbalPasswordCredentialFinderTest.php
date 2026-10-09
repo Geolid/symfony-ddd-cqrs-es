@@ -5,10 +5,12 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Infrastructure\Projection\Finder;
 
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
-use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakePasswordHasher;
 use Iam\Tests\Authentication\Support\Double\StubPasswordStrengthSpecification;
+use Iam\Tests\Authentication\Support\Factory\PasswordCredentialFactory;
+use Iam\Tests\Authentication\Support\Factory\PasswordFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
@@ -30,34 +32,34 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
     public function itFindsByIdentity(): void
     {
         // Given
-        $other = PasswordCredentialBuilder::new()
+        $other = PasswordCredentialFactory::new()
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
             ->create();
+        $password = PasswordFactory::new()->create()->value;
 
-        $builder = PasswordCredentialBuilder::new()
+        $credential = PasswordCredentialFactory::new()->withPassword($password)
             ->withPasswordStrength($this->passwordStrength)
-            ->withHasher($this->hasher);
-        $credential = $builder->create();
+            ->withHasher($this->hasher)->create();
         $this->store($other, $credential);
 
         // When
-        $result = $this->finder->ofIdentityOrNull($builder['identityId']);
-        $nothing = $this->finder->ofIdentityOrNull(PasswordCredentialBuilder::sample('identityId'));
+        $result = $this->finder->ofIdentityOrNull($credential->identityId);
+        $nothing = $this->finder->ofIdentityOrNull(Uuid::uuid7()->toString());
 
         // Then
         self::assertNotNull($result);
         self::assertSame($credential->id->toString(), $result->id);
-        self::assertSame($builder['identityId'], $result->identityId);
+        self::assertSame($credential->identityId, $result->identityId);
         self::assertSame(
-            $builder['definedAt']->format(\DateTimeInterface::ATOM),
+            $credential->definedAt->format(\DateTimeInterface::ATOM),
             $result->definedAt->format(\DateTimeInterface::ATOM),
         );
         self::assertSame(
-            $builder['definedAt']->format(\DateTimeInterface::ATOM),
+            $credential->definedAt->format(\DateTimeInterface::ATOM),
             $result->changedAt->format(\DateTimeInterface::ATOM),
         );
-        self::assertSame($this->hasher->hash($builder['password']->value), $result->passwordHash);
+        self::assertSame($this->hasher->hash($password), $result->passwordHash);
 
         self::assertNull($nothing);
     }

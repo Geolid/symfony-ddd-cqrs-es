@@ -7,8 +7,8 @@ namespace Iam\Tests\Authentication\Application\Command\GenerateBackupCodes;
 use Iam\Authentication\Application\Command\GenerateBackupCodes\GenerateBackupCodes;
 use Iam\Authentication\Application\CredentialVerification\BackupCodeCredentialVerifierInterface;
 use Iam\Authentication\Application\Finder\BackupCodeCredential\BackupCodeCredentialFinderInterface;
-use Iam\Tests\Authentication\Support\Builder\BackupCodeCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class GenerateBackupCodesHandlerTest extends AbstractIntegrationTestCase
@@ -17,8 +17,8 @@ final class GenerateBackupCodesHandlerTest extends AbstractIntegrationTestCase
     public function itGenerates(): void
     {
         // Given
-        $identityId = BackupCodeCredentialBuilder::sample('identityId');
-        $backupCodes = BackupCodeCredentialBuilder::sample('plainBackupCodes');
+        $identityId = Uuid::uuid7()->toString();
+        $backupCodes = [bin2hex(random_bytes(5)), bin2hex(random_bytes(5))];
 
         // When
         $this->dispatch(new GenerateBackupCodes($identityId, $backupCodes));

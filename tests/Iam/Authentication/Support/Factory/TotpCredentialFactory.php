@@ -85,7 +85,7 @@ final class TotpCredentialFactory extends AbstractAggregateFactory
         $now = Clock::get()->now();
 
         return [
-            'id' => TotpCredentialId::fromString(Uuid::uuid7()->toString()),
+            'id' => TotpCredentialIdFactory::new(),
             'identityId' => Uuid::uuid7()->toString(),
             'secret' => TOTP::generate()->getSecret(),
             'enrolledAt' => $now,

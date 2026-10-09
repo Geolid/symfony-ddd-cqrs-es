@@ -10,9 +10,10 @@ use Iam\Authentication\Application\Command\DefinePassword\DefinePassword;
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
-use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\StubCompromisedPasswordGateway;
+use Iam\Tests\Authentication\Support\Factory\PasswordFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -22,8 +23,8 @@ final class DefinePasswordHandlerTest extends AbstractIntegrationTestCase
     public function itDefines(): void
     {
         // Given
-        $identityId = PasswordCredentialBuilder::sample('identityId');
-        $password = PasswordCredentialBuilder::sample('password')->value;
+        $identityId = Uuid::uuid7()->toString();
+        $password = PasswordFactory::new()->create()->value;
         $now = Clock::get()->now();
 
         // When
@@ -56,8 +57,8 @@ final class DefinePasswordHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new DefinePassword(
-            PasswordCredentialBuilder::sample('identityId'),
-            PasswordCredentialBuilder::sample('password')->value,
+            Uuid::uuid7()->toString(),
+            PasswordFactory::new()->create()->value,
         ));
     }
 
@@ -69,7 +70,7 @@ final class DefinePasswordHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new DefinePassword(
-            PasswordCredentialBuilder::sample('identityId'),
+            Uuid::uuid7()->toString(),
             'passwordpassword',
         ));
     }

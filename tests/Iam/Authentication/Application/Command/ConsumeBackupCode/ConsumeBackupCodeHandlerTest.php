@@ -9,7 +9,7 @@ use Iam\Authentication\Application\CredentialVerification\BackupCodeCredentialVe
 use Iam\Authentication\Domain\BackupCodeCredential\Exception\BackupCodeCredentialNotFoundException;
 use Iam\Authentication\Domain\BackupCodeCredential\Exception\InvalidBackupCodeException;
 use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeHasherInterface;
-use Iam\Tests\Authentication\Support\Builder\BackupCodeCredentialBuilder;
+use Iam\Tests\Authentication\Support\Factory\BackupCodeCredentialFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -31,31 +31,30 @@ final class ConsumeBackupCodeHandlerTest extends AbstractIntegrationTestCase
     public function itConsumes(): void
     {
         // Given
-        $builder = BackupCodeCredentialBuilder::new()->withBackupCodeHasher($this->backupCodeHasher);
-        $credential = $builder->create();
+        $plainBackupCodes = [bin2hex(random_bytes(5)), bin2hex(random_bytes(5))];
+        $credential = BackupCodeCredentialFactory::new()->withPlainBackupCodes($plainBackupCodes)->withBackupCodeHasher($this->backupCodeHasher)->create();
         $this->store($credential);
 
         // When
-        $this->dispatch(new ConsumeBackupCode($builder['identityId'], $builder['plainBackupCodes'][0]));
+        $this->dispatch(new ConsumeBackupCode($credential->identityId, $plainBackupCodes[0]));
 
         // Then
-        self::assertFalse($this->verifier->verify($builder['identityId'], $builder['plainBackupCodes'][0]));
-        self::assertTrue($this->verifier->verify($builder['identityId'], $builder['plainBackupCodes'][1]));
+        self::assertFalse($this->verifier->verify($credential->identityId, $plainBackupCodes[0]));
+        self::assertTrue($this->verifier->verify($credential->identityId, $plainBackupCodes[1]));
     }
 
     #[Test]
     public function itFailsWhenInvalid(): void
     {
         // Given
-        $builder = BackupCodeCredentialBuilder::new()->withBackupCodeHasher($this->backupCodeHasher);
-        $credential = $builder->create();
+        $credential = BackupCodeCredentialFactory::new()->withBackupCodeHasher($this->backupCodeHasher)->create();
         $this->store($credential);
 
         // Then
         $this->expectException(InvalidBackupCodeException::class);
 
         // When
-        $this->dispatch(new ConsumeBackupCode($builder['identityId'], 'INVALIDCODE'));
+        $this->dispatch(new ConsumeBackupCode($credential->identityId, 'INVALIDCODE'));
     }
 
     #[Test]

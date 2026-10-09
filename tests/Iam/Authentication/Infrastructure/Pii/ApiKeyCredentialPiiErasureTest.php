@@ -4,10 +4,9 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Infrastructure\Pii;
 
-use Iam\Authentication\Domain\ApiKeyCredential\Event\ApiKeyCredentialIssued;
-use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
+use Iam\Authentication\Domain\ApiKeyCredential\Repository\ApiKeyCredentialRepositoryInterface;
 use Iam\Tests\Authentication\Support\Double\FakeApiKeyHasher;
-use Patchlevel\EventSourcing\Serializer\EventSerializer;
+use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialFactory;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Domain\Pii\ErasedFieldSentinel;
@@ -17,34 +16,28 @@ final class ApiKeyCredentialPiiErasureTest extends AbstractIntegrationTestCase
 {
     private CipherKeyStore $cipherKeyStore;
 
-    private EventSerializer $serializer;
+    private ApiKeyCredentialRepositoryInterface $repository;
 
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->cipherKeyStore = $this->service(CipherKeyStore::class);
-        $this->serializer = $this->service(EventSerializer::class);
+        $this->repository = $this->service(ApiKeyCredentialRepositoryInterface::class);
     }
 
     #[Test]
     public function itCryptoShredsLabelOnErasure(): void
     {
         // Given
-        $credential = ApiKeyCredentialBuilder::new()->withHasher(new FakeApiKeyHasher())->create();
-        $this->store($credential);
-        $serialized = $this->serializedEventOf(
-            ApiKeyCredentialIssued::class,
-            static fn (ApiKeyCredentialIssued $event): bool => $event->id->equals($credential->id),
-        );
+        $credential = ApiKeyCredentialFactory::new()->withHasher(new FakeApiKeyHasher())->create();
+        $this->repository->save($credential);
 
         // When
         $this->cipherKeyStore->removeWithSubjectId($credential->id->toString());
 
         // Then
-        $rehydrated = $this->serializer->deserialize($serialized);
-        self::assertInstanceOf(ApiKeyCredentialIssued::class, $rehydrated);
         $sentinel = new ErasedFieldSentinel('erased-%s');
-        self::assertSame($sentinel($credential->id->toString()), $rehydrated->label->value);
+        self::assertSame($sentinel($credential->id->toString()), $this->repository->load($credential->id)->label->value);
     }
 }

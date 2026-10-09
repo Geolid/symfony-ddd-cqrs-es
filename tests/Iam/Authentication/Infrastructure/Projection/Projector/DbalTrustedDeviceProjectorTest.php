@@ -6,7 +6,7 @@ namespace Iam\Tests\Authentication\Infrastructure\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
 use Iam\Authentication\Infrastructure\Projection\Projector\DbalTrustedDeviceProjector;
-use Iam\Tests\Authentication\Support\Builder\TrustedDeviceBuilder;
+use Iam\Tests\Authentication\Support\Factory\TrustedDeviceFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -22,8 +22,7 @@ final class DbalTrustedDeviceProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnTrustedDeviceTrusted(): void
     {
         // Given
-        $builder = TrustedDeviceBuilder::new();
-        $trustedDevice = $builder->create();
+        $trustedDevice = TrustedDeviceFactory::new()->create();
 
         // When
         $this->store($trustedDevice);
@@ -31,9 +30,9 @@ final class DbalTrustedDeviceProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($trustedDevice->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($builder['userAgent'], $row['user_agent']);
-        self::assertSame($builder['ip'], $row['ip']);
-        self::assertSame($builder['trustedAt']->format(self::DATE_FORMAT), $row['trusted_at']);
+        self::assertSame($trustedDevice->userAgent, $row['user_agent']);
+        self::assertSame($trustedDevice->ip, $row['ip']);
+        self::assertSame($trustedDevice->trustedAt->format(self::DATE_FORMAT), $row['trusted_at']);
         self::assertNull($row['revoked_at']);
     }
 
@@ -41,10 +40,9 @@ final class DbalTrustedDeviceProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnTrustedDeviceRevoked(): void
     {
         // Given
-        $other = TrustedDeviceBuilder::new()->create();
+        $other = TrustedDeviceFactory::new()->create();
 
-        $builder = TrustedDeviceBuilder::new()->revoked();
-        $trustedDevice = $builder->create();
+        $trustedDevice = TrustedDeviceFactory::new()->revoked()->create();
 
         // When
         $this->store($other, $trustedDevice);
@@ -52,7 +50,7 @@ final class DbalTrustedDeviceProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($trustedDevice->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($builder['revokedAt']->format(self::DATE_FORMAT), $row['revoked_at']);
+        self::assertSame($trustedDevice->revokedAt->format(self::DATE_FORMAT), $row['revoked_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
@@ -63,11 +61,11 @@ final class DbalTrustedDeviceProjectorTest extends AbstractIntegrationTestCase
     public function itRemovesOnIdentityErasedIntegrationEvent(): void
     {
         // Given
-        $other = TrustedDeviceBuilder::new()->create();
+        $other = TrustedDeviceFactory::new()->create();
         $this->store($other);
 
         $identity = IdentityFactory::new()->erasureRequested()->erased()->create();
-        $trustedDevice = TrustedDeviceBuilder::new()
+        $trustedDevice = TrustedDeviceFactory::new()
             ->withIdentityId($identity->id->toString())
             ->create();
 

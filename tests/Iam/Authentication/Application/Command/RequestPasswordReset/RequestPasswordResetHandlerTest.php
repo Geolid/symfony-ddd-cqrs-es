@@ -11,7 +11,7 @@ use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialNot
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordResetRequestedTooRecentlyException;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
-use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
+use Iam\Tests\Authentication\Support\Factory\PasswordCredentialFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -36,7 +36,7 @@ final class RequestPasswordResetHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $identity = IdentityFactory::new()->confirmed()->create();
-        $credential = PasswordCredentialBuilder::new()
+        $credential = PasswordCredentialFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
@@ -67,7 +67,7 @@ final class RequestPasswordResetHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $identity = IdentityFactory::new()->create();
-        $credential = PasswordCredentialBuilder::new()
+        $credential = PasswordCredentialFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Infrastructure\EventStore;
 
+use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialAlreadyExistsException;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialNotFoundException;
 use Iam\Authentication\Domain\TotpCredential\Repository\TotpCredentialRepositoryInterface;
+use Iam\Authentication\Domain\TotpCredential\TotpCredential;
 use Iam\Authentication\Domain\TotpCredential\ValueObject\TotpCredentialId;
-use Iam\Tests\Authentication\Support\Builder\TotpCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakeTotpCipher;
+use Iam\Tests\Authentication\Support\Factory\TotpCredentialFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -30,14 +32,30 @@ final class PatchlevelTotpCredentialRepositoryTest extends AbstractIntegrationTe
     public function itSavesAndLoads(): void
     {
         // Given
-        $credential = TotpCredentialBuilder::new()->withCipher($this->cipher)->create();
+        $credential = TotpCredentialFactory::new()->withCipher($this->cipher)->unenrolled()
+            ->create();
 
         // When
         $this->repository->save($credential);
         $loaded = $this->repository->load($credential->id);
 
         // Then
-        self::assertSame($credential->id->toString(), $loaded->id->toString());
+        self::assertSame($this->stateOf($credential), $this->stateOf($loaded));
+    }
+
+    #[Test]
+    public function itThrowsWhenAlreadyExists(): void
+    {
+        // Given
+        $credential = TotpCredentialFactory::new()->withCipher($this->cipher)->create();
+        $this->repository->save($credential);
+        $duplicate = TotpCredentialFactory::new()->withCipher($this->cipher)->withId($credential->id->toString())->create();
+
+        // Then
+        $this->expectException(TotpCredentialAlreadyExistsException::class);
+
+        // When
+        $this->repository->save($duplicate);
     }
 
     #[Test]
@@ -54,7 +72,7 @@ final class PatchlevelTotpCredentialRepositoryTest extends AbstractIntegrationTe
     public function itHas(): void
     {
         // Given
-        $credential = TotpCredentialBuilder::new()->withCipher($this->cipher)->create();
+        $credential = TotpCredentialFactory::new()->withCipher($this->cipher)->create();
         $this->repository->save($credential);
 
         // When
@@ -72,5 +90,22 @@ final class PatchlevelTotpCredentialRepositoryTest extends AbstractIntegrationTe
 
         // Then
         self::assertFalse($notExists);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function stateOf(TotpCredential $credential): array
+    {
+        $atom = static fn (?\DateTimeImmutable $date): ?string => $date?->format(\DateTimeInterface::ATOM);
+
+        return [
+            'id' => $credential->id->toString(),
+            'identityId' => $credential->identityId,
+            'encryptedSecret' => $credential->encryptedSecret,
+            'enrolledAt' => $atom($credential->enrolledAt),
+            'unenrolled' => $credential->unenrolled,
+            'unenrolledAt' => $atom($credential->unenrolledAt),
+        ];
     }
 }

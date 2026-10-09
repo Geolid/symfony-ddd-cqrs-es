@@ -15,8 +15,8 @@ use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialNot
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialVerificationCodePurpose;
-use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\StubCompromisedPasswordGateway;
+use Iam\Tests\Authentication\Support\Factory\PasswordCredentialFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -52,7 +52,7 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $identity = IdentityFactory::new()->confirmed()->create();
-        $credential = PasswordCredentialBuilder::new()
+        $credential = PasswordCredentialFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
@@ -107,7 +107,7 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
         $this->replace(CompromisedPasswordGatewayInterface::class, new StubCompromisedPasswordGateway(compromised: true));
 
         $identity = IdentityFactory::new()->confirmed()->create();
-        $credential = PasswordCredentialBuilder::new()
+        $credential = PasswordCredentialFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
@@ -144,7 +144,7 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $identity = IdentityFactory::new()->confirmed()->create();
-        $credential = PasswordCredentialBuilder::new()
+        $credential = PasswordCredentialFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)

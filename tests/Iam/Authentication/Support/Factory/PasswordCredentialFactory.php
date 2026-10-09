@@ -142,7 +142,7 @@ final class PasswordCredentialFactory extends AbstractAggregateFactory
 
         return [
             'identityId' => Uuid::uuid7()->toString(),
-            'password' => Password::fromString('Marmoset-42-Zephyr!'),
+            'password' => PasswordFactory::new(),
             'definedAt' => $now,
             'changedAt' => $now->modify('+1 day'),
             'rehashedAt' => $now->modify('+2 day'),

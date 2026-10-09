@@ -6,8 +6,9 @@ namespace Iam\Tests\Authentication\Application\CredentialVerification;
 
 use Iam\Authentication\Application\CredentialVerification\BackupCodeCredentialVerifierInterface;
 use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeHasherInterface;
-use Iam\Tests\Authentication\Support\Builder\BackupCodeCredentialBuilder;
+use Iam\Tests\Authentication\Support\Factory\BackupCodeCredentialFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class BackupCodeCredentialVerifierTest extends AbstractIntegrationTestCase
@@ -27,12 +28,12 @@ final class BackupCodeCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itAccepts(): void
     {
         // Given
-        $builder = BackupCodeCredentialBuilder::new()->withBackupCodeHasher($this->backupCodeHasher);
-        $credential = $builder->create();
+        $plainBackupCodes = [bin2hex(random_bytes(5)), bin2hex(random_bytes(5))];
+        $credential = BackupCodeCredentialFactory::new()->withPlainBackupCodes($plainBackupCodes)->withBackupCodeHasher($this->backupCodeHasher)->create();
         $this->store($credential);
 
         // When
-        $verified = $this->verifier->verify($builder['identityId'], $builder['plainBackupCodes'][0]);
+        $verified = $this->verifier->verify($credential->identityId, $plainBackupCodes[0]);
 
         // Then
         self::assertTrue($verified);
@@ -42,12 +43,11 @@ final class BackupCodeCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itRefuses(): void
     {
         // Given
-        $builder = BackupCodeCredentialBuilder::new()->withBackupCodeHasher($this->backupCodeHasher);
-        $credential = $builder->create();
+        $credential = BackupCodeCredentialFactory::new()->withBackupCodeHasher($this->backupCodeHasher)->create();
         $this->store($credential);
 
         // When
-        $verified = $this->verifier->verify($builder['identityId'], 'INVALIDCODE');
+        $verified = $this->verifier->verify($credential->identityId, 'INVALIDCODE');
 
         // Then
         self::assertFalse($verified);
@@ -57,7 +57,7 @@ final class BackupCodeCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itRefusesWhenNotGenerated(): void
     {
         // When
-        $verified = $this->verifier->verify(BackupCodeCredentialBuilder::sample('identityId'), 'INVALIDCODE');
+        $verified = $this->verifier->verify(Uuid::uuid7()->toString(), 'INVALIDCODE');
 
         // Then
         self::assertFalse($verified);
@@ -67,12 +67,12 @@ final class BackupCodeCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itRefusesWhenAlreadyConsumed(): void
     {
         // Given
-        $builder = BackupCodeCredentialBuilder::new()->withBackupCodeHasher($this->backupCodeHasher)->consumed();
-        $credential = $builder->create();
+        $plainBackupCodes = [bin2hex(random_bytes(5)), bin2hex(random_bytes(5))];
+        $credential = BackupCodeCredentialFactory::new()->withPlainBackupCodes($plainBackupCodes)->withBackupCodeHasher($this->backupCodeHasher)->consumed($plainBackupCodes[0])->create();
         $this->store($credential);
 
         // When
-        $verified = $this->verifier->verify($builder['identityId'], $builder['consumedBackupCode']);
+        $verified = $this->verifier->verify($credential->identityId, $plainBackupCodes[0]);
 
         // Then
         self::assertFalse($verified);

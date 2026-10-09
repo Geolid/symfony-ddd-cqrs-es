@@ -6,8 +6,8 @@ namespace Iam\Tests\Authentication\Infrastructure\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
 use Iam\Authentication\Infrastructure\Projection\Projector\DbalTotpCredentialProjector;
-use Iam\Tests\Authentication\Support\Builder\TotpCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakeTotpCipher;
+use Iam\Tests\Authentication\Support\Factory\TotpCredentialFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -32,8 +32,7 @@ final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnTotpCredentialEnrolled(): void
     {
         // Given
-        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher);
-        $credential = $builder->create();
+        $credential = TotpCredentialFactory::new()->withCipher($this->cipher)->create();
 
         // When
         $this->store($credential);
@@ -41,7 +40,7 @@ final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($builder['enrolledAt']->format(self::DATE_FORMAT), $row['enrolled_at']);
+        self::assertSame($credential->enrolledAt->format(self::DATE_FORMAT), $row['enrolled_at']);
         self::assertFalse((bool) $row['unenrolled']);
         self::assertNull($row['unenrolled_at']);
     }
@@ -50,13 +49,12 @@ final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnTotpCredentialUnenrolled(): void
     {
         // Given
-        $other = TotpCredentialBuilder::new()->withCipher($this->cipher)->create();
+        $other = TotpCredentialFactory::new()->withCipher($this->cipher)->create();
         $this->store($other);
 
-        $builder = TotpCredentialBuilder::new()
+        $credential = TotpCredentialFactory::new()
             ->withCipher($this->cipher)
-            ->unenrolled();
-        $credential = $builder->create();
+            ->unenrolled()->create();
 
         // When
         $this->store($credential);
@@ -65,7 +63,7 @@ final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
         self::assertTrue((bool) $row['unenrolled']);
-        self::assertSame($builder['unenrolledAt']->format(self::DATE_FORMAT), $row['unenrolled_at']);
+        self::assertSame($credential->unenrolledAt->format(self::DATE_FORMAT), $row['unenrolled_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
@@ -77,11 +75,11 @@ final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
     public function itRemovesOnIdentityErasedIntegrationEvent(): void
     {
         // Given
-        $other = TotpCredentialBuilder::new()->withCipher($this->cipher)->create();
+        $other = TotpCredentialFactory::new()->withCipher($this->cipher)->create();
         $this->store($other);
 
         $identity = IdentityFactory::new()->erasureRequested()->erased()->create();
-        $credential = TotpCredentialBuilder::new()
+        $credential = TotpCredentialFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withCipher($this->cipher)
             ->create();

@@ -4,11 +4,13 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Infrastructure\EventStore;
 
+use Iam\Authentication\Domain\ApiKeyCredential\ApiKeyCredential;
+use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialAlreadyExistsException;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialNotFoundException;
 use Iam\Authentication\Domain\ApiKeyCredential\Repository\ApiKeyCredentialRepositoryInterface;
 use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\ApiKeyCredentialId;
-use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakeApiKeyHasher;
+use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -30,14 +32,30 @@ final class PatchlevelApiKeyCredentialRepositoryTest extends AbstractIntegration
     public function itSavesAndLoads(): void
     {
         // Given
-        $credential = ApiKeyCredentialBuilder::new()->withHasher($this->hasher)->create();
+        $credential = ApiKeyCredentialFactory::new()->withHasher($this->hasher)->revoked()
+            ->create();
 
         // When
         $this->repository->save($credential);
         $loaded = $this->repository->load($credential->id);
 
         // Then
-        self::assertSame($credential->id->toString(), $loaded->id->toString());
+        self::assertSame($this->stateOf($credential), $this->stateOf($loaded));
+    }
+
+    #[Test]
+    public function itThrowsWhenAlreadyExists(): void
+    {
+        // Given
+        $credential = ApiKeyCredentialFactory::new()->withHasher($this->hasher)->create();
+        $this->repository->save($credential);
+        $duplicate = ApiKeyCredentialFactory::new()->withHasher($this->hasher)->withId($credential->id->toString())->create();
+
+        // Then
+        $this->expectException(ApiKeyCredentialAlreadyExistsException::class);
+
+        // When
+        $this->repository->save($duplicate);
     }
 
     #[Test]
@@ -54,7 +72,7 @@ final class PatchlevelApiKeyCredentialRepositoryTest extends AbstractIntegration
     public function itHas(): void
     {
         // Given
-        $credential = ApiKeyCredentialBuilder::new()->withHasher($this->hasher)->create();
+        $credential = ApiKeyCredentialFactory::new()->withHasher($this->hasher)->create();
         $this->repository->save($credential);
 
         // When
@@ -72,5 +90,24 @@ final class PatchlevelApiKeyCredentialRepositoryTest extends AbstractIntegration
 
         // Then
         self::assertFalse($notExists);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function stateOf(ApiKeyCredential $credential): array
+    {
+        $atom = static fn (?\DateTimeImmutable $date): ?string => $date?->format(\DateTimeInterface::ATOM);
+
+        return [
+            'id' => $credential->id->toString(),
+            'identityId' => $credential->identityId,
+            'label' => $credential->label->value,
+            'keyId' => $credential->keyId->value,
+            'secretHash' => $credential->secretHash,
+            'issuedAt' => $atom($credential->issuedAt),
+            'revoked' => $credential->revoked,
+            'revokedAt' => $atom($credential->revokedAt),
+        ];
     }
 }

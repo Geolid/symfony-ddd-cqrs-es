@@ -12,10 +12,11 @@ use Iam\Authentication\Domain\BackupCodeCredential\Event\BackupCodeCredentialReg
 use Iam\Authentication\Domain\BackupCodeCredential\Exception\InvalidBackupCodeException;
 use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeHasherInterface;
 use Iam\Authentication\Domain\BackupCodeCredential\ValueObject\BackupCodeCredentialId;
-use Iam\Tests\Authentication\Support\Builder\BackupCodeCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakeBackupCodeHasher;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
+use Symfony\Component\Clock\Clock;
 
 final class BackupCodeCredentialTest extends AggregateRootTestCase
 {
@@ -30,10 +31,10 @@ final class BackupCodeCredentialTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->identityId = BackupCodeCredentialBuilder::sample('identityId');
+        $this->identityId = Uuid::uuid7()->toString();
         $this->id = BackupCodeCredentialId::forIdentity($this->identityId);
-        $this->plainBackupCodes = BackupCodeCredentialBuilder::sample('plainBackupCodes');
-        $this->generatedAt = BackupCodeCredentialBuilder::sample('generatedAt');
+        $this->plainBackupCodes = [bin2hex(random_bytes(5)), bin2hex(random_bytes(5))];
+        $this->generatedAt = Clock::get()->now();
         $this->backupCodeHasher = new FakeBackupCodeHasher();
     }
 
@@ -55,8 +56,8 @@ final class BackupCodeCredentialTest extends AggregateRootTestCase
     #[Test]
     public function itRegenerates(): void
     {
-        $regeneratedBackupCodes = BackupCodeCredentialBuilder::sample('regeneratedBackupCodes');
-        $regeneratedAt = BackupCodeCredentialBuilder::sample('regeneratedAt');
+        $regeneratedBackupCodes = [bin2hex(random_bytes(5)), bin2hex(random_bytes(5))];
+        $regeneratedAt = Clock::get()->now()->modify('+1 day');
 
         $this
             ->given($this->generated())
@@ -75,7 +76,7 @@ final class BackupCodeCredentialTest extends AggregateRootTestCase
     #[Test]
     public function itConsumes(): void
     {
-        $consumedAt = BackupCodeCredentialBuilder::sample('consumedAt');
+        $consumedAt = Clock::get()->now()->modify('+1 day');
 
         $this
             ->given($this->generated())
@@ -99,7 +100,7 @@ final class BackupCodeCredentialTest extends AggregateRootTestCase
             ->when(fn (BackupCodeCredential $credential) => $credential->consume(
                 'INVALIDCODE',
                 $this->backupCodeHasher,
-                BackupCodeCredentialBuilder::sample('consumedAt'),
+                Clock::get()->now()->modify('+1 day'),
             ))
             ->expectsException(InvalidBackupCodeException::class);
     }
@@ -107,7 +108,7 @@ final class BackupCodeCredentialTest extends AggregateRootTestCase
     #[Test]
     public function itCannotConsumeWhenAlreadyConsumed(): void
     {
-        $consumedAt = BackupCodeCredentialBuilder::sample('consumedAt');
+        $consumedAt = Clock::get()->now()->modify('+1 day');
 
         $this
             ->given(
@@ -121,7 +122,7 @@ final class BackupCodeCredentialTest extends AggregateRootTestCase
             ->when(fn (BackupCodeCredential $credential) => $credential->consume(
                 $this->plainBackupCodes[0],
                 $this->backupCodeHasher,
-                BackupCodeCredentialBuilder::sample('consumedAt'),
+                Clock::get()->now()->modify('+1 day'),
             ))
             ->expectsException(InvalidBackupCodeException::class);
     }
