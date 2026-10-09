@@ -6,9 +6,9 @@ namespace Catalog\Tests\Listing\Application\Query\GetProduct;
 
 use Catalog\Listing\Application\Finder\Product\Exception\ProductResultNotFoundException;
 use Catalog\Listing\Application\Query\GetProduct\GetProduct;
-use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
+use Catalog\Tests\Listing\Support\Factory\ProductFactory;
+use Catalog\Tests\Listing\Support\Factory\ProductIdFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class GetProductHandlerTest extends AbstractIntegrationTestCase
@@ -17,8 +17,7 @@ final class GetProductHandlerTest extends AbstractIntegrationTestCase
     public function itGets(): void
     {
         // Given
-        $builder = ProductBuilder::new();
-        $product = $builder->create();
+        $product = ProductFactory::new()->create();
         $this->store($product);
 
         // When
@@ -26,10 +25,10 @@ final class GetProductHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($product->id->toString(), $result->id);
-        self::assertSame($builder['label']->value, $result->label);
-        self::assertSame($builder['unitPrice']->cents, $result->unitPriceInCents);
+        self::assertSame($product->label->value, $result->label);
+        self::assertSame($product->unitPrice->cents, $result->unitPriceInCents);
         self::assertSame(
-            $builder['listedAt']->format(\DateTimeInterface::ATOM),
+            $product->listedAt->format(\DateTimeInterface::ATOM),
             $result->listedAt->format(\DateTimeInterface::ATOM),
         );
         self::assertNull($result->repricedAt);
@@ -42,6 +41,6 @@ final class GetProductHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(ProductResultNotFoundException::class);
 
         // When
-        $this->ask(new GetProduct(Uuid::uuid7()->toString()));
+        $this->ask(new GetProduct(ProductIdFactory::new()->create()->toString()));
     }
 }

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shopping\Tests\Cart\Application\Command\AddCartProduct;
 
-use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
+use Catalog\Tests\Listing\Support\Factory\ProductFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shopping\Cart\Application\Command\AddCartProduct\AddCartProduct;
@@ -31,7 +31,7 @@ final class AddCartProductHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $cart = CartFactory::new()->create();
-        $product = ProductBuilder::new()->create();
+        $product = ProductFactory::new()->create();
         $this->store($cart, $product);
 
         // When

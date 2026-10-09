@@ -5,9 +5,11 @@ declare(strict_types=1);
 namespace Shopping\Tests\Checkout\Infrastructure\Projection\Finder;
 
 use Catalog\Listing\Domain\Product;
-use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
+use Catalog\Tests\Listing\Support\Factory\ProductFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Shared\Tests\Support\Factory\LabelFactory;
+use Shared\Tests\Support\Factory\MoneyFactory;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductFinderInterface;
 use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductResult;
@@ -21,10 +23,10 @@ final class DbalListedProductFinderTest extends AbstractIterableFinderTestCase
     public function itFiltersByIds(): void
     {
         // Given
-        $other = ProductBuilder::new()->create();
-        $label = ProductBuilder::sample('label');
-        $unitPrice = ProductBuilder::sample('unitPrice');
-        $cups = ProductBuilder::new()->withLabel($label->value)->withUnitPriceInCents($unitPrice->cents)->create();
+        $other = ProductFactory::new()->create();
+        $label = LabelFactory::new()->create();
+        $unitPrice = MoneyFactory::new()->create();
+        $cups = ProductFactory::new()->withLabel($label->value)->withUnitPriceInCents($unitPrice->cents)->create();
         $this->store($other, $cups);
 
         // When
@@ -47,7 +49,7 @@ final class DbalListedProductFinderTest extends AbstractIterableFinderTestCase
      */
     protected function seed(int $count): array
     {
-        $products = ProductBuilder::new()->many($count)->create();
+        $products = ProductFactory::new()->many($count)->create();
         $this->store(...$products);
 
         return array_map(static fn (Product $product): string => $product->id->toString(), $products);
