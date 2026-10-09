@@ -93,3 +93,35 @@ Source du code de référence : le spike, branche `ai/foundry-spike-storefront` 
 
 - Branche : `ai/foundry-spike-storefront`. Tests : `castor qa:test <chemin>` (jamais de `castor sh` pour vérifier). Démo : `castor demo:fixtures` (env `demo`, base `demo`).
 - Seed reproductible : `.env.test.local` → `FOUNDRY_FAKER_SEED=<n>` (supprimer après usage).
+
+## 8. Raisonnements consignés (ne pas les rediscuter)
+
+**Aggregate à état complet**
+- Motif : une seule règle (tout l'état est lisible) remplace « cette prop mérite-t-elle sa place ? » (`domain.md:35`), supprime le `WeakMap` et les `$builder['x']`, et rend les tests de repository plus riches.
+- Pas une transgression DDD/CQRS : DDD n'interdit pas d'exposer des attributs ; Tell, Don't Ask vise les décisions prises hors de l'objet ; CQRS sépare les modèles de lecture et d'écriture, et lire côté commande (tests, construction d'Integration Event) ne sert aucune requête ; l'état minimal en ES (le `Decider`) est une recommandation de simplicité, pas de correction. Écart reconnu : un smell faible (facilite la lecture-pour-décider). *Citations de mémoire, non vérifiées : les exemples d'IDDD (Vernon) avec accesseurs publics et setters privés ; le `expectState` de la fixture Axon.*
+- Seul risque résiduel : l'Application d'un même BC lit un état pour décider (l'inter-BC est déjà bloqué par deptrac/PHPat). Garde-fou existant : `application.md`, NEVER « pré-contrôler une condition que la transition garde ». **Règle d'usage** : état lisible en `public private(set)` ; la décision reste dans l'aggregate ; l'Application ne lit un état que pour un appel de port sortant ou la construction d'un Integration Event ; l'affichage passe par un Finder. Les cas légitimes sont dans la liste suivante.
+- Pas de règle PHPat interdisant à l'Application de dépendre des `*State` : `CancelErasureHandler` lit légitimement `$erasure->state` (faux positif).
+- RGPD : non sujet (clé détruite, valeurs de repli gérées) — décision de l'utilisateur.
+- L'aller-retour du repository détecte la sérialisation, pas un `#[Apply]` oublié (les deux côtés passent par les mêmes `#[Apply]`).
+
+**Lectures d'état légitimes dans l'Application (références)**
+- `CancelErasureHandler` : `if ($erasure->state->isCancelled()) { uniqueness->release(...) }` est une décision applicative (effet sur le registre d'unicité), pas une décision de l'aggregate. C'est un postcondition volontaire : `cancel()` est idempotente (no-op si déjà annulée), donc la libération est rejouable ; une Policy sur `ErasureCancelled` ne se déclencherait qu'à la première transition.
+- `ShipmentManifester` : lit un **Result de Finder** (pas l'aggregate) et refuse un colis annulé pour ne pas appeler le transporteur. Résoudre → décider → appeler → `dispatch` est la forme prescrite par `application.md` ; l'aggregate ne peut pas protéger un appel qui le précède.
+
+**Stories vs Givens inline**
+- Fixtures partagées entre tests : écartées (Mystery Guest ; revue Q16 ; `paratest`). Admis : une Story est un scénario nommé, **reconstruite à chaque test** (`Configuration::shutdown()` → `StoryRegistry::reset()`), donc fraîche ; les lignes sont annulées par DAMA.
+- Limites : une Story n'a pas de paramètre d'appel (une variation = une classe) → Stories empilables par dépendance pour les cas fréquents (5 Stories couvrent 48 des 62 appels `account()`), factories inline pour les autres ; une Story qui encode plus que son nom devient un Mystery Guest ; Object Mother vs Test Data Builder (Pryce).
+- Un Given mono-aggregate reste inline : une ligne énonce déjà la condition.
+- `AccountBuilder` disparaît : il avait été écrit pour remplacer des Stories sans Foundry.
+
+**VO et faker** : une factory par VO ; un provider seulement pour une primitive. Un VO imbriqué dans `defaults()` est créé par Foundry avant l'instanciation.
+
+**Stores réels** : event store et clés en base ; subscriptions en mémoire, parce que la version en base coûte cher (6,3 s contre 1,8 s sur un fichier) sans apporter ce qui est cherché. Gains : `disableReboot()` inutile (chaque `browser()` recrée le noyau ; l'état persiste grâce à DAMA), second navigateur, positions de subscriptions non remises à zéro (l'auto-increment InnoDB ne recule pas au rollback — non prouvé dans tous les ordres), `AggregateAlreadyExists` testable (vérifié sur Identity). Playwright, selon l'utilisateur, partage le process du `KernelBrowser` : DAMA s'applique donc, mais ce mode n'a pas été validé.
+
+**`sample()`** : n'était qu'un raccourci vers le faker ; remplacé par une factory de VO, `faker()` direct, ou une ancre d'horloge + `modify()`. Les offsets cachés des `defaults()` (`+1 hour`, …) deviennent explicites dans les tests de cooldown. Conséquence : réviser la règle de `tests.md` qui interdit un `Clock::get()->now()` brut dans un `setUp()` de test Domain.
+
+**Resetter** : `OrmResetter` décoré (documenté par Foundry), sans tag interne ; sans appel à l'interne, c'est de fait un remplacement. `messenger` exclu (transport `sync://`, rien n'y est lu ni écrit ; la base n'est pas suffixée par worker, donc le `drop` y fait une course entre workers).
+
+**Démo** : l'env `demo` reste pour isoler la base ; Stories de démo dans `/demo` ; Stories de test dans `tests/` ; `foundry:load-fixtures` ne liste que les `#[AsFixture]`.
+
+**Précision de vocabulaire** : le `create()` surchargé, le `WeakMap` et la décoration du resetter sont des extensions prévues de Foundry, pas des contournements (correction de l'utilisateur).
