@@ -34,9 +34,15 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
     ];
     #[Id]
     public private(set) CustomerId $id;
+    public private(set) \DateTimeImmutable $registeredAt;
     public private(set) ?PostalAddress $shippingAddress = null;
+    public private(set) ?\DateTimeImmutable $shippingAddressDefinedAt = null;
     public private(set) ?PostalAddress $billingAddress = null;
-    private ErasureState $erasureState;
+    public private(set) ?\DateTimeImmutable $billingAddressDefinedAt = null;
+    public private(set) ErasureState $erasureState;
+    public private(set) ?\DateTimeImmutable $erasureRequestedAt = null;
+    public private(set) ?\DateTimeImmutable $erasureCancelledAt = null;
+    public private(set) ?\DateTimeImmutable $erasedAt = null;
 
     public static function register(CustomerId $id, \DateTimeImmutable $registeredAt): self
     {
@@ -120,6 +126,7 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
     private function applyRegistered(CustomerRegistered $event): void
     {
         $this->id = $event->id;
+        $this->registeredAt = $event->registeredAt;
         $this->erasureState = ErasureState::RETAINED;
     }
 
@@ -127,29 +134,34 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
     private function applyShippingAddressDefined(CustomerShippingAddressDefined $event): void
     {
         $this->shippingAddress = $event->postalAddress;
+        $this->shippingAddressDefinedAt = $event->definedAt;
     }
 
     #[Apply]
     private function applyBillingAddressDefined(CustomerBillingAddressDefined $event): void
     {
         $this->billingAddress = $event->postalAddress;
+        $this->billingAddressDefinedAt = $event->definedAt;
     }
 
     #[Apply]
     private function applyErasureRequested(CustomerErasureRequested $event): void
     {
         $this->erasureState = ErasureState::REQUESTED;
+        $this->erasureRequestedAt = $event->requestedAt;
     }
 
     #[Apply]
     private function applyErasureCancelled(CustomerErasureCancelled $event): void
     {
         $this->erasureState = ErasureState::RETAINED;
+        $this->erasureCancelledAt = $event->cancelledAt;
     }
 
     #[Apply]
     private function applyErased(CustomerErased $event): void
     {
         $this->erasureState = ErasureState::ERASED;
+        $this->erasedAt = $event->erasedAt;
     }
 }
