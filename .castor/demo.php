@@ -15,12 +15,6 @@ function demo_seed(): void
     }, context: 'demo');
 }
 
-#[AsTask(name: 'fixtures', namespace: 'demo', description: 'Reset the demo database and load the demo Stories')]
-function demo_fixtures(): void
-{
-    with(static fn () => console(['foundry:load-fixtures', 'demo', '--no-interaction']), context: 'demo');
-}
-
 #[AsTask(name: 'list', namespace: 'demo', description: 'List available demo commands')]
 function demo_list(): void
 {

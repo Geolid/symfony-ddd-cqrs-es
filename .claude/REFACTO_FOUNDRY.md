@@ -56,16 +56,20 @@ Source du code de référence : le spike, branche `ai/foundry-spike-storefront` 
 
 ## 4. Plan de PRs (dans l'ordre, une marche à la fois)
 
-0. **PR #254** : corriger les 4 tests TOTP (`interceptRedirects()` après connexion et défi). Le test `ChangeEmail` à deux navigateurs attend l'étape 1.
-1. **Stores réels en test** (sans Foundry si possible) : event store + clés en base, subscriptions statiques en mémoire, retrait de `disableReboot()`, test `ChangeEmail`. *À vérifier d'abord* : les 3 subscribers de reset existants suffisent-ils, ou faut-il déjà le resetter ?
-2. **Fondations Foundry** : composer, bundle, `FoundryExtension` (auto-reset), `EventSourcingResetter`, faker unique, `bin/console` sans `-a`, `AbstractAggregateFactory`, `AbstractAggregateStory`. Retrait des 3 subscribers + `ResetState` + `EventSourcingExtension` + `ThrowawayKernelHelper`.
-3. **Tranche Identity** : factories de VO + `IdentityFactory`, état complet, aller-retour du repository + `AlreadyExists`, suppression d'`IdentityBuilder` (48 fichiers).
-4. **Un BC par PR** : credentials (Iam.Authentication), Crm, Shopping, Sales, Finance, Fulfilment, Catalog, Compliance. Chaque PR : factories de VO et d'aggregate, état complet, test `AlreadyExists` du repository, suppression des Builders du BC. En dernier : `AbstractAggregateBuilder`, `SeededFaker`, `FakerSeedExtension`.
-5. **Stories de compte + storefront** : porter les usages restants d'`account()` (11 combinaisons : 5 Stories couvrent 48 appels sur 62 ; le reste en factories inline), supprimer `AccountBuilder`.
-6. **Démo** : Stories de démo dans `/demo` (`#[AsFixture]`), suppression des tâches castor `demo:*`, de `demo/SeedCommand.php`, `demo/console`, `demo/seeds.php` ; `config/services.php` charge les Stories en env `demo`.
-7. **Nettoyage final** : lancer `castor qa:static` d'abord, puis règles (`tests.md`, `dm.md`, `domain.md:35`, `infrastructure.md`, `demo.md`, `CLAUDE.md`), règles PHPat/deptrac (calque `demo/.*`), config de services, extensions PHPUnit restantes.
+**PR socle (une seule, contre `main`)** : PR #254 (`feat/storefront-signin-tests`) + le spike nettoyé, poussé depuis `ai/foundry-spike-storefront`. On attend la CI verte avant la suite. Contenu (étapes 0 à 3, déjà faites dans le spike) :
+- 0. 4 tests TOTP corrigés (`interceptRedirects()` après la connexion et le défi), dans le spike et non dans l'ancêtre.
+- 1. Stores réels en test : event store et clés en base, subscriptions statiques en mémoire, `disableReboot()` retiré, test `ChangeEmail` à deux navigateurs.
+- 2. Fondations Foundry : composer, bundle, `FoundryExtension`, `EventSourcingResetter`, faker, `bin/console` sans `-a`, `AbstractAggregateFactory`, `AbstractAggregateStory`.
+- 3. Tranche Identity : factories de VO + `IdentityFactory`, état complet, aller-retour + `AlreadyExists`, `IdentityBuilder` supprimé.
+- Avant de pousser : retirer les restes du spike (§6), `castor qa` vert (lancé par l'utilisateur), commits recomposés pour passer chacun.
 
-À chaque PR : mettre à jour les règles concernées dans la même passe ; ne pas lancer `castor qa` à ma place, donner la commande.
+**Ensuite : une PR par BC, empilées chacune sur la précédente** (une fois la PR socle mergée, la première se rebase sur `main`) :
+4. Iam.Authentication (credentials : factories de VO), Crm, Shopping, Sales, Finance, Fulfilment, Catalog, Compliance. Chaque PR : factories de VO et d'aggregate, état complet, test `AlreadyExists` du repository, suppression des Builders du BC. En dernier : `AbstractAggregateBuilder`, `SeededFaker`, `FakerSeedExtension`, les 3 subscribers de reset + `ResetState` + `EventSourcingExtension` + `ThrowawayKernelHelper`.
+5. Stories de compte + storefront : porter les usages restants d'`account()` (11 combinaisons : 5 Stories couvrent 48 appels sur 62 ; le reste en factories inline), supprimer `AccountBuilder`.
+6. Démo : Stories de démo dans `/demo` (`#[AsFixture]`), suppression des tâches castor `demo:*`, de `demo/SeedCommand.php`, `demo/console`, `demo/seeds.php` ; `config/services.php` charge les Stories en env `demo`.
+7. Nettoyage final : `castor qa:static` d'abord, puis règles (`tests.md`, `dm.md`, `domain.md:35`, `infrastructure.md`, `demo.md`, `CLAUDE.md`), règles PHPat/deptrac (calque `demo/.*`), config de services, extensions PHPUnit restantes.
+
+À chaque PR (socle comprise), autorisation de l'utilisateur : mettre à jour les règles concernées dans la même passe ; **un seul `castor qa` avant de pousser** ; pousser et ouvrir la PR (empilée sur la précédente) ; **attendre la CI verte** avant d'ouvrir la suivante et de passer au BC suivant. Jamais deux `castor qa` en parallèle.
 
 ## 5. Où vit quoi
 
@@ -87,7 +91,7 @@ Source du code de référence : le spike, branche `ai/foundry-spike-storefront` 
 - Le test d'aller-retour du repository détecte la sérialisation, pas un `#[Apply]` oublié.
 - `composer.lock` : `symfony/error-handler` est passé de v8.1.5 à v8.1.8 pendant l'installation.
 - Domaines autres qu'Identity : état complet non essayé. Playwright, `cron` et `es-dashboard` non testés avec les stores réels.
-- À nettoyer en fin de spike : `tests/Iam/Identity/Spike/*`, `ShopperStory`, `BuilderShopperStory`, `demo:fixtures` castor, worktree `ai/foundry-spike`, stash.
+- Restes du spike retirés (`tests/Iam/Identity/Spike/*`, `ShopperStory`, `BuilderShopperStory`, `CustomerFactory`, `CartFactory`, `demo:fixtures`). Reste : worktree `ai/foundry-spike`, stash `foundry-spike`.
 
 ## 7. Reprendre
 
