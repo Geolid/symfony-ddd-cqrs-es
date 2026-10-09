@@ -9,9 +9,9 @@ use Compliance\Erasing\Application\ErasingUniqueKey;
 use Compliance\Erasing\Application\ErasureRequestStatus;
 use Compliance\Erasing\Application\Finder\Erasure\ErasureFinderInterface;
 use Compliance\Erasing\Domain\Exception\ErasureNotFoundException;
-use Compliance\Tests\Erasing\Support\Builder\ErasureBuilder;
+use Compliance\Tests\Erasing\Support\Factory\ErasureFactory;
+use Compliance\Tests\Erasing\Support\Factory\ErasureIdFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -34,11 +34,10 @@ final class ApproveErasureHandlerTest extends AbstractIntegrationTestCase
     public function itApproves(): void
     {
         // Given
-        $builder = ErasureBuilder::new()->withRequestedAt(Clock::get()->now()->modify('-31 days'));
-        $erasure = $builder->create();
+        $erasure = ErasureFactory::new()->withRequestedAt(Clock::get()->now()->modify('-31 days'))->create();
         $this->store($erasure);
         $identityKey = UniqueKey::for(ErasingUniqueKey::IDENTITY);
-        $this->uniqueness->claim($identityKey, $builder['identityId'], $erasure->id->toString());
+        $this->uniqueness->claim($identityKey, $erasure->identityId, $erasure->id->toString());
 
         // When
         $this->dispatch(new ApproveErasure($erasure->id->toString()));
@@ -46,18 +45,17 @@ final class ApproveErasureHandlerTest extends AbstractIntegrationTestCase
         // Then
         $result = $this->finder->ofId($erasure->id->toString());
         self::assertSame(ErasureRequestStatus::APPROVED, $result->status);
-        self::assertTrue($this->uniqueness->isClaimed($identityKey, $builder['identityId']));
+        self::assertTrue($this->uniqueness->isClaimed($identityKey, $erasure->identityId));
     }
 
     #[Test]
     public function itIgnoresWhenRetentionNotExpired(): void
     {
         // Given
-        $builder = ErasureBuilder::new()->withRequestedAt(Clock::get()->now()->modify('-1 day'));
-        $erasure = $builder->create();
+        $erasure = ErasureFactory::new()->withRequestedAt(Clock::get()->now()->modify('-1 day'))->create();
         $this->store($erasure);
         $identityKey = UniqueKey::for(ErasingUniqueKey::IDENTITY);
-        $this->uniqueness->claim($identityKey, $builder['identityId'], $erasure->id->toString());
+        $this->uniqueness->claim($identityKey, $erasure->identityId, $erasure->id->toString());
 
         // When
         $this->dispatch(new ApproveErasure($erasure->id->toString()));
@@ -65,7 +63,7 @@ final class ApproveErasureHandlerTest extends AbstractIntegrationTestCase
         // Then
         $result = $this->finder->ofId($erasure->id->toString());
         self::assertSame(ErasureRequestStatus::REQUESTED, $result->status);
-        self::assertTrue($this->uniqueness->isClaimed($identityKey, $builder['identityId']));
+        self::assertTrue($this->uniqueness->isClaimed($identityKey, $erasure->identityId));
     }
 
     #[Test]
@@ -75,6 +73,6 @@ final class ApproveErasureHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(ErasureNotFoundException::class);
 
         // When
-        $this->dispatch(new ApproveErasure(Uuid::uuid7()->toString()));
+        $this->dispatch(new ApproveErasure(ErasureIdFactory::new()->create()->toString()));
     }
 }

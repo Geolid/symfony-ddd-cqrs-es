@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Compliance\Tests\Erasing\Application\IntegrationEvent\ErasureApproved;
 
 use Compliance\Erasing\Application\IntegrationEvent\ErasureApproved\ErasureApprovedIntegrationEvent;
-use Compliance\Tests\Erasing\Support\Builder\ErasureBuilder;
+use Compliance\Tests\Erasing\Support\Factory\ErasureFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -15,18 +15,17 @@ final class ErasureApprovedPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $builder = ErasureBuilder::new()->approved();
-        $erasure = $builder->create();
+        $erasure = ErasureFactory::new()->approved()->create();
 
         // When
         $this->store($erasure);
 
         // Then
         $event = $this->publishedEventOf(ErasureApprovedIntegrationEvent::class);
-        self::assertSame($builder['identityId'], $event->identityId);
+        self::assertSame($erasure->identityId, $event->identityId);
         self::assertSame(
-            $builder['approvedAt']->format(\DateTimeInterface::ATOM),
-            $event->approvedAt->format(\DateTimeInterface::ATOM),
+            $erasure->approvedAt?->format(\DateTimeInterface::ATOM),
+            $event->approvedAt?->format(\DateTimeInterface::ATOM),
         );
     }
 }
