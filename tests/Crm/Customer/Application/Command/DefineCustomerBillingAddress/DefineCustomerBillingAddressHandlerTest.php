@@ -7,11 +7,12 @@ namespace Crm\Tests\Customer\Application\Command\DefineCustomerBillingAddress;
 use Crm\Customer\Application\Command\DefineCustomerBillingAddress\DefineCustomerBillingAddress;
 use Crm\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Crm\Customer\Domain\Customer\Exception\CustomerNotFoundException;
-use Crm\Tests\Customer\Support\Builder\CustomerBuilder;
+use Crm\Tests\Customer\Support\Factory\CustomerFactory;
 use Crm\Tests\Customer\Support\PostalAddressResultMapper;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Mapper\PostalAddressMapper;
+use Shared\Tests\Support\Factory\PostalAddressFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DefineCustomerBillingAddressHandlerTest extends AbstractIntegrationTestCase
@@ -20,9 +21,9 @@ final class DefineCustomerBillingAddressHandlerTest extends AbstractIntegrationT
     public function itDefines(): void
     {
         // Given
-        $customer = CustomerBuilder::new()->create();
+        $customer = CustomerFactory::new()->create();
         $this->store($customer);
-        $billingAddress = PostalAddressMapper::toArray(CustomerBuilder::sample('billingAddress'));
+        $billingAddress = PostalAddressMapper::toArray(PostalAddressFactory::new()->create());
 
         // When
         $this->dispatch(new DefineCustomerBillingAddress($customer->id->toString(), $billingAddress));
@@ -43,7 +44,7 @@ final class DefineCustomerBillingAddressHandlerTest extends AbstractIntegrationT
         // When
         $this->dispatch(new DefineCustomerBillingAddress(
             Uuid::uuid7()->toString(),
-            PostalAddressMapper::toArray(CustomerBuilder::sample('billingAddress')),
+            PostalAddressMapper::toArray(PostalAddressFactory::new()->create()),
         ));
     }
 }

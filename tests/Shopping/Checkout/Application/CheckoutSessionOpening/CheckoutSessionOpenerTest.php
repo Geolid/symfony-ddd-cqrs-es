@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Shopping\Tests\Checkout\Application\CheckoutSessionOpening;
 
 use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
-use Crm\Tests\Customer\Support\Builder\CustomerBuilder;
+use Crm\Tests\Customer\Support\Factory\CustomerFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Psr\Clock\ClockInterface;
 use Ramsey\Uuid\Uuid;
@@ -61,18 +61,17 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
         $catalogProduct = $productBuilder->create();
         $secondProductBuilder = ProductBuilder::new()->withUnitPriceInCents(5_003);
         $secondCatalogProduct = $secondProductBuilder->create();
-        $customer = CustomerBuilder::new()
+        $customer = CustomerFactory::new()
             ->shippingAddressDefined(PostalAddress::of('Jane Doe', Address::of('10 Rue de la Paix', '75002', 'Paris', 'FR')))
             ->billingAddressDefined()
             ->create();
-        $cartBuilder = CartBuilder::new()->withCustomerId($customer->id->toString())->productAdded(
+        $cart = CartBuilder::new()->withCustomerId($customer->id->toString())->productAdded(
             productId: $catalogProduct->id->toString(),
             quantity: $quantity = Quantity::of(1),
         )->productAdded(
             productId: $secondCatalogProduct->id->toString(),
             quantity: $secondQuantity = Quantity::of(1),
-        );
-        $cart = $cartBuilder->create();
+        )->create();
         $this->store($cart, $catalogProduct, $secondCatalogProduct, $customer);
 
         // When
@@ -127,7 +126,7 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
     public function itFailsWhenCustomerErasureRequested(): void
     {
         // Given
-        $customer = CustomerBuilder::new()->shippingAddressDefined()->billingAddressDefined()->erasureRequested()->create();
+        $customer = CustomerFactory::new()->shippingAddressDefined()->billingAddressDefined()->erasureRequested()->create();
         $cart = CartBuilder::new()->withCustomerId($customer->id->toString())->productAdded()->create();
         $this->store($cart, $customer);
 
@@ -142,7 +141,7 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
     public function itFailsWhenCustomerAddressesNotCompleted(): void
     {
         // Given
-        $customer = CustomerBuilder::new()->create();
+        $customer = CustomerFactory::new()->create();
         $cart = CartBuilder::new()->withCustomerId($customer->id->toString())->productAdded()->create();
         $this->store($cart, $customer);
 
@@ -157,7 +156,7 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
     public function itFailsWhenOnlyShippingAddressCompleted(): void
     {
         // Given
-        $customer = CustomerBuilder::new()->shippingAddressDefined()->create();
+        $customer = CustomerFactory::new()->shippingAddressDefined()->create();
         $cart = CartBuilder::new()->withCustomerId($customer->id->toString())->productAdded()->create();
         $this->store($cart, $customer);
 
@@ -172,7 +171,7 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
     public function itFailsWhenOnlyBillingAddressCompleted(): void
     {
         // Given
-        $customer = CustomerBuilder::new()->billingAddressDefined()->create();
+        $customer = CustomerFactory::new()->billingAddressDefined()->create();
         $cart = CartBuilder::new()->withCustomerId($customer->id->toString())->productAdded()->create();
         $this->store($cart, $customer);
 
@@ -187,7 +186,7 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
     public function itFailsWhenProductNotListed(): void
     {
         // Given
-        $customer = CustomerBuilder::new()->shippingAddressDefined()->billingAddressDefined()->create();
+        $customer = CustomerFactory::new()->shippingAddressDefined()->billingAddressDefined()->create();
         $cart = CartBuilder::new()->withCustomerId($customer->id->toString())->productAdded()->create();
         $this->store($cart, $customer);
 
