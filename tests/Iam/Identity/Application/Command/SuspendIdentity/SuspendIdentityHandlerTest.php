@@ -11,8 +11,8 @@ use Iam\Identity\Application\IdentityVerificationStatus;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
+use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -96,7 +96,7 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new SuspendIdentity(
-            Uuid::uuid7()->toString(),
+            IdentityIdFactory::new()->create()->toString(),
             IdentityFactory::sample('reason')->value,
         ));
     }

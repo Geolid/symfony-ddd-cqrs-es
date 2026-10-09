@@ -27,9 +27,9 @@ use Iam\Identity\Domain\ValueObject\FullName;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Reason;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
+use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Domain\Service\CodeChallengerInterface;
 use Shared\Tests\Support\Double\FakeCodeChallenger;
 
@@ -57,7 +57,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->id = IdentityId::fromString(Uuid::uuid7()->toString());
+        $this->id = IdentityIdFactory::new()->create();
         $this->fullName = IdentityFactory::sample('fullName');
         $this->email = IdentityFactory::sample('email');
         $this->reason = IdentityFactory::sample('reason');

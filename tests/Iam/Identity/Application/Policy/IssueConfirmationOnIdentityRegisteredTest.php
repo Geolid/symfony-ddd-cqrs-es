@@ -6,10 +6,9 @@ namespace Iam\Tests\Identity\Application\Policy;
 
 use Iam\Identity\Application\Policy\IssueConfirmationOnIdentityRegistered;
 use Iam\Identity\Domain\Event\IdentityRegistered;
-use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
+use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Bundle\FrameworkBundle\Test\MailerAssertionsTrait;
 use Symfony\Component\Mime\Email;
@@ -22,7 +21,7 @@ final class IssueConfirmationOnIdentityRegisteredTest extends AbstractIntegratio
     public function itNotifies(): void
     {
         // Given
-        $id = IdentityId::fromString(Uuid::uuid7()->toString());
+        $id = IdentityIdFactory::new()->create();
         $fullName = IdentityFactory::sample('fullName');
         $email = IdentityFactory::sample('email');
         $registeredAt = IdentityFactory::sample('registeredAt');

@@ -7,12 +7,13 @@ namespace Iam\Tests\Authentication\Support\Factory;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpCipherInterface;
 use Iam\Authentication\Domain\TotpCredential\TotpCredential;
 use Iam\Authentication\Domain\TotpCredential\ValueObject\TotpCredentialId;
-use OTPHP\TOTP;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Ramsey\Uuid\Uuid;
 use Support\Foundry\AbstractAggregateFactory;
 use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
+
+use function Zenstruck\Foundry\faker;
 
 /**
  * @phpstan-type Inputs = array{
@@ -87,7 +88,7 @@ final class TotpCredentialFactory extends AbstractAggregateFactory
         return [
             'id' => TotpCredentialId::fromString(Uuid::uuid7()->toString()),
             'identityId' => Uuid::uuid7()->toString(),
-            'secret' => TOTP::generate()->getSecret(),
+            'secret' => faker()->totpSecret(),
             'enrolledAt' => $now,
             'unenrolledAt' => $now->modify('+1 day'),
         ];

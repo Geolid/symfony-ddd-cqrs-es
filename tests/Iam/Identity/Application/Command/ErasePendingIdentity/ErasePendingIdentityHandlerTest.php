@@ -9,8 +9,8 @@ use Iam\Identity\Application\Finder\Identity\Exception\IdentityResultNotFoundExc
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
+use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -100,6 +100,6 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new ErasePendingIdentity(Uuid::uuid7()->toString()));
+        $this->dispatch(new ErasePendingIdentity(IdentityIdFactory::new()->create()->toString()));
     }
 }
