@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Shared\Tests\Support\Factory;
 
 use Shared\Domain\ValueObject\Label;
-use Zenstruck\Foundry\ObjectFactory;
 use Zenstruck\Foundry\Object\Instantiator;
+use Zenstruck\Foundry\ObjectFactory;
 
 use function Zenstruck\Foundry\faker;
 
