@@ -8,7 +8,6 @@ use function Castor\io;
 
 #[AsTask(description: 'Run the full QA pipeline')]
 #[NeedsPlaywright]
-#[NeedsWarmup]
 function qa(): void
 {
     io()->section('Composer check');
@@ -27,7 +26,6 @@ function qa(): void
 }
 
 #[AsTask(name: 'static', namespace: 'qa', description: 'Run all static checks')]
-#[NeedsWarmup]
 function qa_static(): void
 {
     io()->section('Lint');

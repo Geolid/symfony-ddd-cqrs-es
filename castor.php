@@ -127,10 +127,10 @@ function console(array $args, ?bool $tty = null): void
  * @param callable(string): void $callback
  * @param array<string, string>  $environment
  */
-function for_each_app(?string $appId, callable $callback, array $environment = []): void
+function for_each_app(?string $appId, callable $callback, array $environment = [], ?string $context = null): void
 {
     foreach (resolve_apps($appId) as $app) {
-        with(static fn () => $callback($app), environment: ['APP_ID' => $app, ...$environment], context: context());
+        with(static fn () => $callback($app), environment: ['APP_ID' => $app, ...$environment], context: null !== $context ? context($context) : context());
     }
 }
 

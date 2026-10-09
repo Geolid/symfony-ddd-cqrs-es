@@ -12,8 +12,7 @@ function ci_build(): void
     setup_assets();
 }
 
-#[AsTask(name: 'static', namespace: 'ci', description: 'Warm up then run static analysis')]
-#[NeedsWarmup]
+#[AsTask(name: 'static', namespace: 'ci', description: 'Audit dependencies then run static analysis')]
 function ci_static(): void
 {
     qa_composer_audit();

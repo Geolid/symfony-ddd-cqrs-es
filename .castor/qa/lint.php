@@ -33,7 +33,7 @@ function qa_lint_container(
         io()->comment("DM: {$app}");
 
         console(['lint:container', '--no-debug', ...$args]);
-    });
+    }, context: 'test');
 }
 
 /**
@@ -61,7 +61,7 @@ function qa_lint_translations(
         io()->comment("DM: {$app} (".implode(', ', $directories).')');
 
         console(['lint:xliff', ...$directories, ...$args]);
-    });
+    }, context: 'test');
 }
 
 /**
@@ -89,5 +89,5 @@ function qa_lint_twig(
         io()->comment("DM: {$app} (".implode(', ', $directories).')');
 
         console(['lint:twig', ...$directories, ...$args]);
-    });
+    }, context: 'test');
 }
