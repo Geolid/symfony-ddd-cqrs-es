@@ -17,8 +17,9 @@ use Shopping\Cart\Domain\Event\CartStarted;
 use Shopping\Cart\Domain\Exception\CartAlreadyPurchasedException;
 use Shopping\Cart\Domain\Exception\CartProductNotFoundException;
 use Shopping\Cart\Domain\ValueObject\CartId;
-use Shopping\Tests\Cart\Support\Builder\CartBuilder;
+use Shopping\Tests\Cart\Support\Factory\CartIdFactory;
 use Support\Faker\SeededFaker;
+use Symfony\Component\Clock\Clock;
 
 final class CartTest extends AggregateRootTestCase
 {
@@ -36,15 +37,15 @@ final class CartTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->id = CartId::fromString(Uuid::uuid7()->toString());
-        $this->customerId = CartBuilder::sample('customerId');
-        $this->startedAt = CartBuilder::sample('startedAt');
+        $this->id = CartIdFactory::new()->create();
+        $this->customerId = Uuid::uuid7()->toString();
+        $this->startedAt = Clock::get()->now();
         $this->productId = Uuid::uuid7()->toString();
         $this->quantity = Quantity::of(SeededFaker::get()->numberBetween(1, 5));
         $this->addedAt = $this->startedAt->modify('+1 minute');
         $this->removedAt = $this->startedAt->modify('+2 minute');
         $this->changedAt = $this->startedAt->modify('+2 minute');
-        $this->purchasedAt = CartBuilder::sample('purchasedAt');
+        $this->purchasedAt = $this->startedAt->modify('+3 minute');
     }
 
     #[Test]
@@ -151,7 +152,7 @@ final class CartTest extends AggregateRootTestCase
     {
         $this
             ->given($this->started(), $this->productAdded(), $this->purchased())
-            ->when(static fn (Cart $cart) => $cart->purchase(CartBuilder::sample('purchasedAt')))
+            ->when(static fn (Cart $cart) => $cart->purchase(Clock::get()->now()->modify('+3 minute')))
             ->then();
     }
 

@@ -10,7 +10,7 @@ use Shared\Application\Command\CommandBusInterface;
 use Shopping\Cart\Application\IntegrationEvent\CartProductAdded\CartProductAddedIntegrationEvent;
 use Shopping\Checkout\Application\Command\StaleCheckoutSession\StaleCheckoutSession;
 use Shopping\Checkout\Application\Policy\StaleCheckoutSessionOnCartProductAdded;
-use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
+use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionFactory;
 use Support\Faker\SeededFaker;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
@@ -23,14 +23,13 @@ final class StaleCheckoutSessionOnCartProductAddedTest extends AbstractIntegrati
         // Given
         $commandBus = $this->createMock(CommandBusInterface::class);
         $this->replace(CommandBusInterface::class, $commandBus);
-        $checkoutSessionBuilder = CheckoutSessionBuilder::new();
-        $checkoutSession = $checkoutSessionBuilder->create();
+        $checkoutSession = CheckoutSessionFactory::new()->create();
         $this->store($checkoutSession);
         $commandBus->expects(self::once())->method('dispatch')->with(new StaleCheckoutSession($checkoutSession->id->toString()));
 
         // When
         $this->trigger(StaleCheckoutSessionOnCartProductAdded::class, new CartProductAddedIntegrationEvent(
-            cartId: $checkoutSessionBuilder['cartId'],
+            cartId: $checkoutSession->cartId,
             productId: Uuid::uuid7()->toString(),
             quantity: SeededFaker::get()->numberBetween(1, 5),
             addedAt: Clock::get()->now(),

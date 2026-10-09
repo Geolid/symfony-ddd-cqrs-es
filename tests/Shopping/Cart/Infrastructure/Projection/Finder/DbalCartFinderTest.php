@@ -13,7 +13,8 @@ use Shopping\Cart\Application\Finder\Cart\CartFinderInterface;
 use Shopping\Cart\Application\Finder\Cart\CartResult;
 use Shopping\Cart\Application\Finder\Cart\Exception\CartResultNotFoundException;
 use Shopping\Cart\Domain\Cart;
-use Shopping\Tests\Cart\Support\Builder\CartBuilder;
+use Shopping\Tests\Cart\Support\Factory\CartFactory;
+use Shopping\Tests\Cart\Support\Factory\CartIdFactory;
 use Symfony\Component\Clock\Clock;
 
 /**
@@ -27,9 +28,8 @@ final class DbalCartFinderTest extends AbstractIterableFinderTestCase
     public function itGets(): void
     {
         // Given
-        $other = CartBuilder::new()->create();
-        $builder = CartBuilder::new();
-        $cart = $builder->create();
+        $other = CartFactory::new()->create();
+        $cart = CartFactory::new()->create();
         $this->store($other, $cart);
 
         // When
@@ -37,9 +37,9 @@ final class DbalCartFinderTest extends AbstractIterableFinderTestCase
 
         // Then
         self::assertSame($cart->id->toString(), $result->id);
-        self::assertSame($builder['customerId'], $result->customerId);
+        self::assertSame($cart->customerId, $result->customerId);
         self::assertSame(CartStatus::ACTIVE, $result->status);
-        self::assertSame($builder['startedAt']->format('Y-m-d H:i:s'), $result->startedAt->format('Y-m-d H:i:s'));
+        self::assertSame($cart->startedAt->format('Y-m-d H:i:s'), $result->startedAt->format('Y-m-d H:i:s'));
     }
 
     #[Test]
@@ -49,16 +49,16 @@ final class DbalCartFinderTest extends AbstractIterableFinderTestCase
         $this->expectException(CartResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(Uuid::uuid7()->toString());
+        $this->finder()->ofId(CartIdFactory::new()->create()->toString());
     }
 
     #[Test]
     public function itFiltersActiveById(): void
     {
         // Given
-        $purchasedInList = CartBuilder::new()->purchased()->create();
-        $activeNotInList = CartBuilder::new()->create();
-        $cart = CartBuilder::new()->create();
+        $purchasedInList = CartFactory::new()->purchased()->create();
+        $activeNotInList = CartFactory::new()->create();
+        $cart = CartFactory::new()->create();
         $this->store($purchasedInList, $activeNotInList, $cart);
 
         // When
@@ -79,7 +79,7 @@ final class DbalCartFinderTest extends AbstractIterableFinderTestCase
      */
     protected function seed(int $count): array
     {
-        $carts = CartBuilder::new()->many($count)->create();
+        $carts = CartFactory::new()->many($count)->create();
         $this->store(...$carts);
 
         return array_map(static fn (Cart $cart): string => $cart->id->toString(), $carts);
@@ -99,8 +99,8 @@ final class DbalCartFinderTest extends AbstractIterableFinderTestCase
         $smallerId = Uuid::uuid7($now)->toString();
         $largerId = Uuid::uuid7($now->modify('+1 hour'))->toString();
 
-        $first = CartBuilder::new()->withId($largerId)->withStartedAt($now)->create();
-        $second = CartBuilder::new()->withId($smallerId)->withStartedAt($now->modify('+1 hour'))->create();
+        $first = CartFactory::new()->withId($largerId)->withStartedAt($now)->create();
+        $second = CartFactory::new()->withId($smallerId)->withStartedAt($now->modify('+1 hour'))->create();
         $this->store($first, $second);
 
         return [$largerId, $smallerId];

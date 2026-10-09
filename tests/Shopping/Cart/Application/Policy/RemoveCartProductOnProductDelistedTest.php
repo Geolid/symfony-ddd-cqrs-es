@@ -10,7 +10,7 @@ use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shopping\Cart\Application\Command\RemoveCartProduct\RemoveCartProduct;
 use Shopping\Cart\Application\Policy\RemoveCartProductOnProductDelisted;
-use Shopping\Tests\Cart\Support\Builder\CartBuilder;
+use Shopping\Tests\Cart\Support\Factory\CartFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -24,8 +24,8 @@ final class RemoveCartProductOnProductDelistedTest extends AbstractIntegrationTe
         $this->replace(CommandBusInterface::class, $commandBus);
 
         $productId = Uuid::uuid7()->toString();
-        $other = CartBuilder::new()->productAdded()->create();
-        $cart = CartBuilder::new()->productAdded($productId)->create();
+        $other = CartFactory::new()->productAdded()->create();
+        $cart = CartFactory::new()->productAdded($productId)->create();
         $this->store($other, $cart);
 
         $commandBus->expects(self::once())->method('dispatch')->with(new RemoveCartProduct($cart->id->toString(), $productId));
@@ -45,7 +45,7 @@ final class RemoveCartProductOnProductDelistedTest extends AbstractIntegrationTe
         $this->replace(CommandBusInterface::class, $commandBus);
 
         $productId = Uuid::uuid7()->toString();
-        $cart = CartBuilder::new()->productAdded($productId)->purchased()->create();
+        $cart = CartFactory::new()->productAdded($productId)->purchased()->create();
         $this->store($cart);
 
         $commandBus->expects(self::never())->method('dispatch');

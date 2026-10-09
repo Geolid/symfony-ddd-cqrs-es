@@ -13,7 +13,7 @@ use Shopping\Checkout\Application\CheckoutSessionStatus;
 use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Checkout\Infrastructure\Projection\Projector\DbalCheckoutSessionProjector;
-use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
+use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
@@ -25,9 +25,8 @@ final class DbalCheckoutSessionProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnCheckoutSessionOpened(): void
     {
         // Given
-        $other = CheckoutSessionBuilder::new()->create();
-        $builder = CheckoutSessionBuilder::new();
-        $checkoutSession = $builder->create();
+        $other = CheckoutSessionFactory::new()->create();
+        $checkoutSession = CheckoutSessionFactory::new()->create();
 
         // When
         $this->store($other, $checkoutSession);
@@ -35,33 +34,33 @@ final class DbalCheckoutSessionProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($checkoutSession->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($builder['cartId'], $row['cart_id']);
-        self::assertSame($builder['customerId'], $row['customer_id']);
+        self::assertSame($checkoutSession->cartId, $row['cart_id']);
+        self::assertSame($checkoutSession->customerId, $row['customer_id']);
         self::assertSame(
             array_map(
                 static fn (CheckoutItem $item): array => SnakeCaseKeys::from(CheckoutItemMapper::toArray($item)),
-                $builder['items'],
+                $checkoutSession->items,
             ),
             json_decode($row['items'], true),
         );
         self::assertSame(
-            SnakeCaseKeys::from(PostalAddressMapper::toArray($builder['shippingAddress'])),
+            SnakeCaseKeys::from(PostalAddressMapper::toArray($checkoutSession->shippingAddress)),
             json_decode($row['shipping_address'], true),
         );
         self::assertSame(
-            SnakeCaseKeys::from(PostalAddressMapper::toArray($builder['billingAddress'])),
+            SnakeCaseKeys::from(PostalAddressMapper::toArray($checkoutSession->billingAddress)),
             json_decode($row['billing_address'], true),
         );
         $total = array_reduce(
-            $builder['items'],
+            $checkoutSession->items,
             static fn (TaxedAmount $carry, CheckoutItem $item): TaxedAmount => $carry->plus($item->taxedTotal()),
-            TaxedAmount::zero($builder['currency']),
+            TaxedAmount::zero($checkoutSession->total->excludingTax->currency),
         );
         self::assertSame($total->excludingTax->cents, (int) $row['total_excluding_tax_in_cents']);
         self::assertSame($total->taxAmount->cents, (int) $row['total_tax_amount_in_cents']);
         self::assertSame($total->includingTax->cents, (int) $row['total_including_tax_in_cents']);
-        self::assertSame($builder['currency']->value, $row['currency']);
-        self::assertSame($builder['taxRate']->basisPoints, (int) $row['tax_rate_basis_points']);
+        self::assertSame($checkoutSession->total->excludingTax->currency->value, $row['currency']);
+        self::assertSame($checkoutSession->items[0]->taxRate->basisPoints, (int) $row['tax_rate_basis_points']);
         self::assertSame(CheckoutSessionStatus::OPEN->value, $row['status']);
 
         $otherRow = $this->fetchRow($other->id->toString());
@@ -72,9 +71,9 @@ final class DbalCheckoutSessionProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnCheckoutSessionExpired(): void
     {
         // Given
-        $other = CheckoutSessionBuilder::new()->create();
+        $other = CheckoutSessionFactory::new()->create();
         $this->store($other);
-        $checkoutSession = CheckoutSessionBuilder::new()->expired()->create();
+        $checkoutSession = CheckoutSessionFactory::new()->expired()->create();
 
         // When
         $this->store($checkoutSession);
@@ -93,9 +92,9 @@ final class DbalCheckoutSessionProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnCheckoutSessionStaled(): void
     {
         // Given
-        $other = CheckoutSessionBuilder::new()->create();
+        $other = CheckoutSessionFactory::new()->create();
         $this->store($other);
-        $checkoutSession = CheckoutSessionBuilder::new()->staled()->create();
+        $checkoutSession = CheckoutSessionFactory::new()->staled()->create();
 
         // When
         $this->store($checkoutSession);
@@ -114,9 +113,9 @@ final class DbalCheckoutSessionProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnCheckoutSessionCompleted(): void
     {
         // Given
-        $other = CheckoutSessionBuilder::new()->create();
+        $other = CheckoutSessionFactory::new()->create();
         $this->store($other);
-        $checkoutSession = CheckoutSessionBuilder::new()->completed()->create();
+        $checkoutSession = CheckoutSessionFactory::new()->completed()->create();
 
         // When
         $this->store($checkoutSession);

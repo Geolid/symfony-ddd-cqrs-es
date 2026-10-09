@@ -6,7 +6,7 @@ namespace Shopping\Tests\Checkout\Application\IntegrationEvent\CheckoutSessionSt
 
 use PHPUnit\Framework\Attributes\Test;
 use Shopping\Checkout\Application\IntegrationEvent\CheckoutSessionStaled\CheckoutSessionStaledIntegrationEvent;
-use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
+use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CheckoutSessionStaledPublisherTest extends AbstractIntegrationTestCase
@@ -15,8 +15,7 @@ final class CheckoutSessionStaledPublisherTest extends AbstractIntegrationTestCa
     public function itPublishes(): void
     {
         // Given
-        $builder = CheckoutSessionBuilder::new()->staled();
-        $checkoutSession = $builder->create();
+        $checkoutSession = CheckoutSessionFactory::new()->staled()->create();
 
         // When
         $this->store($checkoutSession);
@@ -25,7 +24,7 @@ final class CheckoutSessionStaledPublisherTest extends AbstractIntegrationTestCa
         $event = $this->publishedEventOf(CheckoutSessionStaledIntegrationEvent::class);
         self::assertSame($checkoutSession->id->toString(), $event->checkoutSessionId);
         self::assertSame(
-            $builder['staledAt']->format(\DateTimeInterface::ATOM),
+            $checkoutSession->staledAt?->format(\DateTimeInterface::ATOM),
             $event->staledAt->format(\DateTimeInterface::ATOM),
         );
     }

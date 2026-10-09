@@ -9,6 +9,7 @@ use Ramsey\Uuid\Uuid;
 use Shopping\Cart\Application\Command\StartCart\Exception\CartAlreadyActiveException;
 use Shopping\Cart\Application\Command\StartCart\StartCart;
 use Shopping\Cart\Application\Finder\Cart\CartFinderInterface;
+use Shopping\Tests\Cart\Support\Factory\CartIdFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class StartCartHandlerTest extends AbstractIntegrationTestCase
@@ -26,7 +27,7 @@ final class StartCartHandlerTest extends AbstractIntegrationTestCase
     public function itStarts(): void
     {
         // Given
-        $id = Uuid::uuid7()->toString();
+        $id = CartIdFactory::new()->create()->toString();
         $customerId = Uuid::uuid7()->toString();
 
         // When
@@ -43,12 +44,12 @@ final class StartCartHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $this->dispatch(new StartCart(Uuid::uuid7()->toString(), $customerId));
+        $this->dispatch(new StartCart(CartIdFactory::new()->create()->toString(), $customerId));
 
         // Then
         $this->expectException(CartAlreadyActiveException::class);
 
         // When
-        $this->dispatch(new StartCart(Uuid::uuid7()->toString(), $customerId));
+        $this->dispatch(new StartCart(CartIdFactory::new()->create()->toString(), $customerId));
     }
 }

@@ -9,7 +9,8 @@ use Ramsey\Uuid\Uuid;
 use Shopping\Cart\Application\Command\RemoveCartProduct\RemoveCartProduct;
 use Shopping\Cart\Application\Finder\CartItem\CartItemFinderInterface;
 use Shopping\Cart\Domain\Exception\CartNotFoundException;
-use Shopping\Tests\Cart\Support\Builder\CartBuilder;
+use Shopping\Tests\Cart\Support\Factory\CartFactory;
+use Shopping\Tests\Cart\Support\Factory\CartIdFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RemoveCartProductHandlerTest extends AbstractIntegrationTestCase
@@ -28,7 +29,7 @@ final class RemoveCartProductHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $productId = Uuid::uuid7()->toString();
-        $cart = CartBuilder::new()->productAdded($productId)->create();
+        $cart = CartFactory::new()->productAdded($productId)->create();
         $this->store($cart);
 
         // When
@@ -45,6 +46,6 @@ final class RemoveCartProductHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(CartNotFoundException::class);
 
         // When
-        $this->dispatch(new RemoveCartProduct(Uuid::uuid7()->toString(), Uuid::uuid7()->toString()));
+        $this->dispatch(new RemoveCartProduct(CartIdFactory::new()->create()->toString(), Uuid::uuid7()->toString()));
     }
 }

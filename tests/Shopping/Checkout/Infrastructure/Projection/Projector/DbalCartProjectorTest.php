@@ -7,7 +7,7 @@ namespace Shopping\Tests\Checkout\Infrastructure\Projection\Projector;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Shopping\Checkout\Infrastructure\Projection\Projector\DbalCartProjector;
-use Shopping\Tests\Cart\Support\Builder\CartBuilder;
+use Shopping\Tests\Cart\Support\Factory\CartFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
@@ -19,9 +19,8 @@ final class DbalCartProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnCartStarted(): void
     {
         // Given
-        $other = CartBuilder::new()->create();
-        $builder = CartBuilder::new();
-        $cart = $builder->create();
+        $other = CartFactory::new()->create();
+        $cart = CartFactory::new()->create();
 
         // When
         $this->store($other, $cart);
@@ -29,7 +28,7 @@ final class DbalCartProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($cart->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($builder['customerId'], $row['customer_id']);
+        self::assertSame($cart->customerId, $row['customer_id']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
