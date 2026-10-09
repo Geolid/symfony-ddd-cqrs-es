@@ -9,7 +9,8 @@ use Compliance\Erasing\Application\Command\RequestErasure\RequestErasure;
 use Compliance\Erasing\Application\ErasingUniqueKey;
 use Compliance\Erasing\Application\ErasureRequestStatus;
 use Compliance\Erasing\Application\Finder\Erasure\ErasureFinderInterface;
-use Compliance\Tests\Erasing\Support\Builder\ErasureBuilder;
+use Compliance\Tests\Erasing\Support\Factory\ErasureFactory;
+use Compliance\Tests\Erasing\Support\Factory\ErasureIdFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
@@ -33,7 +34,7 @@ final class RequestErasureHandlerTest extends AbstractIntegrationTestCase
     public function itRequests(): void
     {
         // Given
-        $id = Uuid::uuid7()->toString();
+        $id = ErasureIdFactory::new()->create()->toString();
         $identityId = Uuid::uuid7()->toString();
 
         // When
@@ -48,13 +49,12 @@ final class RequestErasureHandlerTest extends AbstractIntegrationTestCase
     public function itRequestsWhenPreviouslyCancelled(): void
     {
         // Given
-        $builder = ErasureBuilder::new()->cancelled();
-        $erasure = $builder->create();
+        $erasure = ErasureFactory::new()->cancelled()->create();
         $this->store($erasure);
-        $id = Uuid::uuid7()->toString();
+        $id = ErasureIdFactory::new()->create()->toString();
 
         // When
-        $this->dispatch(new RequestErasure($id, $builder['identityId']));
+        $this->dispatch(new RequestErasure($id, $erasure->identityId));
 
         // Then
         $result = $this->finder->ofId($id);
@@ -65,15 +65,14 @@ final class RequestErasureHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenAlreadyClaimed(): void
     {
         // Given
-        $builder = ErasureBuilder::new();
-        $erasure = $builder->create();
+        $erasure = ErasureFactory::new()->create();
         $this->store($erasure);
-        $this->uniqueness->claim(UniqueKey::for(ErasingUniqueKey::IDENTITY), $builder['identityId'], $erasure->id->toString());
+        $this->uniqueness->claim(UniqueKey::for(ErasingUniqueKey::IDENTITY), $erasure->identityId, $erasure->id->toString());
 
         // Then
         $this->expectException(ErasureAlreadyClaimedException::class);
 
         // When
-        $this->dispatch(new RequestErasure(Uuid::uuid7()->toString(), $builder['identityId']));
+        $this->dispatch(new RequestErasure(ErasureIdFactory::new()->create()->toString(), $erasure->identityId));
     }
 }
