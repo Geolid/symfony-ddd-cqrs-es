@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\ForgotPassword;
 
+use Iam\Tests\Support\Story\PasswordResetRequestedAccountStory;
+use Zenstruck\Foundry\Attribute\WithStory;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\ForgotPassword\Component\ResetForm;
@@ -30,11 +32,12 @@ final class ResetTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(PasswordResetRequestedAccountStory::class)]
     public function itResets(): void
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $account = $this->account()->confirmed()->withPassword()->passwordResetRequested()->create();
+        $account = PasswordResetRequestedAccountStory::account();
 
         $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
 

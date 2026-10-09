@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\Registration;
 
+use Iam\Tests\Support\Story\UnconfirmedRegistrationStory;
+use Zenstruck\Foundry\Attribute\WithStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\Registration\Component\ConfirmForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
@@ -14,11 +16,12 @@ final class ConfirmTest extends AbstractStorefrontTestCase
     use VerificationCodeTrait;
 
     #[Test]
+    #[WithStory(UnconfirmedRegistrationStory::class)]
     public function itConfirms(): void
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $account = $this->account()->confirmationRequested()->create();
+        $account = UnconfirmedRegistrationStory::account();
 
         $browser->visitRoute('storefront_registration_confirm', ['identityId' => $account->id]);
 
