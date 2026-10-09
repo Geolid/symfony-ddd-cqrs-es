@@ -12,6 +12,7 @@ use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
+use Iam\Tests\Identity\Support\Factory\ReasonFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
@@ -31,7 +32,7 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itSuspends(): void
     {
         // Given
-        $reason = IdentityFactory::sample('reason')->value;
+        $reason = ReasonFactory::new()->create()->value;
         $now = Clock::get()->now();
 
         $factory = IdentityFactory::new()->confirmed();
@@ -65,7 +66,7 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
         $this->store($identity);
 
         // When
-        $this->dispatch(new SuspendIdentity($identity->id->toString(), IdentityFactory::sample('reason')->value));
+        $this->dispatch(new SuspendIdentity($identity->id->toString(), ReasonFactory::new()->create()->value));
 
         // Then
         $result = $this->identityFinder->ofId($identity->id->toString());
@@ -77,12 +78,12 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadySuspended(): void
     {
         // Given
-        $factory = IdentityFactory::new()->confirmed()->suspended();
-        $identity = $factory->create();
+        $reason = ReasonFactory::new()->create()->value;
+        $identity = IdentityFactory::new()->confirmed()->suspended($reason)->create();
         $this->store($identity);
 
         // When
-        $this->dispatch(new SuspendIdentity($identity->id->toString(), IdentityFactory::inputs($identity)['reason']->value));
+        $this->dispatch(new SuspendIdentity($identity->id->toString(), $reason));
 
         // Then
         self::expectNotToPerformAssertions();
@@ -97,7 +98,7 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new SuspendIdentity(
             IdentityIdFactory::new()->create()->toString(),
-            IdentityFactory::sample('reason')->value,
+            ReasonFactory::new()->create()->value,
         ));
     }
 
@@ -114,7 +115,7 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new SuspendIdentity(
             $identity->id->toString(),
-            IdentityFactory::sample('reason')->value,
+            ReasonFactory::new()->create()->value,
         ));
     }
 }

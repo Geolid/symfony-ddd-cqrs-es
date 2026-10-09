@@ -16,8 +16,9 @@ use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\PostalAddress;
-use Support\Faker\SeededFaker;
 use Support\TestCase\AbstractIntegrationTestCase;
+
+use function Zenstruck\Foundry\faker;
 
 final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
 {
@@ -37,9 +38,9 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
         $id = OrderIdFactory::new()->create()->toString();
         $customerId = Uuid::uuid7()->toString();
         $checkoutSessionId = Uuid::uuid7()->toString();
-        $unitPriceInCents = SeededFaker::get()->numberBetween(500, 5_000);
-        $quantity = SeededFaker::get()->numberBetween(1, 5);
-        $taxAmountInCents = SeededFaker::get()->numberBetween(50, 500);
+        $unitPriceInCents = faker()->numberBetween(500, 5_000);
+        $quantity = faker()->numberBetween(1, 5);
+        $taxAmountInCents = faker()->numberBetween(50, 500);
         $shippingAddress = PostalAddressMapper::toArray(PostalAddress::of('John Doe', Address::of('1 rue de Paris', '75001', 'Paris', 'FR')));
 
         // When
@@ -50,7 +51,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
             checkoutSessionId: $checkoutSessionId,
             lines: [[
                 'productId' => Uuid::uuid7()->toString(),
-                'label' => SeededFaker::get()->sentence(3),
+                'label' => faker()->sentence(3),
                 'unitPriceInCents' => $unitPriceInCents,
                 'taxAmountInCents' => $taxAmountInCents,
                 'quantity' => $quantity,

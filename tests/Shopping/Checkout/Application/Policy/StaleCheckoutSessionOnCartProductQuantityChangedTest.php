@@ -7,11 +7,11 @@ namespace Shopping\Tests\Checkout\Application\Policy;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
+use Shared\Tests\Support\Factory\QuantityFactory;
 use Shopping\Cart\Application\IntegrationEvent\CartProductQuantityChanged\CartProductQuantityChangedIntegrationEvent;
 use Shopping\Checkout\Application\Command\StaleCheckoutSession\StaleCheckoutSession;
 use Shopping\Checkout\Application\Policy\StaleCheckoutSessionOnCartProductQuantityChanged;
 use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionFactory;
-use Support\Faker\SeededFaker;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -31,7 +31,7 @@ final class StaleCheckoutSessionOnCartProductQuantityChangedTest extends Abstrac
         $this->trigger(StaleCheckoutSessionOnCartProductQuantityChanged::class, new CartProductQuantityChangedIntegrationEvent(
             cartId: $checkoutSession->cartId,
             productId: Uuid::uuid7()->toString(),
-            quantity: SeededFaker::get()->numberBetween(1, 5),
+            quantity: QuantityFactory::new()->create()->value,
             changedAt: Clock::get()->now(),
         ));
     }
@@ -48,7 +48,7 @@ final class StaleCheckoutSessionOnCartProductQuantityChangedTest extends Abstrac
         $this->trigger(StaleCheckoutSessionOnCartProductQuantityChanged::class, new CartProductQuantityChangedIntegrationEvent(
             cartId: Uuid::uuid7()->toString(),
             productId: Uuid::uuid7()->toString(),
-            quantity: SeededFaker::get()->numberBetween(1, 5),
+            quantity: QuantityFactory::new()->create()->value,
             changedAt: Clock::get()->now(),
         ));
     }

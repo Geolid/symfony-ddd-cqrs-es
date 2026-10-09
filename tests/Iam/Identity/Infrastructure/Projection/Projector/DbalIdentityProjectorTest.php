@@ -8,6 +8,8 @@ use Doctrine\DBAL\Connection;
 use Iam\Identity\Application\IdentityModerationStatus;
 use Iam\Identity\Application\IdentityVerificationStatus;
 use Iam\Identity\Infrastructure\Projection\Projector\DbalIdentityProjector;
+use Iam\Tests\Identity\Support\Factory\EmailFactory;
+use Iam\Tests\Identity\Support\Factory\FullNameFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\ErasureStatus;
@@ -101,7 +103,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         $other = $otherFactory->create();
         $this->store($other);
 
-        $newFullName = IdentityFactory::sample('fullName')->value;
+        $newFullName = FullNameFactory::new()->create()->value;
         $identity = IdentityFactory::new()->fullNameChanged($newFullName)->create();
 
         // When
@@ -125,7 +127,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         $other = $otherFactory->create();
         $this->store($other);
 
-        $newEmail = IdentityFactory::sample('email')->value;
+        $newEmail = EmailFactory::new()->create()->value;
         $identity = IdentityFactory::new()->emailChanged($newEmail)->create();
 
         // When

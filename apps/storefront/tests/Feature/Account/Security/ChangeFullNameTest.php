@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\Account\Security;
 
-use Iam\Tests\Identity\Support\Factory\IdentityFactory;
+use Iam\Tests\Identity\Support\Factory\FullNameFactory;
 use Iam\Tests\Support\Story\ConfirmedAccountStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\Account\Security\Component\ChangeFullNameForm;
@@ -24,7 +24,7 @@ final class ChangeFullNameTest extends AbstractStorefrontTestCase
 
         $browser->visitRoute('storefront_account_security_change_full_name');
         $browser->interceptRedirects();
-        $newFullName = IdentityFactory::sample('fullName')->value;
+        $newFullName = FullNameFactory::new()->create()->value;
 
         // When
         $browser->use(static function (ChangeFullNameForm $form) use ($newFullName): void {

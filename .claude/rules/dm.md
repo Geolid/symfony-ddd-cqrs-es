@@ -43,8 +43,8 @@ paths:
 - Compare against data re-read through the matching Finder when one exists for the resource under test.
 - A surface gated by authentication/authorization asserts its own full access contract (e.g. missing credential, malformed credential, missing permission, correct permission — whichever apply to its authentication mechanism) in its own test file, even when the underlying security mechanism is shared with another surface.
 - Each `Abstract<Dm>TestCase` overrides `createKernel()` to pass the app ID.
-- An API Platform test case sets `protected static ?bool $alwaysBootKernel = false;` — otherwise the kernel reboots per test and any seeded in-memory stub is lost.
-- A Web test case's client uses `disableReboot()` — otherwise the kernel reboots between requests and in-memory stubs reset.
+- An API Platform test case sets `protected static ?bool $alwaysBootKernel = false;` — otherwise the kernel reboots per test and any service replaced by a double is lost.
+- A Web test's state lives in the real stores (rolled back per test), never in a stub bound to the booted kernel — each `browser()` boots a fresh kernel, so a second actor takes a second `browser()`.
 - A Web DOM query — an assertion or an element lookup for interaction (a form to fill/submit, a button to click) — targets `[data-testid=...]` — the template carries that attribute; a test never selects on a structural CSS class or tag.
 - All Messenger transports run synchronously in tests — no wait/retry.
 - A webhook dispatches by matching the `webhook.routing` key against the `#[AsRemoteEventConsumer]` argument — never the remote event's own type name.

@@ -6,8 +6,6 @@ namespace Support\TestCase;
 
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Repository\RepositoryManager;
-use Patchlevel\EventSourcing\Serializer\EventSerializer;
-use Patchlevel\EventSourcing\Serializer\SerializedEvent;
 use Patchlevel\EventSourcing\Store\Store;
 
 trait EventSourcingTrait
@@ -75,29 +73,6 @@ trait EventSourcingTrait
 
             if ($event instanceof $eventClass && $matches($event)) {
                 return $event;
-            }
-        }
-
-        self::fail(\sprintf('%s event not found in the stream.', $eventClass));
-    }
-
-    /**
-     * Serializes the matching event now, while its subject's cipher key still exists — the InMemoryStore
-     * used in tests never round-trips events through the serializer, so crypto-shredding can't be
-     * observed on it otherwise.
-     *
-     * @template T of object
-     *
-     * @param class-string<T>   $eventClass
-     * @param callable(T): bool $matches
-     */
-    protected function serializedEventOf(string $eventClass, callable $matches): SerializedEvent
-    {
-        foreach ($this->service(Store::class)->load() as $message) {
-            $event = $message->event();
-
-            if ($event instanceof $eventClass && $matches($event)) {
-                return $this->service(EventSerializer::class)->serialize($event);
             }
         }
 

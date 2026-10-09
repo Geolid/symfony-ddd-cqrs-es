@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Storefront\Tests\Feature\Account\Security;
 
 use Iam\Tests\Authentication\Support\Factory\PasswordFactory;
-use Iam\Tests\Identity\Support\Factory\IdentityFactory;
+use Iam\Tests\Identity\Support\Factory\EmailFactory;
+use Iam\Tests\Identity\Support\Factory\FullNameFactory;
 use Iam\Tests\Support\Story\ConfirmedAccountStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\Account\Security\Component\ChangeEmailForm;
@@ -29,7 +30,7 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
         $account = ConfirmedAccountStory::account();
         $browser->signInAs($account->email, $account->password());
 
-        $newEmail = IdentityFactory::sample('email')->value;
+        $newEmail = EmailFactory::new()->create()->value;
         $browser->visitRoute('storefront_account_security_request_email_change');
         $browser->use(static function (RequestEmailChangeForm $requestEmailChangeForm) use ($newEmail): void {
             $requestEmailChangeForm->fillNewEmail($newEmail)->submit();
@@ -64,7 +65,7 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
 
         $browser->visitRoute('storefront_account_security_request_email_change');
         $browser->use(static function (RequestEmailChangeForm $requestEmailChangeForm): void {
-            $requestEmailChangeForm->fillNewEmail(IdentityFactory::sample('email')->value)->submit();
+            $requestEmailChangeForm->fillNewEmail(EmailFactory::new()->create()->value)->submit();
         });
 
         // When
@@ -87,7 +88,7 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
         $account = ConfirmedAccountStory::account();
         $browser->signInAs($account->email, $account->password());
 
-        $newEmail = IdentityFactory::sample('email')->value;
+        $newEmail = EmailFactory::new()->create()->value;
         $browser->visitRoute('storefront_account_security_request_email_change');
         $browser->use(static function (RequestEmailChangeForm $requestEmailChangeForm) use ($newEmail): void {
             $requestEmailChangeForm->fillNewEmail($newEmail)->submit();
@@ -114,7 +115,7 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
 
         $browser->visitRoute('storefront_account_security_request_email_change');
         $browser->use(static function (RequestEmailChangeForm $requestEmailChangeForm): void {
-            $requestEmailChangeForm->fillNewEmail(IdentityFactory::sample('email')->value)->submit();
+            $requestEmailChangeForm->fillNewEmail(EmailFactory::new()->create()->value)->submit();
         });
         $browser->interceptRedirects();
 
@@ -137,7 +138,7 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
         $account = ConfirmedAccountStory::account();
         $browser->signInAs($account->email, $account->password());
 
-        $targetEmail = IdentityFactory::sample('email')->value;
+        $targetEmail = EmailFactory::new()->create()->value;
         $browser->visitRoute('storefront_account_security_request_email_change');
         $browser->use(static function (RequestEmailChangeForm $requestEmailChangeForm) use ($targetEmail): void {
             $requestEmailChangeForm->fillNewEmail($targetEmail)->submit();
@@ -150,7 +151,7 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
         });
         $otherBrowser->click('[data-testid="create-account-button"]');
         $otherBrowser->use(static function (RegisterForm $register): void {
-            $register->fillFullName(IdentityFactory::sample('fullName')->value)
+            $register->fillFullName(FullNameFactory::new()->create()->value)
                 ->fillPassword(PasswordFactory::new()->create()->value)
                 ->submit();
         });
