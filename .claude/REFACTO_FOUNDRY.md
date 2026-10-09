@@ -24,7 +24,7 @@ Source du code de référence : le spike, branche `ai/foundry-spike-storefront` 
 - `config/packages/zenstruck_foundry.php` : faker (`FoundryFaker::create`), `EventSourcingResetter` décorant `OrmResetter`, Stories (`ShopperStory`, `BuilderShopperStory`, `tests/Iam/Support/Story/*Story.php`).
 - `config/packages/patchlevel_event_sourcing.php` (bloc test) : plus de `store: in_memory` ; `subscription.store: static_in_memory` conservé. `config/services/shared.php` : `InMemoryCipherKeyStore` retiré.
 - `phpunit.dist.xml` : `FoundryExtension` avec `enabled-auto-reset=true`. `tools/PHPUnit/EventSourcingExtension.php` vidée (les 3 subscribers de reset et `ResetState` ne sont plus enregistrés ; leurs fichiers existent encore).
-- `tests/bootstrap.php` : `UnitTestConfig::configure(faker: FoundryFaker::create())`. `bin/console` : raccourci `-a` de `--appId` retiré (conflit avec `foundry:load-fixtures -a|--append`). `.castor/demo.php` : tâche `demo:fixtures` ajoutée (à supprimer avec les autres au final).
+- `tests/bootstrap.php` : `UnitTestConfig::configure(faker: FoundryFaker::create())`. `bin/console` : raccourci `-a` de `--app-id` retiré (conflit avec `foundry:load-fixtures -a|--append`). `.castor/demo.php` : tâche `demo:fixtures` ajoutée (à supprimer avec les autres au final).
 
 **Socle de test** (`tests/Support/Foundry/`) : `AbstractAggregateFactory` (surcharge `create()` : horloge figée et monotone via `ClockSequence` ; `inputs()` par `WeakMap` ; `sample()` pont temporaire), `FoundryFaker`, `EventSourcingResetter` (séquence de `castor db:reset` sans `messenger` ; coupe les connexions statiques DAMA), `Story/AbstractAggregateStory` (persiste via `RepositoryManager`), `CustomerFactory`, `CartFactory` (spike).
 
@@ -43,7 +43,7 @@ Source du code de référence : le spike, branche `ai/foundry-spike-storefront` 
 ## 3. Mesures et faits appris
 
 - Store de subscriptions en base : `DbalIdentityFinderTest` passe de **1,8 s (en mémoire) à 6,3 s** (11 tests). Le premier run (27 s, et 2 min 47 s sur `tests/Iam`) n'est pas représentatif (démarrage à froid). Avec subscriptions en mémoire : `tests/Iam` 6,4 s.
-- **castor** : `qa:test` s'exécute avec `new Context()` et `compose_exec()` ne transmet via `-e` que `context()->environment` (`APP_ENV`, `APP_DEBUG`). Une variable inline (`FOO=1 castor qa:test`) n'atteint **pas** le conteneur (mesuré). **L'utilisateur juge ce comportement anormal : à investiguer** (cause non identifiée ; il ne s'agit pas d'une règle à retenir). Contournement utilisé : `.env.test.local` (gitignoré) avec `FOUNDRY_FAKER_SEED=42`.
+- **castor** : `FOUNDRY_FAKER_SEED=<n> castor qa:test <chemin>` atteint le conteneur (contexte `test`).
 - **Faker Foundry** : seed par test = `crc32(seed::testId)` ; un test isolé (`--filter`) rejoue exactement ses valeurs (vérifié en unitaire et en kernel). En unitaire, `UnitTestConfig::configure(faker: …)` ; en kernel, `zenstruck_foundry.faker.service`. `UnitTestConfig::build()` appelle `unique(true)` à chaque boot unitaire (le store d'unicité repart de zéro).
 - **Foundry** : `defaults()` est évaluée à chaque `create()` (valeurs directes, pas de closures par clé) ; `with()` remplace ; une `Factory` imbriquée dans un attribut est créée automatiquement ; `afterInstantiate` reçoit les paramètres résolus ; `beforeInstantiate` sert aux clés dérivées (`$p['id'] ??= …`). `create()` est surchargeable (horloge figée).
 - **Bundle** : il importe `orm.php` (resetter ORM sur la connexion `default`) dès que `DoctrineBundle` est présent, même sans ORM ; d'où la décoration d'`OrmResetter`.
@@ -77,8 +77,8 @@ Source du code de référence : le spike, branche `ai/foundry-spike-storefront` 
 
 ## 6. Points ouverts / non vérifié
 
-- **castor et l'environnement** : une variable inline n'atteint pas le conteneur depuis `qa:test` (voir §3) ; comportement attendu par l'utilisateur différent, à investiguer (`castor.php`, `compose_exec`, `.castor/qa/test.php`).
-- **Playwright** : `castor debug-test` s'est arrêté sur un `TimeoutException` (le clic sur « submit » ne faisait rien) ; cause non élucidée.
+- **castor et l'environnement** : `qa:test` tourne sous le contexte `test` (`castor.php`) ; `APP_ENV`, `FAKER_SEED` et `FOUNDRY_FAKER_SEED` posés en ligne atteignent le conteneur (voir §3).
+- **Playwright** : `castor debug:test` s'est arrêté sur un `TimeoutException` (le clic sur « submit » ne faisait rien) ; cause non élucidée.
 - `castor qa:static` (PHPStan, deptrac, PHPat, CS) et `qa:mutation` (Infection, min-msi 100) **jamais lancés** sur le nouveau code ; le typage `@phpstan-type Inputs` n'est pas vérifié.
 - Calque deptrac `demo/.*` (`deptrac_bc.yaml:60`) : autorise-t-il une dépendance vers `tests/` ?
 - DTO `Account` des Stories : remplacer par des états scalaires lus par `__callStatic` (`TwoFactorAccountStory::email()`) avec `@method static` ? Proposé, non tranché.
@@ -92,7 +92,7 @@ Source du code de référence : le spike, branche `ai/foundry-spike-storefront` 
 ## 7. Reprendre
 
 - Branche : `ai/foundry-spike-storefront`. Tests : `castor qa:test <chemin>` (jamais de `castor sh` pour vérifier). Démo : `castor demo:fixtures` (env `demo`, base `demo`).
-- Seed reproductible : `.env.test.local` → `FOUNDRY_FAKER_SEED=<n>` (supprimer après usage).
+- Seed reproductible : `FOUNDRY_FAKER_SEED=<n> castor qa:test <chemin>`.
 
 ## 8. Raisonnements consignés (ne pas les rediscuter)
 

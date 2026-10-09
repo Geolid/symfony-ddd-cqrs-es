@@ -8,14 +8,14 @@ use Castor\Attribute\AsTask;
 function ci_build(): void
 {
     qa_composer_validate();
-    vendor();
-    assets();
+    setup_vendor();
+    setup_assets();
 }
 
-#[AsTask(name: 'static', namespace: 'ci', description: 'Warmup then run static analysis')]
+#[AsTask(name: 'static', namespace: 'ci', description: 'Warm up then run static analysis')]
+#[NeedsWarmup]
 function ci_static(): void
 {
-    warmup();
     qa_composer_audit();
     qa_static();
 }
@@ -30,5 +30,5 @@ function ci_coverage(): void
 #[AsTask(name: 'mutation', namespace: 'ci', description: 'Run mutation testing')]
 function ci_mutation(): void
 {
-    qa_mutation(coverage: true);
+    qa_mutation(skipInitialTests: true);
 }

@@ -2,55 +2,62 @@
 
 declare(strict_types=1);
 
-use Castor\Attribute\AsArgument;
-use Castor\Attribute\AsListener;
+use Castor\Attribute\AsArgsAfterOptionEnd;
 use Castor\Attribute\AsOption;
+use Castor\Attribute\AsPathArgument;
 use Castor\Attribute\AsTask;
-use Castor\Context;
-use Castor\Event\BeforeExecuteTaskEvent;
 use Symfony\Component\Console\Input\InputOption;
 
 use function Castor\with;
 
-#[AsListener(event: BeforeExecuteTaskEvent::class)]
-function qa_test_ensure_playwright(BeforeExecuteTaskEvent $event): void
-{
-    if ([] !== $event->task->getAttributes(NeedsPlaywright::class)) {
-        playwright();
-    }
-}
-
+/**
+ * @param list<string> $args
+ */
 #[AsTask(name: 'test', namespace: 'qa', description: 'Run test suite')]
 #[NeedsPlaywright]
 function qa_test(
+    #[AsOption(description: 'Restrict to a single test suite', autocomplete: 'phpunit_testsuites')]
+    ?string $testsuite = null,
     #[AsOption(description: 'Filter tests by name')]
     ?string $filter = null,
-    #[AsOption(description: 'Run a specific test suite')]
-    ?string $suite = null,
-    #[AsArgument(description: 'Target test file or directory')]
-    ?string $target = null,
     #[AsOption(mode: InputOption::VALUE_NONE, description: 'Run with coverage')]
     ?bool $coverage = null,
+    #[AsPathArgument(description: 'Test files or directories', filter: '*Test.php')]
+    array $args = [],
 ): void {
-    // No APP_ENV forwarded: phpunit.dist.xml forces it to "test" itself, and that
-    // force loses to a real, externally-set APP_ENV env var.
-    with(static fn () => compose_exec([
-        'vendor/bin/paratest', '--processes', '8', '--display-all-issues',
-        ...(!$coverage ? ['--no-coverage'] : []),
+    with(static fn () => workspace_exec([
+        'vendor/bin/paratest', '--processes', '8',
+        ...($coverage ? [] : ['--no-coverage']),
+        ...(null !== $testsuite ? ['--testsuite', $testsuite] : []),
         ...(null !== $filter ? ['--filter', $filter] : []),
-        ...(null !== $suite ? ['--testsuite', $suite] : []),
-        ...(null !== $target ? [$target] : []),
-    ]), context: new Context());
+        ...$args,
+    ]), context: 'test');
 }
 
+/**
+ * @param list<string> $args
+ */
 #[AsTask(name: 'mutation', namespace: 'qa', description: 'Run mutation testing scoped to the diff')]
 function qa_mutation(
     #[AsOption(mode: InputOption::VALUE_NONE, description: 'Reuse var/coverage from `castor qa:test --coverage` and skip initial tests')]
-    ?bool $coverage = null,
+    ?bool $skipInitialTests = null,
+    #[AsArgsAfterOptionEnd]
+    array $args = [],
 ): void {
-    with(static fn () => compose_exec([
-        'vendor/bin/infection', '--threads=max', '--git-diff-lines', '--git-diff-base=origin/main',
-        '--min-msi=100', '--ignore-msi-with-no-mutations',
-        ...($coverage ? ['--coverage=var/coverage', '--skip-initial-tests'] : []),
-    ]), context: new Context());
+    with(static fn () => workspace_exec([
+        'vendor/bin/infection', '--git-diff-lines', '--git-diff-base=origin/main',
+        ...($skipInitialTests ? ['--skip-initial-tests', '--coverage=var/coverage'] : []),
+        ...$args,
+    ]), context: 'test');
+}
+
+/**
+ * @return list<string>
+ */
+function phpunit_testsuites(): array
+{
+    $xml = (string) preg_replace('/<!--.*?-->/s', '', (string) file_get_contents(__DIR__.'/../../phpunit.dist.xml'));
+    preg_match_all('/<testsuite\s+name="([^"]+)"/', $xml, $matches);
+
+    return $matches[1];
 }

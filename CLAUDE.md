@@ -11,21 +11,22 @@ fulfilment (shipping), after-sales (return).
 
 ## Commands
 
-Castor = Docker proxy, reads .env files and inline shell vars.
+Castor = Docker proxy. Its contexts (`dev`, `test`, `debug`, `demo`) set the env forwarded to the container.
+A task's own options are declared; what follows `--` goes to the wrapped tool as is.
 
 ```bash
 castor list                                        # see every task (this is a curated subset)
-castor start                                       # bootstrap: docker + vendor + db + assets
-castor vendor [<pkg>] [--dev]                      # composer install, or require a package
-castor sh [<cmd>]                                  # shell / exec in app container
-castor cc [<dm>]                                   # cache clear + warmup (default: all DMs)
-castor docker:logs <service>                       # tail a service's logs
+castor setup                                       # bootstrap: docker + vendor + db + assets
+castor setup:vendor                                # composer install (any other composer command: castor sh -- composer …)
+castor sh [-- <cmd>]                               # shell, or run a command, in the app container
+castor cc [--app-id=<dm>]                          # cache clear + warmup (default: all DMs)
+castor docker:logs [<service>] [-- <logs args>]    # tail a service's logs
 castor db:reset                                    # wipe + fresh DB
-castor qa:cs [--type=php|twig] [--fix] [<target>]  # coding standards (targeted)
-castor qa:stan [--app=<dm>] [<target>]             # PHPStan (targeted)
-castor qa:deptrac [--scope=bc|layers|dm]           # architecture boundaries (targeted)
-castor qa:rector [--fix] [<target>]                # Rector refactoring rules (targeted)
-castor qa:test [options] [<target>]                # PHPUnit (targeted)
+castor qa:cs[:php|:twig] [--fix] [<path>]          # coding standards (targeted)
+castor qa:stan [--app-id=<dm>] [<path>]            # PHPStan (targeted)
+castor qa:deptrac [--scope=<scope>]                # architecture boundaries (targeted)
+castor qa:rector [--fix] [<path>]                  # Rector refactoring rules (targeted)
+castor qa:test [--testsuite=<s>] [--filter=<n>] [<path>]  # PHPUnit (targeted)
 castor qa:static                                   # all static checks (gate)
 castor qa                                          # static + test + mutation (gate, before PR)
 ```
