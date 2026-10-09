@@ -8,9 +8,9 @@ use Finance\Payment\Application\Command\AuthorizePayment\AuthorizePayment;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
 use Finance\Payment\Domain\Exception\PaymentNotFoundException;
-use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
+use Finance\Tests\Payment\Support\Factory\PaymentFactory;
+use Finance\Tests\Payment\Support\Factory\PaymentIdFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class AuthorizePaymentHandlerTest extends AbstractIntegrationTestCase
@@ -19,15 +19,14 @@ final class AuthorizePaymentHandlerTest extends AbstractIntegrationTestCase
     public function itAuthorizesWhenRequested(): void
     {
         // Given
-        $paymentFactory = PaymentBuilder::new();
-        $orderPayment = $paymentFactory->create();
+        $orderPayment = PaymentFactory::new()->create();
         $this->store($orderPayment);
 
         // When
         $this->dispatch(new AuthorizePayment($orderPayment->id->toString()));
 
         // Then
-        $result = $this->service(PaymentFinderInterface::class)->ofReference($paymentFactory['reference']->value);
+        $result = $this->service(PaymentFinderInterface::class)->ofReference($orderPayment->reference->value);
         self::assertSame(PaymentStatus::AUTHORIZED, $result->status);
     }
 
@@ -35,7 +34,7 @@ final class AuthorizePaymentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyAuthorized(): void
     {
         // Given
-        $orderPayment = PaymentBuilder::new()->authorized()->create();
+        $orderPayment = PaymentFactory::new()->authorized()->create();
         $this->store($orderPayment);
 
         // When
@@ -49,7 +48,7 @@ final class AuthorizePaymentHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = Uuid::uuid7()->toString();
+        $id = PaymentIdFactory::new()->create()->toString();
 
         // Then
         $this->expectException(PaymentNotFoundException::class);

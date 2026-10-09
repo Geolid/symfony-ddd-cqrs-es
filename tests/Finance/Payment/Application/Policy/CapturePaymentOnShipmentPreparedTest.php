@@ -11,7 +11,7 @@ use Finance\Payment\Application\PSP\Exception\PaymentFatalFailureException;
 use Finance\Payment\Application\PSP\Exception\PaymentTransientFailureException;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Application\PSP\PaymentGatewayStatus;
-use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
+use Finance\Tests\Payment\Support\Factory\PaymentFactory;
 use Fulfilment\Shipping\Application\IntegrationEvent\ShipmentPrepared\ShipmentPreparedIntegrationEvent;
 use Patchlevel\EventSourcing\Message\Message;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
@@ -46,12 +46,11 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
     {
         // Given
         $checkoutSessionId = Uuid::uuid7()->toString();
-        $paymentBuilder = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionId)->authorized();
-        $payment = $paymentBuilder->create();
+        $payment = PaymentFactory::new()->withCheckoutSessionId($checkoutSessionId)->authorized()->create();
         $order = OrderFactory::new()->withCheckoutSessionId($checkoutSessionId)->create();
         $this->store($payment, $order);
         $this->paymentGateway->expects(self::once())->method('capture')
-            ->with($paymentBuilder['reference']->value)
+            ->with($payment->reference->value)
             ->willReturn(PaymentGatewayStatus::CAPTURED);
 
         // When
@@ -62,7 +61,7 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
         ));
 
         // Then
-        $result = $this->finder->ofReference($paymentBuilder['reference']->value);
+        $result = $this->finder->ofReference($payment->reference->value);
         self::assertSame(PaymentStatus::CAPTURED, $result->status);
     }
 
@@ -85,8 +84,7 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
     {
         // Given
         $checkoutSessionId = Uuid::uuid7()->toString();
-        $paymentBuilder = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionId)->authorized();
-        $payment = $paymentBuilder->create();
+        $payment = PaymentFactory::new()->withCheckoutSessionId($checkoutSessionId)->authorized()->create();
         $order = OrderFactory::new()->withCheckoutSessionId($checkoutSessionId)->create();
         $this->store($payment, $order);
         $this->paymentGateway->expects(self::once())->method('capture')->willReturn(PaymentGatewayStatus::AUTHORIZED);
@@ -99,7 +97,7 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
         ));
 
         // Then
-        $result = $this->finder->ofReference($paymentBuilder['reference']->value);
+        $result = $this->finder->ofReference($payment->reference->value);
         self::assertSame(PaymentStatus::AUTHORIZED, $result->status);
     }
 
@@ -108,8 +106,7 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
     {
         // Given
         $checkoutSessionId = Uuid::uuid7()->toString();
-        $paymentBuilder = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionId)->authorized();
-        $payment = $paymentBuilder->create();
+        $payment = PaymentFactory::new()->withCheckoutSessionId($checkoutSessionId)->authorized()->create();
         $order = OrderFactory::new()->withCheckoutSessionId($checkoutSessionId)->create();
         $this->store($payment, $order);
         $this->paymentGateway->expects(self::once())->method('capture')->willReturn(PaymentGatewayStatus::DECLINED);
@@ -122,7 +119,7 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
         ));
 
         // Then
-        $result = $this->finder->ofReference($paymentBuilder['reference']->value);
+        $result = $this->finder->ofReference($payment->reference->value);
         self::assertSame(PaymentStatus::FAILED, $result->status);
     }
 
@@ -132,8 +129,7 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
     {
         // Given
         $checkoutSessionId = Uuid::uuid7()->toString();
-        $paymentBuilder = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionId)->authorized();
-        $payment = $paymentBuilder->create();
+        $payment = PaymentFactory::new()->withCheckoutSessionId($checkoutSessionId)->authorized()->create();
         $order = OrderFactory::new()->withCheckoutSessionId($checkoutSessionId)->create();
         $this->store($payment, $order);
         $message = Message::create(new ShipmentPreparedIntegrationEvent(Uuid::uuid7()->toString(), $order->id->toString(), Clock::get()->now()));
@@ -143,7 +139,7 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
         $this->policy->onGatewayFailure($message, $error);
 
         // Then
-        $result = $this->finder->ofReference($paymentBuilder['reference']->value);
+        $result = $this->finder->ofReference($payment->reference->value);
         self::assertSame(PaymentStatus::FAILED, $result->status);
     }
 

@@ -8,7 +8,8 @@ use Finance\Payment\Application\Command\FailPayment\FailPayment;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
 use Finance\Payment\Domain\Exception\PaymentNotFoundException;
-use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
+use Finance\Tests\Payment\Support\Factory\PaymentFactory;
+use Finance\Tests\Payment\Support\Factory\PaymentIdFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -20,15 +21,14 @@ final class FailPaymentHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
-        $paymentFactory = PaymentBuilder::new()->authorized();
-        $orderPayment = $paymentFactory->create();
+        $orderPayment = PaymentFactory::new()->authorized()->create();
         $this->store($orderPayment);
 
         // When
         $this->dispatch(new FailPayment($orderPayment->id->toString(), $orderId));
 
         // Then
-        $result = $this->service(PaymentFinderInterface::class)->ofReference($paymentFactory['reference']->value);
+        $result = $this->service(PaymentFinderInterface::class)->ofReference($orderPayment->reference->value);
         self::assertSame(PaymentStatus::FAILED, $result->status);
         self::assertSame($orderId, $result->orderId);
     }
@@ -37,7 +37,7 @@ final class FailPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenRequested(): void
     {
         // Given
-        $orderPayment = PaymentBuilder::new()->create();
+        $orderPayment = PaymentFactory::new()->create();
         $this->store($orderPayment);
 
         // When
@@ -51,7 +51,7 @@ final class FailPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = Uuid::uuid7()->toString();
+        $id = PaymentIdFactory::new()->create()->toString();
 
         // Then
         $this->expectException(PaymentNotFoundException::class);

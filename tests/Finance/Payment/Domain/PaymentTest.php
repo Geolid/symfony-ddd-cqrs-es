@@ -13,11 +13,16 @@ use Finance\Payment\Domain\Event\PaymentVoided;
 use Finance\Payment\Domain\Payment;
 use Finance\Payment\Domain\ValueObject\PaymentId;
 use Finance\Payment\Domain\ValueObject\PaymentReference;
-use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
+use Finance\Tests\Payment\Support\Factory\PaymentIdFactory;
+use Finance\Tests\Payment\Support\Factory\PaymentReferenceFactory;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Money;
+use Shared\Tests\Support\Factory\MoneyFactory;
+use Symfony\Component\Clock\Clock;
+
+use function Zenstruck\Foundry\faker;
 
 final class PaymentTest extends AggregateRootTestCase
 {
@@ -35,15 +40,16 @@ final class PaymentTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->id = PaymentId::fromString(Uuid::uuid7()->toString());
-        $this->checkoutSessionId = PaymentBuilder::sample('checkoutSessionId');
-        $this->orderId = PaymentBuilder::sample('orderId');
-        $this->amount = PaymentBuilder::sample('amount');
-        $this->reference = PaymentBuilder::sample('reference');
-        $this->hostedPageUrl = PaymentBuilder::sample('hostedPageUrl');
-        $this->requestedAt = PaymentBuilder::sample('requestedAt');
-        $this->authorizedAt = PaymentBuilder::sample('authorizedAt');
-        $this->capturedAt = PaymentBuilder::sample('capturedAt');
+        $this->id = PaymentIdFactory::new()->create();
+        $this->checkoutSessionId = Uuid::uuid7()->toString();
+        $this->orderId = Uuid::uuid7()->toString();
+        $this->amount = MoneyFactory::new()->create();
+        $this->reference = PaymentReferenceFactory::new()->create();
+        $this->hostedPageUrl = 'https://checkout.globex.test/pay/'.faker()->regexify('[A-Z0-9]{8}');
+        $now = Clock::get()->now();
+        $this->requestedAt = $now;
+        $this->authorizedAt = $now->modify('+1 day');
+        $this->capturedAt = $now->modify('+2 day');
     }
 
     #[Test]
@@ -76,15 +82,16 @@ final class PaymentTest extends AggregateRootTestCase
     {
         $this
             ->given($this->requested(), $this->authorized())
-            ->when(static fn (Payment $orderPayment) => $orderPayment->authorize(PaymentBuilder::sample('authorizedAt')))
+            ->when(static fn (Payment $orderPayment) => $orderPayment->authorize(Clock::get()->now()->modify('+1 day')))
             ->then();
     }
 
     #[Test]
     public function itVoidsLateAuthorizationWhenAbandoned(): void
     {
-        $abandonedAt = PaymentBuilder::sample('abandonedAt');
-        $lateAuthorizedAt = PaymentBuilder::sample('authorizedAt');
+        $now = Clock::get()->now();
+        $abandonedAt = $now->modify('+1 day');
+        $lateAuthorizedAt = $now->modify('+1 day');
 
         $this
             ->given(
@@ -100,14 +107,14 @@ final class PaymentTest extends AggregateRootTestCase
     {
         $this
             ->given($this->requested())
-            ->when(fn (Payment $orderPayment) => $orderPayment->fail($this->orderId, PaymentBuilder::sample('failedAt')))
+            ->when(fn (Payment $orderPayment) => $orderPayment->fail($this->orderId, Clock::get()->now()->modify('+1 day')))
             ->then();
     }
 
     #[Test]
     public function itFailsWhenAuthorized(): void
     {
-        $failedAt = PaymentBuilder::sample('failedAt');
+        $failedAt = Clock::get()->now()->modify('+1 day');
 
         $this
             ->given($this->requested(), $this->authorized())
@@ -120,7 +127,7 @@ final class PaymentTest extends AggregateRootTestCase
     {
         $this
             ->given($this->requested(), $this->authorized(), $this->captured())
-            ->when(fn (Payment $orderPayment) => $orderPayment->fail($this->orderId, PaymentBuilder::sample('failedAt')))
+            ->when(fn (Payment $orderPayment) => $orderPayment->fail($this->orderId, Clock::get()->now()->modify('+1 day')))
             ->then();
     }
 
@@ -138,7 +145,7 @@ final class PaymentTest extends AggregateRootTestCase
     {
         $this
             ->given($this->requested())
-            ->when(fn (Payment $orderPayment) => $orderPayment->capture($this->orderId, PaymentBuilder::sample('capturedAt')))
+            ->when(fn (Payment $orderPayment) => $orderPayment->capture($this->orderId, Clock::get()->now()->modify('+2 day')))
             ->then();
     }
 
@@ -147,14 +154,14 @@ final class PaymentTest extends AggregateRootTestCase
     {
         $this
             ->given($this->requested(), $this->authorized(), $this->captured())
-            ->when(fn (Payment $orderPayment) => $orderPayment->capture($this->orderId, PaymentBuilder::sample('capturedAt')))
+            ->when(fn (Payment $orderPayment) => $orderPayment->capture($this->orderId, Clock::get()->now()->modify('+2 day')))
             ->then();
     }
 
     #[Test]
     public function itAbandonsWhenRequested(): void
     {
-        $abandonedAt = PaymentBuilder::sample('abandonedAt');
+        $abandonedAt = Clock::get()->now()->modify('+1 day');
 
         $this
             ->given($this->requested())
@@ -167,14 +174,14 @@ final class PaymentTest extends AggregateRootTestCase
     {
         $this
             ->given($this->requested(), $this->authorized())
-            ->when(static fn (Payment $orderPayment) => $orderPayment->abandon(PaymentBuilder::sample('abandonedAt')))
+            ->when(static fn (Payment $orderPayment) => $orderPayment->abandon(Clock::get()->now()->modify('+1 day')))
             ->then();
     }
 
     #[Test]
     public function itVoidsWhenAuthorized(): void
     {
-        $voidedAt = PaymentBuilder::sample('voidedAt');
+        $voidedAt = Clock::get()->now()->modify('+1 day');
 
         $this
             ->given($this->requested(), $this->authorized())
@@ -187,7 +194,7 @@ final class PaymentTest extends AggregateRootTestCase
     {
         $this
             ->given($this->requested())
-            ->when(static fn (Payment $orderPayment) => $orderPayment->void(PaymentBuilder::sample('voidedAt')))
+            ->when(static fn (Payment $orderPayment) => $orderPayment->void(Clock::get()->now()->modify('+1 day')))
             ->then();
     }
 
@@ -196,20 +203,22 @@ final class PaymentTest extends AggregateRootTestCase
     {
         $this
             ->given($this->requested(), $this->authorized(), $this->captured())
-            ->when(static fn (Payment $orderPayment) => $orderPayment->void(PaymentBuilder::sample('voidedAt')))
+            ->when(static fn (Payment $orderPayment) => $orderPayment->void(Clock::get()->now()->modify('+1 day')))
             ->then();
     }
 
     #[Test]
     public function itDoesNotVoidWhenFailed(): void
     {
+        $laterAt = Clock::get()->now()->modify('+1 day');
+
         $this
             ->given(
                 $this->requested(),
                 $this->authorized(),
-                new PaymentFailed($this->id, $this->orderId, PaymentBuilder::sample('failedAt')),
+                new PaymentFailed($this->id, $this->orderId, $laterAt),
             )
-            ->when(static fn (Payment $orderPayment) => $orderPayment->void(PaymentBuilder::sample('voidedAt')))
+            ->when(static fn (Payment $orderPayment) => $orderPayment->void($laterAt))
             ->then();
     }
 
