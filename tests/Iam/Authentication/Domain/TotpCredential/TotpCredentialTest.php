@@ -16,6 +16,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Clock\Clock;
 
+use function Zenstruck\Foundry\faker;
+
 final class TotpCredentialTest extends AggregateRootTestCase
 {
     private TotpCredentialId $id;
@@ -30,7 +32,7 @@ final class TotpCredentialTest extends AggregateRootTestCase
 
         $this->id = TotpCredentialId::fromString(Uuid::uuid7()->toString());
         $this->identityId = Uuid::uuid7()->toString();
-        $this->secret = bin2hex(random_bytes(32));
+        $this->secret = faker()->totpSecret();
         $this->enrolledAt = Clock::get()->now();
         $this->cipher = new FakeTotpCipher();
     }

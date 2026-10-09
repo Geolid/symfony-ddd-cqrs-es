@@ -17,6 +17,8 @@ use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 use Shared\Tests\Support\TestCase\RealColumnLeadsTrait;
 use Symfony\Component\Clock\Clock;
 
+use function Zenstruck\Foundry\faker;
+
 /**
  * @extends AbstractIterableFinderTestCase<ApiKeyCredentialResult>
  */
@@ -30,7 +32,7 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIterableFinderTestCas
         // Given
         $hasher = new FakeApiKeyHasher();
         $other = ApiKeyCredentialFactory::new()->withHasher($hasher)->create();
-        $secret = bin2hex(random_bytes(32));
+        $secret = faker()->apiKeySecret();
 
         $credential = ApiKeyCredentialFactory::new()->withSecret($secret)->withHasher($hasher)->create();
         $this->store($other, $credential);

@@ -55,7 +55,8 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
 
         $credential = ApiKeyCredentialFactory::new()
             ->withHasher($this->hasher)
-            ->revoked()->create();
+            ->revoked()
+            ->create();
 
         // When
         $this->store($credential);

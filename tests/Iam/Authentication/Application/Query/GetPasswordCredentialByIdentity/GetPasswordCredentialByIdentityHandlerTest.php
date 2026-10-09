@@ -31,7 +31,8 @@ final class GetPasswordCredentialByIdentityHandlerTest extends AbstractIntegrati
         // Given
         $credential = PasswordCredentialFactory::new()
             ->withHasher($this->hasher)
-            ->withPasswordStrength($this->passwordStrength)->create();
+            ->withPasswordStrength($this->passwordStrength)
+            ->create();
         $this->store($credential);
 
         // When

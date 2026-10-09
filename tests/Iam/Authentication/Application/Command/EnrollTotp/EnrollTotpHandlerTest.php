@@ -15,6 +15,8 @@ use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
+use function Zenstruck\Foundry\faker;
+
 final class EnrollTotpHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
@@ -23,7 +25,7 @@ final class EnrollTotpHandlerTest extends AbstractIntegrationTestCase
         // Given
         $id = Uuid::uuid7()->toString();
         $identityId = Uuid::uuid7()->toString();
-        $secret = bin2hex(random_bytes(32));
+        $secret = faker()->totpSecret();
         $now = Clock::get()->now();
 
         // When
@@ -61,7 +63,7 @@ final class EnrollTotpHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new EnrollTotp(
             Uuid::uuid7()->toString(),
             $identityId,
-            bin2hex(random_bytes(32)),
+            faker()->totpSecret(),
         ));
     }
 }

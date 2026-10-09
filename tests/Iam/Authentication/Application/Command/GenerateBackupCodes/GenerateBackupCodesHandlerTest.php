@@ -11,6 +11,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
+use function Zenstruck\Foundry\faker;
+
 final class GenerateBackupCodesHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
@@ -18,7 +20,7 @@ final class GenerateBackupCodesHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
-        $backupCodes = [bin2hex(random_bytes(5)), bin2hex(random_bytes(5))];
+        $backupCodes = faker()->backupCodes();
 
         // When
         $this->dispatch(new GenerateBackupCodes($identityId, $backupCodes));

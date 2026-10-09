@@ -15,6 +15,8 @@ use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
+use function Zenstruck\Foundry\faker;
+
 final class TotpCredentialVerifierTest extends AbstractIntegrationTestCase
 {
     private TotpCipherInterface $cipher;
@@ -36,7 +38,7 @@ final class TotpCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itAccepts(): void
     {
         // Given
-        $secret = TOTP::generate()->getSecret();
+        $secret = faker()->totpSecret();
         $code = TOTP::createFromSecret($secret, Clock::get())->now();
         $credential = TotpCredentialFactory::new()->withCipher($this->cipher)->withSecret($secret)->create();
         $this->store($credential);
@@ -52,7 +54,7 @@ final class TotpCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itRefuses(): void
     {
         // Given
-        $secret = TOTP::generate()->getSecret();
+        $secret = faker()->totpSecret();
         $credential = TotpCredentialFactory::new()->withCipher($this->cipher)->withSecret($secret)->create();
         $this->store($credential);
 

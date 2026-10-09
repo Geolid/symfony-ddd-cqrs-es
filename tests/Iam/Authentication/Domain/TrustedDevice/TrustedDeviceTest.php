@@ -14,6 +14,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Clock\Clock;
 
+use function Zenstruck\Foundry\faker;
+
 final class TrustedDeviceTest extends AggregateRootTestCase
 {
     private TrustedDeviceId $id;
@@ -28,8 +30,8 @@ final class TrustedDeviceTest extends AggregateRootTestCase
 
         $this->id = TrustedDeviceId::fromString(Uuid::uuid7()->toString());
         $this->identityId = Uuid::uuid7()->toString();
-        $this->userAgent = 'Mozilla/5.0';
-        $this->ip = '203.0.113.42';
+        $this->userAgent = faker()->userAgent();
+        $this->ip = faker()->ipv4();
         $this->trustedAt = Clock::get()->now();
     }
 

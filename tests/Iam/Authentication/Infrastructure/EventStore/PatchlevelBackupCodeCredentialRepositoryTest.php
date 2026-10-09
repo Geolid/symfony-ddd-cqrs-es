@@ -16,6 +16,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
+use function Zenstruck\Foundry\faker;
+
 final class PatchlevelBackupCodeCredentialRepositoryTest extends AbstractIntegrationTestCase
 {
     private BackupCodeCredentialRepositoryInterface $repository;
@@ -33,7 +35,7 @@ final class PatchlevelBackupCodeCredentialRepositoryTest extends AbstractIntegra
     public function itSavesAndLoads(): void
     {
         // Given
-        $regeneratedBackupCodes = [bin2hex(random_bytes(5)), bin2hex(random_bytes(5))];
+        $regeneratedBackupCodes = faker()->backupCodes();
         $credential = BackupCodeCredentialFactory::new()
             ->withBackupCodeHasher($this->backupCodeHasher)
             ->regenerated($regeneratedBackupCodes)
@@ -45,7 +47,7 @@ final class PatchlevelBackupCodeCredentialRepositoryTest extends AbstractIntegra
         $loaded = $this->repository->load($credential->id);
 
         // Then
-        self::assertSame($this->stateOf($credential), $this->stateOf($loaded));
+        self::assertSame($this->propertiesOf($credential), $this->propertiesOf($loaded));
     }
 
     #[Test]
@@ -53,7 +55,7 @@ final class PatchlevelBackupCodeCredentialRepositoryTest extends AbstractIntegra
     {
         // Given
         $credential = BackupCodeCredentialFactory::new()->withBackupCodeHasher($this->backupCodeHasher)->create();
-        $this->repository->save($credential);
+        $this->store($credential);
         $duplicate = BackupCodeCredentialFactory::new()->withIdentityId($credential->identityId)->withBackupCodeHasher($this->backupCodeHasher)->create();
 
         // Then
@@ -78,7 +80,7 @@ final class PatchlevelBackupCodeCredentialRepositoryTest extends AbstractIntegra
     {
         // Given
         $credential = BackupCodeCredentialFactory::new()->withBackupCodeHasher($this->backupCodeHasher)->create();
-        $this->repository->save($credential);
+        $this->store($credential);
 
         // When
         $exists = $this->repository->has($credential->id);
@@ -100,7 +102,7 @@ final class PatchlevelBackupCodeCredentialRepositoryTest extends AbstractIntegra
     /**
      * @return array<string, mixed>
      */
-    private function stateOf(BackupCodeCredential $credential): array
+    private function propertiesOf(BackupCodeCredential $credential): array
     {
         $atom = static fn (?\DateTimeImmutable $date): ?string => $date?->format(\DateTimeInterface::ATOM);
 

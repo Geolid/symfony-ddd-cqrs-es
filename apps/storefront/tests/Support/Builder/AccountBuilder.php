@@ -13,9 +13,10 @@ use Iam\Tests\Authentication\Support\Factory\PasswordCredentialFactory;
 use Iam\Tests\Authentication\Support\Factory\PasswordFactory;
 use Iam\Tests\Authentication\Support\Factory\TotpCredentialFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
-use OTPHP\TOTP;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Webmozart\Assert\Assert;
+
+use function Zenstruck\Foundry\faker;
 
 final readonly class AccountBuilder
 {
@@ -105,13 +106,13 @@ final readonly class AccountBuilder
 
         $totpSecret = null;
         if (null !== $this->totpFactory) {
-            $totpSecret = TOTP::generate()->getSecret();
+            $totpSecret = faker()->totpSecret();
             $aggregates[] = $this->totpFactory->withIdentityId($identity->id->toString())->withSecret($totpSecret)->create();
         }
 
         $plainBackupCodes = null;
         if (null !== $this->backupCodeFactory) {
-            $plainBackupCodes = [bin2hex(random_bytes(5)), bin2hex(random_bytes(5))];
+            $plainBackupCodes = faker()->backupCodes();
             $aggregates[] = $this->backupCodeFactory->withIdentityId($identity->id->toString())->withPlainBackupCodes($plainBackupCodes)->create();
         }
 

@@ -14,6 +14,8 @@ use Iam\Tests\Authentication\Support\Factory\KeyIdFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
+use function Zenstruck\Foundry\faker;
+
 final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
 {
     private ApiKeyHasherInterface $hasher;
@@ -34,7 +36,7 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itAccepts(): void
     {
         // Given
-        $secret = bin2hex(random_bytes(32));
+        $secret = faker()->apiKeySecret();
         $credential = ApiKeyCredentialFactory::new()->withSecret($secret)->withHasher($this->hasher)->create();
         $this->store($credential);
 
@@ -68,7 +70,7 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
         // When
         $this->verifier->verify(
             KeyIdFactory::new()->create()->value,
-            bin2hex(random_bytes(32)),
+            faker()->apiKeySecret(),
         );
     }
 
@@ -76,7 +78,7 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itFailsWhenRevoked(): void
     {
         // Given
-        $secret = bin2hex(random_bytes(32));
+        $secret = faker()->apiKeySecret();
         $credential = ApiKeyCredentialFactory::new()->withSecret($secret)->withHasher($this->hasher)->revoked()->create();
         $this->store($credential);
 

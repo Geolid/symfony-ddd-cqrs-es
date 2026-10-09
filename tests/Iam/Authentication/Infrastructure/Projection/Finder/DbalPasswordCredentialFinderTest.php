@@ -38,9 +38,11 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
             ->create();
         $password = PasswordFactory::new()->create()->value;
 
-        $credential = PasswordCredentialFactory::new()->withPassword($password)
+        $credential = PasswordCredentialFactory::new()
+            ->withPassword($password)
             ->withPasswordStrength($this->passwordStrength)
-            ->withHasher($this->hasher)->create();
+            ->withHasher($this->hasher)
+            ->create();
         $this->store($other, $credential);
 
         // When

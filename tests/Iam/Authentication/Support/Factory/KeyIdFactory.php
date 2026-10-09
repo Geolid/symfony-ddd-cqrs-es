@@ -8,6 +8,8 @@ use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\KeyId;
 use Zenstruck\Foundry\Object\Instantiator;
 use Zenstruck\Foundry\ObjectFactory;
 
+use function Zenstruck\Foundry\faker;
+
 /**
  * @extends ObjectFactory<KeyId>
  */
@@ -25,6 +27,6 @@ final class KeyIdFactory extends ObjectFactory
 
     protected function defaults(): array
     {
-        return ['value' => KeyId::PREFIX.bin2hex(random_bytes(8))];
+        return ['value' => KeyId::PREFIX.faker()->regexify(\sprintf('[a-f0-9]{%d}', KeyId::LENGTH - \strlen(KeyId::PREFIX)))];
     }
 }

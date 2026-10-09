@@ -29,7 +29,8 @@ final class PatchlevelTrustedDeviceRepositoryTest extends AbstractIntegrationTes
     public function itSavesAndLoads(): void
     {
         // Given
-        $trustedDevice = TrustedDeviceFactory::new()->revoked()
+        $trustedDevice = TrustedDeviceFactory::new()
+            ->revoked()
             ->create();
 
         // When
@@ -37,7 +38,7 @@ final class PatchlevelTrustedDeviceRepositoryTest extends AbstractIntegrationTes
         $loaded = $this->repository->load($trustedDevice->id);
 
         // Then
-        self::assertSame($this->stateOf($trustedDevice), $this->stateOf($loaded));
+        self::assertSame($this->propertiesOf($trustedDevice), $this->propertiesOf($loaded));
     }
 
     #[Test]
@@ -45,7 +46,7 @@ final class PatchlevelTrustedDeviceRepositoryTest extends AbstractIntegrationTes
     {
         // Given
         $trustedDevice = TrustedDeviceFactory::new()->create();
-        $this->repository->save($trustedDevice);
+        $this->store($trustedDevice);
         $duplicate = TrustedDeviceFactory::new()->withId($trustedDevice->id->toString())->create();
 
         // Then
@@ -70,7 +71,7 @@ final class PatchlevelTrustedDeviceRepositoryTest extends AbstractIntegrationTes
     {
         // Given
         $trustedDevice = TrustedDeviceFactory::new()->create();
-        $this->repository->save($trustedDevice);
+        $this->store($trustedDevice);
 
         // When
         $exists = $this->repository->has($trustedDevice->id);
@@ -92,7 +93,7 @@ final class PatchlevelTrustedDeviceRepositoryTest extends AbstractIntegrationTes
     /**
      * @return array<string, mixed>
      */
-    private function stateOf(TrustedDevice $trustedDevice): array
+    private function propertiesOf(TrustedDevice $trustedDevice): array
     {
         $atom = static fn (?\DateTimeImmutable $date): ?string => $date?->format(\DateTimeInterface::ATOM);
 

@@ -12,6 +12,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
+use function Zenstruck\Foundry\faker;
+
 final class DbalTotpCredentialFinderTest extends AbstractIntegrationTestCase
 {
     private TotpCredentialFinderInterface $finder;
@@ -30,7 +32,7 @@ final class DbalTotpCredentialFinderTest extends AbstractIntegrationTestCase
     {
         // Given
         $other = TotpCredentialFactory::new()->withCipher($this->cipher)->create();
-        $secret = bin2hex(random_bytes(32));
+        $secret = faker()->totpSecret();
 
         $credential = TotpCredentialFactory::new()->withSecret($secret)->withCipher($this->cipher)->create();
         $this->store($other, $credential);

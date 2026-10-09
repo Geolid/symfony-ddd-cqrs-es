@@ -19,6 +19,8 @@ use Shared\Domain\ValueObject\Label;
 use Shared\Tests\Support\Factory\LabelFactory;
 use Symfony\Component\Clock\Clock;
 
+use function Zenstruck\Foundry\faker;
+
 final class ApiKeyCredentialTest extends AggregateRootTestCase
 {
     private ApiKeyCredentialId $id;
@@ -37,7 +39,7 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
         $this->identityId = Uuid::uuid7()->toString();
         $this->keyId = KeyIdFactory::new()->create();
         $this->label = LabelFactory::new()->create();
-        $this->secret = bin2hex(random_bytes(32));
+        $this->secret = faker()->apiKeySecret();
         $this->issuedAt = Clock::get()->now();
         $this->hasher = new FakeApiKeyHasher();
     }

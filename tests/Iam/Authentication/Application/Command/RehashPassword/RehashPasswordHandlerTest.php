@@ -38,9 +38,11 @@ final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
         $this->replace(PasswordHasherInterface::class, new SymfonyPasswordHasher(new NativePasswordHasher(cost: 12)));
         $password = PasswordFactory::new()->create()->value;
 
-        $credential = PasswordCredentialFactory::new()->withPassword($password)
+        $credential = PasswordCredentialFactory::new()
+            ->withPassword($password)
             ->withPasswordStrength($this->passwordStrength)
-            ->withHasher(new SymfonyPasswordHasher(new NativePasswordHasher(cost: 4)))->create();
+            ->withHasher(new SymfonyPasswordHasher(new NativePasswordHasher(cost: 4)))
+            ->create();
         $this->store($credential);
 
         $before = $this->finder->ofIdentityOrNull($credential->identityId);
@@ -60,9 +62,11 @@ final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $password = PasswordFactory::new()->create()->value;
-        $credential = PasswordCredentialFactory::new()->withPassword($password)
+        $credential = PasswordCredentialFactory::new()
+            ->withPassword($password)
             ->withPasswordStrength($this->passwordStrength)
-            ->withHasher($this->service(PasswordHasherInterface::class))->create();
+            ->withHasher($this->service(PasswordHasherInterface::class))
+            ->create();
         $this->store($credential);
 
         $before = $this->finder->ofIdentityOrNull($credential->identityId);

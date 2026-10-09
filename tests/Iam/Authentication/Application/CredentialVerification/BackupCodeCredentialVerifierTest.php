@@ -11,6 +11,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
+use function Zenstruck\Foundry\faker;
+
 final class BackupCodeCredentialVerifierTest extends AbstractIntegrationTestCase
 {
     private BackupCodeHasherInterface $backupCodeHasher;
@@ -28,7 +30,7 @@ final class BackupCodeCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itAccepts(): void
     {
         // Given
-        $plainBackupCodes = [bin2hex(random_bytes(5)), bin2hex(random_bytes(5))];
+        $plainBackupCodes = faker()->backupCodes();
         $credential = BackupCodeCredentialFactory::new()->withPlainBackupCodes($plainBackupCodes)->withBackupCodeHasher($this->backupCodeHasher)->create();
         $this->store($credential);
 
@@ -67,7 +69,7 @@ final class BackupCodeCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itRefusesWhenAlreadyConsumed(): void
     {
         // Given
-        $plainBackupCodes = [bin2hex(random_bytes(5)), bin2hex(random_bytes(5))];
+        $plainBackupCodes = faker()->backupCodes();
         $credential = BackupCodeCredentialFactory::new()->withPlainBackupCodes($plainBackupCodes)->withBackupCodeHasher($this->backupCodeHasher)->consumed($plainBackupCodes[0])->create();
         $this->store($credential);
 

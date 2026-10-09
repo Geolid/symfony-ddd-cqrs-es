@@ -49,7 +49,7 @@ final class PatchlevelPasswordCredentialRepositoryTest extends AbstractIntegrati
         $loaded = $this->repository->load($credential->id);
 
         // Then
-        self::assertSame($this->stateOf($credential), $this->stateOf($loaded));
+        self::assertSame($this->propertiesOf($credential), $this->propertiesOf($loaded));
     }
 
     #[Test]
@@ -60,7 +60,7 @@ final class PatchlevelPasswordCredentialRepositoryTest extends AbstractIntegrati
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
             ->create();
-        $this->repository->save($credential);
+        $this->store($credential);
         $duplicate = PasswordCredentialFactory::new()
             ->withIdentityId($credential->identityId)
             ->withPasswordStrength($this->passwordStrength)
@@ -92,7 +92,7 @@ final class PatchlevelPasswordCredentialRepositoryTest extends AbstractIntegrati
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
             ->create();
-        $this->repository->save($credential);
+        $this->store($credential);
 
         // When
         $exists = $this->repository->has($credential->id);
@@ -114,7 +114,7 @@ final class PatchlevelPasswordCredentialRepositoryTest extends AbstractIntegrati
     /**
      * @return array<string, mixed>
      */
-    private function stateOf(PasswordCredential $credential): array
+    private function propertiesOf(PasswordCredential $credential): array
     {
         $atom = static fn (?\DateTimeImmutable $date): ?string => $date?->format(\DateTimeInterface::ATOM);
 

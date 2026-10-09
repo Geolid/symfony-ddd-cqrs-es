@@ -17,6 +17,8 @@ use Shared\Tests\Support\Factory\LabelFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
+use function Zenstruck\Foundry\faker;
+
 final class IssueApiKeyHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
@@ -27,7 +29,7 @@ final class IssueApiKeyHandlerTest extends AbstractIntegrationTestCase
         $id = Uuid::uuid7()->toString();
         $label = LabelFactory::new()->create()->value;
         $keyId = KeyIdFactory::new()->create()->value;
-        $secret = bin2hex(random_bytes(32));
+        $secret = faker()->apiKeySecret();
         $now = Clock::get()->now();
 
         // When
@@ -71,7 +73,7 @@ final class IssueApiKeyHandlerTest extends AbstractIntegrationTestCase
             $identityId,
             $label,
             KeyIdFactory::new()->create()->value,
-            bin2hex(random_bytes(32)),
+            faker()->apiKeySecret(),
         ));
     }
 }

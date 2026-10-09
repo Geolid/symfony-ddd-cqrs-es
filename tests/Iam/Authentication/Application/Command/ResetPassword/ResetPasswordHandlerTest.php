@@ -17,6 +17,7 @@ use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthS
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialVerificationCodePurpose;
 use Iam\Tests\Authentication\Support\Double\StubCompromisedPasswordGateway;
 use Iam\Tests\Authentication\Support\Factory\PasswordCredentialFactory;
+use Iam\Tests\Authentication\Support\Factory\PasswordFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -27,8 +28,6 @@ use Symfony\Component\Clock\Clock;
 
 final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
 {
-    private const string NEW_PASSWORD = 'Qm3&nJ8wXv5Tz1p!';
-
     private PasswordStrengthSpecificationInterface $passwordStrength;
 
     private PasswordHasherInterface $hasher;
@@ -51,6 +50,7 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
     public function itChanges(): void
     {
         // Given
+        $newPassword = PasswordFactory::new()->create()->value;
         $identity = IdentityFactory::new()->confirmed()->create();
         $credential = PasswordCredentialFactory::new()
             ->withIdentityId($identity->id->toString())
@@ -62,18 +62,19 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
         $code = $this->codeChallenger->issue(VerificationCodeKey::for(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identity->id->toString()), Clock::get()->now());
 
         // When
-        $this->dispatch(new ResetPassword($identity->id->toString(), $code, self::NEW_PASSWORD));
+        $this->dispatch(new ResetPassword($identity->id->toString(), $code, $newPassword));
 
         // Then
         $result = $this->passwordCredentialFinder->ofIdentityOrNull($identity->id->toString());
         self::assertNotNull($result);
-        self::assertTrue($this->hasher->verify($result->passwordHash, self::NEW_PASSWORD));
+        self::assertTrue($this->hasher->verify($result->passwordHash, $newPassword));
     }
 
     #[Test]
     public function itFailsWhenIdentityNotFound(): void
     {
         // Given
+        $newPassword = PasswordFactory::new()->create()->value;
         $identityId = Uuid::uuid7()->toString();
         $code = $this->codeChallenger->issue(VerificationCodeKey::for(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identityId), Clock::get()->now());
 
@@ -81,13 +82,14 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityResultNotFoundException::class);
 
         // When
-        $this->dispatch(new ResetPassword($identityId, $code, self::NEW_PASSWORD));
+        $this->dispatch(new ResetPassword($identityId, $code, $newPassword));
     }
 
     #[Test]
     public function itFailsWhenIdentityNotAuthenticatable(): void
     {
         // Given
+        $newPassword = PasswordFactory::new()->create()->value;
         $identity = IdentityFactory::new()->create();
         $this->store($identity);
 
@@ -97,13 +99,14 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityNotAuthenticatableException::class);
 
         // When
-        $this->dispatch(new ResetPassword($identity->id->toString(), $code, self::NEW_PASSWORD));
+        $this->dispatch(new ResetPassword($identity->id->toString(), $code, $newPassword));
     }
 
     #[Test]
     public function itFailsWhenCompromisedPassword(): void
     {
         // Given
+        $newPassword = PasswordFactory::new()->create()->value;
         $this->replace(CompromisedPasswordGatewayInterface::class, new StubCompromisedPasswordGateway(compromised: true));
 
         $identity = IdentityFactory::new()->confirmed()->create();
@@ -120,13 +123,14 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(CompromisedPasswordException::class);
 
         // When
-        $this->dispatch(new ResetPassword($identity->id->toString(), $code, self::NEW_PASSWORD));
+        $this->dispatch(new ResetPassword($identity->id->toString(), $code, $newPassword));
     }
 
     #[Test]
     public function itFailsWhenCredentialMissing(): void
     {
         // Given
+        $newPassword = PasswordFactory::new()->create()->value;
         $identity = IdentityFactory::new()->confirmed()->create();
         $this->store($identity);
 
@@ -136,13 +140,14 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(PasswordCredentialNotFoundException::class);
 
         // When
-        $this->dispatch(new ResetPassword($identity->id->toString(), $code, self::NEW_PASSWORD));
+        $this->dispatch(new ResetPassword($identity->id->toString(), $code, $newPassword));
     }
 
     #[Test]
     public function itFailsWhenCodeInvalid(): void
     {
         // Given
+        $newPassword = PasswordFactory::new()->create()->value;
         $identity = IdentityFactory::new()->confirmed()->create();
         $credential = PasswordCredentialFactory::new()
             ->withIdentityId($identity->id->toString())
@@ -157,6 +162,6 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(InvalidPasswordResetCodeException::class);
 
         // When
-        $this->dispatch(new ResetPassword($identity->id->toString(), '000000', self::NEW_PASSWORD));
+        $this->dispatch(new ResetPassword($identity->id->toString(), '000000', $newPassword));
     }
 }

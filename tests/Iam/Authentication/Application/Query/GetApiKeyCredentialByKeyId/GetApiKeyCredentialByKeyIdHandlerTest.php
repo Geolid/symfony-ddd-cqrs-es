@@ -12,6 +12,8 @@ use Iam\Tests\Authentication\Support\Factory\KeyIdFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
+use function Zenstruck\Foundry\faker;
+
 final class GetApiKeyCredentialByKeyIdHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
@@ -19,7 +21,7 @@ final class GetApiKeyCredentialByKeyIdHandlerTest extends AbstractIntegrationTes
     {
         // Given
         $hasher = $this->service(ApiKeyHasherInterface::class);
-        $secret = bin2hex(random_bytes(32));
+        $secret = faker()->apiKeySecret();
         $credential = ApiKeyCredentialFactory::new()->withSecret($secret)->withHasher($hasher)->create();
         $this->store($credential);
 

@@ -23,8 +23,6 @@ use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
 {
-    private const string NEW_PASSWORD = 'Qm3&nJ8wXv5Tz1p!';
-
     private PasswordStrengthSpecificationInterface $passwordStrength;
 
     private PasswordHasherInterface $hasher;
@@ -41,38 +39,44 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
     public function itChanges(): void
     {
         // Given
+        $newPassword = PasswordFactory::new()->create()->value;
         $password = PasswordFactory::new()->create()->value;
-        $credential = PasswordCredentialFactory::new()->withPassword($password)
+        $credential = PasswordCredentialFactory::new()
+            ->withPassword($password)
             ->withPasswordStrength($this->passwordStrength)
-            ->withHasher($this->hasher)->create();
+            ->withHasher($this->hasher)
+            ->create();
         $this->store($credential);
 
         // When
-        $this->dispatch(new ChangePassword($credential->identityId, $password, self::NEW_PASSWORD));
+        $this->dispatch(new ChangePassword($credential->identityId, $password, $newPassword));
 
         // Then
         $result = $this->service(PasswordCredentialFinderInterface::class)->ofIdentityOrNull($credential->identityId);
         self::assertNotNull($result);
-        self::assertTrue($this->hasher->verify($result->passwordHash, self::NEW_PASSWORD));
+        self::assertTrue($this->hasher->verify($result->passwordHash, $newPassword));
     }
 
     #[Test]
     public function itFailsWhenCompromisedPassword(): void
     {
         // Given
+        $newPassword = PasswordFactory::new()->create()->value;
         $this->replace(CompromisedPasswordGatewayInterface::class, new StubCompromisedPasswordGateway(compromised: true));
         $password = PasswordFactory::new()->create()->value;
 
-        $credential = PasswordCredentialFactory::new()->withPassword($password)
+        $credential = PasswordCredentialFactory::new()
+            ->withPassword($password)
             ->withPasswordStrength($this->passwordStrength)
-            ->withHasher($this->hasher)->create();
+            ->withHasher($this->hasher)
+            ->create();
         $this->store($credential);
 
         // Then
         $this->expectException(CompromisedPasswordException::class);
 
         // When
-        $this->dispatch(new ChangePassword($credential->identityId, $password, self::NEW_PASSWORD));
+        $this->dispatch(new ChangePassword($credential->identityId, $password, $newPassword));
     }
 
     #[Test]
@@ -86,7 +90,7 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
             new ChangePassword(
                 Uuid::uuid7()->toString(),
                 PasswordFactory::new()->create()->value,
-                self::NEW_PASSWORD,
+                PasswordFactory::new()->create()->value,
             ),
         );
     }
@@ -95,16 +99,18 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenInvalidCurrentPassword(): void
     {
         // Given
+        $newPassword = PasswordFactory::new()->create()->value;
         $credential = PasswordCredentialFactory::new()
             ->withPasswordStrength($this->passwordStrength)
-            ->withHasher($this->hasher)->create();
+            ->withHasher($this->hasher)
+            ->create();
         $this->store($credential);
 
         // Then
         $this->expectException(InvalidCurrentPasswordException::class);
 
         // When
-        $this->dispatch(new ChangePassword($credential->identityId, 'wrong-current-password', self::NEW_PASSWORD));
+        $this->dispatch(new ChangePassword($credential->identityId, 'wrong-current-password', $newPassword));
     }
 
     #[Test]
@@ -112,9 +118,11 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $password = PasswordFactory::new()->create()->value;
-        $credential = PasswordCredentialFactory::new()->withPassword($password)
+        $credential = PasswordCredentialFactory::new()
+            ->withPassword($password)
             ->withPasswordStrength($this->passwordStrength)
-            ->withHasher($this->hasher)->create();
+            ->withHasher($this->hasher)
+            ->create();
 
         $this->store($credential);
 
@@ -130,9 +138,11 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $password = PasswordFactory::new()->create()->value;
-        $credential = PasswordCredentialFactory::new()->withPassword($password)
+        $credential = PasswordCredentialFactory::new()
+            ->withPassword($password)
             ->withPasswordStrength($this->passwordStrength)
-            ->withHasher($this->hasher)->create();
+            ->withHasher($this->hasher)
+            ->create();
 
         $this->store($credential);
 

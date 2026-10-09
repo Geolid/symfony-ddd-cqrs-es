@@ -13,6 +13,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
+use function Zenstruck\Foundry\faker;
+
 final class BackupCodeRegeneratorTest extends AbstractIntegrationTestCase
 {
     private BackupCodeHasherInterface $backupCodeHasher;
@@ -32,7 +34,7 @@ final class BackupCodeRegeneratorTest extends AbstractIntegrationTestCase
     public function itRegenerates(): void
     {
         // Given
-        $plainBackupCodes = [bin2hex(random_bytes(5)), bin2hex(random_bytes(5))];
+        $plainBackupCodes = faker()->backupCodes();
         $credential = BackupCodeCredentialFactory::new()->withPlainBackupCodes($plainBackupCodes)->withBackupCodeHasher($this->backupCodeHasher)->create();
         $this->store($credential);
 

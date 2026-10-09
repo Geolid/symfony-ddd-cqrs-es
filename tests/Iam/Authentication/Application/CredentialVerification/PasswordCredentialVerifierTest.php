@@ -37,9 +37,11 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
     {
         // Given
         $password = PasswordFactory::new()->create()->value;
-        $credential = PasswordCredentialFactory::new()->withPassword($password)
+        $credential = PasswordCredentialFactory::new()
+            ->withPassword($password)
             ->withPasswordStrength($this->passwordStrength)
-            ->withHasher($this->hasher)->create();
+            ->withHasher($this->hasher)
+            ->create();
         $this->store($credential);
 
         // When
@@ -55,7 +57,8 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
         // Given
         $credential = PasswordCredentialFactory::new()
             ->withPasswordStrength($this->passwordStrength)
-            ->withHasher($this->hasher)->create();
+            ->withHasher($this->hasher)
+            ->create();
         $this->store($credential);
 
         // When
