@@ -9,7 +9,7 @@ use Patchlevel\EventSourcing\Repository\RepositoryManager;
 use Zenstruck\Foundry\Story;
 
 /**
- * SPIKE — a Story spans aggregates of any BC: persists through the same generic entry point as EventSourcingTrait::store().
+ * A Story spans aggregates of any BC: persists through the same generic entry point as EventSourcingTrait::store().
  */
 abstract class AbstractAggregateStory extends Story
 {
