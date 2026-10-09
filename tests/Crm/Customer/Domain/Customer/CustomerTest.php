@@ -12,9 +12,9 @@ use Crm\Customer\Domain\Customer\Event\CustomerErasureRequested;
 use Crm\Customer\Domain\Customer\Event\CustomerRegistered;
 use Crm\Customer\Domain\Customer\Event\CustomerShippingAddressDefined;
 use Crm\Customer\Domain\Customer\ValueObject\CustomerId;
+use Crm\Tests\Customer\Support\Factory\CustomerIdFactory;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Tests\Support\Factory\PostalAddressFactory;
 use Symfony\Component\Clock\Clock;
 
@@ -30,7 +30,7 @@ final class CustomerTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->id = CustomerId::fromString(Uuid::uuid7()->toString());
+        $this->id = CustomerIdFactory::new()->create();
         $now = Clock::get()->now();
         $this->registeredAt = $now;
         $this->requestedAt = $now->modify('+1 day');

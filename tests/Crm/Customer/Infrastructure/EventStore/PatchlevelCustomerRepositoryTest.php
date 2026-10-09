@@ -8,8 +8,8 @@ use Crm\Customer\Domain\Customer\Customer;
 use Crm\Customer\Domain\Customer\Exception\CustomerAlreadyExistsException;
 use Crm\Customer\Domain\Customer\Exception\CustomerNotFoundException;
 use Crm\Customer\Domain\Customer\Repository\CustomerRepositoryInterface;
-use Crm\Customer\Domain\Customer\ValueObject\CustomerId;
 use Crm\Tests\Customer\Support\Factory\CustomerFactory;
+use Crm\Tests\Customer\Support\Factory\CustomerIdFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\PostalAddress;
@@ -44,7 +44,7 @@ final class PatchlevelCustomerRepositoryTest extends AbstractIntegrationTestCase
         $loaded = $this->repository->load($customer->id);
 
         // Then
-        self::assertSame($this->stateOf($customer), $this->stateOf($loaded));
+        self::assertSame($this->propertiesOf($customer), $this->propertiesOf($loaded));
     }
 
     #[Test]
@@ -54,7 +54,7 @@ final class PatchlevelCustomerRepositoryTest extends AbstractIntegrationTestCase
         $this->expectException(CustomerNotFoundException::class);
 
         // When
-        $this->repository->load(CustomerId::forIdentity(Uuid::uuid7()->toString()));
+        $this->repository->load(CustomerIdFactory::new()->create());
     }
 
     #[Test]
@@ -63,7 +63,7 @@ final class PatchlevelCustomerRepositoryTest extends AbstractIntegrationTestCase
         // Given
         $identityId = Uuid::uuid7()->toString();
         $customer = CustomerFactory::new()->withIdentityId($identityId)->create();
-        $this->repository->save($customer);
+        $this->store($customer);
         $duplicate = CustomerFactory::new()->withIdentityId($identityId)->create();
 
         // Then
@@ -78,7 +78,7 @@ final class PatchlevelCustomerRepositoryTest extends AbstractIntegrationTestCase
     {
         // Given
         $customer = CustomerFactory::new()->create();
-        $this->repository->save($customer);
+        $this->store($customer);
 
         // When
         $exists = $this->repository->has($customer->id);
@@ -91,7 +91,7 @@ final class PatchlevelCustomerRepositoryTest extends AbstractIntegrationTestCase
     public function itHasNot(): void
     {
         // When
-        $notExists = $this->repository->has(CustomerId::forIdentity(Uuid::uuid7()->toString()));
+        $notExists = $this->repository->has(CustomerIdFactory::new()->create());
 
         // Then
         self::assertFalse($notExists);
@@ -100,7 +100,7 @@ final class PatchlevelCustomerRepositoryTest extends AbstractIntegrationTestCase
     /**
      * @return array<string, mixed>
      */
-    private function stateOf(Customer $customer): array
+    private function propertiesOf(Customer $customer): array
     {
         $atom = static fn (?\DateTimeImmutable $date): ?string => $date?->format(\DateTimeInterface::ATOM);
         $address = static fn (?PostalAddress $postalAddress): ?array => null === $postalAddress ? null : [
