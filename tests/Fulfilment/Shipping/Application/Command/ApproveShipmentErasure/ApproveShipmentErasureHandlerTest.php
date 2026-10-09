@@ -7,9 +7,9 @@ namespace Fulfilment\Tests\Shipping\Application\Command\ApproveShipmentErasure;
 use Fulfilment\Shipping\Application\Command\ApproveShipmentErasure\ApproveShipmentErasure;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Domain\Exception\ShipmentNotFoundException;
-use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
+use Fulfilment\Tests\Shipping\Support\Factory\ShipmentFactory;
+use Fulfilment\Tests\Shipping\Support\Factory\ShipmentIdFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Application\ErasureStatus;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -28,7 +28,7 @@ final class ApproveShipmentErasureHandlerTest extends AbstractIntegrationTestCas
     public function itApproves(): void
     {
         // Given
-        $shipment = ShipmentBuilder::new()->create();
+        $shipment = ShipmentFactory::new()->create();
         $this->store($shipment);
 
         // When
@@ -43,7 +43,7 @@ final class ApproveShipmentErasureHandlerTest extends AbstractIntegrationTestCas
     public function itApprovesAndErasesWhenAlreadyDelivered(): void
     {
         // Given
-        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->create();
+        $shipment = ShipmentFactory::new()->prepared()->manifested()->dispatched()->delivered()->create();
         $this->store($shipment);
 
         // When
@@ -58,7 +58,7 @@ final class ApproveShipmentErasureHandlerTest extends AbstractIntegrationTestCas
     public function itIgnoresWhenAlreadyApproved(): void
     {
         // Given
-        $shipment = ShipmentBuilder::new()->erasureApproved()->create();
+        $shipment = ShipmentFactory::new()->erasureApproved()->create();
         $this->store($shipment);
 
         // When
@@ -76,6 +76,6 @@ final class ApproveShipmentErasureHandlerTest extends AbstractIntegrationTestCas
         $this->expectException(ShipmentNotFoundException::class);
 
         // When
-        $this->dispatch(new ApproveShipmentErasure(Uuid::uuid7()->toString()));
+        $this->dispatch(new ApproveShipmentErasure(ShipmentIdFactory::new()->create()->toString()));
     }
 }

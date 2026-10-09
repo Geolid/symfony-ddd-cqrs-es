@@ -7,7 +7,7 @@ namespace Fulfilment\Tests\Shipping\Application\Policy;
 use Crm\Customer\Application\IntegrationEvent\CustomerErased\CustomerErasedIntegrationEvent;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\Policy\ApproveShipmentsErasureOnCustomerErased;
-use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
+use Fulfilment\Tests\Shipping\Support\Factory\ShipmentFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\ErasureStatus;
@@ -20,9 +20,9 @@ final class ApproveShipmentsErasureOnCustomerErasedTest extends AbstractIntegrat
     public function itApproves(): void
     {
         // Given
-        $other = ShipmentBuilder::new()->create();
+        $other = ShipmentFactory::new()->create();
         $customerId = Uuid::uuid7()->toString();
-        $shipment = ShipmentBuilder::new()->withCustomerId($customerId)->create();
+        $shipment = ShipmentFactory::new()->withCustomerId($customerId)->create();
         $this->store($other, $shipment);
 
         // When

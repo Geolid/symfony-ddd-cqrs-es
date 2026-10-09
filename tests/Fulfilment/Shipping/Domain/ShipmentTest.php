@@ -19,11 +19,14 @@ use Fulfilment\Shipping\Domain\Shipment;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentState;
 use Fulfilment\Shipping\Domain\ValueObject\TrackingNumber;
-use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
+use Fulfilment\Tests\Shipping\Support\Factory\ShipmentIdFactory;
+use Fulfilment\Tests\Shipping\Support\Factory\TrackingNumberFactory;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Tests\Support\Factory\PostalAddressFactory;
+use Symfony\Component\Clock\Clock;
 
 final class ShipmentTest extends AggregateRootTestCase
 {
@@ -44,18 +47,19 @@ final class ShipmentTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->id = ShipmentId::fromString(Uuid::uuid7()->toString());
-        $this->orderId = ShipmentBuilder::sample('orderId');
-        $this->customerId = ShipmentBuilder::sample('customerId');
-        $this->origin = ShipmentBuilder::sample('origin');
-        $this->destination = ShipmentBuilder::sample('destination');
-        $this->createdAt = ShipmentBuilder::sample('createdAt');
-        $this->preparedAt = ShipmentBuilder::sample('preparedAt');
-        $this->trackingNumber = TrackingNumber::fromString('ACME-4Q7X2K9');
-        $this->manifestedAt = ShipmentBuilder::sample('manifestedAt');
-        $this->dispatchedAt = ShipmentBuilder::sample('dispatchedAt');
-        $this->deliveredAt = ShipmentBuilder::sample('deliveredAt');
-        $this->erasureApprovedAt = ShipmentBuilder::sample('erasureApprovedAt');
+        $this->id = ShipmentIdFactory::new()->create();
+        $this->orderId = Uuid::uuid7()->toString();
+        $this->customerId = Uuid::uuid7()->toString();
+        $this->origin = PostalAddressFactory::new()->create();
+        $this->destination = PostalAddressFactory::new()->create();
+        $now = Clock::get()->now();
+        $this->createdAt = $now;
+        $this->preparedAt = $now->modify('+1 day');
+        $this->trackingNumber = TrackingNumberFactory::new()->create();
+        $this->manifestedAt = $now->modify('+3 day');
+        $this->dispatchedAt = $now->modify('+4 day');
+        $this->deliveredAt = $now->modify('+5 day');
+        $this->erasureApprovedAt = $now->modify('+6 day');
     }
 
     #[Test]
@@ -108,7 +112,7 @@ final class ShipmentTest extends AggregateRootTestCase
     {
         $this
             ->given($this->requested(), $this->manifested())
-            ->when(static fn (Shipment $shipment) => $shipment->manifest(TrackingNumber::fromString('ACME-OTHER'), ShipmentBuilder::sample('manifestedAt')))
+            ->when(static fn (Shipment $shipment) => $shipment->manifest(TrackingNumber::fromString('ACME-OTHER'), Clock::get()->now()->modify('+3 day')))
             ->expectsException(ShipmentAlreadyTrackedException::class);
     }
 
@@ -199,7 +203,7 @@ final class ShipmentTest extends AggregateRootTestCase
     #[Test]
     public function itCancelsWhenRequested(): void
     {
-        $cancelledAt = ShipmentBuilder::sample('cancelledAt');
+        $cancelledAt = Clock::get()->now()->modify('+2 day');
 
         $this
             ->given($this->requested())
@@ -210,7 +214,7 @@ final class ShipmentTest extends AggregateRootTestCase
     #[Test]
     public function itCancelsWhenPrepared(): void
     {
-        $cancelledAt = ShipmentBuilder::sample('cancelledAt');
+        $cancelledAt = Clock::get()->now()->modify('+2 day');
 
         $this
             ->given($this->requested(), $this->prepared())
@@ -221,7 +225,7 @@ final class ShipmentTest extends AggregateRootTestCase
     #[Test]
     public function itDoesNotCancelWhenAlreadyCancelled(): void
     {
-        $cancelledAt = ShipmentBuilder::sample('cancelledAt');
+        $cancelledAt = Clock::get()->now()->modify('+2 day');
 
         $this
             ->given($this->requested(), new ShipmentCancelled($this->id, $cancelledAt))
@@ -232,7 +236,7 @@ final class ShipmentTest extends AggregateRootTestCase
     #[Test]
     public function itRejectsCancellationWhenManifested(): void
     {
-        $cancelledAt = ShipmentBuilder::sample('cancelledAt');
+        $cancelledAt = Clock::get()->now()->modify('+2 day');
 
         $this
             ->given($this->requested(), $this->manifested())
@@ -243,7 +247,7 @@ final class ShipmentTest extends AggregateRootTestCase
     #[Test]
     public function itRejectsCancellationWhenDispatched(): void
     {
-        $cancelledAt = ShipmentBuilder::sample('cancelledAt');
+        $cancelledAt = Clock::get()->now()->modify('+2 day');
 
         $this
             ->given($this->requested(), $this->dispatched())
@@ -254,7 +258,7 @@ final class ShipmentTest extends AggregateRootTestCase
     #[Test]
     public function itRejectsCancellationWhenDelivered(): void
     {
-        $cancelledAt = ShipmentBuilder::sample('cancelledAt');
+        $cancelledAt = Clock::get()->now()->modify('+2 day');
 
         $this
             ->given($this->requested(), $this->dispatched(), $this->delivered())
@@ -265,7 +269,7 @@ final class ShipmentTest extends AggregateRootTestCase
     #[Test]
     public function itCancelsAndErasesWhenErasureApproved(): void
     {
-        $cancelledAt = ShipmentBuilder::sample('cancelledAt');
+        $cancelledAt = Clock::get()->now()->modify('+2 day');
 
         $this
             ->given($this->requested(), $this->erasureApproved())
@@ -307,7 +311,7 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given(
                 $this->requested(),
-                new ShipmentCancelled($this->id, ShipmentBuilder::sample('cancelledAt')),
+                new ShipmentCancelled($this->id, Clock::get()->now()->modify('+2 day')),
             )
             ->when(fn (Shipment $shipment) => $shipment->approveErasure($this->erasureApprovedAt))
             ->then(
@@ -321,7 +325,7 @@ final class ShipmentTest extends AggregateRootTestCase
     {
         $this
             ->given($this->requested(), $this->erasureApproved())
-            ->when(static fn (Shipment $shipment) => $shipment->approveErasure(ShipmentBuilder::sample('erasureApprovedAt')))
+            ->when(static fn (Shipment $shipment) => $shipment->approveErasure(Clock::get()->now()->modify('+6 day')))
             ->then();
     }
 

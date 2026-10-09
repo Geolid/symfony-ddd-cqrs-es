@@ -8,8 +8,9 @@ use Fulfilment\Shipping\Application\Carrier\CarrierGatewayStatus;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\Reconciliation\DispatchedShipmentReconciler;
 use Fulfilment\Shipping\Application\ShipmentStatus;
-use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use Fulfilment\Tests\Shipping\Support\Double\CarrierGatewayStubTrait;
+use Fulfilment\Tests\Shipping\Support\Factory\ShipmentFactory;
+use Fulfilment\Tests\Shipping\Support\Factory\TrackingNumberFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Command\CommandBusInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -34,8 +35,8 @@ final class DispatchedShipmentReconcilerTest extends AbstractIntegrationTestCase
     public function itReconcilesWhenDelivered(): void
     {
         // Given
-        $trackingNumber = ShipmentBuilder::sample('trackingNumber')->value;
-        $shipment = ShipmentBuilder::new()->prepared()->manifested($trackingNumber)->dispatched()->create();
+        $trackingNumber = TrackingNumberFactory::new()->create()->value;
+        $shipment = ShipmentFactory::new()->prepared()->manifested($trackingNumber)->dispatched()->create();
         $this->store($shipment);
         $reconciler = new DispatchedShipmentReconciler($this->carrierGatewayReturning(CarrierGatewayStatus::DELIVERED), $this->commandBus);
 
@@ -52,8 +53,8 @@ final class DispatchedShipmentReconcilerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenStillDispatched(): void
     {
         // Given
-        $trackingNumber = ShipmentBuilder::sample('trackingNumber')->value;
-        $shipment = ShipmentBuilder::new()->prepared()->manifested($trackingNumber)->dispatched()->create();
+        $trackingNumber = TrackingNumberFactory::new()->create()->value;
+        $shipment = ShipmentFactory::new()->prepared()->manifested($trackingNumber)->dispatched()->create();
         $this->store($shipment);
         $reconciler = new DispatchedShipmentReconciler($this->carrierGatewayReturning(CarrierGatewayStatus::DISPATCHED), $this->commandBus);
 

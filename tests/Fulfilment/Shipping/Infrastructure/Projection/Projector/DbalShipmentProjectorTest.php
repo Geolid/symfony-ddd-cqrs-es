@@ -8,7 +8,8 @@ use Doctrine\DBAL\Connection;
 use Fulfilment\Shipping\Application\ShipmentStatus;
 use Fulfilment\Shipping\Domain\Shipment;
 use Fulfilment\Shipping\Infrastructure\Projection\Projector\DbalShipmentProjector;
-use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
+use Fulfilment\Tests\Shipping\Support\Factory\ShipmentFactory;
+use Fulfilment\Tests\Shipping\Support\Factory\TrackingNumberFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\ErasureStatus;
 use Shared\Application\Mapper\PostalAddressMapper;
@@ -24,8 +25,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnShipmentRequested(): void
     {
         // Given
-        $builder = ShipmentBuilder::new();
-        $shipment = $builder->create();
+        $shipment = ShipmentFactory::new()->create();
 
         // When
         $this->store($shipment);
@@ -33,10 +33,10 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($shipment->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($builder['orderId'], $row['order_id']);
+        self::assertSame($shipment->orderId, $row['order_id']);
         self::assertSame(ShipmentStatus::REQUESTED->value, $row['status']);
-        self::assertSame(SnakeCaseKeys::from(PostalAddressMapper::toArray($builder['origin'])), $this->decoded($row['origin']));
-        self::assertSame(SnakeCaseKeys::from(PostalAddressMapper::toArray($builder['destination'])), $this->decoded($row['destination']));
+        self::assertSame(SnakeCaseKeys::from(PostalAddressMapper::toArray($shipment->origin)), $this->decoded($row['origin']));
+        self::assertSame(SnakeCaseKeys::from(PostalAddressMapper::toArray($shipment->destination)), $this->decoded($row['destination']));
         self::assertNull($row['tracking_number']);
         self::assertSame(ErasureStatus::RETAINED->value, $row['erasure_status']);
     }
@@ -48,8 +48,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         $other = $this->otherShipment();
         $this->store($other);
 
-        $builder = ShipmentBuilder::new()->prepared();
-        $shipment = $builder->create();
+        $shipment = ShipmentFactory::new()->prepared()->create();
 
         // When
         $this->store($shipment);
@@ -71,8 +70,9 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         $other = $this->otherShipment();
         $this->store($other);
 
-        $builder = ShipmentBuilder::new()->prepared()->manifested();
-        $shipment = $builder->create();
+        $trackingNumber = TrackingNumberFactory::new()->create()->value;
+
+        $shipment = ShipmentFactory::new()->prepared()->manifested($trackingNumber)->create();
 
         // When
         $this->store($shipment);
@@ -81,7 +81,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($shipment->id->toString());
         self::assertNotFalse($row);
         self::assertSame(ShipmentStatus::MANIFESTED->value, $row['status']);
-        self::assertSame($builder['trackingNumber']->value, $row['tracking_number']);
+        self::assertSame($trackingNumber, $row['tracking_number']);
         self::assertNotNull($row['manifested_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
@@ -96,8 +96,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         $other = $this->otherShipment();
         $this->store($other);
 
-        $builder = ShipmentBuilder::new()->prepared()->manifested()->dispatched();
-        $shipment = $builder->create();
+        $shipment = ShipmentFactory::new()->prepared()->manifested()->dispatched()->create();
 
         // When
         $this->store($shipment);
@@ -120,8 +119,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         $other = $this->otherShipment();
         $this->store($other);
 
-        $builder = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered();
-        $shipment = $builder->create();
+        $shipment = ShipmentFactory::new()->prepared()->manifested()->dispatched()->delivered()->create();
 
         // When
         $this->store($shipment);
@@ -144,7 +142,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         $other = $this->otherShipment();
         $this->store($other);
 
-        $shipment = ShipmentBuilder::new()->cancelled()->create();
+        $shipment = ShipmentFactory::new()->cancelled()->create();
 
         // When
         $this->store($shipment);
@@ -168,7 +166,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         $other = $this->otherShipment();
         $this->store($other);
 
-        $shipment = ShipmentBuilder::new()->erasureApproved()->create();
+        $shipment = ShipmentFactory::new()->erasureApproved()->create();
 
         // When
         $this->store($shipment);
@@ -187,10 +185,10 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnShipmentErased(): void
     {
         // Given
-        $other = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->create();
+        $other = ShipmentFactory::new()->prepared()->manifested()->dispatched()->delivered()->create();
         $this->store($other);
 
-        $shipment = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered()->erasureApproved()->create();
+        $shipment = ShipmentFactory::new()->prepared()->manifested()->dispatched()->delivered()->erasureApproved()->create();
 
         // When
         $this->store($shipment);
@@ -207,7 +205,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
 
     private function otherShipment(): Shipment
     {
-        return ShipmentBuilder::new()->create();
+        return ShipmentFactory::new()->create();
     }
 
     /**
