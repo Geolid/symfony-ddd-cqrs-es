@@ -13,6 +13,8 @@ use Support\Foundry\AbstractAggregateFactory;
 use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
+use function Zenstruck\Foundry\faker;
+
 /**
  * @phpstan-type Inputs = array{
  *     id: BackupCodeCredentialId,
@@ -115,9 +117,9 @@ final class BackupCodeCredentialFactory extends AbstractAggregateFactory
 
         return [
             'identityId' => Uuid::uuid7()->toString(),
-            'plainBackupCodes' => [bin2hex(random_bytes(5)), bin2hex(random_bytes(5))],
+            'plainBackupCodes' => faker()->backupCodes(),
             'generatedAt' => $now,
-            'regeneratedBackupCodes' => [bin2hex(random_bytes(5)), bin2hex(random_bytes(5))],
+            'regeneratedBackupCodes' => faker()->backupCodes(),
             'regeneratedAt' => $now->modify('+1 day'),
             'consumedAt' => $now->modify('+1 day'),
         ];

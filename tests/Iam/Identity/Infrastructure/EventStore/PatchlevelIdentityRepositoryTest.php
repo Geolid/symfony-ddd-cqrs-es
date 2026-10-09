@@ -8,10 +8,9 @@ use Iam\Identity\Domain\Exception\IdentityAlreadyExistsException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Identity;
 use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
-use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
+use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class PatchlevelIdentityRepositoryTest extends AbstractIntegrationTestCase
@@ -42,7 +41,7 @@ final class PatchlevelIdentityRepositoryTest extends AbstractIntegrationTestCase
         $loaded = $this->repository->load($identity->id);
 
         // Then
-        self::assertSame($this->stateOf($identity), $this->stateOf($loaded));
+        self::assertSame($this->propertiesOf($identity), $this->propertiesOf($loaded));
     }
 
     #[Test]
@@ -52,7 +51,7 @@ final class PatchlevelIdentityRepositoryTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->repository->load(IdentityId::fromString(Uuid::uuid7()->toString()));
+        $this->repository->load(IdentityIdFactory::new()->create());
     }
 
     #[Test]
@@ -60,7 +59,7 @@ final class PatchlevelIdentityRepositoryTest extends AbstractIntegrationTestCase
     {
         // Given
         $identity = IdentityFactory::new()->create();
-        $this->repository->save($identity);
+        $this->store($identity);
         $duplicate = IdentityFactory::new()->withId($identity->id->toString())->create();
 
         // Then
@@ -75,7 +74,7 @@ final class PatchlevelIdentityRepositoryTest extends AbstractIntegrationTestCase
     {
         // Given
         $identity = IdentityFactory::new()->create();
-        $this->repository->save($identity);
+        $this->store($identity);
 
         // When
         $exists = $this->repository->has($identity->id);
@@ -88,7 +87,7 @@ final class PatchlevelIdentityRepositoryTest extends AbstractIntegrationTestCase
     public function itHasNot(): void
     {
         // When
-        $notExists = $this->repository->has(IdentityId::fromString(Uuid::uuid7()->toString()));
+        $notExists = $this->repository->has(IdentityIdFactory::new()->create());
 
         // Then
         self::assertFalse($notExists);
@@ -97,7 +96,7 @@ final class PatchlevelIdentityRepositoryTest extends AbstractIntegrationTestCase
     /**
      * @return array<string, string|null>
      */
-    private function stateOf(Identity $identity): array
+    private function propertiesOf(Identity $identity): array
     {
         $atom = static fn (?\DateTimeImmutable $date): ?string => $date?->format(\DateTimeInterface::ATOM);
 

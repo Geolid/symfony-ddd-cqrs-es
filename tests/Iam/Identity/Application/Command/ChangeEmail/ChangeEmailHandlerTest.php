@@ -13,8 +13,8 @@ use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Exception\InvalidEmailChangeCodeException;
 use Iam\Identity\Domain\ValueObject\IdentityVerificationCodePurpose;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
+use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Shared\Domain\ValueObject\VerificationCodeKey;
@@ -77,7 +77,7 @@ final class ChangeEmailHandlerTest extends AbstractIntegrationTestCase
         $this->uniqueness->claim(
             UniqueKey::for(IdentityUniqueKey::EMAIL),
             $email,
-            Uuid::uuid7()->toString(),
+            IdentityIdFactory::new()->create()->toString(),
         );
 
         // Then
@@ -91,7 +91,7 @@ final class ChangeEmailHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = Uuid::uuid7()->toString();
+        $id = IdentityIdFactory::new()->create()->toString();
         $code = $this->codeChallenger->issue(VerificationCodeKey::for(IdentityVerificationCodePurpose::EMAIL_CHANGE, $id), Clock::get()->now());
 
         // Then
