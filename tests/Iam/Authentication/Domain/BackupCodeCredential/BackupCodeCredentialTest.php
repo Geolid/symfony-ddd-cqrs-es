@@ -18,6 +18,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Clock\Clock;
 
+use function Zenstruck\Foundry\faker;
+
 final class BackupCodeCredentialTest extends AggregateRootTestCase
 {
     private BackupCodeCredentialId $id;
@@ -33,7 +35,7 @@ final class BackupCodeCredentialTest extends AggregateRootTestCase
 
         $this->identityId = Uuid::uuid7()->toString();
         $this->id = BackupCodeCredentialId::forIdentity($this->identityId);
-        $this->plainBackupCodes = [bin2hex(random_bytes(5)), bin2hex(random_bytes(5))];
+        $this->plainBackupCodes = faker()->backupCodes();
         $this->generatedAt = Clock::get()->now();
         $this->backupCodeHasher = new FakeBackupCodeHasher();
     }
@@ -56,7 +58,7 @@ final class BackupCodeCredentialTest extends AggregateRootTestCase
     #[Test]
     public function itRegenerates(): void
     {
-        $regeneratedBackupCodes = [bin2hex(random_bytes(5)), bin2hex(random_bytes(5))];
+        $regeneratedBackupCodes = faker()->backupCodes();
         $regeneratedAt = Clock::get()->now()->modify('+1 day');
 
         $this

@@ -9,8 +9,8 @@ use Iam\Identity\Application\Finder\Identity\Exception\IdentityResultNotFoundExc
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
+use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
@@ -75,6 +75,6 @@ final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new EraseIdentity(Uuid::uuid7()->toString()));
+        $this->dispatch(new EraseIdentity(IdentityIdFactory::new()->create()->toString()));
     }
 }

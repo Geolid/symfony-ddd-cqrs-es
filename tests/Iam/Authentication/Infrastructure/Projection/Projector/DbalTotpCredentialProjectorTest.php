@@ -54,7 +54,8 @@ final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
 
         $credential = TotpCredentialFactory::new()
             ->withCipher($this->cipher)
-            ->unenrolled()->create();
+            ->unenrolled()
+            ->create();
 
         // When
         $this->store($credential);

@@ -40,7 +40,8 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         // Given
         $credential = PasswordCredentialFactory::new()
             ->withPasswordStrength($this->passwordStrength)
-            ->withHasher($this->hasher)->create();
+            ->withHasher($this->hasher)
+            ->create();
 
         // When
         $this->store($credential);
@@ -66,7 +67,8 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         $credential = PasswordCredentialFactory::new()
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
-            ->changed($newPassword, $this->passwordStrength, $this->hasher)->create();
+            ->changed($newPassword, $this->passwordStrength, $this->hasher)
+            ->create();
 
         // When
         $this->store($credential);
@@ -88,13 +90,16 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
     {
         // Given
         $otherPassword = PasswordFactory::new()->create()->value;
-        $other = PasswordCredentialFactory::new()->withPassword($otherPassword)
+        $other = PasswordCredentialFactory::new()
+            ->withPassword($otherPassword)
             ->withPasswordStrength($this->passwordStrength)
-            ->withHasher($this->hasher)->create();
+            ->withHasher($this->hasher)
+            ->create();
         $this->store($other);
         $password = PasswordFactory::new()->create()->value;
 
-        $credential = PasswordCredentialFactory::new()->withPassword($password)
+        $credential = PasswordCredentialFactory::new()
+            ->withPassword($password)
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
             ->rehashed($password, $this->hasher)
@@ -129,7 +134,8 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         $credential = PasswordCredentialFactory::new()
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
-            ->reset($newPassword, $this->passwordStrength, $this->hasher)->create();
+            ->reset($newPassword, $this->passwordStrength, $this->hasher)
+            ->create();
 
         // When
         $this->store($credential);

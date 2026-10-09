@@ -135,3 +135,18 @@ Source du code de référence : le spike, branche `ai/foundry-spike-storefront` 
 **Démo** : l'env `demo` reste pour isoler la base ; Stories de démo dans `/demo` ; Stories de test dans `tests/` ; `foundry:load-fixtures` ne liste que les `#[AsFixture]`.
 
 **Précision de vocabulaire** : le `create()` surchargé, le `WeakMap` et la décoration du resetter sont des extensions prévues de Foundry, pas des contournements (correction de l'utilisateur).
+
+## 9. Grille d'audit d'un port (à appliquer à chaque BC, après « vert »)
+
+Un test vert ne suffit pas : vérifier la cohérence avec l'ancien système et `tests.md`.
+
+1. **Vocabulaire** : « propriété » (jamais « champ » ni « attribut ») dans le code, les docblocks et les descriptions de PR. Helper de comparaison d'un aggregate : `propertiesOf()` (jamais `stateOf`, `State` désignant l'enum du Domaine).
+2. **Primitives** : jamais `random_bytes()`/`bin2hex()`/`TOTP::generate()` (non seedés). Provider faker `CredentialFakerProvider` (typé pour PHPStan par `swisnl/phpstan-faker` : toute nouvelle classe de provider se déclare sous `faker.providerClasses` de `tests/phpstan.neon` et `apps/phpstan.neon`) : `faker()->apiKeySecret(length: 64)`, `faker()->totpSecret()`, `faker()->backupCodes(count: 2, length: 10)`. L'aggregate ne garde que le dérivé (hash, chiffré) : un test qui a besoin du clair le tire avant (`$secret = faker()->apiKeySecret();`) puis `->withSecret($secret)` ; sinon il laisse le défaut de la factory.
+3. **Littéraux** : un littéral n'existe que si son contenu est le scénario (`'wrong-current-password'`, un faux code `'000000'` bien formé, `'INVALIDCODE'`). Le reste vient du faker ou d'une factory de VO : `faker()->userAgent()`, `faker()->ipv4()`, `PasswordFactory::new()->create()->value` pour un nouveau mot de passe (pas de constante `NEW_PASSWORD`).
+4. **Ids** : l'id d'un aggregate de son propre BC passe par sa factory de VO (`IdentityIdFactory::new()->create()`), y compris en argument de Command ; dans un autre BC la référence est une chaîne : `Uuid::uuid7()->toString()` ; si le test construit déjà l'aggregate, l'id vient de `$identity->id->toString()`.
+5. **Dates** : une seule ancre `$now = Clock::get()->now()` par méthode/`setUp()`, tout le reste en `$now->modify(...)` ; une variable nommée seulement si la valeur est réutilisée, sinon en ligne.
+6. **Given/When** : `// Given` se termine par un seul `$this->store(...)` ; dans un test `AlreadyExists`/`itHas`, la mise en place passe par `store()`, seul le `save($duplicate)` reste en `// When`.
+7. **Chaînes de factory** : sur plusieurs lignes, `Factory::new()` seul sur la première, un appel par ligne, `create()` seul sur la dernière ; sur une ligne, laissée telle quelle.
+8. **Constantes et variables mortes** : plus de `$builder`/`$otherBuilder` ; une valeur sans enjeu n'est pas une constante de classe.
+9. **Portage** : le script de portage ne réécrit que les variables du Builder visé ; relire le diff pour toute autre variable touchée par erreur.
+10. **PII** : `serializedEventOf()` remplacé par le repository (état) ou `storedEventOf()` (événement).

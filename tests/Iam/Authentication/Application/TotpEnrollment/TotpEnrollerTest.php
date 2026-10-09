@@ -16,6 +16,8 @@ use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
+use function Zenstruck\Foundry\faker;
+
 final class TotpEnrollerTest extends AbstractIntegrationTestCase
 {
     private TotpEnrollerInterface $enroller;
@@ -36,7 +38,7 @@ final class TotpEnrollerTest extends AbstractIntegrationTestCase
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
-        $secret = TOTP::generate()->getSecret();
+        $secret = faker()->totpSecret();
         $code = TOTP::createFromSecret($secret, Clock::get())->now();
 
         // When
@@ -63,7 +65,7 @@ final class TotpEnrollerTest extends AbstractIntegrationTestCase
         $backupCodeCredential = BackupCodeCredentialFactory::new()->withBackupCodeHasher($this->service(BackupCodeHasherInterface::class))->create();
         $this->store($backupCodeCredential);
 
-        $secret = TOTP::generate()->getSecret();
+        $secret = faker()->totpSecret();
         $code = TOTP::createFromSecret($secret, Clock::get())->now();
 
         // When
@@ -78,7 +80,7 @@ final class TotpEnrollerTest extends AbstractIntegrationTestCase
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
-        $secret = TOTP::generate()->getSecret();
+        $secret = faker()->totpSecret();
 
         // Then
         $this->expectException(InvalidTotpCodeException::class);

@@ -9,8 +9,8 @@ use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\IdentityVerificationStatus;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
+use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -20,7 +20,7 @@ final class RegisterIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itRegisters(): void
     {
         // Given
-        $id = Uuid::uuid7()->toString();
+        $id = IdentityIdFactory::new()->create()->toString();
         $fullName = IdentityFactory::sample('fullName')->value;
         $email = IdentityFactory::sample('email')->value;
         $now = Clock::get()->now();
@@ -49,7 +49,7 @@ final class RegisterIdentityHandlerTest extends AbstractIntegrationTestCase
         // Given
         $email = IdentityFactory::sample('email')->value;
         $this->dispatch(new RegisterIdentity(
-            Uuid::uuid7()->toString(),
+            IdentityIdFactory::new()->create()->toString(),
             IdentityFactory::sample('fullName')->value,
             $email,
         ));
@@ -59,7 +59,7 @@ final class RegisterIdentityHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new RegisterIdentity(
-            Uuid::uuid7()->toString(),
+            IdentityIdFactory::new()->create()->toString(),
             IdentityFactory::sample('fullName')->value,
             $email,
         ));

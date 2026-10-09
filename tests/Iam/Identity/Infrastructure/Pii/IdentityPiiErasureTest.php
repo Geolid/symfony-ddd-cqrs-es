@@ -29,7 +29,7 @@ final class IdentityPiiErasureTest extends AbstractIntegrationTestCase
     {
         // Given
         $identity = IdentityFactory::new()->confirmed()->suspended()->create();
-        $this->repository->save($identity);
+        $this->store($identity);
 
         // When
         $this->cipherKeyStore->removeWithSubjectId($identity->id->toString());
@@ -43,7 +43,7 @@ final class IdentityPiiErasureTest extends AbstractIntegrationTestCase
     {
         // Given
         $identity = IdentityFactory::new()->confirmed()->suspended()->reactivated()->create();
-        $this->repository->save($identity);
+        $this->store($identity);
 
         // When
         $this->cipherKeyStore->removeWithSubjectId($identity->id->toString());

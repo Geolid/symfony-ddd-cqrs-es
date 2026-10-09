@@ -12,6 +12,8 @@ use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
+use function Zenstruck\Foundry\faker;
+
 /**
  * @phpstan-type Row array{generated_at: string, regenerated_at: string|null, remaining_count: int}
  */
@@ -32,7 +34,7 @@ final class DbalBackupCodeCredentialProjectorTest extends AbstractIntegrationTes
     public function itProjectsOnBackupCodeCredentialGenerated(): void
     {
         // Given
-        $plainBackupCodes = [bin2hex(random_bytes(5)), bin2hex(random_bytes(5))];
+        $plainBackupCodes = faker()->backupCodes();
         $credential = BackupCodeCredentialFactory::new()->withPlainBackupCodes($plainBackupCodes)->withBackupCodeHasher($this->backupCodeHasher)->create();
 
         // When
@@ -50,10 +52,10 @@ final class DbalBackupCodeCredentialProjectorTest extends AbstractIntegrationTes
     public function itProjectsOnBackupCodeCredentialRegenerated(): void
     {
         // Given
-        $otherPlainBackupCodes = [bin2hex(random_bytes(5)), bin2hex(random_bytes(5))];
+        $otherPlainBackupCodes = faker()->backupCodes();
         $other = BackupCodeCredentialFactory::new()->withPlainBackupCodes($otherPlainBackupCodes)->withBackupCodeHasher($this->backupCodeHasher)->create();
 
-        $regeneratedBackupCodes = [bin2hex(random_bytes(5)), bin2hex(random_bytes(5))];
+        $regeneratedBackupCodes = faker()->backupCodes();
         $credential = BackupCodeCredentialFactory::new()->withBackupCodeHasher($this->backupCodeHasher)->regenerated($regeneratedBackupCodes)->create();
 
         // When
@@ -75,9 +77,9 @@ final class DbalBackupCodeCredentialProjectorTest extends AbstractIntegrationTes
     public function itProjectsOnBackupCodeCredentialConsumed(): void
     {
         // Given
-        $otherPlainBackupCodes = [bin2hex(random_bytes(5)), bin2hex(random_bytes(5))];
+        $otherPlainBackupCodes = faker()->backupCodes();
         $other = BackupCodeCredentialFactory::new()->withPlainBackupCodes($otherPlainBackupCodes)->withBackupCodeHasher($this->backupCodeHasher)->create();
-        $plainBackupCodes = [bin2hex(random_bytes(5)), bin2hex(random_bytes(5))];
+        $plainBackupCodes = faker()->backupCodes();
 
         $credential = BackupCodeCredentialFactory::new()->withPlainBackupCodes($plainBackupCodes)->withBackupCodeHasher($this->backupCodeHasher)->consumed()->create();
 

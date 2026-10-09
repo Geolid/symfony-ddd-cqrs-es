@@ -11,6 +11,8 @@ use Ramsey\Uuid\Uuid;
 use Support\Foundry\AbstractAggregateFactory;
 use Symfony\Component\Clock\Clock;
 
+use function Zenstruck\Foundry\faker;
+
 /**
  * @phpstan-type Inputs = array{
  *     id: TrustedDeviceId,
@@ -72,8 +74,8 @@ final class TrustedDeviceFactory extends AbstractAggregateFactory
         return [
             'id' => TrustedDeviceIdFactory::new(),
             'identityId' => Uuid::uuid7()->toString(),
-            'userAgent' => 'Mozilla/5.0',
-            'ip' => '203.0.113.42',
+            'userAgent' => faker()->userAgent(),
+            'ip' => faker()->ipv4(),
             'trustedAt' => $now,
             'revokedAt' => $now->modify('+1 day'),
         ];

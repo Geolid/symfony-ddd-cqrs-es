@@ -10,6 +10,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
+use function Zenstruck\Foundry\faker;
+
 final class TrustDeviceHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
@@ -18,8 +20,8 @@ final class TrustDeviceHandlerTest extends AbstractIntegrationTestCase
         // Given
         $id = Uuid::uuid7()->toString();
         $identityId = Uuid::uuid7()->toString();
-        $userAgent = 'Mozilla/5.0';
-        $ip = '203.0.113.42';
+        $userAgent = faker()->userAgent();
+        $ip = faker()->ipv4();
 
         // When
         $this->dispatch(new TrustDevice($id, $identityId, $userAgent, $ip));

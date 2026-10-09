@@ -11,6 +11,7 @@ use Iam\Identity\Application\IdentityModerationStatus;
 use Iam\Identity\Application\IdentityVerificationStatus;
 use Iam\Identity\Domain\Identity;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
+use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\ErasureStatus;
@@ -66,7 +67,7 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
         $this->expectException(IdentityResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(Uuid::uuid7()->toString());
+        $this->finder()->ofId(IdentityIdFactory::new()->create()->toString());
     }
 
     #[Test]

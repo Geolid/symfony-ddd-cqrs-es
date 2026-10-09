@@ -11,6 +11,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
+use function Zenstruck\Foundry\faker;
+
 final class DbalBackupCodeCredentialFinderTest extends AbstractIntegrationTestCase
 {
     private BackupCodeCredentialFinderInterface $finder;
@@ -29,7 +31,7 @@ final class DbalBackupCodeCredentialFinderTest extends AbstractIntegrationTestCa
     {
         // Given
         $other = BackupCodeCredentialFactory::new()->withBackupCodeHasher($this->backupCodeHasher)->create();
-        $plainBackupCodes = [bin2hex(random_bytes(5)), bin2hex(random_bytes(5))];
+        $plainBackupCodes = faker()->backupCodes();
 
         $credential = BackupCodeCredentialFactory::new()->withPlainBackupCodes($plainBackupCodes)->withBackupCodeHasher($this->backupCodeHasher)->create();
         $this->store($other, $credential);

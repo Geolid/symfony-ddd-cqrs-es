@@ -16,6 +16,8 @@ use Support\Foundry\AbstractAggregateFactory;
 use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
+use function Zenstruck\Foundry\faker;
+
 /**
  * @phpstan-type Inputs = array{
  *     id: ApiKeyCredentialId,
@@ -105,7 +107,7 @@ final class ApiKeyCredentialFactory extends AbstractAggregateFactory
             'identityId' => Uuid::uuid7()->toString(),
             'label' => LabelFactory::new(),
             'keyId' => KeyIdFactory::new(),
-            'secret' => bin2hex(random_bytes(32)),
+            'secret' => faker()->apiKeySecret(),
             'issuedAt' => $now,
             'revokedAt' => $now->modify('+1 day'),
         ];

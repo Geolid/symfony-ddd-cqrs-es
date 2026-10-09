@@ -32,7 +32,9 @@ final class PatchlevelTotpCredentialRepositoryTest extends AbstractIntegrationTe
     public function itSavesAndLoads(): void
     {
         // Given
-        $credential = TotpCredentialFactory::new()->withCipher($this->cipher)->unenrolled()
+        $credential = TotpCredentialFactory::new()
+            ->withCipher($this->cipher)
+            ->unenrolled()
             ->create();
 
         // When
@@ -40,7 +42,7 @@ final class PatchlevelTotpCredentialRepositoryTest extends AbstractIntegrationTe
         $loaded = $this->repository->load($credential->id);
 
         // Then
-        self::assertSame($this->stateOf($credential), $this->stateOf($loaded));
+        self::assertSame($this->propertiesOf($credential), $this->propertiesOf($loaded));
     }
 
     #[Test]
@@ -48,7 +50,7 @@ final class PatchlevelTotpCredentialRepositoryTest extends AbstractIntegrationTe
     {
         // Given
         $credential = TotpCredentialFactory::new()->withCipher($this->cipher)->create();
-        $this->repository->save($credential);
+        $this->store($credential);
         $duplicate = TotpCredentialFactory::new()->withCipher($this->cipher)->withId($credential->id->toString())->create();
 
         // Then
@@ -73,7 +75,7 @@ final class PatchlevelTotpCredentialRepositoryTest extends AbstractIntegrationTe
     {
         // Given
         $credential = TotpCredentialFactory::new()->withCipher($this->cipher)->create();
-        $this->repository->save($credential);
+        $this->store($credential);
 
         // When
         $exists = $this->repository->has($credential->id);
@@ -95,7 +97,7 @@ final class PatchlevelTotpCredentialRepositoryTest extends AbstractIntegrationTe
     /**
      * @return array<string, mixed>
      */
-    private function stateOf(TotpCredential $credential): array
+    private function propertiesOf(TotpCredential $credential): array
     {
         $atom = static fn (?\DateTimeImmutable $date): ?string => $date?->format(\DateTimeInterface::ATOM);
 

@@ -31,7 +31,7 @@ final class ApiKeyCredentialPiiErasureTest extends AbstractIntegrationTestCase
     {
         // Given
         $credential = ApiKeyCredentialFactory::new()->withHasher(new FakeApiKeyHasher())->create();
-        $this->repository->save($credential);
+        $this->store($credential);
 
         // When
         $this->cipherKeyStore->removeWithSubjectId($credential->id->toString());

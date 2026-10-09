@@ -32,7 +32,9 @@ final class PatchlevelApiKeyCredentialRepositoryTest extends AbstractIntegration
     public function itSavesAndLoads(): void
     {
         // Given
-        $credential = ApiKeyCredentialFactory::new()->withHasher($this->hasher)->revoked()
+        $credential = ApiKeyCredentialFactory::new()
+            ->withHasher($this->hasher)
+            ->revoked()
             ->create();
 
         // When
@@ -40,7 +42,7 @@ final class PatchlevelApiKeyCredentialRepositoryTest extends AbstractIntegration
         $loaded = $this->repository->load($credential->id);
 
         // Then
-        self::assertSame($this->stateOf($credential), $this->stateOf($loaded));
+        self::assertSame($this->propertiesOf($credential), $this->propertiesOf($loaded));
     }
 
     #[Test]
@@ -48,7 +50,7 @@ final class PatchlevelApiKeyCredentialRepositoryTest extends AbstractIntegration
     {
         // Given
         $credential = ApiKeyCredentialFactory::new()->withHasher($this->hasher)->create();
-        $this->repository->save($credential);
+        $this->store($credential);
         $duplicate = ApiKeyCredentialFactory::new()->withHasher($this->hasher)->withId($credential->id->toString())->create();
 
         // Then
@@ -73,7 +75,7 @@ final class PatchlevelApiKeyCredentialRepositoryTest extends AbstractIntegration
     {
         // Given
         $credential = ApiKeyCredentialFactory::new()->withHasher($this->hasher)->create();
-        $this->repository->save($credential);
+        $this->store($credential);
 
         // When
         $exists = $this->repository->has($credential->id);
@@ -95,7 +97,7 @@ final class PatchlevelApiKeyCredentialRepositoryTest extends AbstractIntegration
     /**
      * @return array<string, mixed>
      */
-    private function stateOf(ApiKeyCredential $credential): array
+    private function propertiesOf(ApiKeyCredential $credential): array
     {
         $atom = static fn (?\DateTimeImmutable $date): ?string => $date?->format(\DateTimeInterface::ATOM);
 

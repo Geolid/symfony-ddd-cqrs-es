@@ -9,8 +9,8 @@ use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
+use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ChangeFullNameHandlerTest extends AbstractIntegrationTestCase
@@ -62,7 +62,7 @@ final class ChangeFullNameHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new ChangeFullName(Uuid::uuid7()->toString(), IdentityFactory::sample('fullName')->value));
+        $this->dispatch(new ChangeFullName(IdentityIdFactory::new()->create()->toString(), IdentityFactory::sample('fullName')->value));
     }
 
     #[Test]
