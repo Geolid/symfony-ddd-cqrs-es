@@ -8,11 +8,14 @@ use Iam\Authentication\Application\CredentialVerification\TotpCredentialVerifier
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInterface;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpCipherInterface;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpVerifierInterface;
-use Iam\Tests\Authentication\Support\Builder\TotpCredentialBuilder;
+use Iam\Tests\Authentication\Support\Factory\TotpCredentialFactory;
 use OTPHP\TOTP;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
+
+use function Zenstruck\Foundry\faker;
 
 final class TotpCredentialVerifierTest extends AbstractIntegrationTestCase
 {
@@ -35,14 +38,13 @@ final class TotpCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itAccepts(): void
     {
         // Given
-        $secret = TOTP::generate()->getSecret();
+        $secret = faker()->totpSecret();
         $code = TOTP::createFromSecret($secret, Clock::get())->now();
-        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher)->withSecret($secret);
-        $credential = $builder->create();
+        $credential = TotpCredentialFactory::new()->withCipher($this->cipher)->withSecret($secret)->create();
         $this->store($credential);
 
         // When
-        $verified = $this->credentialVerifier->verify($builder['identityId'], $code);
+        $verified = $this->credentialVerifier->verify($credential->identityId, $code);
 
         // Then
         self::assertTrue($verified);
@@ -52,13 +54,12 @@ final class TotpCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itRefuses(): void
     {
         // Given
-        $secret = TOTP::generate()->getSecret();
-        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher)->withSecret($secret);
-        $credential = $builder->create();
+        $secret = faker()->totpSecret();
+        $credential = TotpCredentialFactory::new()->withCipher($this->cipher)->withSecret($secret)->create();
         $this->store($credential);
 
         // When
-        $verified = $this->credentialVerifier->verify($builder['identityId'], '000000');
+        $verified = $this->credentialVerifier->verify($credential->identityId, '000000');
 
         // Then
         self::assertFalse($verified);
@@ -68,7 +69,7 @@ final class TotpCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itRefusesWhenNotEnrolled(): void
     {
         // When
-        $verified = $this->credentialVerifier->verify(TotpCredentialBuilder::sample('identityId'), '000000');
+        $verified = $this->credentialVerifier->verify(Uuid::uuid7()->toString(), '000000');
 
         // Then
         self::assertFalse($verified);
@@ -78,12 +79,11 @@ final class TotpCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itRefusesWhenUnenrolled(): void
     {
         // Given
-        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher)->unenrolled();
-        $credential = $builder->create();
+        $credential = TotpCredentialFactory::new()->withCipher($this->cipher)->unenrolled()->create();
         $this->store($credential);
 
         // When
-        $verified = $this->credentialVerifier->verify($builder['identityId'], '000000');
+        $verified = $this->credentialVerifier->verify($credential->identityId, '000000');
 
         // Then
         self::assertFalse($verified);

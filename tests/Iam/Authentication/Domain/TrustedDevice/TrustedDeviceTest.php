@@ -9,10 +9,12 @@ use Iam\Authentication\Domain\TrustedDevice\Event\TrustedDeviceTrusted;
 use Iam\Authentication\Domain\TrustedDevice\Exception\TrustedDeviceOwnedByAnotherIdentityException;
 use Iam\Authentication\Domain\TrustedDevice\TrustedDevice;
 use Iam\Authentication\Domain\TrustedDevice\ValueObject\TrustedDeviceId;
-use Iam\Tests\Authentication\Support\Builder\TrustedDeviceBuilder;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Symfony\Component\Clock\Clock;
+
+use function Zenstruck\Foundry\faker;
 
 final class TrustedDeviceTest extends AggregateRootTestCase
 {
@@ -27,10 +29,10 @@ final class TrustedDeviceTest extends AggregateRootTestCase
         parent::setUp();
 
         $this->id = TrustedDeviceId::fromString(Uuid::uuid7()->toString());
-        $this->identityId = TrustedDeviceBuilder::sample('identityId');
-        $this->userAgent = TrustedDeviceBuilder::sample('userAgent');
-        $this->ip = TrustedDeviceBuilder::sample('ip');
-        $this->trustedAt = TrustedDeviceBuilder::sample('trustedAt');
+        $this->identityId = Uuid::uuid7()->toString();
+        $this->userAgent = faker()->userAgent();
+        $this->ip = faker()->ipv4();
+        $this->trustedAt = Clock::get()->now();
     }
 
     #[Test]
@@ -51,7 +53,7 @@ final class TrustedDeviceTest extends AggregateRootTestCase
     #[Test]
     public function itRevokes(): void
     {
-        $revokedAt = TrustedDeviceBuilder::sample('revokedAt');
+        $revokedAt = Clock::get()->now()->modify('+1 day');
 
         $this
             ->given($this->trusted())
@@ -62,7 +64,7 @@ final class TrustedDeviceTest extends AggregateRootTestCase
     #[Test]
     public function itDoesNotRevokeWhenAlreadyRevoked(): void
     {
-        $revokedAt = TrustedDeviceBuilder::sample('revokedAt');
+        $revokedAt = Clock::get()->now()->modify('+1 day');
 
         $this
             ->given(
@@ -76,11 +78,11 @@ final class TrustedDeviceTest extends AggregateRootTestCase
     #[Test]
     public function itCannotRevokeWhenOwnedByAnotherIdentity(): void
     {
-        $anotherIdentityId = TrustedDeviceBuilder::sample('identityId');
+        $anotherIdentityId = Uuid::uuid7()->toString();
 
         $this
             ->given($this->trusted())
-            ->when(static fn (TrustedDevice $trustedDevice) => $trustedDevice->revoke($anotherIdentityId, TrustedDeviceBuilder::sample('revokedAt')))
+            ->when(static fn (TrustedDevice $trustedDevice) => $trustedDevice->revoke($anotherIdentityId, Clock::get()->now()->modify('+1 day')))
             ->expectsException(TrustedDeviceOwnedByAnotherIdentityException::class);
     }
 

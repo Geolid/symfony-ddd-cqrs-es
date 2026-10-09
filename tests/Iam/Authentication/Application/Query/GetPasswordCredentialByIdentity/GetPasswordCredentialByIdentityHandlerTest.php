@@ -7,8 +7,9 @@ namespace Iam\Tests\Authentication\Application\Query\GetPasswordCredentialByIden
 use Iam\Authentication\Application\Query\GetPasswordCredentialByIdentity\GetPasswordCredentialByIdentity;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
-use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
+use Iam\Tests\Authentication\Support\Factory\PasswordCredentialFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class GetPasswordCredentialByIdentityHandlerTest extends AbstractIntegrationTestCase
@@ -28,22 +29,22 @@ final class GetPasswordCredentialByIdentityHandlerTest extends AbstractIntegrati
     public function itFinds(): void
     {
         // Given
-        $credentialBuilder = PasswordCredentialBuilder::new()
+        $credential = PasswordCredentialFactory::new()
             ->withHasher($this->hasher)
-            ->withPasswordStrength($this->passwordStrength);
-        $credential = $credentialBuilder->create();
+            ->withPasswordStrength($this->passwordStrength)
+            ->create();
         $this->store($credential);
 
         // When
-        $result = $this->ask(new GetPasswordCredentialByIdentity($credentialBuilder['identityId']));
-        $nothing = $this->ask(new GetPasswordCredentialByIdentity(PasswordCredentialBuilder::sample('identityId')));
+        $result = $this->ask(new GetPasswordCredentialByIdentity($credential->identityId));
+        $nothing = $this->ask(new GetPasswordCredentialByIdentity(Uuid::uuid7()->toString()));
 
         // Then
         self::assertNotNull($result);
         self::assertSame($credential->id->toString(), $result->id);
-        self::assertSame($credentialBuilder['identityId'], $result->identityId);
+        self::assertSame($credential->identityId, $result->identityId);
         self::assertSame(
-            $credentialBuilder['definedAt']->format(\DateTimeInterface::ATOM),
+            $credential->definedAt->format(\DateTimeInterface::ATOM),
             $result->changedAt->format(\DateTimeInterface::ATOM),
         );
 

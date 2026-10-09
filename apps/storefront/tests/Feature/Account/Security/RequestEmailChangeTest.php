@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\Account\Security;
 
-use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
+use Iam\Tests\Authentication\Support\Factory\PasswordFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\Account\Security\Component\RequestEmailChangeForm;
@@ -65,7 +65,7 @@ final class RequestEmailChangeTest extends AbstractStorefrontTestCase
         $browser->click('[data-testid="create-account-button"]');
         $browser->use(static function (RegisterForm $register): void {
             $register->fillFullName(IdentityFactory::sample('fullName')->value)
-                ->fillPassword(PasswordCredentialBuilder::sample('password')->value)
+                ->fillPassword(PasswordFactory::new()->create()->value)
                 ->submit();
         });
 

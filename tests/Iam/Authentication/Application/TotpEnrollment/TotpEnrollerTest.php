@@ -9,12 +9,14 @@ use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInt
 use Iam\Authentication\Application\TotpEnrollment\TotpEnrollerInterface;
 use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeHasherInterface;
 use Iam\Authentication\Domain\TotpCredential\Exception\InvalidTotpCodeException;
-use Iam\Tests\Authentication\Support\Builder\BackupCodeCredentialBuilder;
-use Iam\Tests\Authentication\Support\Builder\TotpCredentialBuilder;
+use Iam\Tests\Authentication\Support\Factory\BackupCodeCredentialFactory;
 use OTPHP\TOTP;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
+
+use function Zenstruck\Foundry\faker;
 
 final class TotpEnrollerTest extends AbstractIntegrationTestCase
 {
@@ -35,8 +37,8 @@ final class TotpEnrollerTest extends AbstractIntegrationTestCase
     public function itEnrolls(): void
     {
         // Given
-        $identityId = TotpCredentialBuilder::sample('identityId');
-        $secret = TOTP::generate()->getSecret();
+        $identityId = Uuid::uuid7()->toString();
+        $secret = faker()->totpSecret();
         $code = TOTP::createFromSecret($secret, Clock::get())->now();
 
         // When
@@ -60,15 +62,14 @@ final class TotpEnrollerTest extends AbstractIntegrationTestCase
     public function itEnrollsWithoutNewBackupCodesWhenAlreadyEnrolled(): void
     {
         // Given
-        $backupCodeBuilder = BackupCodeCredentialBuilder::new()->withBackupCodeHasher($this->service(BackupCodeHasherInterface::class));
-        $backupCodeCredential = $backupCodeBuilder->create();
+        $backupCodeCredential = BackupCodeCredentialFactory::new()->withBackupCodeHasher($this->service(BackupCodeHasherInterface::class))->create();
         $this->store($backupCodeCredential);
 
-        $secret = TOTP::generate()->getSecret();
+        $secret = faker()->totpSecret();
         $code = TOTP::createFromSecret($secret, Clock::get())->now();
 
         // When
-        $backupCodes = $this->enroller->enrollFor($backupCodeBuilder['identityId'], $secret, $code);
+        $backupCodes = $this->enroller->enrollFor($backupCodeCredential->identityId, $secret, $code);
 
         // Then
         self::assertNull($backupCodes);
@@ -78,8 +79,8 @@ final class TotpEnrollerTest extends AbstractIntegrationTestCase
     public function itFailsWhenCodeIsInvalid(): void
     {
         // Given
-        $identityId = TotpCredentialBuilder::sample('identityId');
-        $secret = TOTP::generate()->getSecret();
+        $identityId = Uuid::uuid7()->toString();
+        $secret = faker()->totpSecret();
 
         // Then
         $this->expectException(InvalidTotpCodeException::class);

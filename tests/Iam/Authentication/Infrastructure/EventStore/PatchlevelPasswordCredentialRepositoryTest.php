@@ -4,12 +4,14 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Infrastructure\EventStore;
 
+use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialAlreadyExistsException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordCredentialNotFoundException;
+use Iam\Authentication\Domain\PasswordCredential\PasswordCredential;
 use Iam\Authentication\Domain\PasswordCredential\Repository\PasswordCredentialRepositoryInterface;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
-use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakePasswordHasher;
 use Iam\Tests\Authentication\Support\Double\StubPasswordStrengthSpecification;
+use Iam\Tests\Authentication\Support\Factory\PasswordCredentialFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -33,9 +35,13 @@ final class PatchlevelPasswordCredentialRepositoryTest extends AbstractIntegrati
     public function itSavesAndLoads(): void
     {
         // Given
-        $credential = PasswordCredentialBuilder::new()
+        $credential = PasswordCredentialFactory::new()
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
+            ->changed('Changed-Password-1!')
+            ->resetRequested()
+            ->reset('Reset-Password-2!')
+            ->rehashed('Reset-Password-2!')
             ->create();
 
         // When
@@ -43,7 +49,29 @@ final class PatchlevelPasswordCredentialRepositoryTest extends AbstractIntegrati
         $loaded = $this->repository->load($credential->id);
 
         // Then
-        self::assertSame($credential->id->toString(), $loaded->id->toString());
+        self::assertSame($this->propertiesOf($credential), $this->propertiesOf($loaded));
+    }
+
+    #[Test]
+    public function itThrowsWhenAlreadyExists(): void
+    {
+        // Given
+        $credential = PasswordCredentialFactory::new()
+            ->withPasswordStrength($this->passwordStrength)
+            ->withHasher($this->hasher)
+            ->create();
+        $this->store($credential);
+        $duplicate = PasswordCredentialFactory::new()
+            ->withIdentityId($credential->identityId)
+            ->withPasswordStrength($this->passwordStrength)
+            ->withHasher($this->hasher)
+            ->create();
+
+        // Then
+        $this->expectException(PasswordCredentialAlreadyExistsException::class);
+
+        // When
+        $this->repository->save($duplicate);
     }
 
     #[Test]
@@ -60,11 +88,11 @@ final class PatchlevelPasswordCredentialRepositoryTest extends AbstractIntegrati
     public function itHas(): void
     {
         // Given
-        $credential = PasswordCredentialBuilder::new()
+        $credential = PasswordCredentialFactory::new()
             ->withPasswordStrength($this->passwordStrength)
             ->withHasher($this->hasher)
             ->create();
-        $this->repository->save($credential);
+        $this->store($credential);
 
         // When
         $exists = $this->repository->has($credential->id);
@@ -81,5 +109,24 @@ final class PatchlevelPasswordCredentialRepositoryTest extends AbstractIntegrati
 
         // Then
         self::assertFalse($notExists);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    private function propertiesOf(PasswordCredential $credential): array
+    {
+        $atom = static fn (?\DateTimeImmutable $date): ?string => $date?->format(\DateTimeInterface::ATOM);
+
+        return [
+            'id' => $credential->id->toString(),
+            'identityId' => $credential->identityId,
+            'passwordHash' => $credential->passwordHash,
+            'definedAt' => $atom($credential->definedAt),
+            'changedAt' => $atom($credential->changedAt),
+            'rehashedAt' => $atom($credential->rehashedAt),
+            'resetRequestedAt' => $atom($credential->resetRequestedAt),
+            'resetAt' => $atom($credential->resetAt),
+        ];
     }
 }

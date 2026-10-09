@@ -25,8 +25,13 @@ final class ApiKeyCredential implements AggregateRoot, AggregateRootMetadataAwar
 
     #[Id]
     public private(set) ApiKeyCredentialId $id;
-    private string $identityId;
-    private bool $revoked;
+    public private(set) string $identityId;
+    public private(set) Label $label;
+    public private(set) KeyId $keyId;
+    public private(set) string $secretHash;
+    public private(set) \DateTimeImmutable $issuedAt;
+    public private(set) bool $revoked;
+    public private(set) ?\DateTimeImmutable $revokedAt = null;
 
     public static function issue(
         ApiKeyCredentialId $id,
@@ -75,6 +80,10 @@ final class ApiKeyCredential implements AggregateRoot, AggregateRootMetadataAwar
     {
         $this->id = $event->id;
         $this->identityId = $event->identityId;
+        $this->label = $event->label;
+        $this->keyId = $event->keyId;
+        $this->secretHash = $event->secretHash;
+        $this->issuedAt = $event->issuedAt;
         $this->revoked = false;
     }
 
@@ -82,5 +91,6 @@ final class ApiKeyCredential implements AggregateRoot, AggregateRootMetadataAwar
     private function applyRevoked(ApiKeyCredentialRevoked $event): void
     {
         $this->revoked = true;
+        $this->revokedAt = $event->revokedAt;
     }
 }

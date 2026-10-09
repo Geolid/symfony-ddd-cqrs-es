@@ -8,10 +8,12 @@ use Iam\Authentication\Application\Command\RegenerateBackupCodes\RegenerateBacku
 use Iam\Authentication\Application\CredentialVerification\BackupCodeCredentialVerifierInterface;
 use Iam\Authentication\Domain\BackupCodeCredential\Exception\BackupCodeCredentialNotFoundException;
 use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeHasherInterface;
-use Iam\Tests\Authentication\Support\Builder\BackupCodeCredentialBuilder;
+use Iam\Tests\Authentication\Support\Factory\BackupCodeCredentialFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
+
+use function Zenstruck\Foundry\faker;
 
 final class RegenerateBackupCodesHandlerTest extends AbstractIntegrationTestCase
 {
@@ -30,18 +32,18 @@ final class RegenerateBackupCodesHandlerTest extends AbstractIntegrationTestCase
     public function itRegenerates(): void
     {
         // Given
-        $builder = BackupCodeCredentialBuilder::new()->withBackupCodeHasher($this->backupCodeHasher);
-        $credential = $builder->create();
+        $plainBackupCodes = faker()->backupCodes();
+        $credential = BackupCodeCredentialFactory::new()->withPlainBackupCodes($plainBackupCodes)->withBackupCodeHasher($this->backupCodeHasher)->create();
         $this->store($credential);
 
-        $newBackupCodes = BackupCodeCredentialBuilder::sample('regeneratedBackupCodes');
+        $newBackupCodes = faker()->backupCodes();
 
         // When
-        $this->dispatch(new RegenerateBackupCodes($builder['identityId'], $newBackupCodes));
+        $this->dispatch(new RegenerateBackupCodes($credential->identityId, $newBackupCodes));
 
         // Then
-        self::assertFalse($this->verifier->verify($builder['identityId'], $builder['plainBackupCodes'][0]));
-        self::assertTrue($this->verifier->verify($builder['identityId'], $newBackupCodes[0]));
+        self::assertFalse($this->verifier->verify($credential->identityId, $plainBackupCodes[0]));
+        self::assertTrue($this->verifier->verify($credential->identityId, $newBackupCodes[0]));
     }
 
     #[Test]
@@ -53,7 +55,7 @@ final class RegenerateBackupCodesHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new RegenerateBackupCodes(
             Uuid::uuid7()->toString(),
-            BackupCodeCredentialBuilder::sample('regeneratedBackupCodes'),
+            faker()->backupCodes(),
         ));
     }
 }
