@@ -7,7 +7,6 @@ use Castor\Attribute\AsTask;
 use function Castor\io;
 
 #[AsTask(description: 'Run the full QA pipeline')]
-#[NeedsPlaywright]
 function qa(): void
 {
     io()->section('Composer check');

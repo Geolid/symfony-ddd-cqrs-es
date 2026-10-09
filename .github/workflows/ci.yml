@@ -112,26 +112,6 @@ jobs:
 
       - run: chmod -R +x vendor/bin
 
-      - name: Resolve Playwright version
-        id: playwright
-        run: echo "version=$(jq -r '.packages["node_modules/playwright"].version' vendor/playwright-php/playwright/bin/package-lock.json)" >> "$GITHUB_OUTPUT"
-
-      - uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ~/.cache/ms-playwright
-          key: playwright-${{ runner.os }}-${{ steps.playwright.outputs.version }}-chromium
-
-      - name: Install Playwright CLI
-        env:
-          PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD: '1'
-        run: |
-          set -euo pipefail
-          npm i -g --no-audit --no-fund "playwright@${{ steps.playwright.outputs.version }}"
-          echo "NODE_PATH=$(npm root -g)" >> "$GITHUB_ENV"
-
-      - name: Install Chromium browser
-        run: playwright install --with-deps chromium
-
       - name: castor ci:coverage
         run: castor ci:coverage
 

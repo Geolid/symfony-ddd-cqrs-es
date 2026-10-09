@@ -14,7 +14,6 @@ use function Castor\with;
  * @param list<string> $args
  */
 #[AsTask(name: 'test', namespace: 'qa', description: 'Run test suite')]
-#[NeedsPlaywright]
 function qa_test(
     #[AsOption(description: 'Restrict to a single test suite', autocomplete: 'phpunit_testsuites')]
     ?string $testsuite = null,

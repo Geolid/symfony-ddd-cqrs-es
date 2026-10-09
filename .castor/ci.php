@@ -20,7 +20,6 @@ function ci_static(): void
 }
 
 #[AsTask(name: 'coverage', namespace: 'ci', description: 'Run test suite with coverage')]
-#[NeedsPlaywright]
 function ci_coverage(): void
 {
     qa_test(coverage: true);
