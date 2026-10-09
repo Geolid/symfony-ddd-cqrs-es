@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\Registration;
 
+use Iam\Tests\Support\Story\ErasedAccountStory;
 use Iam\Tests\Support\Story\UnconfirmedRegistrationStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\Registration\Component\ConfirmForm;
@@ -36,11 +37,12 @@ final class ConfirmTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(ErasedAccountStory::class)]
     public function itRefusesWhenErased(): void
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $account = $this->account()->erased()->create();
+        $account = ErasedAccountStory::account();
 
         $browser->visitRoute('storefront_registration_confirm', ['identityId' => $account->id]);
 
@@ -55,11 +57,12 @@ final class ConfirmTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(UnconfirmedRegistrationStory::class)]
     public function itRefusesIncorrectCode(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmationRequested()->create();
+        $account = UnconfirmedRegistrationStory::account();
 
         $browser->visitRoute('storefront_registration_confirm', ['identityId' => $account->id]);
 
@@ -75,11 +78,12 @@ final class ConfirmTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(UnconfirmedRegistrationStory::class)]
     public function itRefusesAfterTooManyAttempts(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmationRequested()->create();
+        $account = UnconfirmedRegistrationStory::account();
 
         $browser->visitRoute('storefront_registration_confirm', ['identityId' => $account->id]);
 
@@ -101,11 +105,12 @@ final class ConfirmTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(UnconfirmedRegistrationStory::class)]
     public function itResends(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmationRequested()->create();
+        $account = UnconfirmedRegistrationStory::account();
 
         $browser->visitRoute('storefront_registration_confirm', ['identityId' => $account->id]);
         $this->advanceClock('+2 minutes');
@@ -120,11 +125,12 @@ final class ConfirmTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(UnconfirmedRegistrationStory::class)]
     public function itResendsWhenAlreadyConfirmed(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmationRequested()->create();
+        $account = UnconfirmedRegistrationStory::account();
 
         $browser->visitRoute('storefront_registration_confirm', ['identityId' => $account->id]);
         $browser->use(function (ConfirmForm $confirm): void {
@@ -145,11 +151,12 @@ final class ConfirmTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(UnconfirmedRegistrationStory::class)]
     public function itRefusesInvalidCsrfToken(): void
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $account = $this->account()->confirmationRequested()->create();
+        $account = UnconfirmedRegistrationStory::account();
 
         $browser->visitRoute('storefront_registration_confirm', ['identityId' => $account->id]);
 
@@ -164,11 +171,12 @@ final class ConfirmTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(ErasedAccountStory::class)]
     public function itRefusesResendWhenErased(): void
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $account = $this->account()->erased()->create();
+        $account = ErasedAccountStory::account();
 
         $browser->visitRoute('storefront_registration_confirm', ['identityId' => $account->id]);
 

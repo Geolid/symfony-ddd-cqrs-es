@@ -13,11 +13,12 @@ use Zenstruck\Foundry\Attribute\WithStory;
 final class TwoFactorSettingsTest extends AbstractStorefrontTestCase
 {
     #[Test]
+    #[WithStory(TwoFactorWithBackupCodesAccountStory::class)]
     public function itShows(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmed()->withPassword()->withTotp()->withBackupCodes()->create();
+        $account = TwoFactorWithBackupCodesAccountStory::account();
         $browser->signInAs($account->email, $account->password());
 
         $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()));
@@ -31,11 +32,12 @@ final class TwoFactorSettingsTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(TwoFactorWithBackupCodesAccountStory::class)]
     public function itRegeneratesBackupCodes(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmed()->withPassword()->withTotp()->withBackupCodes()->create();
+        $account = TwoFactorWithBackupCodesAccountStory::account();
         $browser->signInAs($account->email, $account->password());
 
         $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()));
@@ -50,11 +52,12 @@ final class TwoFactorSettingsTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(TwoFactorWithBackupCodesAccountStory::class)]
     public function itRefusesRegenerateBackupCodesWithInvalidCsrfToken(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmed()->withPassword()->withTotp()->withBackupCodes()->create();
+        $account = TwoFactorWithBackupCodesAccountStory::account();
         $browser->signInAs($account->email, $account->password());
 
         $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()));
@@ -94,11 +97,12 @@ final class TwoFactorSettingsTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(TwoFactorWithBackupCodesAccountStory::class)]
     public function itRefusesUnenrollWithInvalidCsrfToken(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmed()->withPassword()->withTotp()->withBackupCodes()->create();
+        $account = TwoFactorWithBackupCodesAccountStory::account();
         $browser->signInAs($account->email, $account->password());
 
         $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()));

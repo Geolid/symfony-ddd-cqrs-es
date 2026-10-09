@@ -35,11 +35,12 @@ final class ChangePasswordTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(ConfirmedAccountStory::class)]
     public function itRefusesIncorrectCurrentPassword(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmed()->withPassword()->create();
+        $account = ConfirmedAccountStory::account();
         $browser->signInAs($account->email, $account->password());
 
         $browser->visitRoute('storefront_account_security_change_password');
@@ -56,11 +57,12 @@ final class ChangePasswordTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(ConfirmedAccountStory::class)]
     public function itRefusesSamePassword(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmed()->withPassword()->create();
+        $account = ConfirmedAccountStory::account();
         $browser->signInAs($account->email, $account->password());
 
         $browser->visitRoute('storefront_account_security_change_password');

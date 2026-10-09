@@ -8,14 +8,14 @@ use Iam\Tests\Authentication\Support\Factory\PasswordCredentialFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 
 /**
- * A confirmed identity with a password, which asked for a reset it has not used yet.
+ * A suspended identity with a password, which asked for a reset it has not used yet.
  */
-final class PasswordResetRequestedAccountStory extends AbstractPasswordAccountStory
+final class SuspendedPasswordResetRequestedAccountStory extends AbstractPasswordAccountStory
 {
     public function build(): void
     {
         $this->persistWithPassword(
-            IdentityFactory::new()->confirmed(),
+            IdentityFactory::new()->confirmed()->suspended(),
             static fn (PasswordCredentialFactory $credential): PasswordCredentialFactory => $credential->resetRequested(),
         );
     }

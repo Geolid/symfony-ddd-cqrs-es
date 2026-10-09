@@ -5,9 +5,13 @@ declare(strict_types=1);
 namespace Storefront\Tests\Feature\ForgotPassword;
 
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
+use Iam\Tests\Support\Story\ConfirmedAccountStory;
+use Iam\Tests\Support\Story\RegisteredAccountStory;
+use Iam\Tests\Support\Story\SuspendedAccountStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\ForgotPassword\Component\RequestForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
+use Zenstruck\Foundry\Attribute\WithStory;
 
 final class RequestTest extends AbstractStorefrontTestCase
 {
@@ -26,11 +30,12 @@ final class RequestTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(RegisteredAccountStory::class)]
     public function itRedirectsToConfirmWhenUnconfirmed(): void
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $account = $this->account()->create();
+        $account = RegisteredAccountStory::account();
 
         $browser->visitRoute('storefront_forgot_password_request');
 
@@ -44,11 +49,12 @@ final class RequestTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(ConfirmedAccountStory::class)]
     public function itRedirectsToReset(): void
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $account = $this->account()->confirmed()->withPassword()->create();
+        $account = ConfirmedAccountStory::account();
 
         $browser->visitRoute('storefront_forgot_password_request');
 
@@ -81,11 +87,12 @@ final class RequestTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(SuspendedAccountStory::class)]
     public function itRejectsSuspendedAccount(): void
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $account = $this->account()->confirmed()->suspended()->withPassword()->create();
+        $account = SuspendedAccountStory::account();
 
         $browser->visitRoute('storefront_forgot_password_request');
 
