@@ -28,7 +28,7 @@ use Shopping\Checkout\Application\Finder\Customer\CustomerFinderInterface;
 use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductFinderInterface;
 use Shopping\Checkout\Application\Tax\TaxRateResolverInterface;
 use Shopping\Checkout\Domain\Event\CheckoutSessionOpened;
-use Shopping\Tests\Cart\Support\Builder\CartBuilder;
+use Shopping\Tests\Cart\Support\Factory\CartFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -65,7 +65,7 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
             ->shippingAddressDefined(PostalAddress::of('Jane Doe', Address::of('10 Rue de la Paix', '75002', 'Paris', 'FR')))
             ->billingAddressDefined()
             ->create();
-        $cart = CartBuilder::new()->withCustomerId($customer->id->toString())->productAdded(
+        $cart = CartFactory::new()->withCustomerId($customer->id->toString())->productAdded(
             productId: $catalogProduct->id->toString(),
             quantity: $quantity = Quantity::of(1),
         )->productAdded(
@@ -112,7 +112,7 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
     public function itFailsWhenCustomerNotRegistered(): void
     {
         // Given
-        $cart = CartBuilder::new()->productAdded()->create();
+        $cart = CartFactory::new()->productAdded()->create();
         $this->store($cart);
 
         // Then
@@ -127,7 +127,7 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customer = CustomerFactory::new()->shippingAddressDefined()->billingAddressDefined()->erasureRequested()->create();
-        $cart = CartBuilder::new()->withCustomerId($customer->id->toString())->productAdded()->create();
+        $cart = CartFactory::new()->withCustomerId($customer->id->toString())->productAdded()->create();
         $this->store($cart, $customer);
 
         // Then
@@ -142,7 +142,7 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customer = CustomerFactory::new()->create();
-        $cart = CartBuilder::new()->withCustomerId($customer->id->toString())->productAdded()->create();
+        $cart = CartFactory::new()->withCustomerId($customer->id->toString())->productAdded()->create();
         $this->store($cart, $customer);
 
         // Then
@@ -157,7 +157,7 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customer = CustomerFactory::new()->shippingAddressDefined()->create();
-        $cart = CartBuilder::new()->withCustomerId($customer->id->toString())->productAdded()->create();
+        $cart = CartFactory::new()->withCustomerId($customer->id->toString())->productAdded()->create();
         $this->store($cart, $customer);
 
         // Then
@@ -172,7 +172,7 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customer = CustomerFactory::new()->billingAddressDefined()->create();
-        $cart = CartBuilder::new()->withCustomerId($customer->id->toString())->productAdded()->create();
+        $cart = CartFactory::new()->withCustomerId($customer->id->toString())->productAdded()->create();
         $this->store($cart, $customer);
 
         // Then
@@ -187,7 +187,7 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customer = CustomerFactory::new()->shippingAddressDefined()->billingAddressDefined()->create();
-        $cart = CartBuilder::new()->withCustomerId($customer->id->toString())->productAdded()->create();
+        $cart = CartFactory::new()->withCustomerId($customer->id->toString())->productAdded()->create();
         $this->store($cart, $customer);
 
         // Then

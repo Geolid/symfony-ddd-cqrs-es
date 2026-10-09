@@ -7,12 +7,17 @@ namespace Shopping\Tests\Checkout\Application\Command\CompleteCheckoutSession;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Mapper\PostalAddressMapper;
+use Shared\Domain\ValueObject\Currency;
+use Shared\Tests\Support\Factory\PostalAddressFactory;
 use Shopping\Checkout\Application\CheckoutSessionStatus;
 use Shopping\Checkout\Application\Command\CompleteCheckoutSession\CompleteCheckoutSession;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionFinderInterface;
 use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
 use Shopping\Checkout\Domain\Exception\CheckoutSessionNotFoundException;
-use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
+use Shopping\Tests\Checkout\Support\Factory\CheckoutItemFactory;
+use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionFactory;
+use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionIdFactory;
+use Shopping\Tests\Checkout\Support\Factory\TaxRateFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CompleteCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
@@ -30,21 +35,20 @@ final class CompleteCheckoutSessionHandlerTest extends AbstractIntegrationTestCa
     public function itCompletes(): void
     {
         // Given
-        $checkoutSessionBuilder = CheckoutSessionBuilder::new();
-        $checkoutSession = $checkoutSessionBuilder->create();
+        $checkoutSession = CheckoutSessionFactory::new()->create();
         $this->store($checkoutSession);
 
         // When
         $this->dispatch(new CompleteCheckoutSession(
             id: $checkoutSession->id->toString(),
-            cartId: $checkoutSessionBuilder['cartId'],
-            customerId: $checkoutSessionBuilder['customerId'],
-            items: array_map(CheckoutItemMapper::toArray(...), $checkoutSessionBuilder['items']),
-            currency: $checkoutSessionBuilder['currency']->value,
-            taxRateBasisPoints: $checkoutSessionBuilder['taxRate']->basisPoints,
-            shippingAddress: PostalAddressMapper::toArray($checkoutSessionBuilder['shippingAddress']),
-            billingAddress: PostalAddressMapper::toArray($checkoutSessionBuilder['billingAddress']),
-            paymentId: $checkoutSessionBuilder['paymentId'],
+            cartId: $checkoutSession->cartId,
+            customerId: $checkoutSession->customerId,
+            items: array_map(CheckoutItemMapper::toArray(...), $checkoutSession->items),
+            currency: $checkoutSession->total->excludingTax->currency->value,
+            taxRateBasisPoints: $checkoutSession->items[0]->taxRate->basisPoints,
+            shippingAddress: PostalAddressMapper::toArray($checkoutSession->shippingAddress),
+            billingAddress: PostalAddressMapper::toArray($checkoutSession->billingAddress),
+            paymentId: Uuid::uuid7()->toString(),
         ));
 
         // Then
@@ -56,20 +60,20 @@ final class CompleteCheckoutSessionHandlerTest extends AbstractIntegrationTestCa
     public function itIgnoresWhenAlreadyCompleted(): void
     {
         // Given
-        $checkoutSession = CheckoutSessionBuilder::new()->completed()->create();
+        $checkoutSession = CheckoutSessionFactory::new()->completed()->create();
         $this->store($checkoutSession);
 
         // When
         $this->dispatch(new CompleteCheckoutSession(
             id: $checkoutSession->id->toString(),
-            cartId: CheckoutSessionBuilder::sample('cartId'),
-            customerId: CheckoutSessionBuilder::sample('customerId'),
-            items: array_map(CheckoutItemMapper::toArray(...), CheckoutSessionBuilder::sample('items')),
-            currency: CheckoutSessionBuilder::sample('currency')->value,
-            taxRateBasisPoints: CheckoutSessionBuilder::sample('taxRate')->basisPoints,
-            shippingAddress: PostalAddressMapper::toArray(CheckoutSessionBuilder::sample('shippingAddress')),
-            billingAddress: PostalAddressMapper::toArray(CheckoutSessionBuilder::sample('billingAddress')),
-            paymentId: CheckoutSessionBuilder::sample('paymentId'),
+            cartId: Uuid::uuid7()->toString(),
+            customerId: Uuid::uuid7()->toString(),
+            items: array_map(CheckoutItemMapper::toArray(...), CheckoutItemFactory::new()->many(2)->create()),
+            currency: Currency::EUR->value,
+            taxRateBasisPoints: TaxRateFactory::new()->create()->basisPoints,
+            shippingAddress: PostalAddressMapper::toArray(PostalAddressFactory::new()->create()),
+            billingAddress: PostalAddressMapper::toArray(PostalAddressFactory::new()->create()),
+            paymentId: Uuid::uuid7()->toString(),
         ));
 
         // Then
@@ -84,15 +88,15 @@ final class CompleteCheckoutSessionHandlerTest extends AbstractIntegrationTestCa
 
         // When
         $this->dispatch(new CompleteCheckoutSession(
-            id: Uuid::uuid7()->toString(),
-            cartId: CheckoutSessionBuilder::sample('cartId'),
-            customerId: CheckoutSessionBuilder::sample('customerId'),
-            items: array_map(CheckoutItemMapper::toArray(...), CheckoutSessionBuilder::sample('items')),
-            currency: CheckoutSessionBuilder::sample('currency')->value,
-            taxRateBasisPoints: CheckoutSessionBuilder::sample('taxRate')->basisPoints,
-            shippingAddress: PostalAddressMapper::toArray(CheckoutSessionBuilder::sample('shippingAddress')),
-            billingAddress: PostalAddressMapper::toArray(CheckoutSessionBuilder::sample('billingAddress')),
-            paymentId: CheckoutSessionBuilder::sample('paymentId'),
+            id: CheckoutSessionIdFactory::new()->create()->toString(),
+            cartId: Uuid::uuid7()->toString(),
+            customerId: Uuid::uuid7()->toString(),
+            items: array_map(CheckoutItemMapper::toArray(...), CheckoutItemFactory::new()->many(2)->create()),
+            currency: Currency::EUR->value,
+            taxRateBasisPoints: TaxRateFactory::new()->create()->basisPoints,
+            shippingAddress: PostalAddressMapper::toArray(PostalAddressFactory::new()->create()),
+            billingAddress: PostalAddressMapper::toArray(PostalAddressFactory::new()->create()),
+            paymentId: Uuid::uuid7()->toString(),
         ));
     }
 }

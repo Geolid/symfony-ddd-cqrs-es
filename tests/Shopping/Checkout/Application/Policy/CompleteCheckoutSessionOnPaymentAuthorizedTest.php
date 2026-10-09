@@ -12,7 +12,8 @@ use Shared\Application\Mapper\PostalAddressMapper;
 use Shopping\Checkout\Application\Command\CompleteCheckoutSession\CompleteCheckoutSession;
 use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
 use Shopping\Checkout\Application\Policy\CompleteCheckoutSessionOnPaymentAuthorized;
-use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
+use Shopping\Tests\Checkout\Support\Factory\CheckoutItemFactory;
+use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -22,21 +23,20 @@ final class CompleteCheckoutSessionOnPaymentAuthorizedTest extends AbstractInteg
     public function itCompletes(): void
     {
         // Given
-        $builder = CheckoutSessionBuilder::new()->withItems([CheckoutSessionBuilder::sample('items')[0]]);
-        $checkoutSession = $builder->create();
+        $checkoutSession = CheckoutSessionFactory::new()->withItems([CheckoutItemFactory::new()->create()])->create();
         $paymentId = Uuid::uuid7()->toString();
 
         $commandBus = $this->createMock(CommandBusInterface::class);
         $this->replace(CommandBusInterface::class, $commandBus);
         $commandBus->expects(self::once())->method('dispatch')->with(new CompleteCheckoutSession(
             id: $checkoutSession->id->toString(),
-            cartId: $builder['cartId'],
-            customerId: $builder['customerId'],
-            items: array_map(CheckoutItemMapper::toArray(...), $builder['items']),
-            currency: $builder['currency']->value,
-            taxRateBasisPoints: $builder['taxRate']->basisPoints,
-            shippingAddress: PostalAddressMapper::toArray($builder['shippingAddress']),
-            billingAddress: PostalAddressMapper::toArray($builder['billingAddress']),
+            cartId: $checkoutSession->cartId,
+            customerId: $checkoutSession->customerId,
+            items: array_map(CheckoutItemMapper::toArray(...), $checkoutSession->items),
+            currency: $checkoutSession->total->excludingTax->currency->value,
+            taxRateBasisPoints: $checkoutSession->items[0]->taxRate->basisPoints,
+            shippingAddress: PostalAddressMapper::toArray($checkoutSession->shippingAddress),
+            billingAddress: PostalAddressMapper::toArray($checkoutSession->billingAddress),
             paymentId: $paymentId,
         ));
         $this->store($checkoutSession);

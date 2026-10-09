@@ -9,7 +9,7 @@ use Shared\Application\Mapper\PostalAddressMapper;
 use Shopping\Checkout\Application\IntegrationEvent\CheckoutSessionCompleted\CheckoutSessionCompletedIntegrationEvent;
 use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
-use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
+use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CheckoutSessionCompletedPublisherTest extends AbstractIntegrationTestCase
@@ -18,8 +18,7 @@ final class CheckoutSessionCompletedPublisherTest extends AbstractIntegrationTes
     public function itPublishes(): void
     {
         // Given
-        $builder = CheckoutSessionBuilder::new()->completed();
-        $checkoutSession = $builder->create();
+        $checkoutSession = CheckoutSessionFactory::new()->completed()->create();
 
         // When
         $this->store($checkoutSession);
@@ -27,24 +26,24 @@ final class CheckoutSessionCompletedPublisherTest extends AbstractIntegrationTes
         // Then
         $event = $this->publishedEventOf(CheckoutSessionCompletedIntegrationEvent::class);
         self::assertSame($checkoutSession->id->toString(), $event->checkoutSessionId);
-        self::assertSame($builder['cartId'], $event->cartId);
-        self::assertSame($builder['customerId'], $event->customerId);
+        self::assertSame($checkoutSession->cartId, $event->cartId);
+        self::assertSame($checkoutSession->customerId, $event->customerId);
         self::assertSame(
             array_map(
                 static fn (CheckoutItem $item): array => [
                     ...CheckoutItemMapper::toArray($item),
                     'taxAmountInCents' => $item->taxedTotal()->taxAmount->cents,
                 ],
-                $builder['items'],
+                $checkoutSession->items,
             ),
             $event->items,
         );
-        self::assertSame($builder['currency']->value, $event->currency);
-        self::assertSame(PostalAddressMapper::toArray($builder['shippingAddress']), $event->shippingAddress);
-        self::assertSame(PostalAddressMapper::toArray($builder['billingAddress']), $event->billingAddress);
-        self::assertSame($builder['paymentId'], $event->paymentId);
+        self::assertSame($checkoutSession->total->excludingTax->currency->value, $event->currency);
+        self::assertSame(PostalAddressMapper::toArray($checkoutSession->shippingAddress), $event->shippingAddress);
+        self::assertSame(PostalAddressMapper::toArray($checkoutSession->billingAddress), $event->billingAddress);
+        self::assertSame($checkoutSession->paymentId, $event->paymentId);
         self::assertSame(
-            $builder['completedAt']->format(\DateTimeInterface::ATOM),
+            $checkoutSession->completedAt?->format(\DateTimeInterface::ATOM),
             $event->completedAt->format(\DateTimeInterface::ATOM),
         );
     }

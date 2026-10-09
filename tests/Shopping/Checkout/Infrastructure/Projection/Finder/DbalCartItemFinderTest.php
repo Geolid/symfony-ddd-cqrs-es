@@ -9,7 +9,7 @@ use Ramsey\Uuid\Uuid;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 use Shopping\Checkout\Application\Finder\CartItem\CartItemFinderInterface;
 use Shopping\Checkout\Application\Finder\CartItem\CartItemResult;
-use Shopping\Tests\Cart\Support\Builder\CartBuilder;
+use Shopping\Tests\Cart\Support\Factory\CartFactory;
 use Symfony\Component\Clock\Clock;
 
 /**
@@ -21,11 +21,10 @@ final class DbalCartItemFinderTest extends AbstractIterableFinderTestCase
     public function itFiltersByCart(): void
     {
         // Given
-        $other = CartBuilder::new()->productAdded()->create();
+        $other = CartFactory::new()->productAdded()->create();
 
-        $builder = CartBuilder::new()->productAdded();
-        $cart = $builder->create();
-        $productAddition = $builder['productAdditions'][0];
+        $productId = Uuid::uuid7()->toString();
+        $cart = CartFactory::new()->productAdded($productId)->create();
 
         $this->store($other, $cart);
 
@@ -35,8 +34,8 @@ final class DbalCartItemFinderTest extends AbstractIterableFinderTestCase
         // Then
         self::assertCount(1, $results);
         self::assertSame($cart->id->toString(), $results[0]->cartId);
-        self::assertSame($productAddition['productId'], $results[0]->productId);
-        self::assertSame($productAddition['quantity']->value, $results[0]->quantity);
+        self::assertSame($productId, $results[0]->productId);
+        self::assertSame($cart->products[$productId]->value, $results[0]->quantity);
     }
 
     protected function finder(): CartItemFinderInterface
@@ -60,7 +59,7 @@ final class DbalCartItemFinderTest extends AbstractIterableFinderTestCase
         for ($i = 0; $i < $count; ++$i) {
             $firstProductId = Uuid::uuid7()->toString();
             $secondProductId = Uuid::uuid7()->toString();
-            $cart = CartBuilder::new()
+            $cart = CartFactory::new()
                 ->productAdded($firstProductId, addedAt: $now->modify(\sprintf('+%d minutes', $i)))
                 ->productAdded($secondProductId, addedAt: $now->modify(\sprintf('+%d minutes', $count + $i)))
                 ->create();

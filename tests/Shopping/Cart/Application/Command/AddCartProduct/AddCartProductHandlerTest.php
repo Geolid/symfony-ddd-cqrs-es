@@ -11,7 +11,8 @@ use Shopping\Cart\Application\Command\AddCartProduct\AddCartProduct;
 use Shopping\Cart\Application\Command\AddCartProduct\Exception\ProductNotListedException;
 use Shopping\Cart\Application\Finder\CartItem\CartItemFinderInterface;
 use Shopping\Cart\Domain\Exception\CartNotFoundException;
-use Shopping\Tests\Cart\Support\Builder\CartBuilder;
+use Shopping\Tests\Cart\Support\Factory\CartFactory;
+use Shopping\Tests\Cart\Support\Factory\CartIdFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class AddCartProductHandlerTest extends AbstractIntegrationTestCase
@@ -29,7 +30,7 @@ final class AddCartProductHandlerTest extends AbstractIntegrationTestCase
     public function itAdds(): void
     {
         // Given
-        $cart = CartBuilder::new()->create();
+        $cart = CartFactory::new()->create();
         $product = ProductBuilder::new()->create();
         $this->store($cart, $product);
 
@@ -50,14 +51,14 @@ final class AddCartProductHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(CartNotFoundException::class);
 
         // When
-        $this->dispatch(new AddCartProduct(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 1));
+        $this->dispatch(new AddCartProduct(CartIdFactory::new()->create()->toString(), Uuid::uuid7()->toString(), 1));
     }
 
     #[Test]
     public function itFailsWhenProductNotListed(): void
     {
         // Given
-        $cart = CartBuilder::new()->create();
+        $cart = CartFactory::new()->create();
         $this->store($cart);
 
         // Then
