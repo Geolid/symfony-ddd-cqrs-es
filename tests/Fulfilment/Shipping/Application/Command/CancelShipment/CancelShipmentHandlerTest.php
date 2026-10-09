@@ -7,8 +7,9 @@ namespace Fulfilment\Tests\Shipping\Application\Command\CancelShipment;
 use Fulfilment\Shipping\Application\Command\CancelShipment\CancelShipment;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\ShipmentStatus;
-use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
+use Fulfilment\Tests\Shipping\Support\Factory\ShipmentFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
@@ -26,8 +27,8 @@ final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itCancelsWhenPending(): void
     {
         // Given
-        $orderId = ShipmentBuilder::sample('orderId');
-        $shipment = ShipmentBuilder::new()->withOrderId($orderId)->create();
+        $orderId = Uuid::uuid7()->toString();
+        $shipment = ShipmentFactory::new()->withOrderId($orderId)->create();
         $this->store($shipment);
 
         // When
@@ -43,8 +44,8 @@ final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyDelivered(): void
     {
         // Given
-        $orderId = ShipmentBuilder::sample('orderId');
-        $shipment = ShipmentBuilder::new()->withOrderId($orderId)->prepared()->manifested()->dispatched()->delivered()->create();
+        $orderId = Uuid::uuid7()->toString();
+        $shipment = ShipmentFactory::new()->withOrderId($orderId)->prepared()->manifested()->dispatched()->delivered()->create();
         $this->store($shipment);
 
         // When
@@ -59,7 +60,7 @@ final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenNotFound(): void
     {
         // Given
-        $orderId = ShipmentBuilder::sample('orderId');
+        $orderId = Uuid::uuid7()->toString();
 
         // When
         $this->dispatch(new CancelShipment($orderId));

@@ -8,7 +8,7 @@ use Fulfilment\Shipping\Application\Command\PrepareShipment\PrepareShipment;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\ShipmentStatus;
 use Fulfilment\Shipping\Domain\Exception\ShipmentNotFoundException;
-use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
+use Fulfilment\Tests\Shipping\Support\Factory\ShipmentFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -18,7 +18,7 @@ final class PrepareShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itPrepares(): void
     {
         // Given
-        $shipment = ShipmentBuilder::new()->create();
+        $shipment = ShipmentFactory::new()->create();
         $this->store($shipment);
 
         // When
@@ -33,7 +33,7 @@ final class PrepareShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = ShipmentBuilder::new()->create()->id->toString();
+        $id = ShipmentFactory::new()->create()->id->toString();
 
         // Then
         $this->expectException(ShipmentNotFoundException::class);

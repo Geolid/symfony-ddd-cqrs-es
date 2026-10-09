@@ -8,7 +8,7 @@ use Fulfilment\Shipping\Application\Reconciliation\Exception\UnsupportedShipment
 use Fulfilment\Shipping\Application\Reconciliation\ShipmentReconciler;
 use Fulfilment\Shipping\Application\Reconciliation\ShipmentStatusReconcilerInterface;
 use Fulfilment\Shipping\Application\ShipmentStatus;
-use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
+use Fulfilment\Tests\Shipping\Support\Factory\TrackingNumberFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -30,7 +30,7 @@ final class ShipmentReconcilerTest extends AbstractIntegrationTestCase
         $router = new ShipmentReconciler([$unsupporting, $matching]);
 
         // When
-        $result = $router->reconcile(Uuid::uuid7()->toString(), ShipmentStatus::MANIFESTED, ShipmentBuilder::sample('trackingNumber')->value);
+        $result = $router->reconcile(Uuid::uuid7()->toString(), ShipmentStatus::MANIFESTED, TrackingNumberFactory::new()->create()->value);
 
         // Then
         self::assertTrue($result);
@@ -46,6 +46,6 @@ final class ShipmentReconcilerTest extends AbstractIntegrationTestCase
         $this->expectException(UnsupportedShipmentStatusException::class);
 
         // When
-        $router->reconcile(Uuid::uuid7()->toString(), ShipmentStatus::DISPATCHED, ShipmentBuilder::sample('trackingNumber')->value);
+        $router->reconcile(Uuid::uuid7()->toString(), ShipmentStatus::DISPATCHED, TrackingNumberFactory::new()->create()->value);
     }
 }

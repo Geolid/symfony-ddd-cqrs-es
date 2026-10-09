@@ -7,13 +7,13 @@ namespace Fulfilment\Tests\Shipping\Application\Policy;
 use Fulfilment\Shipping\Application\Command\RequestShipment\RequestShipment;
 use Fulfilment\Shipping\Application\Policy\RequestShipmentOnOrderConfirmed;
 use Fulfilment\Shipping\Application\Warehouse\WarehouseAddressProvider;
-use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\IntegrationEvent\OrderConfirmed\OrderConfirmedIntegrationEvent;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Command\CommandInterface;
 use Shared\Application\Mapper\PostalAddressMapper;
+use Shared\Tests\Support\Factory\PostalAddressFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -25,7 +25,7 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
         // Given
         $orderId = Uuid::uuid7()->toString();
         $customerId = Uuid::uuid7()->toString();
-        $destinationData = PostalAddressMapper::toArray(ShipmentBuilder::sample('destination'));
+        $destinationData = PostalAddressMapper::toArray(PostalAddressFactory::new()->create());
         $warehouseAddressProvider = $this->service(WarehouseAddressProvider::class);
 
         $dispatched = null;

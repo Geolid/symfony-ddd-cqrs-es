@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipping\Application\IntegrationEvent\ShipmentPrepared;
 
 use Fulfilment\Shipping\Application\IntegrationEvent\ShipmentPrepared\ShipmentPreparedIntegrationEvent;
-use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
+use Fulfilment\Tests\Shipping\Support\Factory\ShipmentFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -15,8 +15,7 @@ final class ShipmentPreparedPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $builder = ShipmentBuilder::new()->prepared();
-        $shipment = $builder->create();
+        $shipment = ShipmentFactory::new()->prepared()->create();
 
         // When
         $this->store($shipment);
@@ -24,7 +23,7 @@ final class ShipmentPreparedPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(ShipmentPreparedIntegrationEvent::class);
         self::assertSame($shipment->id->toString(), $event->shipmentId);
-        self::assertSame($builder['orderId'], $event->orderId);
-        self::assertSame($builder['preparedAt']->format(\DateTimeInterface::ATOM), $event->preparedAt->format(\DateTimeInterface::ATOM));
+        self::assertSame($shipment->orderId, $event->orderId);
+        self::assertSame($shipment->preparedAt?->format(\DateTimeInterface::ATOM), $event->preparedAt?->format(\DateTimeInterface::ATOM));
     }
 }
