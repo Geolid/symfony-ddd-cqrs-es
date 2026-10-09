@@ -22,8 +22,12 @@ final class TrustedDevice implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     public private(set) TrustedDeviceId $id;
-    private string $identityId;
-    private bool $revoked;
+    public private(set) string $identityId;
+    public private(set) string $userAgent;
+    public private(set) string $ip;
+    public private(set) \DateTimeImmutable $trustedAt;
+    public private(set) bool $revoked;
+    public private(set) ?\DateTimeImmutable $revokedAt = null;
 
     public static function trust(
         TrustedDeviceId $id,
@@ -68,6 +72,9 @@ final class TrustedDevice implements AggregateRoot, AggregateRootMetadataAware
     {
         $this->id = $event->id;
         $this->identityId = $event->identityId;
+        $this->userAgent = $event->userAgent;
+        $this->ip = $event->ip;
+        $this->trustedAt = $event->trustedAt;
         $this->revoked = false;
     }
 
@@ -75,5 +82,6 @@ final class TrustedDevice implements AggregateRoot, AggregateRootMetadataAware
     private function applyRevoked(TrustedDeviceRevoked $event): void
     {
         $this->revoked = true;
+        $this->revokedAt = $event->revokedAt;
     }
 }
