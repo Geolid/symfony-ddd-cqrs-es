@@ -62,7 +62,7 @@ final class DbalBackupCodeCredentialProjectorTest extends AbstractIntegrationTes
         // Then
         $row = $this->fetchRow($credential->identityId);
         self::assertNotFalse($row);
-        self::assertSame($credential->regeneratedAt->format(self::DATE_FORMAT), $row['regenerated_at']);
+        self::assertSame($credential->regeneratedAt?->format(self::DATE_FORMAT), $row['regenerated_at']);
         self::assertSame(\count($regeneratedBackupCodes), (int) $row['remaining_count']);
 
         $otherRow = $this->fetchRow($other->identityId);

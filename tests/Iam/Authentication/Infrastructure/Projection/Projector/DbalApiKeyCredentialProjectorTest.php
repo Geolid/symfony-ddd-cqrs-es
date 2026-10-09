@@ -64,7 +64,7 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
         $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
         self::assertTrue((bool) $row['revoked']);
-        self::assertSame($credential->revokedAt->format(self::DATE_FORMAT), $row['revoked_at']);
+        self::assertSame($credential->revokedAt?->format(self::DATE_FORMAT), $row['revoked_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);

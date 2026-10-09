@@ -122,7 +122,7 @@ final class BackupCodeCredentialTest extends AggregateRootTestCase
             ->when(fn (BackupCodeCredential $credential) => $credential->consume(
                 $this->plainBackupCodes[0],
                 $this->backupCodeHasher,
-                Clock::get()->now()->modify('+1 day'),
+                $consumedAt,
             ))
             ->expectsException(InvalidBackupCodeException::class);
     }

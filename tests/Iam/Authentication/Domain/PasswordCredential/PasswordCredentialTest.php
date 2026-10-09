@@ -44,8 +44,9 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $this->identityId = Uuid::uuid7()->toString();
         $this->id = PasswordCredentialId::forIdentity($this->identityId);
         $this->password = PasswordFactory::new()->create();
-        $this->definedAt = Clock::get()->now();
-        $this->requestedAt = Clock::get()->now()->modify('+3 day');
+        $now = Clock::get()->now();
+        $this->definedAt = $now;
+        $this->requestedAt = $now->modify('+3 day');
         $this->hasher = new FakePasswordHasher();
         $this->codeChallenger = new FakeCodeChallenger();
     }

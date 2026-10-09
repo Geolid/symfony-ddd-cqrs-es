@@ -63,7 +63,7 @@ final class DbalTotpCredentialProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
         self::assertTrue((bool) $row['unenrolled']);
-        self::assertSame($credential->unenrolledAt->format(self::DATE_FORMAT), $row['unenrolled_at']);
+        self::assertSame($credential->unenrolledAt?->format(self::DATE_FORMAT), $row['unenrolled_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);

@@ -76,7 +76,7 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         self::assertNotFalse($row);
         self::assertSame($this->hasher->hash($newPassword), $row['password_hash']);
         self::assertSame($credential->definedAt->format(self::DATE_FORMAT), $row['defined_at']);
-        self::assertSame($credential->changedAt->format(self::DATE_FORMAT), $row['changed_at']);
+        self::assertSame($credential->changedAt?->format(self::DATE_FORMAT), $row['changed_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
@@ -139,7 +139,7 @@ final class DbalPasswordCredentialProjectorTest extends AbstractIntegrationTestC
         self::assertNotFalse($row);
         self::assertSame($this->hasher->hash($newPassword), $row['password_hash']);
         self::assertSame($credential->definedAt->format(self::DATE_FORMAT), $row['defined_at']);
-        self::assertSame($credential->resetAt->format(self::DATE_FORMAT), $row['changed_at']);
+        self::assertSame($credential->resetAt?->format(self::DATE_FORMAT), $row['changed_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);

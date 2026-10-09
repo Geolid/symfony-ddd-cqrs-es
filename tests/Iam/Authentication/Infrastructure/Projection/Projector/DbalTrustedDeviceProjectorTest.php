@@ -50,7 +50,7 @@ final class DbalTrustedDeviceProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($trustedDevice->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($trustedDevice->revokedAt->format(self::DATE_FORMAT), $row['revoked_at']);
+        self::assertSame($trustedDevice->revokedAt?->format(self::DATE_FORMAT), $row['revoked_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
