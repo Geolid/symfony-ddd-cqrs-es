@@ -17,7 +17,7 @@ use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
 use Ramsey\Uuid\Uuid;
-use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
+use Sales\Tests\Ordering\Support\Factory\OrderFactory;
 use Shared\Application\Command\CommandBusInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -47,7 +47,7 @@ final class ShipmentManifesterTest extends AbstractIntegrationTestCase
     public function itManifestsWhenOrderPaid(): void
     {
         // Given
-        $order = OrderBuilder::new()->create();
+        $order = OrderFactory::new()->create();
         $payment = PaymentBuilder::new()->authorized()->captured($order->id->toString())->create();
         $shipmentBuilder = ShipmentBuilder::new()->withOrderId($order->id->toString())->prepared();
         $shipment = $shipmentBuilder->create();
@@ -99,7 +99,7 @@ final class ShipmentManifesterTest extends AbstractIntegrationTestCase
     public function itFailsWhenOrderUnpaid(): void
     {
         // Given
-        $order = OrderBuilder::new()->create();
+        $order = OrderFactory::new()->create();
         $payment = PaymentBuilder::new()->create();
         $shipment = ShipmentBuilder::new()->withOrderId($order->id->toString())->prepared()->create();
         $this->store($order, $payment, $shipment);

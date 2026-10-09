@@ -6,7 +6,7 @@ namespace Sales\Tests\Ordering\Application\IntegrationEvent\OrderCancelled;
 
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Ordering\Application\IntegrationEvent\OrderCancelled\OrderCancelledIntegrationEvent;
-use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
+use Sales\Tests\Ordering\Support\Factory\OrderFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class OrderCancelledPublisherTest extends AbstractIntegrationTestCase
@@ -15,8 +15,7 @@ final class OrderCancelledPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $builder = OrderBuilder::new()->cancelled();
-        $order = $builder->create();
+        $order = OrderFactory::new()->cancelled()->create();
 
         // When
         $this->store($order);
@@ -24,6 +23,6 @@ final class OrderCancelledPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(OrderCancelledIntegrationEvent::class);
         self::assertSame($order->id->toString(), $event->orderId);
-        self::assertSame($builder['cancelledAt']->format(\DateTimeInterface::ATOM), $event->cancelledAt->format(\DateTimeInterface::ATOM));
+        self::assertSame($order->cancelledAt?->format(\DateTimeInterface::ATOM), $event->cancelledAt->format(\DateTimeInterface::ATOM));
     }
 }

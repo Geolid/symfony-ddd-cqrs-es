@@ -10,7 +10,7 @@ use Finance\Payment\Infrastructure\Projection\Projector\DbalPaymentProjector;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
+use Sales\Tests\Ordering\Support\Factory\OrderFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
@@ -70,7 +70,7 @@ final class DbalPaymentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnPaymentCaptured(): void
     {
         // Given
-        $order = OrderBuilder::new()->create();
+        $order = OrderFactory::new()->create();
         $other = PaymentBuilder::new()->create();
         $this->store($order, $other);
         $orderPayment = PaymentBuilder::new()->authorized()->captured($order->id->toString())->create();
@@ -94,7 +94,7 @@ final class DbalPaymentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnPaymentFailed(): void
     {
         // Given
-        $order = OrderBuilder::new()->create();
+        $order = OrderFactory::new()->create();
         $other = PaymentBuilder::new()->create();
         $this->store($order, $other);
         $orderPayment = PaymentBuilder::new()->authorized()->failed($order->id->toString())->create();
@@ -144,7 +144,7 @@ final class DbalPaymentProjectorTest extends AbstractIntegrationTestCase
         $this->store($other);
         $checkoutSessionId = Uuid::uuid7()->toString();
         $payment = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionId)->create();
-        $order = OrderBuilder::new()->withCheckoutSessionId($checkoutSessionId)->create();
+        $order = OrderFactory::new()->withCheckoutSessionId($checkoutSessionId)->create();
 
         // When
         $this->store($payment, $order);

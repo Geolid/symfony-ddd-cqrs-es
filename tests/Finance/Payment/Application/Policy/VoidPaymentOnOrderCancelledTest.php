@@ -11,7 +11,7 @@ use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\IntegrationEvent\OrderCancelled\OrderCancelledIntegrationEvent;
-use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
+use Sales\Tests\Ordering\Support\Factory\OrderFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -24,7 +24,7 @@ final class VoidPaymentOnOrderCancelledTest extends AbstractIntegrationTestCase
         $checkoutSessionId = Uuid::uuid7()->toString();
         $paymentBuilder = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionId)->authorized();
         $payment = $paymentBuilder->create();
-        $order = OrderBuilder::new()->withCheckoutSessionId($checkoutSessionId)->create();
+        $order = OrderFactory::new()->withCheckoutSessionId($checkoutSessionId)->create();
         $this->store($payment, $order);
 
         // When

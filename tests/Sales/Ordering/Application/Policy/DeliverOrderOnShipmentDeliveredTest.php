@@ -10,7 +10,7 @@ use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\OrderStatus;
 use Sales\Ordering\Application\Policy\DeliverOrderOnShipmentDelivered;
-use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
+use Sales\Tests\Ordering\Support\Factory\OrderFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -20,7 +20,7 @@ final class DeliverOrderOnShipmentDeliveredTest extends AbstractIntegrationTestC
     public function itDelivers(): void
     {
         // Given
-        $order = OrderBuilder::new()->prepared()->dispatched()->create();
+        $order = OrderFactory::new()->prepared()->dispatched()->create();
         $this->store($order);
 
         // When
