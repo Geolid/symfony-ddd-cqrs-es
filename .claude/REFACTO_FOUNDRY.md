@@ -91,6 +91,7 @@ Source du code de référence : le spike, branche `ai/foundry-spike-storefront` 
 - Le test d'aller-retour du repository détecte la sérialisation, pas un `#[Apply]` oublié.
 - `composer.lock` : `symfony/error-handler` est passé de v8.1.5 à v8.1.8 pendant l'installation.
 - Domaines autres qu'Identity : état complet non essayé. Playwright, `cron` et `es-dashboard` non testés avec les stores réels.
+- **Tests `*PiiErasureTest`** : la sérialisation manuelle (`serializedEventOf()` + `deserialize()`) existait parce que l'event store en mémoire ne chiffrait rien. Avec le store et les clés en base, le test se réduit à : sauver via le repository, `removeWithSubjectId()`, recharger et lire l'état (`'erased'`). Fait pour Identity ; à faire dans la PR de chaque BC (Crm, Shopping, Sales, Fulfilment, `ApiKeyCredential`), puis supprimer `serializedEventOf()` de `EventSourcingTrait` s'il n'a plus d'appelant.
 - Restes du spike retirés (`tests/Iam/Identity/Spike/*`, `ShopperStory`, `BuilderShopperStory`, `CustomerFactory`, `CartFactory`, `demo:fixtures`). Reste : worktree `ai/foundry-spike`, stash `foundry-spike`.
 
 ## 7. Reprendre
