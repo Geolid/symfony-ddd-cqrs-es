@@ -35,9 +35,12 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     public private(set) CartId $id;
-    private CartState $operationalState;
-    /** @var array<string, string> */
-    private array $productIds = [];
+    public private(set) string $customerId;
+    public private(set) \DateTimeImmutable $startedAt;
+    public private(set) CartState $operationalState;
+    /** @var array<string, Quantity> */
+    public private(set) array $products = [];
+    public private(set) ?\DateTimeImmutable $purchasedAt = null;
 
     public static function start(CartId $id, string $customerId, \DateTimeImmutable $startedAt): self
     {
@@ -74,7 +77,7 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
     {
         $this->guardActive();
 
-        if (!isset($this->productIds[$productId])) {
+        if (!isset($this->products[$productId])) {
             throw CartProductNotFoundException::forProductId($productId);
         }
 
@@ -93,7 +96,7 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
     {
         $this->guardActive();
 
-        if (!isset($this->productIds[$productId])) {
+        if (!isset($this->products[$productId])) {
             throw CartProductNotFoundException::forProductId($productId);
         }
 
@@ -136,29 +139,33 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
     private function applyStarted(CartStarted $event): void
     {
         $this->id = $event->id;
+        $this->customerId = $event->customerId;
+        $this->startedAt = $event->startedAt;
         $this->operationalState = CartState::ACTIVE;
     }
 
     #[Apply]
     private function applyProductAdded(CartProductAdded $event): void
     {
-        $this->productIds[$event->productId] = $event->productId;
+        $this->products[$event->productId] = $event->quantity;
     }
 
     #[Apply]
     private function applyProductRemoved(CartProductRemoved $event): void
     {
-        unset($this->productIds[$event->productId]);
+        unset($this->products[$event->productId]);
     }
 
     #[Apply]
     private function applyProductQuantityChanged(CartProductQuantityChanged $event): void
     {
+        $this->products[$event->productId] = $event->quantity;
     }
 
     #[Apply]
     private function applyPurchased(CartPurchased $event): void
     {
         $this->operationalState = CartState::PURCHASED;
+        $this->purchasedAt = $event->purchasedAt;
     }
 }
