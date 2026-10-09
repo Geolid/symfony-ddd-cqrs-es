@@ -49,7 +49,7 @@ final class ShowTest extends AbstractStorefrontTestCase
     public function itRedirectsToPreferredLocale(array $acceptLanguage, string $expectedPath): void
     {
         // Given
-        $browser = $this->browser()->disableReboot()->interceptRedirects();
+        $browser = $this->browser()->interceptRedirects();
 
         // When
         $browser->get($this->path('storefront_home_root'), ['headers' => $acceptLanguage]);

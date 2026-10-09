@@ -55,8 +55,7 @@ abstract class AbstractStorefrontTestCase extends WebTestCase
             return $this->playwrightBrowser();
         }
 
-        /* `disableReboot()` preserves in-memory event store between KernelBrowser requests. */
-        return $this->browser()->disableReboot();
+        return $this->browser();
     }
 
     /**

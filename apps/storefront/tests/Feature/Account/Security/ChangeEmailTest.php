@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Storefront\Tests\Feature\Account\Security;
 
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\Account\Security\Component\ChangeEmailForm;
 use Storefront\Tests\Feature\Account\Security\Component\RequestEmailChangeForm;
@@ -26,7 +26,7 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
         $account = $this->account()->confirmed()->withPassword()->create();
         $browser->signInAs($account->email, $account->password());
 
-        $newEmail = IdentityBuilder::sample('email')->value;
+        $newEmail = IdentityFactory::sample('email')->value;
         $browser->visitRoute('storefront_account_security_request_email_change');
         $browser->use(static function (RequestEmailChangeForm $requestEmailChangeForm) use ($newEmail): void {
             $requestEmailChangeForm->fillNewEmail($newEmail)->submit();
@@ -60,7 +60,7 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
 
         $browser->visitRoute('storefront_account_security_request_email_change');
         $browser->use(static function (RequestEmailChangeForm $requestEmailChangeForm): void {
-            $requestEmailChangeForm->fillNewEmail(IdentityBuilder::sample('email')->value)->submit();
+            $requestEmailChangeForm->fillNewEmail(IdentityFactory::sample('email')->value)->submit();
         });
 
         // When
@@ -82,7 +82,7 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
         $account = $this->account()->confirmed()->withPassword()->create();
         $browser->signInAs($account->email, $account->password());
 
-        $newEmail = IdentityBuilder::sample('email')->value;
+        $newEmail = IdentityFactory::sample('email')->value;
         $browser->visitRoute('storefront_account_security_request_email_change');
         $browser->use(static function (RequestEmailChangeForm $requestEmailChangeForm) use ($newEmail): void {
             $requestEmailChangeForm->fillNewEmail($newEmail)->submit();
@@ -108,7 +108,7 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
 
         $browser->visitRoute('storefront_account_security_request_email_change');
         $browser->use(static function (RequestEmailChangeForm $requestEmailChangeForm): void {
-            $requestEmailChangeForm->fillNewEmail(IdentityBuilder::sample('email')->value)->submit();
+            $requestEmailChangeForm->fillNewEmail(IdentityFactory::sample('email')->value)->submit();
         });
         $browser->interceptRedirects();
 
@@ -130,19 +130,20 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
         $account = $this->account()->confirmed()->withPassword()->create();
         $browser->signInAs($account->email, $account->password());
 
-        $targetEmail = IdentityBuilder::sample('email')->value;
+        $targetEmail = IdentityFactory::sample('email')->value;
         $browser->visitRoute('storefront_account_security_request_email_change');
         $browser->use(static function (RequestEmailChangeForm $requestEmailChangeForm) use ($targetEmail): void {
             $requestEmailChangeForm->fillNewEmail($targetEmail)->submit();
         });
 
-        $browser->visitRoute('storefront_signin_identify');
-        $browser->use(static function (IdentifyForm $identify) use ($targetEmail): void {
+        $otherBrowser = $this->activeBrowser();
+        $otherBrowser->visitRoute('storefront_signin_identify');
+        $otherBrowser->use(static function (IdentifyForm $identify) use ($targetEmail): void {
             $identify->fillEmail($targetEmail)->submit();
         });
-        $browser->click('[data-testid="create-account-button"]');
-        $browser->use(static function (RegisterForm $register): void {
-            $register->fillFullName(IdentityBuilder::sample('fullName')->value)
+        $otherBrowser->click('[data-testid="create-account-button"]');
+        $otherBrowser->use(static function (RegisterForm $register): void {
+            $register->fillFullName(IdentityFactory::sample('fullName')->value)
                 ->fillPassword(PasswordCredentialBuilder::sample('password')->value)
                 ->submit();
         });
