@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Storefront\Tests\Feature\ForgotPassword;
 
 use Iam\Tests\Support\Story\PasswordResetRequestedAccountStory;
+use Iam\Tests\Support\Story\SuspendedPasswordResetRequestedAccountStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\ForgotPassword\Component\ResetForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
@@ -16,11 +17,12 @@ final class ResetTest extends AbstractStorefrontTestCase
     use VerificationCodeTrait;
 
     #[Test]
+    #[WithStory(PasswordResetRequestedAccountStory::class)]
     public function itShowsReset(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmed()->withPassword()->passwordResetRequested()->create();
+        $account = PasswordResetRequestedAccountStory::account();
 
         // When
         $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
@@ -51,11 +53,12 @@ final class ResetTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(PasswordResetRequestedAccountStory::class)]
     public function itRefusesPasswordMismatch(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmed()->withPassword()->passwordResetRequested()->create();
+        $account = PasswordResetRequestedAccountStory::account();
 
         $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
 
@@ -73,11 +76,12 @@ final class ResetTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(SuspendedPasswordResetRequestedAccountStory::class)]
     public function itRejectsSuspendedAccount(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmed()->suspended()->withPassword()->passwordResetRequested()->create();
+        $account = SuspendedPasswordResetRequestedAccountStory::account();
 
         $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
 
@@ -91,11 +95,12 @@ final class ResetTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(PasswordResetRequestedAccountStory::class)]
     public function itRefusesIncorrectCode(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmed()->withPassword()->passwordResetRequested()->create();
+        $account = PasswordResetRequestedAccountStory::account();
 
         $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
 
@@ -111,11 +116,12 @@ final class ResetTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(PasswordResetRequestedAccountStory::class)]
     public function itRefusesAfterTooManyAttempts(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmed()->withPassword()->passwordResetRequested()->create();
+        $account = PasswordResetRequestedAccountStory::account();
 
         $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
 
@@ -137,11 +143,12 @@ final class ResetTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(PasswordResetRequestedAccountStory::class)]
     public function itRefusesSamePassword(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmed()->withPassword()->passwordResetRequested()->create();
+        $account = PasswordResetRequestedAccountStory::account();
 
         $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
 
@@ -157,11 +164,12 @@ final class ResetTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(PasswordResetRequestedAccountStory::class)]
     public function itResends(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmed()->withPassword()->passwordResetRequested()->create();
+        $account = PasswordResetRequestedAccountStory::account();
 
         $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
         $this->advanceClock('+4 days');
@@ -176,11 +184,12 @@ final class ResetTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(PasswordResetRequestedAccountStory::class)]
     public function itRefusesInvalidCsrfToken(): void
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $account = $this->account()->confirmed()->withPassword()->passwordResetRequested()->create();
+        $account = PasswordResetRequestedAccountStory::account();
 
         $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
 

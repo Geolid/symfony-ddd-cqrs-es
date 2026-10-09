@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\Account;
 
+use Iam\Tests\Support\Story\ConfirmedAccountStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
+use Zenstruck\Foundry\Attribute\WithStory;
 
 final class ShowTest extends AbstractStorefrontTestCase
 {
     #[Test]
+    #[WithStory(ConfirmedAccountStory::class)]
     public function itShows(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmed()->withPassword()->create();
+        $account = ConfirmedAccountStory::account();
         $browser->signInAs($account->email, $account->password());
 
         // When
