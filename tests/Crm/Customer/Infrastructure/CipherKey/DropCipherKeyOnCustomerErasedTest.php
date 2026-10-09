@@ -7,7 +7,7 @@ namespace Crm\Tests\Customer\Infrastructure\CipherKey;
 use Crm\Customer\Domain\Customer\Event\CustomerErased;
 use Crm\Customer\Domain\Customer\ValueObject\CustomerId;
 use Crm\Customer\Infrastructure\CipherKey\DropCipherKeyOnCustomerErased;
-use Crm\Tests\Customer\Support\Builder\CustomerBuilder;
+use Crm\Tests\Customer\Support\Factory\CustomerFactory;
 use Patchlevel\Hydrator\Extension\Cryptography\Cipher\CipherKey;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyNotExists;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
@@ -31,7 +31,7 @@ final class DropCipherKeyOnCustomerErasedTest extends AbstractIntegrationTestCas
     public function itDrops(): void
     {
         // Given
-        $customer = CustomerBuilder::new()->create();
+        $customer = CustomerFactory::new()->create();
         $this->store($customer);
         $customerId = $customer->id->toString();
         $now = Clock::get()->now();

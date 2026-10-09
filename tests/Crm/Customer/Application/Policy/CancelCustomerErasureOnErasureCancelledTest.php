@@ -7,7 +7,7 @@ namespace Crm\Tests\Customer\Application\Policy;
 use Compliance\Erasing\Application\IntegrationEvent\ErasureCancelled\ErasureCancelledIntegrationEvent;
 use Crm\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Crm\Customer\Application\Policy\CancelCustomerErasureOnErasureCancelled;
-use Crm\Tests\Customer\Support\Builder\CustomerBuilder;
+use Crm\Tests\Customer\Support\Factory\CustomerFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\ErasureStatus;
@@ -20,12 +20,12 @@ final class CancelCustomerErasureOnErasureCancelledTest extends AbstractIntegrat
     public function itCancels(): void
     {
         // Given
-        $builder = CustomerBuilder::new()->erasureRequested();
-        $customer = $builder->create();
+        $identityId = Uuid::uuid7()->toString();
+        $customer = CustomerFactory::new()->withIdentityId($identityId)->erasureRequested()->create();
         $this->store($customer);
 
         // When
-        $this->trigger(CancelCustomerErasureOnErasureCancelled::class, new ErasureCancelledIntegrationEvent($builder['identityId'], Clock::get()->now()));
+        $this->trigger(CancelCustomerErasureOnErasureCancelled::class, new ErasureCancelledIntegrationEvent($identityId, Clock::get()->now()));
 
         // Then
         $result = $this->service(CustomerFinderInterface::class)->ofIdOrNull($customer->id->toString());
