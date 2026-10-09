@@ -81,6 +81,7 @@
     "symfony/web-profiler-bundle": "8.1.*",
     "vincentlanglet/twig-cs-fixer": "^4.1.1",
     "zenstruck/browser": "^1.12",
+    "zenstruck/foundry": "^2.14",
     "zenstruck/mailer-test": "^1.5"
   },
   "config": {

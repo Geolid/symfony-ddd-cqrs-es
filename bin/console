@@ -17,11 +17,11 @@ if (!is_file(dirname(__DIR__).'/vendor/autoload_runtime.php')) {
 require_once dirname(__DIR__).'/vendor/autoload_runtime.php';
 
 return function (InputInterface $input, array $context) {
-    $kernel = new Kernel($context['APP_ENV'], (bool) $context['APP_DEBUG'], $input->getParameterOption(['--appId', '-a'], $context['APP_ID'] ?? null));
+    $kernel = new Kernel($context['APP_ENV'], (bool) $context['APP_DEBUG'], $input->getParameterOption(['--appId'], $context['APP_ID'] ?? null));
 
     $application = new Application($kernel);
     $application->getDefinition()
-        ->addOption(new InputOption('--appId', '-a', InputOption::VALUE_OPTIONAL, 'The App ID'))
+        ->addOption(new InputOption('--appId', null, InputOption::VALUE_OPTIONAL, 'The App ID'))
     ;
 
     return $application;
