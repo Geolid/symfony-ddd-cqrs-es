@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipping\Application\Manifesting;
 
-use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
+use Finance\Tests\Payment\Support\Factory\PaymentFactory;
 use Fulfilment\Shipping\Application\Carrier\CarrierGatewayInterface;
 use Fulfilment\Shipping\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Fulfilment\Shipping\Application\Finder\Shipment\Exception\ShipmentResultNotFoundException;
@@ -48,7 +48,7 @@ final class ShipmentManifesterTest extends AbstractIntegrationTestCase
     {
         // Given
         $order = OrderFactory::new()->create();
-        $payment = PaymentBuilder::new()->authorized()->captured($order->id->toString())->create();
+        $payment = PaymentFactory::new()->authorized()->captured($order->id->toString())->create();
         $shipmentBuilder = ShipmentBuilder::new()->withOrderId($order->id->toString())->prepared();
         $shipment = $shipmentBuilder->create();
         $this->store($order, $payment, $shipment);
@@ -100,7 +100,7 @@ final class ShipmentManifesterTest extends AbstractIntegrationTestCase
     {
         // Given
         $order = OrderFactory::new()->create();
-        $payment = PaymentBuilder::new()->create();
+        $payment = PaymentFactory::new()->create();
         $shipment = ShipmentBuilder::new()->withOrderId($order->id->toString())->prepared()->create();
         $this->store($order, $payment, $shipment);
         $this->carrier->expects(self::never())->method('manifest');

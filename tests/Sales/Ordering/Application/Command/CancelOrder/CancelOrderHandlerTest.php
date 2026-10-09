@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Ordering\Application\Command\CancelOrder;
 
-use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
+use Finance\Tests\Payment\Support\Factory\PaymentFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\Command\CancelOrder\CancelOrder;
@@ -66,7 +66,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
         // Given
         $customerId = Uuid::uuid7()->toString();
         $order = OrderFactory::new()->withCustomerId($customerId)->create();
-        $payment = PaymentBuilder::new()->create();
+        $payment = PaymentFactory::new()->create();
         $this->store($order, $payment);
 
         // When

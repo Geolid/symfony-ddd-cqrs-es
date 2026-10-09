@@ -16,7 +16,8 @@ use Finance\Payment\Application\Requesting\Exception\PaymentRequestInvalidUrlExc
 use Finance\Payment\Application\Requesting\Exception\PaymentRequestWithoutLineException;
 use Finance\Payment\Application\Requesting\PaymentRequester;
 use Finance\Payment\Domain\ValueObject\PaymentId;
-use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
+use Finance\Tests\Payment\Support\Factory\PaymentFactory;
+use Finance\Tests\Payment\Support\Factory\PaymentReferenceFactory;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Clock\ClockInterface;
@@ -29,6 +30,8 @@ use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\Quantity;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
+
+use function Zenstruck\Foundry\faker;
 
 final class PaymentRequesterTest extends AbstractIntegrationTestCase
 {
@@ -62,8 +65,8 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
         // Given
         $checkoutSessionId = Uuid::uuid7()->toString();
         $paymentId = PaymentId::forCheckoutSession($checkoutSessionId)->toString();
-        $reference = PaymentBuilder::sample('reference')->value;
-        $hostedPageUrl = PaymentBuilder::sample('hostedPageUrl');
+        $reference = PaymentReferenceFactory::new()->create()->value;
+        $hostedPageUrl = 'https://checkout.globex.test/pay/'.faker()->regexify('[A-Z0-9]{8}');
         $lines = $this->lines();
         $this->paymentGateway->expects(self::once())->method('requestPayment')
             ->with($paymentId, $checkoutSessionId, $lines, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt)
@@ -84,21 +87,20 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
     public function itReturnsExistingWhenAlreadyClaimed(): void
     {
         // Given
-        $paymentBuilder = PaymentBuilder::new();
-        $payment = $paymentBuilder->create();
+        $payment = PaymentFactory::new()->create();
         $this->store($payment);
         $this->uniqueness->claim(
             UniqueKey::for(PaymentUniqueKey::CHECKOUT_SESSION),
-            $paymentBuilder['checkoutSessionId'],
+            $payment->checkoutSessionId,
             $payment->id->toString(),
         );
         $this->paymentGateway->expects(self::never())->method('requestPayment');
 
         // When
-        $hostedPageUrl = $this->service->requestFor($paymentBuilder['checkoutSessionId'], 'EUR', $this->lines(), 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt);
+        $hostedPageUrl = $this->service->requestFor($payment->checkoutSessionId, 'EUR', $this->lines(), 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt);
 
         // Then
-        self::assertSame($paymentBuilder['hostedPageUrl'], $hostedPageUrl);
+        self::assertSame($payment->hostedPageUrl, $hostedPageUrl);
     }
 
     #[Test]
