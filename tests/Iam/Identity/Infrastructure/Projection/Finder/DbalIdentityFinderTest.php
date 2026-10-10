@@ -73,11 +73,22 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
 
         // When
         $found = $this->finder()->ofEmailOrNull($identity->email->value);
-        $notFound = $this->finder()->ofEmailOrNull(EmailFactory::new()->create()->value);
 
         // Then
         self::assertSame($identity->id->toString(), $found?->id);
-        self::assertNull($notFound);
+    }
+
+    #[Test]
+    public function itFindsNothingByEmail(): void
+    {
+        // Given
+        $email = EmailFactory::new()->create()->value;
+
+        // When
+        $result = $this->finder()->ofEmailOrNull($email);
+
+        // Then
+        self::assertNull($result);
     }
 
     #[Test]

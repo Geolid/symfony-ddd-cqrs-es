@@ -66,7 +66,6 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
 
         // When
         $result = $this->finder()->openOfCartOrNull($checkoutSession->cartId);
-        $nothing = $this->finder()->openOfCartOrNull(Uuid::uuid7()->toString());
 
         // Then
         self::assertNotNull($result);
@@ -105,8 +104,19 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
         self::assertSame($checkoutSession->items[0]->taxRate->basisPoints, $result->taxRateBasisPoints);
         self::assertSame(CheckoutSessionStatus::OPEN, $result->status);
         self::assertSameDate($checkoutSession->openedAt, $result->openedAt);
+    }
 
-        self::assertNull($nothing);
+    #[Test]
+    public function itFindsNothingOpenByCart(): void
+    {
+        // Given
+        $cartId = Uuid::uuid7()->toString();
+
+        // When
+        $result = $this->finder()->openOfCartOrNull($cartId);
+
+        // Then
+        self::assertNull($result);
     }
 
     #[Test]

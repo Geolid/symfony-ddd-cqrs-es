@@ -47,7 +47,6 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
 
         // When
         $result = $this->finder->ofIdentityOrNull($credential->identityId);
-        $nothing = $this->finder->ofIdentityOrNull(Uuid::uuid7()->toString());
 
         // Then
         self::assertNotNull($result);
@@ -56,7 +55,18 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
         self::assertSameDate($credential->definedAt, $result->definedAt);
         self::assertSameDate($credential->definedAt, $result->changedAt);
         self::assertSame($this->hasher->hash($password), $result->passwordHash);
+    }
 
-        self::assertNull($nothing);
+    #[Test]
+    public function itFindsNothingByIdentity(): void
+    {
+        // Given
+        $identityId = Uuid::uuid7()->toString();
+
+        // When
+        $result = $this->finder->ofIdentityOrNull($identityId);
+
+        // Then
+        self::assertNull($result);
     }
 }

@@ -99,12 +99,23 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
 
         // When
         $found = $this->finder()->ofOrderOrNull($shipment->orderId);
-        $notFound = $this->finder()->ofOrderOrNull(Uuid::uuid7()->toString());
 
         // Then
         self::assertNotNull($found);
         self::assertSame($shipment->id->toString(), $found->id);
-        self::assertNull($notFound);
+    }
+
+    #[Test]
+    public function itFindsNothingByOrder(): void
+    {
+        // Given
+        $orderId = Uuid::uuid7()->toString();
+
+        // When
+        $result = $this->finder()->ofOrderOrNull($orderId);
+
+        // Then
+        self::assertNull($result);
     }
 
     #[Test]

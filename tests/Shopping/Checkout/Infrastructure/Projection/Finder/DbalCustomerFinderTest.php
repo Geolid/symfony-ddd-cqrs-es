@@ -34,7 +34,6 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
 
         // When
         $found = $this->finder->ofIdOrNull($customer->id->toString());
-        $notFound = $this->finder->ofIdOrNull(Uuid::uuid7()->toString());
 
         // Then
         self::assertNotNull($found);
@@ -46,7 +45,19 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
         \assert(null !== $customer->billingAddress);
         self::assertSame(PostalAddressMapper::toArray($customer->billingAddress), PostalAddressResultMapper::toArray($found->billingAddress));
         self::assertSame(ErasureStatus::RETAINED, $found->erasureStatus);
-        self::assertNull($notFound);
+    }
+
+    #[Test]
+    public function itFindsNothing(): void
+    {
+        // Given
+        $id = Uuid::uuid7()->toString();
+
+        // When
+        $result = $this->finder->ofIdOrNull($id);
+
+        // Then
+        self::assertNull($result);
     }
 
     #[Test]
