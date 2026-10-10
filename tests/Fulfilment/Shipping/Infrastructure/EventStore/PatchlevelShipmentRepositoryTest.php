@@ -48,6 +48,7 @@ final class PatchlevelShipmentRepositoryTest extends AbstractIntegrationTestCase
     {
         yield 'delivered' => [ShipmentFactory::new()->prepared()->manifested()->dispatched()->delivered()->erasureApproved()];
         yield 'cancelled' => [ShipmentFactory::new()->prepared()->cancelled()];
+        yield 'cancellation rejected' => [ShipmentFactory::new()->prepared()->manifested()->dispatched()->cancelled()];
     }
 
     #[Test]
