@@ -72,7 +72,10 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
 
         // Then
         $erased = $this->storedEventOf(CustomerShippingAddressDefinedIntegrationEvent::class, $customer->id->toString());
-        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())()), $erased->postalAddress);
+        self::assertSame([
+            'recipientName' => 'erased',
+            'address' => ['street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ'],
+        ], $erased->postalAddress);
     }
 
     #[Test]
@@ -87,6 +90,9 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
 
         // Then
         $erased = $this->storedEventOf(CustomerBillingAddressDefinedIntegrationEvent::class, $customer->id->toString());
-        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())()), $erased->postalAddress);
+        self::assertSame([
+            'recipientName' => 'erased',
+            'address' => ['street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ'],
+        ], $erased->postalAddress);
     }
 }

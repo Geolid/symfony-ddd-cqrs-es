@@ -13,7 +13,6 @@ use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
-use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\Pii\ErasedFieldSentinel;
 
 final class EventTest
@@ -81,11 +80,9 @@ final class EventTest
                     Selector::isEnum(),
                     Selector::withFilepath('#/Application/#', true),
                 ),
-                Selector::classname(PostalAddressMapper::class),
-                Selector::classname('#Domain.Pii.Erased#', true),
                 ...$this->esMetadataSelectors(),
             )
-            ->because('A Published Language must decode forever regardless of other types; its payload stays primitive, and only its erasure fallback derives from the Domain\'s erased Value Object through the mapper.');
+            ->because('A Published Language must decode forever regardless of other types; its payload and its own erasure fallback stay primitive, independent of the Domain.');
     }
 
     private function notInTests(): SelectorInterface

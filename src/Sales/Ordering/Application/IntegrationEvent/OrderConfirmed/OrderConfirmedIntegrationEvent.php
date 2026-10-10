@@ -8,8 +8,7 @@ use Patchlevel\EventSourcing\Attribute\Event;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\DataSubjectId;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
-use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\Pii\ErasedPostalAddress;
+use Shared\Domain\Pii\ErasedFieldSentinel;
 
 #[Event('integration.sales.ordering.order.confirmed')]
 final readonly class OrderConfirmedIntegrationEvent implements IntegrationEventInterface
@@ -23,9 +22,10 @@ final readonly class OrderConfirmedIntegrationEvent implements IntegrationEventI
         public string $cartId,
         public string $customerId,
         public string $checkoutSessionId,
-        #[SensitiveData(fallbackCallable: static function (string $subjectId): array {
-            return PostalAddressMapper::toArray((new ErasedPostalAddress())());
-        })]
+        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
+            'recipientName' => 'erased',
+            'address' => ['street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ'],
+        ]))]
         public array $shippingAddress,
         public \DateTimeImmutable $confirmedAt,
     ) {

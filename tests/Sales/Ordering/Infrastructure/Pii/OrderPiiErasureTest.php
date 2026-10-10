@@ -51,6 +51,9 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
 
         // Then
         $erased = $this->storedEventOf(OrderConfirmedIntegrationEvent::class, $order->id->toString());
-        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())()), $erased->shippingAddress);
+        self::assertSame([
+            'recipientName' => 'erased',
+            'address' => ['street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ'],
+        ], $erased->shippingAddress);
     }
 }
