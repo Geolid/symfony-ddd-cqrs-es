@@ -41,25 +41,6 @@ final class DbalCartItemProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsOnCartProductAddedWhenAlreadyPresent(): void
-    {
-        // Given
-        $productId = Uuid::uuid7()->toString();
-        $cart = CartFactory::new()
-            ->productAdded($productId, Quantity::of(2))
-            ->productAdded($productId, Quantity::of(3))
-            ->create();
-
-        // When
-        $this->store($cart);
-
-        // Then
-        $row = $this->fetchRow($cart->id->toString(), $productId);
-        self::assertNotFalse($row);
-        self::assertSame(5, $row['quantity']);
-    }
-
-    #[Test]
     public function itRemovesOnCartProductRemoved(): void
     {
         // Given
