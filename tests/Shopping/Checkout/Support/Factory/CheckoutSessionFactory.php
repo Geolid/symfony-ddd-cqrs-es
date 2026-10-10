@@ -147,7 +147,6 @@ final class CheckoutSessionFactory extends AbstractAggregateFactory
 
     protected function initialize(): static
     {
-        // The items share the FINAL currency and tax rate, so a withCurrency()/withTaxRate() override carries over.
         return parent::initialize()->beforeInstantiate(static function (array $parameters): array {
             Assert::isInstanceOf($parameters['currency'], Currency::class);
             $parameters['items'] ??= CheckoutItemFactory::new([

@@ -154,7 +154,6 @@ final class OrderFactory extends AbstractAggregateFactory
 
     protected function initialize(): static
     {
-        // The id derives from the FINAL checkoutSessionId and the items from the FINAL currency, so a with() override carries over.
         return parent::initialize()->beforeInstantiate(static function (array $parameters): array {
             Assert::string($parameters['checkoutSessionId']);
             Assert::isInstanceOf($parameters['currency'], Currency::class);

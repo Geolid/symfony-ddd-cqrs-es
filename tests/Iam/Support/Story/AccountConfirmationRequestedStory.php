@@ -6,9 +6,6 @@ namespace Iam\Tests\Support\Story;
 
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 
-/**
- * An account registered whose confirmation was requested and never completed.
- */
 final class AccountConfirmationRequestedStory extends AbstractAccountStory
 {
     public function build(): void

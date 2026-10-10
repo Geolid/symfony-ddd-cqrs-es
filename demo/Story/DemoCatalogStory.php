@@ -8,9 +8,6 @@ use Catalog\Tests\Listing\Support\Factory\ProductFactory;
 use Support\Foundry\Story\AbstractAggregateStory;
 use Zenstruck\Foundry\Attribute\AsFixture;
 
-/**
- * The products the demo storefront lists.
- */
 #[AsFixture(name: 'demo-catalog', groups: ['demo'])]
 final class DemoCatalogStory extends AbstractAggregateStory
 {

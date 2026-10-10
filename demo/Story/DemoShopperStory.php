@@ -14,9 +14,6 @@ use Patchlevel\EventSourcing\Repository\RepositoryManager;
 use Support\Foundry\Story\AbstractAggregateStory;
 use Zenstruck\Foundry\Attribute\AsFixture;
 
-/**
- * A confirmed shopper who signs in to the demo storefront with `demo@example.test`.
- */
 #[AsFixture(name: 'demo-shopper', groups: ['demo'])]
 final class DemoShopperStory extends AbstractAggregateStory
 {

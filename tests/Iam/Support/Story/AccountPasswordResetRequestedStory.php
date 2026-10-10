@@ -10,8 +10,6 @@ use Patchlevel\EventSourcing\Repository\RepositoryManager;
 use Symfony\Component\Clock\Clock;
 
 /**
- * A confirmed account that asked for a password reset and has not used it yet.
- *
  * @method static string password()
  */
 final class AccountPasswordResetRequestedStory extends AbstractAccountStory

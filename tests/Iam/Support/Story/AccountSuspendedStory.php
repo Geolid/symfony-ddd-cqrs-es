@@ -11,8 +11,6 @@ use Patchlevel\EventSourcing\Repository\RepositoryManager;
 use Symfony\Component\Clock\Clock;
 
 /**
- * A confirmed account with a password, suspended by a moderator.
- *
  * @method static string password()
  */
 final class AccountSuspendedStory extends AbstractAccountStory

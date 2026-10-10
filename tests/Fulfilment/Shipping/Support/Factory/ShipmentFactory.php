@@ -137,7 +137,6 @@ final class ShipmentFactory extends AbstractAggregateFactory
 
     protected function initialize(): static
     {
-        // The id derives from the FINAL orderId, so a with(['orderId' => ...]) override carries over.
         return parent::initialize()->beforeInstantiate(static function (array $parameters): array {
             Assert::string($parameters['orderId']);
             $parameters['id'] ??= ShipmentId::forOrder($parameters['orderId']);

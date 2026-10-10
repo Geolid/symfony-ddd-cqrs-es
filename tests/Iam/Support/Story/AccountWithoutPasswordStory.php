@@ -6,9 +6,6 @@ namespace Iam\Tests\Support\Story;
 
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 
-/**
- * A confirmed account with no password.
- */
 final class AccountWithoutPasswordStory extends AbstractAccountStory
 {
     public function build(): void

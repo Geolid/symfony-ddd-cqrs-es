@@ -12,8 +12,6 @@ use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Patchlevel\EventSourcing\Repository\RepositoryManager;
 
 /**
- * A confirmed account that signs in with a password.
- *
  * @method static string password()
  */
 final class AccountConfirmedStory extends AbstractAccountStory

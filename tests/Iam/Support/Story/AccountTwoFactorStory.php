@@ -11,8 +11,6 @@ use Patchlevel\EventSourcing\Repository\RepositoryManager;
 use function Zenstruck\Foundry\faker;
 
 /**
- * A confirmed account with a password and an enrolled TOTP.
- *
  * @method static string password()
  * @method static string totpSecret()
  */

@@ -6,9 +6,6 @@ namespace Iam\Tests\Support\Story;
 
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 
-/**
- * An account whose erasure went through.
- */
 final class AccountErasedStory extends AbstractAccountStory
 {
     public function build(): void
