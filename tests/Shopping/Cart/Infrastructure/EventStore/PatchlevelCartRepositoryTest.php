@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Shopping\Tests\Cart\Infrastructure\EventStore;
 
 use PHPUnit\Framework\Attributes\Test;
-use Shared\Domain\ValueObject\Quantity;
 use Shopping\Cart\Domain\Cart;
+use Shopping\Cart\Domain\Entity\CartLine;
 use Shopping\Cart\Domain\Exception\CartAlreadyExistsException;
 use Shopping\Cart\Domain\Exception\CartNotFoundException;
 use Shopping\Cart\Domain\Repository\CartRepositoryInterface;
@@ -109,7 +109,14 @@ final class PatchlevelCartRepositoryTest extends AbstractIntegrationTestCase
             'customerId' => $cart->customerId,
             'startedAt' => $atom($cart->startedAt),
             'operationalState' => $cart->operationalState->value,
-            'products' => array_map(static fn (Quantity $quantity): int => $quantity->value, $cart->products),
+            'lines' => array_map(static fn (CartLine $line): array => [
+                'id' => $line->id->toString(),
+                'productId' => $line->productId,
+                'quantity' => $line->quantity->value,
+                'addedAt' => $atom($line->addedAt),
+                'changedAt' => $atom($line->changedAt),
+            ], $cart->lines),
+            'lineSequence' => $cart->lineSequence,
             'purchasedAt' => $atom($cart->purchasedAt),
         ];
     }

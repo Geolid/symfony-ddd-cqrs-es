@@ -114,9 +114,9 @@ final class CartFactory extends AbstractAggregateFactory
 
     private static function lastProductId(Cart $cart): string
     {
-        $productId = array_key_last($cart->products);
-        Assert::string($productId);
+        $line = array_last($cart->lines);
+        Assert::notNull($line);
 
-        return $productId;
+        return $line->productId;
     }
 }

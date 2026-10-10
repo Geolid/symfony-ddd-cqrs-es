@@ -18,6 +18,7 @@ use Shopping\Cart\Domain\Event\CartStarted;
 use Shopping\Cart\Domain\Exception\CartAlreadyPurchasedException;
 use Shopping\Cart\Domain\Exception\CartProductNotFoundException;
 use Shopping\Cart\Domain\ValueObject\CartId;
+use Shopping\Cart\Domain\ValueObject\CartLineId;
 use Shopping\Tests\Cart\Support\Factory\CartIdFactory;
 use Symfony\Component\Clock\Clock;
 
@@ -27,7 +28,11 @@ final class CartTest extends AggregateRootTestCase
     private string $customerId;
     private \DateTimeImmutable $startedAt;
     private string $productId;
+    private CartLineId $lineId;
     private Quantity $quantity;
+    private Quantity $additionalQuantity;
+    private string $otherProductId;
+    private CartLineId $otherLineId;
     private \DateTimeImmutable $addedAt;
     private \DateTimeImmutable $removedAt;
     private \DateTimeImmutable $changedAt;
@@ -41,7 +46,11 @@ final class CartTest extends AggregateRootTestCase
         $this->customerId = Uuid::uuid7()->toString();
         $this->startedAt = Clock::get()->now();
         $this->productId = Uuid::uuid7()->toString();
+        $this->lineId = CartLineId::forCart($this->id->toString(), 0);
         $this->quantity = QuantityFactory::new()->create();
+        $this->additionalQuantity = Quantity::of($this->quantity->value + 1);
+        $this->otherProductId = Uuid::uuid7()->toString();
+        $this->otherLineId = CartLineId::forCart($this->id->toString(), 1);
         $this->addedAt = $this->startedAt->modify('+1 minute');
         $this->removedAt = $this->startedAt->modify('+2 minute');
         $this->changedAt = $this->startedAt->modify('+2 minute');
@@ -67,12 +76,30 @@ final class CartTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itAddsProductAgainWhenAlreadyPresent(): void
+    public function itAddsAnotherProductAsNewLine(): void
     {
         $this
             ->given($this->started(), $this->productAdded())
+            ->when(fn (Cart $cart) => $cart->addProduct($this->otherProductId, $this->quantity, $this->addedAt))
+            ->then($this->otherProductAdded());
+    }
+
+    #[Test]
+    public function itAddsProductAgainByMergingIntoItsLine(): void
+    {
+        $this
+            ->given($this->started(), $this->productAdded(), $this->otherProductAdded())
+            ->when(fn (Cart $cart) => $cart->addProduct($this->productId, $this->additionalQuantity, $this->changedAt))
+            ->then(new CartProductQuantityChanged($this->id, $this->lineId, $this->productId, $this->quantity->plus($this->additionalQuantity), $this->changedAt));
+    }
+
+    #[Test]
+    public function itAddsProductAgainAsNewLineAfterRemoval(): void
+    {
+        $this
+            ->given($this->started(), $this->productAdded(), $this->productRemoved())
             ->when(fn (Cart $cart) => $cart->addProduct($this->productId, $this->quantity, $this->addedAt))
-            ->then($this->productAdded());
+            ->then(new CartProductAdded($this->id, $this->otherLineId, $this->productId, $this->quantity, $this->addedAt));
     }
 
     #[Test]
@@ -91,6 +118,15 @@ final class CartTest extends AggregateRootTestCase
             ->given($this->started(), $this->productAdded())
             ->when(fn (Cart $cart) => $cart->removeProduct($this->productId, $this->removedAt))
             ->then($this->productRemoved());
+    }
+
+    #[Test]
+    public function itRemovesTheMatchingLine(): void
+    {
+        $this
+            ->given($this->started(), $this->productAdded(), $this->otherProductAdded())
+            ->when(fn (Cart $cart) => $cart->removeProduct($this->otherProductId, $this->removedAt))
+            ->then(new CartProductRemoved($this->id, $this->otherLineId, $this->otherProductId, $this->removedAt));
     }
 
     #[Test]
@@ -118,6 +154,15 @@ final class CartTest extends AggregateRootTestCase
             ->given($this->started(), $this->productAdded())
             ->when(fn (Cart $cart) => $cart->changeQuantity($this->productId, $this->quantity, $this->changedAt))
             ->then($this->productQuantityChanged());
+    }
+
+    #[Test]
+    public function itChangesQuantityOfTheMatchingLine(): void
+    {
+        $this
+            ->given($this->started(), $this->productAdded(), $this->otherProductAdded())
+            ->when(fn (Cart $cart) => $cart->changeQuantity($this->otherProductId, $this->quantity, $this->changedAt))
+            ->then(new CartProductQuantityChanged($this->id, $this->otherLineId, $this->otherProductId, $this->quantity, $this->changedAt));
     }
 
     #[Test]
@@ -168,17 +213,22 @@ final class CartTest extends AggregateRootTestCase
 
     private function productAdded(): CartProductAdded
     {
-        return new CartProductAdded($this->id, $this->productId, $this->quantity, $this->addedAt);
+        return new CartProductAdded($this->id, $this->lineId, $this->productId, $this->quantity, $this->addedAt);
+    }
+
+    private function otherProductAdded(): CartProductAdded
+    {
+        return new CartProductAdded($this->id, $this->otherLineId, $this->otherProductId, $this->quantity, $this->addedAt);
     }
 
     private function productRemoved(): CartProductRemoved
     {
-        return new CartProductRemoved($this->id, $this->productId, $this->removedAt);
+        return new CartProductRemoved($this->id, $this->lineId, $this->productId, $this->removedAt);
     }
 
     private function productQuantityChanged(): CartProductQuantityChanged
     {
-        return new CartProductQuantityChanged($this->id, $this->productId, $this->quantity, $this->changedAt);
+        return new CartProductQuantityChanged($this->id, $this->lineId, $this->productId, $this->quantity, $this->changedAt);
     }
 
     private function purchased(): CartPurchased

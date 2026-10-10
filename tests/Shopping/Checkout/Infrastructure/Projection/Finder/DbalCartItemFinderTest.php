@@ -6,6 +6,7 @@ namespace Shopping\Tests\Checkout\Infrastructure\Projection\Finder;
 
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Shared\Domain\ValueObject\Quantity;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 use Shopping\Checkout\Application\Finder\CartItem\CartItemFinderInterface;
 use Shopping\Checkout\Application\Finder\CartItem\CartItemResult;
@@ -24,7 +25,7 @@ final class DbalCartItemFinderTest extends AbstractIterableFinderTestCase
         $other = CartFactory::new()->productAdded()->create();
 
         $productId = Uuid::uuid7()->toString();
-        $cart = CartFactory::new()->productAdded($productId)->create();
+        $cart = CartFactory::new()->productAdded($productId, $quantity = Quantity::of(2))->create();
 
         $this->store($other, $cart);
 
@@ -35,7 +36,7 @@ final class DbalCartItemFinderTest extends AbstractIterableFinderTestCase
         self::assertCount(1, $results);
         self::assertSame($cart->id->toString(), $results[0]->cartId);
         self::assertSame($productId, $results[0]->productId);
-        self::assertSame($cart->products[$productId]->value, $results[0]->quantity);
+        self::assertSame($quantity->value, $results[0]->quantity);
     }
 
     protected function finder(): CartItemFinderInterface

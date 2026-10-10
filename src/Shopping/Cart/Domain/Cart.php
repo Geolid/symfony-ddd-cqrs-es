@@ -12,6 +12,7 @@ use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
 use Shared\Domain\Specification\CanTransitionToSpecification;
 use Shared\Domain\ValueObject\Quantity;
+use Shopping\Cart\Domain\Entity\CartLine;
 use Shopping\Cart\Domain\Event\CartProductAdded;
 use Shopping\Cart\Domain\Event\CartProductQuantityChanged;
 use Shopping\Cart\Domain\Event\CartProductRemoved;
@@ -20,6 +21,7 @@ use Shopping\Cart\Domain\Event\CartStarted;
 use Shopping\Cart\Domain\Exception\CartAlreadyPurchasedException;
 use Shopping\Cart\Domain\Exception\CartProductNotFoundException;
 use Shopping\Cart\Domain\ValueObject\CartId;
+use Shopping\Cart\Domain\ValueObject\CartLineId;
 use Shopping\Cart\Domain\ValueObject\CartState;
 
 #[Aggregate('shopping.cart.cart')]
@@ -38,8 +40,9 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
     public private(set) string $customerId;
     public private(set) \DateTimeImmutable $startedAt;
     public private(set) CartState $operationalState;
-    /** @var array<string, Quantity> */
-    public private(set) array $products = [];
+    /** @var array<string, CartLine> */
+    public private(set) array $lines = [];
+    public private(set) int $lineSequence = 0;
     public private(set) ?\DateTimeImmutable $purchasedAt = null;
 
     public static function start(CartId $id, string $customerId, \DateTimeImmutable $startedAt): self
@@ -61,8 +64,23 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
     {
         $this->guardActive();
 
+        $line = $this->lineOf($productId);
+
+        if ($line instanceof CartLine) {
+            $this->recordThat(new CartProductQuantityChanged(
+                id: $this->id,
+                lineId: $line->id,
+                productId: $productId,
+                quantity: $line->quantity->plus($quantity),
+                changedAt: $addedAt,
+            ));
+
+            return;
+        }
+
         $this->recordThat(new CartProductAdded(
             id: $this->id,
+            lineId: CartLineId::forCart($this->id->toString(), $this->lineSequence),
             productId: $productId,
             quantity: $quantity,
             addedAt: $addedAt,
@@ -77,12 +95,11 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
     {
         $this->guardActive();
 
-        if (!isset($this->products[$productId])) {
-            throw CartProductNotFoundException::forProductId($productId);
-        }
+        $line = $this->lineOf($productId) ?? throw CartProductNotFoundException::forProductId($productId);
 
         $this->recordThat(new CartProductRemoved(
             id: $this->id,
+            lineId: $line->id,
             productId: $productId,
             removedAt: $removedAt,
         ));
@@ -96,12 +113,11 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
     {
         $this->guardActive();
 
-        if (!isset($this->products[$productId])) {
-            throw CartProductNotFoundException::forProductId($productId);
-        }
+        $line = $this->lineOf($productId) ?? throw CartProductNotFoundException::forProductId($productId);
 
         $this->recordThat(new CartProductQuantityChanged(
             id: $this->id,
+            lineId: $line->id,
             productId: $productId,
             quantity: $quantity,
             changedAt: $changedAt,
@@ -130,6 +146,17 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
         }
     }
 
+    private function lineOf(string $productId): ?CartLine
+    {
+        foreach ($this->lines as $line) {
+            if ($line->productId === $productId) {
+                return $line;
+            }
+        }
+
+        return null;
+    }
+
     private function canTransitionOperationalTo(CartState $target): bool
     {
         return new CanTransitionToSpecification(self::OPERATIONAL_TRANSITIONS, $target)->isSatisfiedBy($this->operationalState);
@@ -147,19 +174,20 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
     #[Apply]
     private function applyProductAdded(CartProductAdded $event): void
     {
-        $this->products[$event->productId] = $event->quantity;
+        $this->lines[$event->lineId->toString()] = new CartLine($event->lineId, $event->productId, $event->quantity, $event->addedAt);
+        ++$this->lineSequence;
     }
 
     #[Apply]
     private function applyProductRemoved(CartProductRemoved $event): void
     {
-        unset($this->products[$event->productId]);
+        unset($this->lines[$event->lineId->toString()]);
     }
 
     #[Apply]
     private function applyProductQuantityChanged(CartProductQuantityChanged $event): void
     {
-        $this->products[$event->productId] = $event->quantity;
+        $this->lines[$event->lineId->toString()] = $this->lines[$event->lineId->toString()]->withQuantity($event->quantity, $event->changedAt);
     }
 
     #[Apply]

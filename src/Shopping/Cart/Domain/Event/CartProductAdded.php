@@ -7,12 +7,14 @@ namespace Shopping\Cart\Domain\Event;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Shared\Domain\ValueObject\Quantity;
 use Shopping\Cart\Domain\ValueObject\CartId;
+use Shopping\Cart\Domain\ValueObject\CartLineId;
 
 #[Event('shopping.cart.cart.product_added')]
 final readonly class CartProductAdded
 {
     public function __construct(
         public CartId $id,
+        public CartLineId $lineId,
         public string $productId,
         public Quantity $quantity,
         public \DateTimeImmutable $addedAt,
