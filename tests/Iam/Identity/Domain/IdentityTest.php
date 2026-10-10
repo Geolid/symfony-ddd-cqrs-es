@@ -64,20 +64,19 @@ final class IdentityTest extends AggregateRootTestCase
         $this->fullName = FullNameFactory::new()->create();
         $this->email = EmailFactory::new()->create();
         $this->reason = ReasonFactory::new()->create();
-        $now = Clock::get()->now();
-        $this->registeredAt = $now;
-        $this->confirmedAt = $now->modify('+1 hour');
+        $this->registeredAt = Clock::get()->now();
+        $this->confirmedAt = $this->registeredAt->modify('+1 hour');
         $this->confirmationCode = FakeCodeChallenger::CODE;
-        $this->fullNameChangedAt = $now->modify('+45 minutes');
-        $this->emailChangeRequestedAt = $now->modify('+50 minutes');
-        $this->emailChangedAt = $now->modify('+55 minutes');
+        $this->fullNameChangedAt = $this->registeredAt->modify('+45 minutes');
+        $this->emailChangeRequestedAt = $this->registeredAt->modify('+50 minutes');
+        $this->emailChangedAt = $this->registeredAt->modify('+55 minutes');
         $this->codeChallenger = new FakeCodeChallenger();
-        $this->suspendedAt = $now->modify('+1 day');
-        $this->reactivatedAt = $now->modify('+2 day');
-        $this->requestedAt = $now->modify('+3 day');
-        $this->cancelledAt = $now->modify('+4 day');
-        $this->erasedAt = $now->modify('+5 day');
-        $this->confirmationRequestedAt = $now->modify('+30 minutes');
+        $this->suspendedAt = $this->registeredAt->modify('+1 day');
+        $this->reactivatedAt = $this->registeredAt->modify('+2 day');
+        $this->requestedAt = $this->registeredAt->modify('+3 day');
+        $this->cancelledAt = $this->registeredAt->modify('+4 day');
+        $this->erasedAt = $this->registeredAt->modify('+5 day');
+        $this->confirmationRequestedAt = $this->registeredAt->modify('+30 minutes');
     }
 
     #[Test]
@@ -112,7 +111,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered(), $this->confirmed())
-            ->when(fn (Identity $identity) => $identity->confirm($this->confirmationCode, $this->codeChallenger, Clock::get()->now()->modify('+1 hour')))
+            ->when(fn (Identity $identity) => $identity->confirm($this->confirmationCode, $this->codeChallenger, $this->confirmedAt))
             ->then();
     }
 
@@ -411,7 +410,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered(), $this->erasureRequested())
-            ->when(static fn (Identity $identity) => $identity->requestErasure(Clock::get()->now()->modify('+3 day')))
+            ->when(fn (Identity $identity) => $identity->requestErasure($this->requestedAt))
             ->then();
     }
 
@@ -429,7 +428,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered())
-            ->when(static fn (Identity $identity) => $identity->cancelErasure(Clock::get()->now()->modify('+4 day')))
+            ->when(fn (Identity $identity) => $identity->cancelErasure($this->cancelledAt))
             ->then();
     }
 
@@ -447,7 +446,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered())
-            ->when(static fn (Identity $identity) => $identity->erase(Clock::get()->now()->modify('+5 day')))
+            ->when(fn (Identity $identity) => $identity->erase($this->erasedAt))
             ->then();
     }
 
@@ -460,7 +459,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->erasureRequested(),
                 $this->erased(),
             )
-            ->when(static fn (Identity $identity) => $identity->erase(Clock::get()->now()->modify('+5 day')))
+            ->when(fn (Identity $identity) => $identity->erase($this->erasedAt))
             ->then();
     }
 
@@ -478,7 +477,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered(), $this->confirmed())
-            ->when(static fn (Identity $identity) => $identity->erasePending(Clock::get()->now()->modify('+5 day')))
+            ->when(fn (Identity $identity) => $identity->erasePending($this->erasedAt))
             ->then();
     }
 
@@ -500,7 +499,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->erasureRequested(),
                 $this->erased(),
             )
-            ->when(static fn (Identity $identity) => $identity->erasePending(Clock::get()->now()->modify('+5 day')))
+            ->when(fn (Identity $identity) => $identity->erasePending($this->erasedAt))
             ->then();
     }
 

@@ -34,9 +34,8 @@ final class ProductTest extends AggregateRootTestCase
         $this->id = ProductIdFactory::new()->create();
         $this->label = LabelFactory::new()->create();
         $this->unitPrice = MoneyFactory::new()->create();
-        $now = Clock::get()->now();
-        $this->listedAt = $now;
-        $this->delistedAt = $now->modify('+2 day');
+        $this->listedAt = Clock::get()->now();
+        $this->delistedAt = $this->listedAt->modify('+2 day');
     }
 
     #[Test]
@@ -89,7 +88,7 @@ final class ProductTest extends AggregateRootTestCase
                 $this->listed(),
                 $this->delisted(),
             )
-            ->when(static fn (Product $product) => $product->delist(Clock::get()->now()->modify('+2 day')))
+            ->when(fn (Product $product) => $product->delist($this->delistedAt))
             ->then();
     }
 
