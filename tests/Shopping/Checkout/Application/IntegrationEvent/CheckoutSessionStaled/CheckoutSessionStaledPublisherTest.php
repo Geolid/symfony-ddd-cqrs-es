@@ -23,9 +23,6 @@ final class CheckoutSessionStaledPublisherTest extends AbstractIntegrationTestCa
         // Then
         $event = $this->publishedEventOf(CheckoutSessionStaledIntegrationEvent::class);
         self::assertSame($checkoutSession->id->toString(), $event->checkoutSessionId);
-        self::assertSame(
-            $checkoutSession->staledAt?->format(\DateTimeInterface::ATOM),
-            $event->staledAt->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDate($checkoutSession->staledAt, $event->staledAt);
     }
 }

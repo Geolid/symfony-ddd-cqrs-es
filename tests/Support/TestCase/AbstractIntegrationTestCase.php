@@ -9,6 +9,7 @@ use Symfony\Bundle\FrameworkBundle\Test\KernelTestCase;
 
 abstract class AbstractIntegrationTestCase extends KernelTestCase
 {
+    use AssertionTrait;
     use CqrsTrait;
     use EventSourcingTrait;
     use ServiceLocatorTrait;

@@ -24,6 +24,6 @@ final class OrderFailedPublisherTest extends AbstractIntegrationTestCase
         $event = $this->publishedEventOf(OrderFailedIntegrationEvent::class);
         self::assertSame($order->id->toString(), $event->orderId);
         self::assertSame($order->customerId, $event->customerId);
-        self::assertSame($order->failedAt?->format(\DateTimeInterface::ATOM), $event->failedAt->format(\DateTimeInterface::ATOM));
+        self::assertSameDate($order->failedAt, $event->failedAt);
     }
 }

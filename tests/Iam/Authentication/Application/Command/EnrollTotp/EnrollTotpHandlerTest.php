@@ -35,10 +35,7 @@ final class EnrollTotpHandlerTest extends AbstractIntegrationTestCase
         $result = $this->service(TotpCredentialFinderInterface::class)->ofId($id);
         self::assertSame($id, $result->id);
         self::assertSame($identityId, $result->identityId);
-        self::assertSame(
-            $now->format(\DateTimeInterface::ATOM),
-            $result->enrolledAt->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDate($now, $result->enrolledAt);
         self::assertFalse($result->unenrolled);
         self::assertNull($result->unenrolledAt);
 

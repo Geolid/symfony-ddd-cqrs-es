@@ -39,10 +39,7 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertNotNull($found);
         self::assertSame($customer->id->toString(), $found->id);
-        self::assertSame(
-            $customer->registeredAt->format(\DateTimeInterface::ATOM),
-            $found->registeredAt->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDate($customer->registeredAt, $found->registeredAt);
         self::assertNotNull($found->shippingAddress);
         \assert(null !== $customer->shippingAddress);
         self::assertSame(PostalAddressMapper::toArray($customer->shippingAddress), PostalAddressResultMapper::toArray($found->shippingAddress));

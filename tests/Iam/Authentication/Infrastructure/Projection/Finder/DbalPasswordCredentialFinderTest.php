@@ -53,14 +53,8 @@ final class DbalPasswordCredentialFinderTest extends AbstractIntegrationTestCase
         self::assertNotNull($result);
         self::assertSame($credential->id->toString(), $result->id);
         self::assertSame($credential->identityId, $result->identityId);
-        self::assertSame(
-            $credential->definedAt->format(\DateTimeInterface::ATOM),
-            $result->definedAt->format(\DateTimeInterface::ATOM),
-        );
-        self::assertSame(
-            $credential->definedAt->format(\DateTimeInterface::ATOM),
-            $result->changedAt->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDate($credential->definedAt, $result->definedAt);
+        self::assertSameDate($credential->definedAt, $result->changedAt);
         self::assertSame($this->hasher->hash($password), $result->passwordHash);
 
         self::assertNull($nothing);

@@ -88,10 +88,7 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
         self::assertSame(PostalAddressMapper::toArray($customer->shippingAddress), PostalAddressMapper::toArray($result->shippingAddress));
         self::assertNotNull($customer->billingAddress);
         self::assertSame(PostalAddressMapper::toArray($customer->billingAddress), PostalAddressMapper::toArray($result->billingAddress));
-        self::assertSame(
-            Clock::get()->now()->modify('+30 minutes')->format(\DateTimeInterface::ATOM),
-            $result->expiresAt->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDate(Clock::get()->now()->modify('+30 minutes'), $result->expiresAt);
         $event = $this->publishedEventOf(CheckoutSessionOpened::class);
         self::assertSame($result->checkoutSessionId, $event->id);
     }

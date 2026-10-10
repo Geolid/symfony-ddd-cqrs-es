@@ -23,9 +23,6 @@ final class ErasureRequestedPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(ErasureRequestedIntegrationEvent::class);
         self::assertSame($erasure->identityId, $event->identityId);
-        self::assertSame(
-            $erasure->requestedAt->format(\DateTimeInterface::ATOM),
-            $event->requestedAt->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDate($erasure->requestedAt, $event->requestedAt);
     }
 }

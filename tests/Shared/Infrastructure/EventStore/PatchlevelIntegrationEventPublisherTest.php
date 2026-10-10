@@ -17,10 +17,13 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 use Shared\Infrastructure\EventStore\PatchlevelIntegrationEventPublisher;
+use Support\TestCase\AssertionTrait;
 use Symfony\Component\Clock\Clock;
 
 final class PatchlevelIntegrationEventPublisherTest extends TestCase
 {
+    use AssertionTrait;
+
     private InMemoryStore $store;
     private PatchlevelIntegrationEventPublisher $publisher;
 
@@ -51,10 +54,7 @@ final class PatchlevelIntegrationEventPublisherTest extends TestCase
         self::assertSame('integration.fake_aggregate-aggregate-id', $message->header(StreamNameHeader::class)->streamName);
         self::assertFalse($message->hasHeader(PlayheadHeader::class));
 
-        self::assertSame(
-            $now->format(\DATE_ATOM),
-            $message->header(RecordedOnHeader::class)->recordedOn->format(\DATE_ATOM),
-        );
+        self::assertSameDate($now, $message->header(RecordedOnHeader::class)->recordedOn);
     }
 
     #[Test]

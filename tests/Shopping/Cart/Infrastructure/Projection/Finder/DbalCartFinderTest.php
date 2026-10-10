@@ -39,7 +39,7 @@ final class DbalCartFinderTest extends AbstractIterableFinderTestCase
         self::assertSame($cart->id->toString(), $result->id);
         self::assertSame($cart->customerId, $result->customerId);
         self::assertSame(CartStatus::ACTIVE, $result->status);
-        self::assertSame($cart->startedAt->format('Y-m-d H:i:s'), $result->startedAt->format('Y-m-d H:i:s'));
+        self::assertSameDate($cart->startedAt, $result->startedAt);
     }
 
     #[Test]

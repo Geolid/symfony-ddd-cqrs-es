@@ -47,10 +47,7 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIterableFinderTestCas
         self::assertSame($credential->label->value, $result->label);
         self::assertSame($credential->keyId->value, $result->keyId);
         self::assertFalse($result->revoked);
-        self::assertSame(
-            $credential->issuedAt->format(\DateTimeInterface::ATOM),
-            $result->issuedAt->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDate($credential->issuedAt, $result->issuedAt);
         self::assertNull($result->revokedAt);
         self::assertSame($hasher->hash($secret), $result->secretHash);
     }

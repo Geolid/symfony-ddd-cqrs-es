@@ -23,9 +23,6 @@ final class ProductDelistedPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(ProductDelistedIntegrationEvent::class);
         self::assertSame($product->id->toString(), $event->productId);
-        self::assertSame(
-            $product->delistedAt?->format(\DateTimeInterface::ATOM),
-            $event->delistedAt?->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDate($product->delistedAt, $event->delistedAt);
     }
 }

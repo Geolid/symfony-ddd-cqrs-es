@@ -35,14 +35,8 @@ final class DefinePasswordHandlerTest extends AbstractIntegrationTestCase
         self::assertNotNull($result);
         self::assertSame(PasswordCredentialId::forIdentity($identityId)->toString(), $result->id);
         self::assertSame($identityId, $result->identityId);
-        self::assertSame(
-            $now->format(\DateTimeInterface::ATOM),
-            $result->definedAt->format(\DateTimeInterface::ATOM),
-        );
-        self::assertSame(
-            $now->format(\DateTimeInterface::ATOM),
-            $result->changedAt->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDate($now, $result->definedAt);
+        self::assertSameDate($now, $result->changedAt);
         self::assertNotSame($password, $result->passwordHash);
     }
 
