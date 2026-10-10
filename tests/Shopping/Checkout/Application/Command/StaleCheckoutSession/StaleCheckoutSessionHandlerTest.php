@@ -56,10 +56,13 @@ final class StaleCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $id = CheckoutSessionIdFactory::new()->create()->toString();
+
         // Then
         $this->expectException(CheckoutSessionNotFoundException::class);
 
         // When
-        $this->dispatch(new StaleCheckoutSession(CheckoutSessionIdFactory::new()->create()->toString()));
+        $this->dispatch(new StaleCheckoutSession($id));
     }
 }

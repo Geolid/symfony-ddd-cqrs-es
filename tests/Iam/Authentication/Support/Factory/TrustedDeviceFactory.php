@@ -32,9 +32,9 @@ final class TrustedDeviceFactory extends AbstractAggregateFactory
         return TrustedDevice::class;
     }
 
-    public function withId(string $id): self
+    public function withId(TrustedDeviceId $id): self
     {
-        return $this->with(['id' => TrustedDeviceId::fromString($id)]);
+        return $this->with(['id' => $id]);
     }
 
     public function withIdentityId(string $identityId): self

@@ -27,20 +27,20 @@ final class GetProductHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($product->id->toString(), $result->id);
         self::assertSame($product->label->value, $result->label);
         self::assertSame($product->unitPrice->cents, $result->unitPriceInCents);
-        self::assertSame(
-            $product->listedAt->format(\DateTimeInterface::ATOM),
-            $result->listedAt->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDate($product->listedAt, $result->listedAt);
         self::assertNull($result->repricedAt);
     }
 
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $id = ProductIdFactory::new()->create()->toString();
+
         // Then
         $this->expectException(ProductResultNotFoundException::class);
 
         // When
-        $this->ask(new GetProduct(ProductIdFactory::new()->create()->toString()));
+        $this->ask(new GetProduct($id));
     }
 }

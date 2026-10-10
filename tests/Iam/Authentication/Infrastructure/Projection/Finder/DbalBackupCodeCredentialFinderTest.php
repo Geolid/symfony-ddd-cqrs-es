@@ -42,10 +42,7 @@ final class DbalBackupCodeCredentialFinderTest extends AbstractIntegrationTestCa
         // Then
         self::assertNotNull($result);
         self::assertSame($credential->identityId, $result->identityId);
-        self::assertSame(
-            $credential->generatedAt->format(\DateTimeInterface::ATOM),
-            $result->generatedAt->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDate($credential->generatedAt, $result->generatedAt);
         self::assertNull($result->regeneratedAt);
         self::assertSame(\count($plainBackupCodes), $result->remainingCount);
     }

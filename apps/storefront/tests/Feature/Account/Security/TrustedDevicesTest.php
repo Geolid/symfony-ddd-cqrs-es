@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\Account\Security;
 
-use Iam\Tests\Support\Story\TwoFactorAccountStory;
+use Iam\Tests\Support\Story\AccountTwoFactorStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
 use Symfony\Component\BrowserKit\AbstractBrowser;
@@ -13,15 +13,14 @@ use Zenstruck\Foundry\Attribute\WithStory;
 final class TrustedDevicesTest extends AbstractStorefrontTestCase
 {
     #[Test]
-    #[WithStory(TwoFactorAccountStory::class)]
+    #[WithStory(AccountTwoFactorStory::class)]
     public function itShows(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = TwoFactorAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs(AccountTwoFactorStory::email(), AccountTwoFactorStory::password());
 
-        $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()), trustDevice: true);
+        $browser->completeTwoFactorChallenge($browser->totpCode(AccountTwoFactorStory::totpSecret()), trustDevice: true);
 
         // When
         $browser->visitRoute('storefront_account_security_trusted_devices');
@@ -32,15 +31,14 @@ final class TrustedDevicesTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(TwoFactorAccountStory::class)]
+    #[WithStory(AccountTwoFactorStory::class)]
     public function itRevokesOne(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = TwoFactorAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs(AccountTwoFactorStory::email(), AccountTwoFactorStory::password());
 
-        $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()), trustDevice: true);
+        $browser->completeTwoFactorChallenge($browser->totpCode(AccountTwoFactorStory::totpSecret()), trustDevice: true);
         $browser->visitRoute('storefront_account_security_trusted_devices');
         $browser->interceptRedirects();
 
@@ -53,15 +51,14 @@ final class TrustedDevicesTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(TwoFactorAccountStory::class)]
+    #[WithStory(AccountTwoFactorStory::class)]
     public function itRefusesRevokeWithInvalidCsrfToken(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = TwoFactorAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs(AccountTwoFactorStory::email(), AccountTwoFactorStory::password());
 
-        $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()), trustDevice: true);
+        $browser->completeTwoFactorChallenge($browser->totpCode(AccountTwoFactorStory::totpSecret()), trustDevice: true);
         $browser->visitRoute('storefront_account_security_trusted_devices');
         $browser->interceptRedirects();
 
@@ -77,15 +74,14 @@ final class TrustedDevicesTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(TwoFactorAccountStory::class)]
+    #[WithStory(AccountTwoFactorStory::class)]
     public function itRevokesAll(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = TwoFactorAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs(AccountTwoFactorStory::email(), AccountTwoFactorStory::password());
 
-        $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()), trustDevice: true);
+        $browser->completeTwoFactorChallenge($browser->totpCode(AccountTwoFactorStory::totpSecret()), trustDevice: true);
         $browser->visitRoute('storefront_account_security_trusted_devices');
         $browser->interceptRedirects();
 
@@ -98,15 +94,14 @@ final class TrustedDevicesTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(TwoFactorAccountStory::class)]
+    #[WithStory(AccountTwoFactorStory::class)]
     public function itRefusesRevokeAllWithInvalidCsrfToken(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = TwoFactorAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs(AccountTwoFactorStory::email(), AccountTwoFactorStory::password());
 
-        $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()), trustDevice: true);
+        $browser->completeTwoFactorChallenge($browser->totpCode(AccountTwoFactorStory::totpSecret()), trustDevice: true);
         $browser->visitRoute('storefront_account_security_trusted_devices');
         $browser->interceptRedirects();
 

@@ -31,9 +31,9 @@ final class CartFactory extends AbstractAggregateFactory
         return Cart::class;
     }
 
-    public function withId(string $id): self
+    public function withId(CartId $id): self
     {
-        return $this->with(['id' => CartId::fromString($id)]);
+        return $this->with(['id' => $id]);
     }
 
     public function withCustomerId(string $customerId): self

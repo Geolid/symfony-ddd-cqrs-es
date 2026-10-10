@@ -51,7 +51,7 @@ final class PatchlevelApiKeyCredentialRepositoryTest extends AbstractIntegration
         // Given
         $credential = ApiKeyCredentialFactory::new()->withHasher($this->hasher)->create();
         $this->store($credential);
-        $duplicate = ApiKeyCredentialFactory::new()->withHasher($this->hasher)->withId($credential->id->toString())->create();
+        $duplicate = ApiKeyCredentialFactory::new()->withHasher($this->hasher)->withId($credential->id)->create();
 
         // Then
         $this->expectException(ApiKeyCredentialAlreadyExistsException::class);

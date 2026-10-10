@@ -26,9 +26,6 @@ final class IdentityRegisteredPublisherTest extends AbstractIntegrationTestCase
         self::assertSame($identity->id->toString(), $event->identityId);
         self::assertSame($identity->fullName->value, $event->fullName);
         self::assertSame($identity->email->value, $event->email);
-        self::assertSame(
-            $identity->registeredAt->format(\DateTimeInterface::ATOM),
-            $event->registeredAt->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDate($identity->registeredAt, $event->registeredAt);
     }
 }

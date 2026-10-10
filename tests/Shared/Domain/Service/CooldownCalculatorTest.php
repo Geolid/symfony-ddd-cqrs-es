@@ -7,10 +7,13 @@ namespace Shared\Tests\Domain\Service;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Shared\Domain\Service\CooldownCalculator;
+use Support\TestCase\AssertionTrait;
 use Symfony\Component\Clock\Clock;
 
 final class CooldownCalculatorTest extends TestCase
 {
+    use AssertionTrait;
+
     #[Test]
     public function itCalculatesRetryAt(): void
     {
@@ -22,10 +25,7 @@ final class CooldownCalculatorTest extends TestCase
         $retryAt = $calculator->retryAt($lastRequestedAt);
 
         // Then
-        self::assertSame(
-            $lastRequestedAt->modify('+60 seconds')->format(\DateTimeInterface::ATOM),
-            $retryAt->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDate($lastRequestedAt->modify('+60 seconds'), $retryAt);
     }
 
     #[Test]
@@ -39,9 +39,6 @@ final class CooldownCalculatorTest extends TestCase
         $retryAt = $calculator->retryAt($lastRequestedAt);
 
         // Then
-        self::assertSame(
-            $lastRequestedAt->modify(CooldownCalculator::DEFAULT_COOLDOWN)->format(\DateTimeInterface::ATOM),
-            $retryAt->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDate($lastRequestedAt->modify(CooldownCalculator::DEFAULT_COOLDOWN), $retryAt);
     }
 }

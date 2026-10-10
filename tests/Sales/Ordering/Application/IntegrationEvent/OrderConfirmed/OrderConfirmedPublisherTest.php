@@ -29,6 +29,6 @@ final class OrderConfirmedPublisherTest extends AbstractIntegrationTestCase
         self::assertSame($order->customerId, $event->customerId);
         self::assertSame($order->checkoutSessionId, $event->checkoutSessionId);
         self::assertSame($shippingAddress, $event->shippingAddress);
-        self::assertSame($order->confirmedAt->format(\DateTimeInterface::ATOM), $event->confirmedAt->format(\DateTimeInterface::ATOM));
+        self::assertSameDate($order->confirmedAt, $event->confirmedAt);
     }
 }

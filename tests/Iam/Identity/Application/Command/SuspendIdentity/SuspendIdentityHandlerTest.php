@@ -47,14 +47,8 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($identity->id->toString(), $result->id);
         self::assertSame(IdentityModerationStatus::SUSPENDED, $result->moderationStatus);
         self::assertSame($reason, $result->reason);
-        self::assertSame(
-            $identity->registeredAt->format(\DateTimeInterface::ATOM),
-            $result->registeredAt->format(\DateTimeInterface::ATOM),
-        );
-        self::assertSame(
-            $now->format(\DateTimeInterface::ATOM),
-            $result->suspendedAt?->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDate($identity->registeredAt, $result->registeredAt);
+        self::assertSameDate($now, $result->suspendedAt);
         self::assertNull($result->reactivatedAt);
     }
 
@@ -78,12 +72,12 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadySuspended(): void
     {
         // Given
-        $reason = ReasonFactory::new()->create()->value;
+        $reason = ReasonFactory::new()->create();
         $identity = IdentityFactory::new()->confirmed()->suspended($reason)->create();
         $this->store($identity);
 
         // When
-        $this->dispatch(new SuspendIdentity($identity->id->toString(), $reason));
+        $this->dispatch(new SuspendIdentity($identity->id->toString(), $reason->value));
 
         // Then
         self::expectNotToPerformAssertions();

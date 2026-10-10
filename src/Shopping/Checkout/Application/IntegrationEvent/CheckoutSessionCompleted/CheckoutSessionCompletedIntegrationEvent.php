@@ -8,7 +8,8 @@ use Patchlevel\EventSourcing\Attribute\Event;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\DataSubjectId;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
-use Shared\Domain\Pii\ErasedFieldSentinel;
+use Shared\Application\Mapper\PostalAddressMapper;
+use Shared\Domain\Pii\ErasedPostalAddress;
 
 #[Event('integration.shopping.checkout.checkout_session.completed')]
 final readonly class CheckoutSessionCompletedIntegrationEvent implements IntegrationEventInterface
@@ -25,15 +26,13 @@ final readonly class CheckoutSessionCompletedIntegrationEvent implements Integra
         public string $customerId,
         public array $items,
         public string $currency,
-        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
-            'recipientName' => 'erased',
-            'address' => ['street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ'],
-        ]))]
+        #[SensitiveData(fallbackCallable: static function (string $subjectId): array {
+            return PostalAddressMapper::toArray((new ErasedPostalAddress())());
+        })]
         public array $shippingAddress,
-        #[SensitiveData(fallbackCallable: new ErasedFieldSentinel([
-            'recipientName' => 'erased',
-            'address' => ['street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ'],
-        ]))]
+        #[SensitiveData(fallbackCallable: static function (string $subjectId): array {
+            return PostalAddressMapper::toArray((new ErasedPostalAddress())());
+        })]
         public array $billingAddress,
         public string $paymentId,
         public \DateTimeImmutable $completedAt,

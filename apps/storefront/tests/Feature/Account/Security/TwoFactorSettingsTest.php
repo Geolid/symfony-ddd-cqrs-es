@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\Account\Security;
 
-use Iam\Tests\Support\Story\TwoFactorWithBackupCodesAccountStory;
+use Iam\Tests\Support\Story\AccountTwoFactorWithBackupCodesStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
 use Symfony\Component\BrowserKit\AbstractBrowser;
@@ -13,15 +13,14 @@ use Zenstruck\Foundry\Attribute\WithStory;
 final class TwoFactorSettingsTest extends AbstractStorefrontTestCase
 {
     #[Test]
-    #[WithStory(TwoFactorWithBackupCodesAccountStory::class)]
+    #[WithStory(AccountTwoFactorWithBackupCodesStory::class)]
     public function itShows(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = TwoFactorWithBackupCodesAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs(AccountTwoFactorWithBackupCodesStory::email(), AccountTwoFactorWithBackupCodesStory::password());
 
-        $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()));
+        $browser->completeTwoFactorChallenge($browser->totpCode(AccountTwoFactorWithBackupCodesStory::totpSecret()));
 
         // When
         $browser->visitRoute('storefront_account_security_two_factor_settings');
@@ -32,15 +31,14 @@ final class TwoFactorSettingsTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(TwoFactorWithBackupCodesAccountStory::class)]
+    #[WithStory(AccountTwoFactorWithBackupCodesStory::class)]
     public function itRegeneratesBackupCodes(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = TwoFactorWithBackupCodesAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs(AccountTwoFactorWithBackupCodesStory::email(), AccountTwoFactorWithBackupCodesStory::password());
 
-        $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()));
+        $browser->completeTwoFactorChallenge($browser->totpCode(AccountTwoFactorWithBackupCodesStory::totpSecret()));
         $browser->visitRoute('storefront_account_security_two_factor_settings');
 
         // When
@@ -52,15 +50,14 @@ final class TwoFactorSettingsTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(TwoFactorWithBackupCodesAccountStory::class)]
+    #[WithStory(AccountTwoFactorWithBackupCodesStory::class)]
     public function itRefusesRegenerateBackupCodesWithInvalidCsrfToken(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = TwoFactorWithBackupCodesAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs(AccountTwoFactorWithBackupCodesStory::email(), AccountTwoFactorWithBackupCodesStory::password());
 
-        $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()));
+        $browser->completeTwoFactorChallenge($browser->totpCode(AccountTwoFactorWithBackupCodesStory::totpSecret()));
         $browser->visitRoute('storefront_account_security_two_factor_settings');
         $browser->interceptRedirects();
 
@@ -76,15 +73,14 @@ final class TwoFactorSettingsTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(TwoFactorWithBackupCodesAccountStory::class)]
+    #[WithStory(AccountTwoFactorWithBackupCodesStory::class)]
     public function itUnenrolls(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = TwoFactorWithBackupCodesAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs(AccountTwoFactorWithBackupCodesStory::email(), AccountTwoFactorWithBackupCodesStory::password());
 
-        $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()));
+        $browser->completeTwoFactorChallenge($browser->totpCode(AccountTwoFactorWithBackupCodesStory::totpSecret()));
         $browser->visitRoute('storefront_account_security_two_factor_settings');
         $browser->interceptRedirects();
 
@@ -97,15 +93,14 @@ final class TwoFactorSettingsTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(TwoFactorWithBackupCodesAccountStory::class)]
+    #[WithStory(AccountTwoFactorWithBackupCodesStory::class)]
     public function itRefusesUnenrollWithInvalidCsrfToken(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = TwoFactorWithBackupCodesAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs(AccountTwoFactorWithBackupCodesStory::email(), AccountTwoFactorWithBackupCodesStory::password());
 
-        $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()));
+        $browser->completeTwoFactorChallenge($browser->totpCode(AccountTwoFactorWithBackupCodesStory::totpSecret()));
         $browser->visitRoute('storefront_account_security_two_factor_settings');
         $browser->interceptRedirects();
 

@@ -19,18 +19,18 @@ final class GetShipmentByTrackingNumberHandlerTest extends AbstractIntegrationTe
     {
         // Given
         $other = ShipmentFactory::new()->prepared()->manifested()->dispatched()->create();
-        $trackingNumber = TrackingNumberFactory::new()->create()->value;
+        $trackingNumber = TrackingNumberFactory::new()->create();
         $shipment = ShipmentFactory::new()->prepared()->manifested($trackingNumber)->dispatched()->create();
         $this->store($other, $shipment);
 
         // When
-        $result = $this->ask(new GetShipmentByTrackingNumber($trackingNumber));
+        $result = $this->ask(new GetShipmentByTrackingNumber($trackingNumber->value));
 
         // Then
         self::assertSame($shipment->id->toString(), $result->id);
         self::assertSame($shipment->orderId, $result->orderId);
         self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
-        self::assertSame($trackingNumber, $result->trackingNumber);
+        self::assertSame($trackingNumber->value, $result->trackingNumber);
         self::assertNotNull($result->createdAt);
         self::assertNotNull($result->dispatchedAt);
         self::assertNull($result->deliveredAt);

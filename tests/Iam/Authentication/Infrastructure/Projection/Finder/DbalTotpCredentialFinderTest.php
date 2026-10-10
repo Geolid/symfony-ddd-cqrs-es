@@ -43,10 +43,7 @@ final class DbalTotpCredentialFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertSame($credential->id->toString(), $result->id);
         self::assertSame($credential->identityId, $result->identityId);
-        self::assertSame(
-            $credential->enrolledAt->format(\DateTimeInterface::ATOM),
-            $result->enrolledAt->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDate($credential->enrolledAt, $result->enrolledAt);
         self::assertFalse($result->unenrolled);
         self::assertNull($result->unenrolledAt);
         self::assertSame($this->cipher->encrypt($secret), $result->encryptedSecret);

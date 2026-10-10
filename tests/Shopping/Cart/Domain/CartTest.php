@@ -152,7 +152,7 @@ final class CartTest extends AggregateRootTestCase
     {
         $this
             ->given($this->started(), $this->productAdded(), $this->purchased())
-            ->when(static fn (Cart $cart) => $cart->purchase(Clock::get()->now()->modify('+3 minute')))
+            ->when(fn (Cart $cart) => $cart->purchase($this->purchasedAt))
             ->then();
     }
 

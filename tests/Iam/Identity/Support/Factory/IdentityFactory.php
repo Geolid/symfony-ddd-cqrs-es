@@ -43,19 +43,19 @@ final class IdentityFactory extends AbstractAggregateFactory
         return Identity::class;
     }
 
-    public function withId(string $id): self
+    public function withId(IdentityId $id): self
     {
-        return $this->with(['id' => IdentityIdFactory::new(['id' => $id])]);
+        return $this->with(['id' => $id]);
     }
 
-    public function withFullName(string $fullName): self
+    public function withFullName(FullName $fullName): self
     {
-        return $this->with(['fullName' => FullNameFactory::new(['value' => $fullName])]);
+        return $this->with(['fullName' => $fullName]);
     }
 
-    public function withEmail(string $email): self
+    public function withEmail(Email $email): self
     {
-        return $this->with(['email' => EmailFactory::new(['value' => $email])]);
+        return $this->with(['email' => $email]);
     }
 
     public function withRegisteredAt(\DateTimeImmutable $registeredAt): self
@@ -70,41 +70,41 @@ final class IdentityFactory extends AbstractAggregateFactory
         );
     }
 
-    public function fullNameChanged(string $newFullName, ?\DateTimeImmutable $fullNameChangedAt = null): self
+    public function fullNameChanged(FullName $newFullName, ?\DateTimeImmutable $fullNameChangedAt = null): self
     {
         return $this->with(array_filter(['fullNameChangedAt' => $fullNameChangedAt]))->transition(
-            static fn (Identity $identity, array $inputs) => $identity->changeFullName(FullName::fromString($newFullName), $inputs['fullNameChangedAt']),
+            static fn (Identity $identity, array $inputs) => $identity->changeFullName($newFullName, $inputs['fullNameChangedAt']),
         );
     }
 
-    public function emailChangeRequested(string $newEmail, ?\DateTimeImmutable $requestedAt = null): self
+    public function emailChangeRequested(Email $newEmail, ?\DateTimeImmutable $requestedAt = null): self
     {
         return $this->with(array_filter(['emailChangeRequestedAt' => $requestedAt]))->transition(
-            static fn (Identity $identity, array $inputs) => $identity->requestEmailChange(Email::fromString($newEmail), $inputs['emailChangeRequestedAt']),
+            static fn (Identity $identity, array $inputs) => $identity->requestEmailChange($newEmail, $inputs['emailChangeRequestedAt']),
         );
     }
 
-    public function emailChanged(string $newEmail, ?\DateTimeImmutable $changedAt = null): self
+    public function emailChanged(Email $newEmail, ?\DateTimeImmutable $changedAt = null): self
     {
         return $this->with(array_filter(['emailChangedAt' => $changedAt]))->transition(
-            static fn (Identity $identity, array $inputs) => $identity->changeEmail(FakeCodeChallenger::CODE, new FakeCodeChallenger(), Email::fromString($newEmail), $inputs['emailChangedAt']),
+            static fn (Identity $identity, array $inputs) => $identity->changeEmail(FakeCodeChallenger::CODE, new FakeCodeChallenger(), $newEmail, $inputs['emailChangedAt']),
         );
     }
 
-    public function suspended(?string $reason = null, ?\DateTimeImmutable $suspendedAt = null): self
+    public function suspended(?Reason $reason = null, ?\DateTimeImmutable $suspendedAt = null): self
     {
         return $this->with(array_filter([
-            'reason' => null !== $reason ? Reason::fromString($reason) : null,
+            'reason' => $reason,
             'suspendedAt' => $suspendedAt,
         ]))->transition(
             static fn (Identity $identity, array $inputs) => $identity->suspend($inputs['reason'], $inputs['suspendedAt']),
         );
     }
 
-    public function reactivated(?string $reason = null, ?\DateTimeImmutable $reactivatedAt = null): self
+    public function reactivated(?Reason $reason = null, ?\DateTimeImmutable $reactivatedAt = null): self
     {
         return $this->with(array_filter([
-            'reason' => null !== $reason ? Reason::fromString($reason) : null,
+            'reason' => $reason,
             'reactivatedAt' => $reactivatedAt,
         ]))->transition(
             static fn (Identity $identity, array $inputs) => $identity->reactivate($inputs['reason'], $inputs['reactivatedAt']),

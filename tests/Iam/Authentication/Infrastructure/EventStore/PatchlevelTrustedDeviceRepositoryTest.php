@@ -47,7 +47,7 @@ final class PatchlevelTrustedDeviceRepositoryTest extends AbstractIntegrationTes
         // Given
         $trustedDevice = TrustedDeviceFactory::new()->create();
         $this->store($trustedDevice);
-        $duplicate = TrustedDeviceFactory::new()->withId($trustedDevice->id->toString())->create();
+        $duplicate = TrustedDeviceFactory::new()->withId($trustedDevice->id)->create();
 
         // Then
         $this->expectException(TrustedDeviceAlreadyExistsException::class);

@@ -23,9 +23,6 @@ final class ErasureCancelledPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(ErasureCancelledIntegrationEvent::class);
         self::assertSame($erasure->identityId, $event->identityId);
-        self::assertSame(
-            $erasure->cancelledAt?->format(\DateTimeInterface::ATOM),
-            $event->cancelledAt?->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDate($erasure->cancelledAt, $event->cancelledAt);
     }
 }

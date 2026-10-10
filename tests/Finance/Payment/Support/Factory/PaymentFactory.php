@@ -52,9 +52,9 @@ final class PaymentFactory extends AbstractAggregateFactory
         return $this->with(['amount' => MoneyFactory::new(['cents' => $amountInCents])->create()]);
     }
 
-    public function withReference(string $reference): self
+    public function withReference(PaymentReference $reference): self
     {
-        return $this->with(['reference' => PaymentReference::fromString($reference)]);
+        return $this->with(['reference' => $reference]);
     }
 
     public function withHostedPageUrl(string $hostedPageUrl): self
@@ -126,7 +126,6 @@ final class PaymentFactory extends AbstractAggregateFactory
 
     protected function initialize(): static
     {
-        // The id derives from the FINAL checkoutSessionId, so a with(['checkoutSessionId' => ...]) override carries over.
         return parent::initialize()->beforeInstantiate(static function (array $parameters): array {
             Assert::string($parameters['checkoutSessionId']);
             $parameters['id'] ??= PaymentId::forCheckoutSession($parameters['checkoutSessionId']);

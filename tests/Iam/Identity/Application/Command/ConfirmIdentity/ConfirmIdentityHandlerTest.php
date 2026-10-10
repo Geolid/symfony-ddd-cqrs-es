@@ -63,11 +63,14 @@ final class ConfirmIdentityHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $id = IdentityIdFactory::new()->create()->toString();
+
         // Then
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new ConfirmIdentity(IdentityIdFactory::new()->create()->toString(), '123456'));
+        $this->dispatch(new ConfirmIdentity($id, '123456'));
     }
 
     #[Test]

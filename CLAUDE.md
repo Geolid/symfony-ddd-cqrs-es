@@ -22,6 +22,7 @@ castor sh [-- <cmd>]                               # shell, or run a command, in
 castor cc [--app-id=<dm>]                          # cache clear + warmup (default: all DMs)
 castor docker:logs [<service>] [-- <logs args>]    # tail a service's logs
 castor db:reset                                    # wipe + fresh DB
+castor demo:fixtures                               # wipe + fresh DB + demo data
 castor qa:cs[:php|:twig] [--fix] [<path>]          # coding standards (targeted)
 castor qa:stan [--app-id=<dm>] [<path>]            # PHPStan (targeted)
 castor qa:deptrac [--scope=<scope>]                # architecture boundaries (targeted)

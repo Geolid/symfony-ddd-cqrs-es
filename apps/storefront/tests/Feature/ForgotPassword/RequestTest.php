@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Storefront\Tests\Feature\ForgotPassword;
 
 use Iam\Tests\Identity\Support\Factory\EmailFactory;
-use Iam\Tests\Support\Story\ConfirmedAccountStory;
-use Iam\Tests\Support\Story\RegisteredAccountStory;
-use Iam\Tests\Support\Story\SuspendedAccountStory;
+use Iam\Tests\Support\Story\AccountConfirmedStory;
+use Iam\Tests\Support\Story\AccountRegisteredStory;
+use Iam\Tests\Support\Story\AccountSuspendedStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\ForgotPassword\Component\RequestForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
@@ -30,42 +30,40 @@ final class RequestTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(RegisteredAccountStory::class)]
+    #[WithStory(AccountRegisteredStory::class)]
     public function itRedirectsToConfirmWhenUnconfirmed(): void
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $account = RegisteredAccountStory::account();
 
         $browser->visitRoute('storefront_forgot_password_request');
 
         // When
-        $browser->use(static function (RequestForm $request) use ($account): void {
-            $request->fillEmail($account->email)->submit();
+        $browser->use(static function (RequestForm $request): void {
+            $request->fillEmail(AccountRegisteredStory::email())->submit();
         });
 
         // Then
-        $browser->assertRedirectedToRoute('storefront_registration_confirm', ['identityId' => $account->id]);
+        $browser->assertRedirectedToRoute('storefront_registration_confirm', ['identityId' => AccountRegisteredStory::id()]);
     }
 
     #[Test]
-    #[WithStory(ConfirmedAccountStory::class)]
+    #[WithStory(AccountConfirmedStory::class)]
     public function itRedirectsToReset(): void
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $account = ConfirmedAccountStory::account();
 
         $browser->visitRoute('storefront_forgot_password_request');
 
         // When
-        $browser->use(static function (RequestForm $request) use ($account): void {
-            $request->fillEmail($account->email)->submit();
+        $browser->use(static function (RequestForm $request): void {
+            $request->fillEmail(AccountConfirmedStory::email())->submit();
         });
 
         // Then
-        $browser->assertRedirectedToRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
-        $this->assertEmailSent(1, $account->email, 'Reset your password');
+        $browser->assertRedirectedToRoute('storefront_forgot_password_reset', ['identityId' => AccountConfirmedStory::id()]);
+        $this->assertEmailSent(1, AccountConfirmedStory::email(), 'Reset your password');
     }
 
     #[Test]
@@ -87,18 +85,17 @@ final class RequestTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(SuspendedAccountStory::class)]
+    #[WithStory(AccountSuspendedStory::class)]
     public function itRejectsSuspendedAccount(): void
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $account = SuspendedAccountStory::account();
 
         $browser->visitRoute('storefront_forgot_password_request');
 
         // When
-        $browser->use(static function (RequestForm $request) use ($account): void {
-            $request->fillEmail($account->email)->submit();
+        $browser->use(static function (RequestForm $request): void {
+            $request->fillEmail(AccountSuspendedStory::email())->submit();
         });
 
         // Then

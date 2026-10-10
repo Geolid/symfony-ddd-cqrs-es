@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Shopping\Tests\Checkout\Infrastructure\EventStore;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
@@ -27,12 +28,11 @@ final class PatchlevelCheckoutSessionRepositoryTest extends AbstractIntegrationT
     }
 
     #[Test]
-    public function itSavesAndLoads(): void
+    #[DataProvider('provideLifecycle')]
+    public function itSavesAndLoads(CheckoutSessionFactory $factory): void
     {
         // Given
-        $checkoutSession = CheckoutSessionFactory::new()
-            ->completed()
-            ->create();
+        $checkoutSession = $factory->create();
 
         // When
         $this->repository->save($checkoutSession);
@@ -40,6 +40,16 @@ final class PatchlevelCheckoutSessionRepositoryTest extends AbstractIntegrationT
 
         // Then
         self::assertSame($this->propertiesOf($checkoutSession), $this->propertiesOf($loaded));
+    }
+
+    /**
+     * @return iterable<string, array{CheckoutSessionFactory}>
+     */
+    public static function provideLifecycle(): iterable
+    {
+        yield 'completed' => [CheckoutSessionFactory::new()->completed()];
+        yield 'expired' => [CheckoutSessionFactory::new()->expired()];
+        yield 'staled' => [CheckoutSessionFactory::new()->staled()];
     }
 
     #[Test]
@@ -50,7 +60,7 @@ final class PatchlevelCheckoutSessionRepositoryTest extends AbstractIntegrationT
             ->create();
         $this->store($checkoutSession);
         $duplicate = CheckoutSessionFactory::new()
-            ->withId($checkoutSession->id->toString())
+            ->withId($checkoutSession->id)
             ->create();
 
         // Then

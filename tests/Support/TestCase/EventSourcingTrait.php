@@ -6,6 +6,7 @@ namespace Support\TestCase;
 
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Repository\RepositoryManager;
+use Patchlevel\EventSourcing\Store\Header\StreamNameHeader;
 use Patchlevel\EventSourcing\Store\Store;
 
 trait EventSourcingTrait
@@ -34,8 +35,6 @@ trait EventSourcingTrait
     }
 
     /**
-     * The persisted event of $eventClass, scanning the whole store.
-     *
      * @template T of object
      *
      * @param class-string<T> $eventClass
@@ -56,26 +55,24 @@ trait EventSourcingTrait
     }
 
     /**
-     * The matching event as the event store returns it: decrypted while its subject's cipher key exists,
-     * replaced by its erasure fallback once the key is dropped.
+     * Replaced by its erasure fallback once its subject's cipher key is dropped.
      *
      * @template T of object
      *
-     * @param class-string<T>   $eventClass
-     * @param callable(T): bool $matches
+     * @param class-string<T> $eventClass
      *
      * @return T
      */
-    protected function storedEventOf(string $eventClass, callable $matches): object
+    protected function storedEventOf(string $eventClass, string $aggregateId): object
     {
         foreach ($this->service(Store::class)->load() as $message) {
             $event = $message->event();
 
-            if ($event instanceof $eventClass && $matches($event)) {
+            if ($event instanceof $eventClass && str_ends_with($message->header(StreamNameHeader::class)->streamName, $aggregateId)) {
                 return $event;
             }
         }
 
-        self::fail(\sprintf('%s event not found in the stream.', $eventClass));
+        self::fail(\sprintf('%s event not found for %s.', $eventClass, $aggregateId));
     }
 }

@@ -40,10 +40,7 @@ final class DbalProductFinderTest extends AbstractPaginatableFinderTestCase
         self::assertSame($product->id->toString(), $result->id);
         self::assertSame($product->label->value, $result->label);
         self::assertSame($product->unitPrice->cents, $result->unitPriceInCents);
-        self::assertSame(
-            $product->listedAt->format(\DateTimeInterface::ATOM),
-            $result->listedAt->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDate($product->listedAt, $result->listedAt);
         self::assertNull($result->repricedAt);
     }
 
@@ -119,8 +116,8 @@ final class DbalProductFinderTest extends AbstractPaginatableFinderTestCase
         $smallerId = Uuid::uuid7($now)->toString();
         $largerId = Uuid::uuid7($now->modify('+1 hour'))->toString();
 
-        $first = ProductFactory::new()->withId($largerId)->withListedAt($now)->create();
-        $second = ProductFactory::new()->withId($smallerId)->withListedAt($now->modify('+1 hour'))->create();
+        $first = ProductFactory::new()->withId(ProductIdFactory::new(['id' => $largerId])->create())->withListedAt($now)->create();
+        $second = ProductFactory::new()->withId(ProductIdFactory::new(['id' => $smallerId])->create())->withListedAt($now->modify('+1 hour'))->create();
         $this->store($first, $second);
 
         return [$largerId, $smallerId];

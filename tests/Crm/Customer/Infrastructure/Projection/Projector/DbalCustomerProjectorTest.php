@@ -18,6 +18,8 @@ use Support\TestCase\AbstractIntegrationTestCase;
  */
 final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
 {
+    private const string DATE_FORMAT = 'Y-m-d H:i:s';
+
     #[Test]
     public function itProjectsOnCustomerRegistered(): void
     {
@@ -30,7 +32,7 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($customer->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($customer->registeredAt->format('Y-m-d H:i:s'), $row['registered_at']);
+        self::assertSame($customer->registeredAt->format(self::DATE_FORMAT), $row['registered_at']);
         self::assertSame(ErasureStatus::RETAINED->value, $row['erasure_status']);
     }
 

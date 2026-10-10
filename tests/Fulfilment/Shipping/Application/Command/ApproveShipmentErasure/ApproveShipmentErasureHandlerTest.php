@@ -72,10 +72,13 @@ final class ApproveShipmentErasureHandlerTest extends AbstractIntegrationTestCas
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $id = ShipmentIdFactory::new()->create()->toString();
+
         // Then
         $this->expectException(ShipmentNotFoundException::class);
 
         // When
-        $this->dispatch(new ApproveShipmentErasure(ShipmentIdFactory::new()->create()->toString()));
+        $this->dispatch(new ApproveShipmentErasure($id));
     }
 }

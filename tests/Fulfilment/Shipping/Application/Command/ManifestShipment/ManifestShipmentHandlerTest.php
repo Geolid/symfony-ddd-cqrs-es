@@ -39,10 +39,10 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
         // Given
         $shipment = ShipmentFactory::new()->prepared()->create();
         $this->store($shipment);
-        $trackingNumber = TrackingNumberFactory::new()->create()->value;
+        $trackingNumber = TrackingNumberFactory::new()->create();
 
         // When
-        $this->dispatch(new ManifestShipment($shipment->id->toString(), $trackingNumber));
+        $this->dispatch(new ManifestShipment($shipment->id->toString(), $trackingNumber->value));
 
         // Then
         $result = $this->finder->ofId($shipment->id->toString());
@@ -53,13 +53,13 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWithSameTrackingNumber(): void
     {
         // Given
-        $trackingNumber = TrackingNumberFactory::new()->create()->value;
+        $trackingNumber = TrackingNumberFactory::new()->create();
         $shipment = ShipmentFactory::new()->prepared()->manifested($trackingNumber)->create();
         $this->store($shipment);
-        $this->uniqueness->claim(UniqueKey::for(ShippingUniqueKey::TRACKING_NUMBER), $trackingNumber, $shipment->id->toString());
+        $this->uniqueness->claim(UniqueKey::for(ShippingUniqueKey::TRACKING_NUMBER), $trackingNumber->value, $shipment->id->toString());
 
         // When
-        $this->dispatch(new ManifestShipment($shipment->id->toString(), $trackingNumber));
+        $this->dispatch(new ManifestShipment($shipment->id->toString(), $trackingNumber->value));
 
         // Then
         $result = $this->finder->ofId($shipment->id->toString());
@@ -111,8 +111,8 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenTrackingNumberAlreadyInUse(): void
     {
         // Given
-        $trackingNumber = TrackingNumberFactory::new()->create()->value;
-        $this->uniqueness->claim(UniqueKey::for(ShippingUniqueKey::TRACKING_NUMBER), $trackingNumber, ShipmentFactory::new()->create()->id->toString());
+        $trackingNumber = TrackingNumberFactory::new()->create();
+        $this->uniqueness->claim(UniqueKey::for(ShippingUniqueKey::TRACKING_NUMBER), $trackingNumber->value, ShipmentFactory::new()->create()->id->toString());
         $shipment = ShipmentFactory::new()->prepared()->create();
         $this->store($shipment);
 
@@ -120,6 +120,6 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(ShipmentTrackingNumberAlreadyInUseException::class);
 
         // When
-        $this->dispatch(new ManifestShipment($shipment->id->toString(), $trackingNumber));
+        $this->dispatch(new ManifestShipment($shipment->id->toString(), $trackingNumber->value));
     }
 }

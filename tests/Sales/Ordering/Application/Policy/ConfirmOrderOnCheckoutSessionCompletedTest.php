@@ -7,18 +7,17 @@ namespace Sales\Tests\Ordering\Application\Policy;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
+use Sales\Ordering\Application\Mapper\OrderItemMapper;
 use Sales\Ordering\Application\OrderStatus;
 use Sales\Ordering\Application\Policy\ConfirmOrderOnCheckoutSessionCompleted;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
+use Sales\Tests\Ordering\Support\Factory\OrderItemFactory;
 use Sales\Tests\Ordering\Support\PostalAddressResultMapper;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Tests\Support\Factory\PostalAddressFactory;
 use Shopping\Checkout\Application\IntegrationEvent\CheckoutSessionCompleted\CheckoutSessionCompletedIntegrationEvent;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
-
-use function Zenstruck\Foundry\faker;
 
 final class ConfirmOrderOnCheckoutSessionCompletedTest extends AbstractIntegrationTestCase
 {
@@ -29,23 +28,17 @@ final class ConfirmOrderOnCheckoutSessionCompletedTest extends AbstractIntegrati
         $cartId = Uuid::uuid7()->toString();
         $customerId = Uuid::uuid7()->toString();
         $checkoutSessionId = Uuid::uuid7()->toString();
-        $shippingAddress = PostalAddressMapper::toArray(PostalAddress::of('John Doe', Address::of('1 rue de Paris', '75001', 'Paris', 'FR')));
-        $billingAddress = PostalAddressMapper::toArray(PostalAddress::of('John Doe', Address::of('2 rue de Paris', '75001', 'Paris', 'FR')));
-        $items = [[
-            'productId' => Uuid::uuid7()->toString(),
-            'label' => faker()->sentence(3),
-            'unitPriceInCents' => faker()->numberBetween(500, 5_000),
-            'taxAmountInCents' => faker()->numberBetween(50, 500),
-            'quantity' => faker()->numberBetween(1, 5),
-        ]];
+        $shippingAddress = PostalAddressMapper::toArray(PostalAddressFactory::new()->create());
+        $billingAddress = PostalAddressMapper::toArray(PostalAddressFactory::new()->create());
+        $item = OrderItemFactory::new()->create();
 
         // When
         $this->trigger(ConfirmOrderOnCheckoutSessionCompleted::class, new CheckoutSessionCompletedIntegrationEvent(
             checkoutSessionId: $checkoutSessionId,
             cartId: $cartId,
             customerId: $customerId,
-            items: $items,
-            currency: 'EUR',
+            items: [OrderItemMapper::toArray($item)],
+            currency: $item->taxAmount->currency->value,
             shippingAddress: $shippingAddress,
             billingAddress: $billingAddress,
             paymentId: Uuid::uuid7()->toString(),

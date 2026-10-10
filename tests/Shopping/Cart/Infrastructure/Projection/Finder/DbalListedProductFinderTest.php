@@ -26,7 +26,7 @@ final class DbalListedProductFinderTest extends AbstractIterableFinderTestCase
         $other = ProductFactory::new()->create();
         $label = LabelFactory::new()->create();
         $unitPrice = MoneyFactory::new()->create();
-        $cups = ProductFactory::new()->withLabel($label->value)->withUnitPriceInCents($unitPrice->cents)->create();
+        $cups = ProductFactory::new()->withLabel($label)->withUnitPriceInCents($unitPrice->cents)->create();
         $this->store($other, $cups);
 
         // When

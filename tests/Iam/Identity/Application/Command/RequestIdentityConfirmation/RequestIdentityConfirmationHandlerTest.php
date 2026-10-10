@@ -33,20 +33,20 @@ final class RequestIdentityConfirmationHandlerTest extends AbstractIntegrationTe
         // Then
         $result = $this->service(IdentityFinderInterface::class)->ofId($identity->id->toString());
         self::assertSame(IdentityVerificationStatus::PENDING, $result->verificationStatus);
-        self::assertSame(
-            $now->format(\DateTimeInterface::ATOM),
-            $result->confirmationRequestedAt->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDate($now, $result->confirmationRequestedAt);
     }
 
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $id = IdentityIdFactory::new()->create()->toString();
+
         // Then
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new RequestIdentityConfirmation(IdentityIdFactory::new()->create()->toString()));
+        $this->dispatch(new RequestIdentityConfirmation($id));
     }
 
     #[Test]

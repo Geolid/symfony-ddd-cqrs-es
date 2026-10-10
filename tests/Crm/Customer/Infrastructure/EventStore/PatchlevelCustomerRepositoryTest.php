@@ -12,6 +12,7 @@ use Crm\Tests\Customer\Support\Factory\CustomerFactory;
 use Crm\Tests\Customer\Support\Factory\CustomerIdFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -103,13 +104,7 @@ final class PatchlevelCustomerRepositoryTest extends AbstractIntegrationTestCase
     private function propertiesOf(Customer $customer): array
     {
         $atom = static fn (?\DateTimeImmutable $date): ?string => $date?->format(\DateTimeInterface::ATOM);
-        $address = static fn (?PostalAddress $postalAddress): ?array => null === $postalAddress ? null : [
-            'recipientName' => $postalAddress->recipientName,
-            'street' => $postalAddress->address->street,
-            'postalCode' => $postalAddress->address->postalCode,
-            'city' => $postalAddress->address->city,
-            'countryCode' => $postalAddress->address->countryCode->value,
-        ];
+        $address = static fn (?PostalAddress $postalAddress): ?array => null === $postalAddress ? null : PostalAddressMapper::toArray($postalAddress);
 
         return [
             'id' => $customer->id->toString(),

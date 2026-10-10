@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\Account\Security;
 
-use Iam\Tests\Support\Story\ConfirmedAccountStory;
+use Iam\Tests\Support\Story\AccountConfirmedStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\Account\Security\Component\ChangePasswordForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
@@ -13,20 +13,19 @@ use Zenstruck\Foundry\Attribute\WithStory;
 final class ChangePasswordTest extends AbstractStorefrontTestCase
 {
     #[Test]
-    #[WithStory(ConfirmedAccountStory::class)]
+    #[WithStory(AccountConfirmedStory::class)]
     public function itChanges(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = ConfirmedAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs(AccountConfirmedStory::email(), AccountConfirmedStory::password());
 
         $browser->visitRoute('storefront_account_security_change_password');
         $browser->interceptRedirects();
 
         // When
-        $browser->use(static function (ChangePasswordForm $form) use ($account): void {
-            $form->fillCurrentPassword($account->password())->fillNewPassword('Flamingo-73-Juniper!')->submit();
+        $browser->use(static function (ChangePasswordForm $form): void {
+            $form->fillCurrentPassword(AccountConfirmedStory::password())->fillNewPassword('Flamingo-73-Juniper!')->submit();
         });
 
         // Then
@@ -35,13 +34,12 @@ final class ChangePasswordTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(ConfirmedAccountStory::class)]
+    #[WithStory(AccountConfirmedStory::class)]
     public function itRefusesIncorrectCurrentPassword(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = ConfirmedAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs(AccountConfirmedStory::email(), AccountConfirmedStory::password());
 
         $browser->visitRoute('storefront_account_security_change_password');
 
@@ -57,19 +55,18 @@ final class ChangePasswordTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(ConfirmedAccountStory::class)]
+    #[WithStory(AccountConfirmedStory::class)]
     public function itRefusesSamePassword(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = ConfirmedAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs(AccountConfirmedStory::email(), AccountConfirmedStory::password());
 
         $browser->visitRoute('storefront_account_security_change_password');
 
         // When
-        $browser->use(static function (ChangePasswordForm $form) use ($account): void {
-            $form->fillCurrentPassword($account->password())->fillNewPassword($account->password())->submit();
+        $browser->use(static function (ChangePasswordForm $form): void {
+            $form->fillCurrentPassword(AccountConfirmedStory::password())->fillNewPassword(AccountConfirmedStory::password())->submit();
         });
 
         // Then

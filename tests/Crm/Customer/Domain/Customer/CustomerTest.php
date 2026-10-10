@@ -31,11 +31,10 @@ final class CustomerTest extends AggregateRootTestCase
         parent::setUp();
 
         $this->id = CustomerIdFactory::new()->create();
-        $now = Clock::get()->now();
-        $this->registeredAt = $now;
-        $this->requestedAt = $now->modify('+1 day');
-        $this->cancelledAt = $now->modify('+2 days');
-        $this->erasedAt = $now->modify('+2 day');
+        $this->registeredAt = Clock::get()->now();
+        $this->requestedAt = $this->registeredAt->modify('+1 day');
+        $this->cancelledAt = $this->registeredAt->modify('+2 days');
+        $this->erasedAt = $this->registeredAt->modify('+2 day');
     }
 
     #[Test]
@@ -50,7 +49,7 @@ final class CustomerTest extends AggregateRootTestCase
     #[Test]
     public function itDefinesShippingAddress(): void
     {
-        $definedAt = Clock::get()->now()->modify('+1 day');
+        $definedAt = $this->requestedAt;
         $shippingAddress = PostalAddressFactory::new()->create();
 
         $this
@@ -67,7 +66,7 @@ final class CustomerTest extends AggregateRootTestCase
     public function itDoesNotDefineWhenIdenticalShippingAddress(): void
     {
         $shippingAddress = PostalAddressFactory::new()->create();
-        $definedAt = Clock::get()->now()->modify('+1 day');
+        $definedAt = $this->requestedAt;
 
         $this
             ->given(
@@ -81,7 +80,7 @@ final class CustomerTest extends AggregateRootTestCase
     #[Test]
     public function itDefinesBillingAddress(): void
     {
-        $definedAt = Clock::get()->now()->modify('+1 day');
+        $definedAt = $this->requestedAt;
         $billingAddress = PostalAddressFactory::new()->create();
 
         $this
@@ -98,7 +97,7 @@ final class CustomerTest extends AggregateRootTestCase
     public function itDoesNotDefineWhenIdenticalBillingAddress(): void
     {
         $billingAddress = PostalAddressFactory::new()->create();
-        $definedAt = Clock::get()->now()->modify('+1 day');
+        $definedAt = $this->requestedAt;
 
         $this
             ->given(
@@ -123,7 +122,7 @@ final class CustomerTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered(), $this->erasureRequested())
-            ->when(static fn (Customer $customer) => $customer->requestErasure(Clock::get()->now()->modify('+1 day')))
+            ->when(fn (Customer $customer) => $customer->requestErasure($this->requestedAt))
             ->then();
     }
 
@@ -141,7 +140,7 @@ final class CustomerTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered())
-            ->when(static fn (Customer $customer) => $customer->cancelErasure(Clock::get()->now()->modify('+2 days')))
+            ->when(fn (Customer $customer) => $customer->cancelErasure($this->cancelledAt))
             ->then();
     }
 
@@ -159,7 +158,7 @@ final class CustomerTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered())
-            ->when(static fn (Customer $customer) => $customer->erase(Clock::get()->now()->modify('+2 day')))
+            ->when(fn (Customer $customer) => $customer->erase($this->erasedAt))
             ->then();
     }
 
@@ -168,7 +167,7 @@ final class CustomerTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered(), $this->erasureRequested(), $this->erased())
-            ->when(static fn (Customer $customer) => $customer->erase(Clock::get()->now()->modify('+2 day')))
+            ->when(fn (Customer $customer) => $customer->erase($this->erasedAt))
             ->then();
     }
 

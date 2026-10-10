@@ -68,10 +68,13 @@ final class CancelErasureHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $id = ErasureIdFactory::new()->create()->toString();
+
         // Then
         $this->expectException(ErasureNotFoundException::class);
 
         // When
-        $this->dispatch(new CancelErasure(ErasureIdFactory::new()->create()->toString()));
+        $this->dispatch(new CancelErasure($id));
     }
 }

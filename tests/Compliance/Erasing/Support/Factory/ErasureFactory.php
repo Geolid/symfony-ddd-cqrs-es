@@ -30,9 +30,9 @@ final class ErasureFactory extends AbstractAggregateFactory
         return Erasure::class;
     }
 
-    public function withId(string $id): self
+    public function withId(ErasureId $id): self
     {
-        return $this->with(['id' => ErasureId::fromString($id)]);
+        return $this->with(['id' => $id]);
     }
 
     public function withIdentityId(string $identityId): self

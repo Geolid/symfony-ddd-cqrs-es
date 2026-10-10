@@ -43,10 +43,7 @@ final class PredisVerificationCodeStoreTest extends AbstractIntegrationTestCase
         // Then
         $raw = $this->fetchRaw($this->key);
         self::assertSame('hash-1', $raw['code_hash']);
-        self::assertSame(
-            $expiresAt->format(\DateTimeInterface::ATOM),
-            $this->denormalize($raw['expires_at'])->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDate($expiresAt, $this->denormalize($raw['expires_at']));
         self::assertSame('0', $raw['attempts']);
 
         self::assertSame($expectedTtl, $this->ttl($this->key));
@@ -74,7 +71,7 @@ final class PredisVerificationCodeStoreTest extends AbstractIntegrationTestCase
         // Then
         self::assertNotNull($record);
         self::assertSame('hash-1', $record->codeHash);
-        self::assertSame($expiresAt->format(\DateTimeInterface::ATOM), $record->expiresAt->format(\DateTimeInterface::ATOM));
+        self::assertSameDate($expiresAt, $record->expiresAt);
         self::assertSame(0, $record->attempts);
     }
 
@@ -105,7 +102,7 @@ final class PredisVerificationCodeStoreTest extends AbstractIntegrationTestCase
         $record = $this->store->find($this->key);
         self::assertNotNull($record);
         self::assertSame('hash-2', $record->codeHash);
-        self::assertSame($newExpiresAt->format(\DateTimeInterface::ATOM), $record->expiresAt->format(\DateTimeInterface::ATOM));
+        self::assertSameDate($newExpiresAt, $record->expiresAt);
         self::assertSame(0, $record->attempts);
 
         $otherRecord = $this->store->find($this->otherKey);

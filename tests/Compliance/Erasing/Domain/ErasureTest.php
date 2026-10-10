@@ -30,10 +30,9 @@ final class ErasureTest extends AggregateRootTestCase
 
         $this->id = ErasureIdFactory::new()->create();
         $this->identityId = Uuid::uuid7()->toString();
-        $now = Clock::get()->now();
-        $this->requestedAt = $now;
-        $this->cancelledAt = $now->modify('+1 hour');
-        $this->approvedAt = $now->modify(\sprintf('+%d days', ErasureRetentionExpiredSpecification::DAYS + 1));
+        $this->requestedAt = Clock::get()->now();
+        $this->cancelledAt = $this->requestedAt->modify('+1 hour');
+        $this->approvedAt = $this->requestedAt->modify(\sprintf('+%d days', ErasureRetentionExpiredSpecification::DAYS + 1));
     }
 
     #[Test]
@@ -59,7 +58,7 @@ final class ErasureTest extends AggregateRootTestCase
     {
         $this
             ->given($this->requested(), $this->cancelled())
-            ->when(static fn (Erasure $erasure) => $erasure->cancel(Clock::get()->now()->modify('+1 hour')))
+            ->when(fn (Erasure $erasure) => $erasure->cancel($this->cancelledAt))
             ->then();
     }
 

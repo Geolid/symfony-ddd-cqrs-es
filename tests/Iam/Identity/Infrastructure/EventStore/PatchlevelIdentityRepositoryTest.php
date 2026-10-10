@@ -8,6 +8,8 @@ use Iam\Identity\Domain\Exception\IdentityAlreadyExistsException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Identity;
 use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
+use Iam\Tests\Identity\Support\Factory\EmailFactory;
+use Iam\Tests\Identity\Support\Factory\FullNameFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -29,11 +31,17 @@ final class PatchlevelIdentityRepositoryTest extends AbstractIntegrationTestCase
     {
         // Given
         $identity = IdentityFactory::new()
+            ->confirmationRequested()
             ->confirmed()
-            ->fullNameChanged('Jane Doe')
-            ->emailChangeRequested('jane.doe@example.com')
+            ->fullNameChanged(FullNameFactory::new()->create())
+            ->emailChangeRequested(EmailFactory::new()->create())
+            ->emailChanged(EmailFactory::new()->create())
             ->suspended()
+            ->reactivated()
             ->erasureRequested()
+            ->erasureCancelled()
+            ->erasureRequested()
+            ->erased()
             ->create();
 
         // When
@@ -60,7 +68,7 @@ final class PatchlevelIdentityRepositoryTest extends AbstractIntegrationTestCase
         // Given
         $identity = IdentityFactory::new()->create();
         $this->store($identity);
-        $duplicate = IdentityFactory::new()->withId($identity->id->toString())->create();
+        $duplicate = IdentityFactory::new()->withId($identity->id)->create();
 
         // Then
         $this->expectException(IdentityAlreadyExistsException::class);

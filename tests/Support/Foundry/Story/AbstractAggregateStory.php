@@ -8,16 +8,13 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Repository\RepositoryManager;
 use Zenstruck\Foundry\Story;
 
-/**
- * A Story spans aggregates of any BC: persists through the same generic entry point as EventSourcingTrait::store().
- */
 abstract class AbstractAggregateStory extends Story
 {
     public function __construct(private readonly RepositoryManager $repositories)
     {
     }
 
-    final protected function persist(AggregateRoot ...$aggregates): void
+    final protected function store(AggregateRoot ...$aggregates): void
     {
         foreach ($aggregates as $aggregate) {
             $this->repositories->get($aggregate::class)->save($aggregate);

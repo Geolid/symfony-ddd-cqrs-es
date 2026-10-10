@@ -12,8 +12,7 @@ use Crm\Tests\Customer\Support\Factory\CustomerFactory;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Domain\Pii\ErasedPostalAddress;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
@@ -38,13 +37,10 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
 
         // When
         $this->cipherKeyStore->removeWithSubjectId($customer->id->toString());
-        $erased = $this->storedEventOf(
-            CustomerShippingAddressDefined::class,
-            static fn (CustomerShippingAddressDefined $event): bool => $event->id->equals($customer->id),
-        );
 
         // Then
-        self::assertSame($this->erasedPostalAddress(), PostalAddressMapper::toArray($erased->postalAddress));
+        $erased = $this->storedEventOf(CustomerShippingAddressDefined::class, $customer->id->toString());
+        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())()), PostalAddressMapper::toArray($erased->postalAddress));
     }
 
     #[Test]
@@ -58,13 +54,10 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
 
         // When
         $this->cipherKeyStore->removeWithSubjectId($customer->id->toString());
-        $erased = $this->storedEventOf(
-            CustomerBillingAddressDefined::class,
-            static fn (CustomerBillingAddressDefined $event): bool => $event->id->equals($customer->id),
-        );
 
         // Then
-        self::assertSame($this->erasedPostalAddress(), PostalAddressMapper::toArray($erased->postalAddress));
+        $erased = $this->storedEventOf(CustomerBillingAddressDefined::class, $customer->id->toString());
+        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())()), PostalAddressMapper::toArray($erased->postalAddress));
     }
 
     #[Test]
@@ -76,13 +69,10 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
 
         // When
         $this->cipherKeyStore->removeWithSubjectId($customer->id->toString());
-        $erased = $this->storedEventOf(
-            CustomerShippingAddressDefinedIntegrationEvent::class,
-            static fn (CustomerShippingAddressDefinedIntegrationEvent $event): bool => $event->customerId === $customer->id->toString(),
-        );
 
         // Then
-        self::assertSame($this->erasedPostalAddress(), $erased->postalAddress);
+        $erased = $this->storedEventOf(CustomerShippingAddressDefinedIntegrationEvent::class, $customer->id->toString());
+        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())()), $erased->postalAddress);
     }
 
     #[Test]
@@ -94,20 +84,9 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
 
         // When
         $this->cipherKeyStore->removeWithSubjectId($customer->id->toString());
-        $erased = $this->storedEventOf(
-            CustomerBillingAddressDefinedIntegrationEvent::class,
-            static fn (CustomerBillingAddressDefinedIntegrationEvent $event): bool => $event->customerId === $customer->id->toString(),
-        );
 
         // Then
-        self::assertSame($this->erasedPostalAddress(), $erased->postalAddress);
-    }
-
-    /**
-     * @return array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}}
-     */
-    private function erasedPostalAddress(): array
-    {
-        return PostalAddressMapper::toArray(PostalAddress::of('erased', Address::of('erased', '00000', 'erased', 'ZZ')));
+        $erased = $this->storedEventOf(CustomerBillingAddressDefinedIntegrationEvent::class, $customer->id->toString());
+        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())()), $erased->postalAddress);
     }
 }

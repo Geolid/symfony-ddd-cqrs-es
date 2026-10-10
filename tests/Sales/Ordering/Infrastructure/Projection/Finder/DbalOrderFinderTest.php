@@ -52,10 +52,10 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
         self::assertSame($total->includingTax->cents, $result->totalIncludingTaxInCents);
         self::assertSame($total->excludingTax->currency->value, $result->currency);
         self::assertSame(OrderStatus::DELIVERED, $result->status);
-        self::assertSame($order->confirmedAt->format('Y-m-d H:i:s'), $result->confirmedAt->format('Y-m-d H:i:s'));
-        self::assertSame($order->preparedAt?->format('Y-m-d H:i:s'), $result->preparedAt?->format('Y-m-d H:i:s'));
-        self::assertSame($order->dispatchedAt?->format('Y-m-d H:i:s'), $result->dispatchedAt?->format('Y-m-d H:i:s'));
-        self::assertSame($order->deliveredAt?->format('Y-m-d H:i:s'), $result->deliveredAt?->format('Y-m-d H:i:s'));
+        self::assertSameDate($order->confirmedAt, $result->confirmedAt);
+        self::assertSameDate($order->preparedAt, $result->preparedAt);
+        self::assertSameDate($order->dispatchedAt, $result->dispatchedAt);
+        self::assertSameDate($order->deliveredAt, $result->deliveredAt);
         self::assertNull($result->cancelledAt);
         self::assertNull($result->failedAt);
         self::assertSame(ErasureStatus::RETAINED, $result->erasureStatus);

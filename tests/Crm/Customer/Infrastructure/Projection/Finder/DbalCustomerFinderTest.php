@@ -34,15 +34,11 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
 
         // When
         $found = $this->finder->ofIdOrNull($customer->id->toString());
-        $notFound = $this->finder->ofIdOrNull(Uuid::uuid7()->toString());
 
         // Then
         self::assertNotNull($found);
         self::assertSame($customer->id->toString(), $found->id);
-        self::assertSame(
-            $customer->registeredAt->format(\DateTimeInterface::ATOM),
-            $found->registeredAt->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDate($customer->registeredAt, $found->registeredAt);
         self::assertNotNull($found->shippingAddress);
         \assert(null !== $customer->shippingAddress);
         self::assertSame(PostalAddressMapper::toArray($customer->shippingAddress), PostalAddressResultMapper::toArray($found->shippingAddress));
@@ -50,7 +46,19 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
         \assert(null !== $customer->billingAddress);
         self::assertSame(PostalAddressMapper::toArray($customer->billingAddress), PostalAddressResultMapper::toArray($found->billingAddress));
         self::assertSame(ErasureStatus::RETAINED, $found->erasureStatus);
-        self::assertNull($notFound);
+    }
+
+    #[Test]
+    public function itFindsNothing(): void
+    {
+        // Given
+        $id = Uuid::uuid7()->toString();
+
+        // When
+        $result = $this->finder->ofIdOrNull($id);
+
+        // Then
+        self::assertNull($result);
     }
 
     #[Test]

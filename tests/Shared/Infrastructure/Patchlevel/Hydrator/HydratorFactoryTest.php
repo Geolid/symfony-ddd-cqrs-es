@@ -11,10 +11,13 @@ use Shared\Infrastructure\Patchlevel\Hydrator\HydratorFactory;
 use Shared\Infrastructure\Patchlevel\Hydrator\Metadata\SnakeCaseFieldNameEnricher;
 use Shared\Infrastructure\Patchlevel\Hydrator\Metadata\TypeBasedNormalizerEnricher;
 use Shared\Tests\Support\Double\DummyHydratable;
+use Support\TestCase\AssertionTrait;
 use Symfony\Component\Clock\Clock;
 
 final class HydratorFactoryTest extends TestCase
 {
+    use AssertionTrait;
+
     private const string DATE_FORMAT = 'Y-m-d H:i:s';
 
     private StackHydrator $hydrator;
@@ -37,10 +40,7 @@ final class HydratorFactoryTest extends TestCase
 
         // Then
         self::assertNotNull($object->dateTime);
-        self::assertSame(
-            $at->format(self::DATE_FORMAT),
-            $object->dateTime->format(self::DATE_FORMAT),
-        );
+        self::assertSameDate($at, $object->dateTime);
     }
 
     #[Test]

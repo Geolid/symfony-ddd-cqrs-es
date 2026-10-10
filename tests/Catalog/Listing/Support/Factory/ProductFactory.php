@@ -33,14 +33,14 @@ final class ProductFactory extends AbstractAggregateFactory
         return Product::class;
     }
 
-    public function withId(string $id): self
+    public function withId(ProductId $id): self
     {
-        return $this->with(['id' => ProductId::fromString($id)]);
+        return $this->with(['id' => $id]);
     }
 
-    public function withLabel(string $label): self
+    public function withLabel(Label $label): self
     {
-        return $this->with(['label' => Label::fromString($label)]);
+        return $this->with(['label' => $label]);
     }
 
     public function withUnitPriceInCents(int $unitPriceInCents): self
