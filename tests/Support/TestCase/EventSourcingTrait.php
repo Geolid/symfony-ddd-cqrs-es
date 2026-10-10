@@ -93,7 +93,7 @@ trait EventSourcingTrait
      */
     private function firstStoredEventIn(string $eventClass, string $streamName): object
     {
-        $stream = $this->service(Store::class)->load(CriteriaBuilder::create()->streamName($streamName)->build());
+        $stream = $this->service(Store::class)->load((new CriteriaBuilder())->streamName($streamName)->build());
 
         foreach ($stream as $message) {
             $event = $message->event();
