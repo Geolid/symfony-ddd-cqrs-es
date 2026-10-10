@@ -10,8 +10,3 @@ parameters:
 
     symfony:
         containerXmlPath: %currentWorkingDirectory%/var/cache/%env.APP_ENV%/Bootstrap_Kernel%env.APP_ENV_UCFIRST%DebugContainer.xml
-
-    faker:
-        providerClasses:
-            - Support\Faker\CountryCodeFakerProvider
-            - Support\Faker\CredentialFakerProvider
