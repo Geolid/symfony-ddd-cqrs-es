@@ -8,16 +8,15 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\Command\ConfirmOrder\ConfirmOrder;
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
+use Sales\Ordering\Application\Mapper\OrderItemMapper;
 use Sales\Ordering\Application\OrderStatus;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Sales\Tests\Ordering\Support\Factory\OrderIdFactory;
+use Sales\Tests\Ordering\Support\Factory\OrderItemFactory;
 use Sales\Tests\Ordering\Support\PostalAddressResultMapper;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\Money;
 use Shared\Tests\Support\Factory\PostalAddressFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
-
-use function Zenstruck\Foundry\faker;
 
 final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
 {
@@ -37,9 +36,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
         $id = OrderIdFactory::new()->create()->toString();
         $customerId = Uuid::uuid7()->toString();
         $checkoutSessionId = Uuid::uuid7()->toString();
-        $unitPriceInCents = faker()->numberBetween(500, 5_000);
-        $quantity = faker()->numberBetween(1, 5);
-        $taxAmountInCents = faker()->numberBetween(50, 500);
+        $item = OrderItemFactory::new()->create();
         $shippingAddress = PostalAddressMapper::toArray(PostalAddressFactory::new()->create());
 
         // When
@@ -48,14 +45,8 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
             cartId: Uuid::uuid7()->toString(),
             customerId: $customerId,
             checkoutSessionId: $checkoutSessionId,
-            lines: [[
-                'productId' => Uuid::uuid7()->toString(),
-                'label' => faker()->sentence(3),
-                'unitPriceInCents' => $unitPriceInCents,
-                'taxAmountInCents' => $taxAmountInCents,
-                'quantity' => $quantity,
-            ]],
-            currency: 'EUR',
+            lines: [OrderItemMapper::toArray($item)],
+            currency: $item->taxAmount->currency->value,
             shippingAddress: $shippingAddress,
         ));
 
@@ -67,10 +58,10 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
             $shippingAddress,
             PostalAddressResultMapper::toArray($result->shippingAddress),
         );
-        self::assertSame(Money::fromCents($unitPriceInCents * $quantity, 'EUR')->cents, $result->totalExcludingTaxInCents);
-        self::assertSame($taxAmountInCents, $result->totalTaxAmountInCents);
-        self::assertSame($unitPriceInCents * $quantity + $taxAmountInCents, $result->totalIncludingTaxInCents);
-        self::assertSame('EUR', $result->currency);
+        self::assertSame($item->taxedTotal()->excludingTax->cents, $result->totalExcludingTaxInCents);
+        self::assertSame($item->taxedTotal()->taxAmount->cents, $result->totalTaxAmountInCents);
+        self::assertSame($item->taxedTotal()->includingTax->cents, $result->totalIncludingTaxInCents);
+        self::assertSame($item->taxAmount->currency->value, $result->currency);
         self::assertSame(OrderStatus::CONFIRMED, $result->status);
     }
 

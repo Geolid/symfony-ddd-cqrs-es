@@ -24,4 +24,18 @@ final readonly class OrderItemMapper
             Money::fromCents($data['taxAmountInCents'], $currency->value),
         );
     }
+
+    /**
+     * @return array{productId: string, label: string, unitPriceInCents: int, quantity: int, taxAmountInCents: int}
+     */
+    public static function toArray(OrderItem $item): array
+    {
+        return [
+            'productId' => $item->product->id,
+            'label' => $item->product->label->value,
+            'unitPriceInCents' => $item->product->price->cents,
+            'quantity' => $item->quantity->value,
+            'taxAmountInCents' => $item->taxAmount->cents,
+        ];
+    }
 }

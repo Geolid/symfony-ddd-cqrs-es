@@ -11,9 +11,7 @@ use Psr\Clock\ClockInterface;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\Quantity;
-use Shared\Domain\ValueObject\TaxedAmount;
 use Shopping\Checkout\Application\CheckoutSessionOpening\CheckoutSessionOpener;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerAddressesNotCompletedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerErasureRequestedException;
@@ -27,6 +25,7 @@ use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductFinderInterf
 use Shopping\Checkout\Application\Tax\TaxRateResolverInterface;
 use Shopping\Checkout\Domain\Event\CheckoutSessionOpened;
 use Shopping\Tests\Cart\Support\Factory\CartFactory;
+use Shopping\Tests\Checkout\Support\Factory\CheckoutItemFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -76,10 +75,8 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
         // Then
         self::assertNotNull($customer->shippingAddress);
         $taxRate = $this->taxRateResolver->resolve($customer->shippingAddress->address->countryCode);
-        $firstExcludingTax = $catalogProduct->unitPrice->times($quantity);
-        $secondExcludingTax = $secondCatalogProduct->unitPrice->times($secondQuantity);
-        $expectedTotal = TaxedAmount::of($firstExcludingTax, $this->taxAmountOf($firstExcludingTax, $taxRate->basisPoints))
-            ->plus(TaxedAmount::of($secondExcludingTax, $this->taxAmountOf($secondExcludingTax, $taxRate->basisPoints)));
+        $expectedTotal = CheckoutItemFactory::new(['unitPrice' => $catalogProduct->unitPrice, 'quantity' => $quantity, 'taxRate' => $taxRate])->create()->taxedTotal()
+            ->plus(CheckoutItemFactory::new(['unitPrice' => $secondCatalogProduct->unitPrice, 'quantity' => $secondQuantity, 'taxRate' => $taxRate])->create()->taxedTotal());
         self::assertSame($expectedTotal->excludingTax->cents, $result->total->excludingTax->cents);
         self::assertSame($expectedTotal->taxAmount->cents, $result->total->taxAmount->cents);
         self::assertSame($expectedTotal->includingTax->cents, $result->total->includingTax->cents);
@@ -188,10 +185,5 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
 
         // When
         $this->service->openFor($cart->id->toString());
-    }
-
-    private function taxAmountOf(Money $excludingTax, int $basisPoints): Money
-    {
-        return Money::fromCents((int) round($excludingTax->cents * $basisPoints / 10_000), $excludingTax->currency->value);
     }
 }
