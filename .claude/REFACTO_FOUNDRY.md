@@ -158,3 +158,14 @@ Un test vert ne suffit pas : vérifier la cohérence avec l'ancien système et `
 8. **Constantes et variables mortes** : plus de `$builder`/`$otherBuilder` ; une valeur sans enjeu n'est pas une constante de classe.
 9. **Portage** : le script de portage ne réécrit que les variables du Builder visé ; relire le diff pour toute autre variable touchée par erreur.
 10. **PII** : `serializedEventOf()` remplacé par le repository (état) ou `storedEventOf()` (événement).
+
+## 10. Retours à reprendre (PR « retour », empilée sur #268)
+
+Retouches relevées pendant la revue, à faire en une seule PR au sommet de la pile plutôt que de repasser dans chaque PR de BC. Cocher au fur et à mesure.
+
+- [ ] **`faker.providerClasses` dans la base** : déclarer `Support\Faker\CountryCodeFakerProvider` et `Support\Faker\CredentialFakerProvider` une seule fois dans `phpstan.base.neon` (qui inclut déjà `swisnl/phpstan-faker`), et retirer la copie de `tests/phpstan.neon` et `apps/phpstan.neon`. Toute nouvelle classe de provider se déclare alors à ce seul endroit (mettre à jour la mention correspondante de `tests.md`, section Factory).
+- [ ] **Cart** : confirmer que l'état ne garde pas les dates par produit (`addedAt`, `changedAt`, `removedAt` restent dans le flux), ou les ajouter.
+- [ ] **DTO `Account`** des Stories (`tests/Iam/Support/Story/Account.php`) : le garder ou le remplacer par des états scalaires lus par `__callStatic` avec `@method static`.
+- [ ] **`EventSourcingResetter`** : décoration sans appel de l'interne ; décider d'un remplacement complet.
+
+Règles de la PR : une retouche par commit, un seul `castor qa` avant le push, CI verte avant de la déclarer prête ; une retouche qui change un comportement de test est signalée dans la description.
