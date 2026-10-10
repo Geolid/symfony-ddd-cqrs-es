@@ -49,7 +49,7 @@ final class PatchlevelProductRepositoryTest extends AbstractIntegrationTestCase
             ->create();
         $this->store($product);
         $duplicate = ProductFactory::new()
-            ->withId($product->id->toString())
+            ->withId($product->id)
             ->create();
 
         // Then

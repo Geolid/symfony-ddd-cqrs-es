@@ -35,13 +35,13 @@ final class DispatchedShipmentReconcilerTest extends AbstractIntegrationTestCase
     public function itReconcilesWhenDelivered(): void
     {
         // Given
-        $trackingNumber = TrackingNumberFactory::new()->create()->value;
+        $trackingNumber = TrackingNumberFactory::new()->create();
         $shipment = ShipmentFactory::new()->prepared()->manifested($trackingNumber)->dispatched()->create();
         $this->store($shipment);
         $reconciler = new DispatchedShipmentReconciler($this->carrierGatewayReturning(CarrierGatewayStatus::DELIVERED), $this->commandBus);
 
         // When
-        $reconciled = $reconciler->reconcile($shipment->id->toString(), $trackingNumber);
+        $reconciled = $reconciler->reconcile($shipment->id->toString(), $trackingNumber->value);
 
         // Then
         self::assertTrue($reconciled);
@@ -53,13 +53,13 @@ final class DispatchedShipmentReconcilerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenStillDispatched(): void
     {
         // Given
-        $trackingNumber = TrackingNumberFactory::new()->create()->value;
+        $trackingNumber = TrackingNumberFactory::new()->create();
         $shipment = ShipmentFactory::new()->prepared()->manifested($trackingNumber)->dispatched()->create();
         $this->store($shipment);
         $reconciler = new DispatchedShipmentReconciler($this->carrierGatewayReturning(CarrierGatewayStatus::DISPATCHED), $this->commandBus);
 
         // When
-        $reconciled = $reconciler->reconcile($shipment->id->toString(), $trackingNumber);
+        $reconciled = $reconciler->reconcile($shipment->id->toString(), $trackingNumber->value);
 
         // Then
         self::assertFalse($reconciled);

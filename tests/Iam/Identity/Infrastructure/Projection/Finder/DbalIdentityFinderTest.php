@@ -148,8 +148,8 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
         $smallerId = Uuid::uuid7($now)->toString();
         $largerId = Uuid::uuid7($now->modify('+1 hour'))->toString();
 
-        $first = IdentityFactory::new()->withId($largerId)->withRegisteredAt($now)->create();
-        $second = IdentityFactory::new()->withId($smallerId)->withRegisteredAt($now->modify('+1 hour'))->create();
+        $first = IdentityFactory::new()->withId(IdentityIdFactory::new(['id' => $largerId])->create())->withRegisteredAt($now)->create();
+        $second = IdentityFactory::new()->withId(IdentityIdFactory::new(['id' => $smallerId])->create())->withRegisteredAt($now->modify('+1 hour'))->create();
         $this->store($first, $second);
 
         return [$largerId, $smallerId];

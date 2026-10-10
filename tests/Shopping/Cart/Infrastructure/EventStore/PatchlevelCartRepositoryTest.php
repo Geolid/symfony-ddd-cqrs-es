@@ -53,7 +53,7 @@ final class PatchlevelCartRepositoryTest extends AbstractIntegrationTestCase
             ->create();
         $this->store($cart);
         $duplicate = CartFactory::new()
-            ->withId($cart->id->toString())
+            ->withId($cart->id)
             ->create();
 
         // Then

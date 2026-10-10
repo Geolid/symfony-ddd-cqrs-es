@@ -84,10 +84,10 @@ final class ShipmentFactory extends AbstractAggregateFactory
         );
     }
 
-    public function manifested(?string $trackingNumber = null, ?\DateTimeImmutable $manifestedAt = null): self
+    public function manifested(?TrackingNumber $trackingNumber = null, ?\DateTimeImmutable $manifestedAt = null): self
     {
         return $this->with(array_filter([
-            'trackingNumber' => null !== $trackingNumber ? TrackingNumber::fromString($trackingNumber) : null,
+            'trackingNumber' => $trackingNumber,
             'manifestedAt' => $manifestedAt,
         ]))->transition(
             static function (Shipment $shipment, array $inputs): void {

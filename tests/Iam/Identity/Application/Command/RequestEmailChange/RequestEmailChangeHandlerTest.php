@@ -87,7 +87,7 @@ final class RequestEmailChangeHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenTooRecent(): void
     {
         // Given
-        $identity = IdentityFactory::new()->emailChangeRequested(EmailFactory::new()->create()->value)->create();
+        $identity = IdentityFactory::new()->emailChangeRequested(EmailFactory::new()->create())->create();
         $this->store($identity);
 
         // Then

@@ -103,7 +103,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         $other = $otherFactory->create();
         $this->store($other);
 
-        $newFullName = FullNameFactory::new()->create()->value;
+        $newFullName = FullNameFactory::new()->create();
         $identity = IdentityFactory::new()->fullNameChanged($newFullName)->create();
 
         // When
@@ -112,7 +112,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($identity->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($newFullName, $row['full_name']);
+        self::assertSame($newFullName->value, $row['full_name']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
@@ -127,7 +127,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         $other = $otherFactory->create();
         $this->store($other);
 
-        $newEmail = EmailFactory::new()->create()->value;
+        $newEmail = EmailFactory::new()->create();
         $identity = IdentityFactory::new()->emailChanged($newEmail)->create();
 
         // When
@@ -136,7 +136,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($identity->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($newEmail, $row['email']);
+        self::assertSame($newEmail->value, $row['email']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);

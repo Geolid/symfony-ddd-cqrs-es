@@ -99,8 +99,8 @@ final class DbalCartFinderTest extends AbstractIterableFinderTestCase
         $smallerId = Uuid::uuid7($now)->toString();
         $largerId = Uuid::uuid7($now->modify('+1 hour'))->toString();
 
-        $first = CartFactory::new()->withId($largerId)->withStartedAt($now)->create();
-        $second = CartFactory::new()->withId($smallerId)->withStartedAt($now->modify('+1 hour'))->create();
+        $first = CartFactory::new()->withId(CartIdFactory::new(['id' => $largerId])->create())->withStartedAt($now)->create();
+        $second = CartFactory::new()->withId(CartIdFactory::new(['id' => $smallerId])->create())->withStartedAt($now->modify('+1 hour'))->create();
         $this->store($first, $second);
 
         return [$largerId, $smallerId];

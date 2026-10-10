@@ -78,12 +78,12 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadySuspended(): void
     {
         // Given
-        $reason = ReasonFactory::new()->create()->value;
+        $reason = ReasonFactory::new()->create();
         $identity = IdentityFactory::new()->confirmed()->suspended($reason)->create();
         $this->store($identity);
 
         // When
-        $this->dispatch(new SuspendIdentity($identity->id->toString(), $reason));
+        $this->dispatch(new SuspendIdentity($identity->id->toString(), $reason->value));
 
         // Then
         self::expectNotToPerformAssertions();

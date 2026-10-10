@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Demo\Story;
 
 use Catalog\Tests\Listing\Support\Factory\ProductFactory;
+use Shared\Tests\Support\Factory\LabelFactory;
 use Support\Foundry\Story\AbstractAggregateStory;
 use Zenstruck\Foundry\Attribute\AsFixture;
 
@@ -26,7 +27,7 @@ final class DemoCatalogStory extends AbstractAggregateStory
     public function build(): void
     {
         foreach (self::PRODUCTS as $label => $unitPriceInCents) {
-            $this->persist(ProductFactory::new()->withLabel($label)->withUnitPriceInCents($unitPriceInCents)->create());
+            $this->persist(ProductFactory::new()->withLabel(LabelFactory::new(['value' => $label])->create())->withUnitPriceInCents($unitPriceInCents)->create());
         }
     }
 }

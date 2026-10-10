@@ -48,7 +48,7 @@ final class PatchlevelErasureRepositoryTest extends AbstractIntegrationTestCase
             ->create();
         $this->store($erasure);
         $duplicate = ErasureFactory::new()
-            ->withId($erasure->id->toString())
+            ->withId($erasure->id)
             ->create();
 
         // Then

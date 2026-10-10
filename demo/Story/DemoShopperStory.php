@@ -7,6 +7,8 @@ namespace Demo\Story;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
 use Iam\Tests\Authentication\Support\Factory\PasswordCredentialFactory;
+use Iam\Tests\Identity\Support\Factory\EmailFactory;
+use Iam\Tests\Identity\Support\Factory\FullNameFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Patchlevel\EventSourcing\Repository\RepositoryManager;
 use Support\Foundry\Story\AbstractAggregateStory;
@@ -32,7 +34,7 @@ final class DemoShopperStory extends AbstractAggregateStory
 
     public function build(): void
     {
-        $identity = IdentityFactory::new()->withEmail(self::EMAIL)->withFullName('Demo Shopper')->confirmed()->create();
+        $identity = IdentityFactory::new()->withEmail(EmailFactory::new(['value' => self::EMAIL])->create())->withFullName(FullNameFactory::new(['value' => 'Demo Shopper'])->create())->confirmed()->create();
 
         $this->persist(
             $identity,

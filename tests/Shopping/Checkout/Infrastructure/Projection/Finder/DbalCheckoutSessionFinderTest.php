@@ -172,8 +172,8 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
         $smallerId = Uuid::uuid7($now)->toString();
         $largerId = Uuid::uuid7($now->modify('+1 hour'))->toString();
 
-        $first = CheckoutSessionFactory::new()->withId($largerId)->withOpenedAt($now)->create();
-        $second = CheckoutSessionFactory::new()->withId($smallerId)->withOpenedAt($now->modify('+1 hour'))->create();
+        $first = CheckoutSessionFactory::new()->withId(CheckoutSessionIdFactory::new(['id' => $largerId])->create())->withOpenedAt($now)->create();
+        $second = CheckoutSessionFactory::new()->withId(CheckoutSessionIdFactory::new(['id' => $smallerId])->create())->withOpenedAt($now->modify('+1 hour'))->create();
         $this->store($first, $second);
 
         return [$largerId, $smallerId];

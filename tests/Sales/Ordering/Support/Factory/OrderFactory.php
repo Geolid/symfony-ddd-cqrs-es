@@ -74,9 +74,9 @@ final class OrderFactory extends AbstractAggregateFactory
         return $this->with(['items' => $items]);
     }
 
-    public function withCurrency(string $currency): self
+    public function withCurrency(Currency $currency): self
     {
-        return $this->with(['currency' => Currency::from($currency)]);
+        return $this->with(['currency' => $currency]);
     }
 
     public function withConfirmedAt(\DateTimeImmutable $confirmedAt): self

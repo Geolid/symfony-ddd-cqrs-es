@@ -50,7 +50,7 @@ final class PatchlevelCheckoutSessionRepositoryTest extends AbstractIntegrationT
             ->create();
         $this->store($checkoutSession);
         $duplicate = CheckoutSessionFactory::new()
-            ->withId($checkoutSession->id->toString())
+            ->withId($checkoutSession->id)
             ->create();
 
         // Then

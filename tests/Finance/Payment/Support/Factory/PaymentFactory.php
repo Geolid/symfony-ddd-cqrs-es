@@ -52,9 +52,9 @@ final class PaymentFactory extends AbstractAggregateFactory
         return $this->with(['amount' => MoneyFactory::new(['cents' => $amountInCents])->create()]);
     }
 
-    public function withReference(string $reference): self
+    public function withReference(PaymentReference $reference): self
     {
-        return $this->with(['reference' => PaymentReference::fromString($reference)]);
+        return $this->with(['reference' => $reference]);
     }
 
     public function withHostedPageUrl(string $hostedPageUrl): self

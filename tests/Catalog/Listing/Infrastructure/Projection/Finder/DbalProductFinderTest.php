@@ -119,8 +119,8 @@ final class DbalProductFinderTest extends AbstractPaginatableFinderTestCase
         $smallerId = Uuid::uuid7($now)->toString();
         $largerId = Uuid::uuid7($now->modify('+1 hour'))->toString();
 
-        $first = ProductFactory::new()->withId($largerId)->withListedAt($now)->create();
-        $second = ProductFactory::new()->withId($smallerId)->withListedAt($now->modify('+1 hour'))->create();
+        $first = ProductFactory::new()->withId(ProductIdFactory::new(['id' => $largerId])->create())->withListedAt($now)->create();
+        $second = ProductFactory::new()->withId(ProductIdFactory::new(['id' => $smallerId])->create())->withListedAt($now->modify('+1 hour'))->create();
         $this->store($first, $second);
 
         return [$largerId, $smallerId];

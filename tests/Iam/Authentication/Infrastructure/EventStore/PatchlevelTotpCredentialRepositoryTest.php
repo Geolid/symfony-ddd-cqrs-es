@@ -51,7 +51,7 @@ final class PatchlevelTotpCredentialRepositoryTest extends AbstractIntegrationTe
         // Given
         $credential = TotpCredentialFactory::new()->withCipher($this->cipher)->create();
         $this->store($credential);
-        $duplicate = TotpCredentialFactory::new()->withCipher($this->cipher)->withId($credential->id->toString())->create();
+        $duplicate = TotpCredentialFactory::new()->withCipher($this->cipher)->withId($credential->id)->create();
 
         // Then
         $this->expectException(TotpCredentialAlreadyExistsException::class);
