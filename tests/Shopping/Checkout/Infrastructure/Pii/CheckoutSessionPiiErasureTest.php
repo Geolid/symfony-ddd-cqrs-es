@@ -7,8 +7,7 @@ namespace Shopping\Tests\Checkout\Infrastructure\Pii;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Domain\Pii\ErasedPostalAddress;
 use Shopping\Checkout\Application\IntegrationEvent\CheckoutSessionCompleted\CheckoutSessionCompletedIntegrationEvent;
 use Shopping\Checkout\Domain\Event\CheckoutSessionCompleted;
 use Shopping\Checkout\Domain\Event\CheckoutSessionOpened;
@@ -35,13 +34,10 @@ final class CheckoutSessionPiiErasureTest extends AbstractIntegrationTestCase
 
         // When
         $this->cipherKeyStore->removeWithSubjectId($checkoutSession->id->toString());
-        $erased = $this->storedEventOf(
-            CheckoutSessionOpened::class,
-            static fn (CheckoutSessionOpened $event): bool => $event->id === $checkoutSession->id->toString(),
-        );
 
         // Then
-        self::assertSame($this->erasedPostalAddress(), PostalAddressMapper::toArray($erased->shippingAddress));
+        $erased = $this->storedEventOf(CheckoutSessionOpened::class, $checkoutSession->id->toString());
+        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())($checkoutSession->id->toString())), PostalAddressMapper::toArray($erased->shippingAddress));
     }
 
     #[Test]
@@ -53,13 +49,10 @@ final class CheckoutSessionPiiErasureTest extends AbstractIntegrationTestCase
 
         // When
         $this->cipherKeyStore->removeWithSubjectId($checkoutSession->id->toString());
-        $erased = $this->storedEventOf(
-            CheckoutSessionOpened::class,
-            static fn (CheckoutSessionOpened $event): bool => $event->id === $checkoutSession->id->toString(),
-        );
 
         // Then
-        self::assertSame($this->erasedPostalAddress(), PostalAddressMapper::toArray($erased->billingAddress));
+        $erased = $this->storedEventOf(CheckoutSessionOpened::class, $checkoutSession->id->toString());
+        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())($checkoutSession->id->toString())), PostalAddressMapper::toArray($erased->billingAddress));
     }
 
     #[Test]
@@ -71,13 +64,10 @@ final class CheckoutSessionPiiErasureTest extends AbstractIntegrationTestCase
 
         // When
         $this->cipherKeyStore->removeWithSubjectId($checkoutSession->id->toString());
-        $erased = $this->storedEventOf(
-            CheckoutSessionCompleted::class,
-            static fn (CheckoutSessionCompleted $event): bool => $event->id === $checkoutSession->id->toString(),
-        );
 
         // Then
-        self::assertSame($this->erasedPostalAddress(), PostalAddressMapper::toArray($erased->shippingAddress));
+        $erased = $this->storedEventOf(CheckoutSessionCompleted::class, $checkoutSession->id->toString());
+        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())($checkoutSession->id->toString())), PostalAddressMapper::toArray($erased->shippingAddress));
     }
 
     #[Test]
@@ -89,13 +79,10 @@ final class CheckoutSessionPiiErasureTest extends AbstractIntegrationTestCase
 
         // When
         $this->cipherKeyStore->removeWithSubjectId($checkoutSession->id->toString());
-        $erased = $this->storedEventOf(
-            CheckoutSessionCompleted::class,
-            static fn (CheckoutSessionCompleted $event): bool => $event->id === $checkoutSession->id->toString(),
-        );
 
         // Then
-        self::assertSame($this->erasedPostalAddress(), PostalAddressMapper::toArray($erased->billingAddress));
+        $erased = $this->storedEventOf(CheckoutSessionCompleted::class, $checkoutSession->id->toString());
+        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())($checkoutSession->id->toString())), PostalAddressMapper::toArray($erased->billingAddress));
     }
 
     #[Test]
@@ -107,13 +94,10 @@ final class CheckoutSessionPiiErasureTest extends AbstractIntegrationTestCase
 
         // When
         $this->cipherKeyStore->removeWithSubjectId($checkoutSession->id->toString());
-        $erased = $this->storedEventOf(
-            CheckoutSessionCompletedIntegrationEvent::class,
-            static fn (CheckoutSessionCompletedIntegrationEvent $event): bool => $event->checkoutSessionId === $checkoutSession->id->toString(),
-        );
 
         // Then
-        self::assertSame($this->erasedPostalAddress(), $erased->shippingAddress);
+        $erased = $this->storedEventOf(CheckoutSessionCompletedIntegrationEvent::class, $checkoutSession->id->toString());
+        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())($checkoutSession->id->toString())), $erased->shippingAddress);
     }
 
     #[Test]
@@ -125,20 +109,9 @@ final class CheckoutSessionPiiErasureTest extends AbstractIntegrationTestCase
 
         // When
         $this->cipherKeyStore->removeWithSubjectId($checkoutSession->id->toString());
-        $erased = $this->storedEventOf(
-            CheckoutSessionCompletedIntegrationEvent::class,
-            static fn (CheckoutSessionCompletedIntegrationEvent $event): bool => $event->checkoutSessionId === $checkoutSession->id->toString(),
-        );
 
         // Then
-        self::assertSame($this->erasedPostalAddress(), $erased->billingAddress);
-    }
-
-    /**
-     * @return array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}}
-     */
-    private function erasedPostalAddress(): array
-    {
-        return PostalAddressMapper::toArray(PostalAddress::of('erased', Address::of('erased', '00000', 'erased', 'ZZ')));
+        $erased = $this->storedEventOf(CheckoutSessionCompletedIntegrationEvent::class, $checkoutSession->id->toString());
+        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())($checkoutSession->id->toString())), $erased->billingAddress);
     }
 }

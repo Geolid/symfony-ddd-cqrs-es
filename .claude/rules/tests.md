@@ -70,6 +70,8 @@ paths:
 - A Story is applied with `#[WithStory(<Story>::class)]` on the test method (a `KernelTestCase`) and rebuilt for every test; it takes no call-time parameter — a variation is another Story. Stories stack by reading a lower one's state.
 - A Given covering a single aggregate stays inline with factories; a Story earns its place once a named scenario is shared by several tests or spans aggregates. A Story encoding more than its name states is a Mystery Guest.
 
+- A PII erasure test reads the erased event through `storedEventOf($eventClass, $aggregateId)` in its `// Then` — for a Domain Event and an Integration Event alike — and compares it to the `Erased<Vo>` fallback the Domain declares, never a retyped literal. `// When` is the key drop alone.
+
 ### Test doubles
 - An integration test's double strategy follows its own subject, never a collaborator's cost or determinism. A storage-boundary test (Repository/Finder/Projector) has its own round-trip to storage as sole subject: a service collaborator needed merely to build a valid Aggregate through its factory is doubled, deterministically — its own correctness belongs to that service's own dedicated test. A Value Object carried across that same boundary is never doubled this way, it's the data under test, not a service. A use-case test (a Command/Query Handler, or an Application port exercised directly by a Delivery Mechanism) has the whole orchestration as its subject instead: every in-process collaborator is wired for real; only a boundary actually leaving the process (a vendor call, a transport) gets doubled there.
 

@@ -10,8 +10,7 @@ use Sales\Ordering\Application\IntegrationEvent\OrderConfirmed\OrderConfirmedInt
 use Sales\Ordering\Domain\Order\Event\OrderConfirmed;
 use Sales\Tests\Ordering\Support\Factory\OrderFactory;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Domain\Pii\ErasedPostalAddress;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class OrderPiiErasureTest extends AbstractIntegrationTestCase
@@ -34,14 +33,10 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
 
         // When
         $this->cipherKeyStore->removeWithSubjectId($order->id->toString());
-        $erased = $this->storedEventOf(
-            OrderConfirmed::class,
-            static fn (OrderConfirmed $event): bool => $event->id->equals($order->id),
-        );
 
         // Then
-        $erasedPostalAddress = PostalAddressMapper::toArray(PostalAddress::of('erased', Address::of('erased', '00000', 'erased', 'ZZ')));
-        self::assertSame($erasedPostalAddress, PostalAddressMapper::toArray($erased->shippingAddress));
+        $erased = $this->storedEventOf(OrderConfirmed::class, $order->id->toString());
+        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())($order->id->toString())), PostalAddressMapper::toArray($erased->shippingAddress));
     }
 
     #[Test]
@@ -53,20 +48,9 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
 
         // When
         $this->cipherKeyStore->removeWithSubjectId($order->id->toString());
-        $erased = $this->storedEventOf(
-            OrderConfirmedIntegrationEvent::class,
-            static fn (OrderConfirmedIntegrationEvent $event): bool => $event->orderId === $order->id->toString(),
-        );
 
         // Then
-        self::assertSame($this->erasedPostalAddress(), $erased->shippingAddress);
-    }
-
-    /**
-     * @return array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}}
-     */
-    private function erasedPostalAddress(): array
-    {
-        return ['recipientName' => 'erased', 'address' => ['street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ']];
+        $erased = $this->storedEventOf(OrderConfirmedIntegrationEvent::class, $order->id->toString());
+        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())($order->id->toString())), $erased->shippingAddress);
     }
 }
