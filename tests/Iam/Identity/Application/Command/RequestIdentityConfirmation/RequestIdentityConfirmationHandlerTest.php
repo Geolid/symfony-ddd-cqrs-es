@@ -42,11 +42,14 @@ final class RequestIdentityConfirmationHandlerTest extends AbstractIntegrationTe
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $id = IdentityIdFactory::new()->create()->toString();
+
         // Then
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new RequestIdentityConfirmation(IdentityIdFactory::new()->create()->toString()));
+        $this->dispatch(new RequestIdentityConfirmation($id));
     }
 
     #[Test]

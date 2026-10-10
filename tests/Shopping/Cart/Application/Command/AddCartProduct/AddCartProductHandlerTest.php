@@ -47,11 +47,14 @@ final class AddCartProductHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $id = CartIdFactory::new()->create()->toString();
+
         // Then
         $this->expectException(CartNotFoundException::class);
 
         // When
-        $this->dispatch(new AddCartProduct(CartIdFactory::new()->create()->toString(), Uuid::uuid7()->toString(), 1));
+        $this->dispatch(new AddCartProduct($id, Uuid::uuid7()->toString(), 1));
     }
 
     #[Test]
