@@ -8,8 +8,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Tests\Support\Factory\PostalAddressFactory;
 use Shopping\Cart\Application\Command\PurchaseCart\PurchaseCart;
 use Shopping\Cart\Application\Policy\PurchaseCartOnCheckoutSessionCompleted;
 use Shopping\Checkout\Application\IntegrationEvent\CheckoutSessionCompleted\CheckoutSessionCompletedIntegrationEvent;
@@ -27,7 +26,7 @@ final class PurchaseCartOnCheckoutSessionCompletedTest extends AbstractIntegrati
         $commandBus = $this->createMock(CommandBusInterface::class);
         $this->replace(CommandBusInterface::class, $commandBus);
         $commandBus->expects(self::once())->method('dispatch')->with(new PurchaseCart($cartId));
-        $address = PostalAddressMapper::toArray(PostalAddress::of('John Doe', Address::of('1 rue de Paris', '75001', 'Paris', 'FR')));
+        $address = PostalAddressMapper::toArray(PostalAddressFactory::new()->create());
 
         // When
         $this->trigger(PurchaseCartOnCheckoutSessionCompleted::class, new CheckoutSessionCompletedIntegrationEvent(

@@ -12,8 +12,7 @@ use Sales\Ordering\Application\Policy\ConfirmOrderOnCheckoutSessionCompleted;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Sales\Tests\Ordering\Support\PostalAddressResultMapper;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Tests\Support\Factory\PostalAddressFactory;
 use Shopping\Checkout\Application\IntegrationEvent\CheckoutSessionCompleted\CheckoutSessionCompletedIntegrationEvent;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
@@ -29,8 +28,8 @@ final class ConfirmOrderOnCheckoutSessionCompletedTest extends AbstractIntegrati
         $cartId = Uuid::uuid7()->toString();
         $customerId = Uuid::uuid7()->toString();
         $checkoutSessionId = Uuid::uuid7()->toString();
-        $shippingAddress = PostalAddressMapper::toArray(PostalAddress::of('John Doe', Address::of('1 rue de Paris', '75001', 'Paris', 'FR')));
-        $billingAddress = PostalAddressMapper::toArray(PostalAddress::of('John Doe', Address::of('2 rue de Paris', '75001', 'Paris', 'FR')));
+        $shippingAddress = PostalAddressMapper::toArray(PostalAddressFactory::new()->create());
+        $billingAddress = PostalAddressMapper::toArray(PostalAddressFactory::new()->create());
         $items = [[
             'productId' => Uuid::uuid7()->toString(),
             'label' => faker()->sentence(3),

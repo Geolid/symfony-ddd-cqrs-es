@@ -11,9 +11,7 @@ use Psr\Clock\ClockInterface;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\Money;
-use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Domain\ValueObject\Quantity;
 use Shared\Domain\ValueObject\TaxedAmount;
 use Shopping\Checkout\Application\CheckoutSessionOpening\CheckoutSessionOpener;
@@ -60,7 +58,7 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
         $catalogProduct = ProductFactory::new()->withUnitPriceInCents(5_002)->create();
         $secondCatalogProduct = ProductFactory::new()->withUnitPriceInCents(5_003)->create();
         $customer = CustomerFactory::new()
-            ->shippingAddressDefined(PostalAddress::of('Jane Doe', Address::of('10 Rue de la Paix', '75002', 'Paris', 'FR')))
+            ->shippingAddressDefined()
             ->billingAddressDefined()
             ->create();
         $cart = CartFactory::new()->withCustomerId($customer->id->toString())->productAdded(

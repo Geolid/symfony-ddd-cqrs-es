@@ -13,9 +13,8 @@ use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Sales\Tests\Ordering\Support\Factory\OrderIdFactory;
 use Sales\Tests\Ordering\Support\PostalAddressResultMapper;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\Money;
-use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Tests\Support\Factory\PostalAddressFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 use function Zenstruck\Foundry\faker;
@@ -41,7 +40,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
         $unitPriceInCents = faker()->numberBetween(500, 5_000);
         $quantity = faker()->numberBetween(1, 5);
         $taxAmountInCents = faker()->numberBetween(50, 500);
-        $shippingAddress = PostalAddressMapper::toArray(PostalAddress::of('John Doe', Address::of('1 rue de Paris', '75001', 'Paris', 'FR')));
+        $shippingAddress = PostalAddressMapper::toArray(PostalAddressFactory::new()->create());
 
         // When
         $this->dispatch(new ConfirmOrder(
@@ -89,7 +88,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
             checkoutSessionId: Uuid::uuid7()->toString(),
             lines: [],
             currency: 'EUR',
-            shippingAddress: PostalAddressMapper::toArray(PostalAddress::of('John Doe', Address::of('1 rue de Paris', '75001', 'Paris', 'FR'))),
+            shippingAddress: PostalAddressMapper::toArray(PostalAddressFactory::new()->create()),
         ));
     }
 }
