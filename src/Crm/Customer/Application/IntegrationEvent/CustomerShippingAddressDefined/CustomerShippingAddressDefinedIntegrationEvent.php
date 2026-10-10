@@ -21,7 +21,7 @@ final readonly class CustomerShippingAddressDefinedIntegrationEvent implements I
         #[DataSubjectId]
         public string $customerId,
         #[SensitiveData(fallbackCallable: static function (string $subjectId): array {
-            return PostalAddressMapper::toArray((new ErasedPostalAddress())($subjectId));
+            return PostalAddressMapper::toArray((new ErasedPostalAddress())());
         })]
         public array $postalAddress,
         public \DateTimeImmutable $definedAt,

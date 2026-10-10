@@ -26,7 +26,7 @@ final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
 
         // Then
         $erased = $this->storedEventOf(ShipmentRequested::class, $shipment->id->toString());
-        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())($shipment->id->toString())), PostalAddressMapper::toArray($erased->origin));
-        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())($shipment->id->toString())), PostalAddressMapper::toArray($erased->destination));
+        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())()), PostalAddressMapper::toArray($erased->origin));
+        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())()), PostalAddressMapper::toArray($erased->destination));
     }
 }

@@ -27,11 +27,11 @@ final readonly class CheckoutSessionCompletedIntegrationEvent implements Integra
         public array $items,
         public string $currency,
         #[SensitiveData(fallbackCallable: static function (string $subjectId): array {
-            return PostalAddressMapper::toArray((new ErasedPostalAddress())($subjectId));
+            return PostalAddressMapper::toArray((new ErasedPostalAddress())());
         })]
         public array $shippingAddress,
         #[SensitiveData(fallbackCallable: static function (string $subjectId): array {
-            return PostalAddressMapper::toArray((new ErasedPostalAddress())($subjectId));
+            return PostalAddressMapper::toArray((new ErasedPostalAddress())());
         })]
         public array $billingAddress,
         public string $paymentId,

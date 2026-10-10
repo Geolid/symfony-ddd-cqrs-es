@@ -24,7 +24,7 @@ final readonly class OrderConfirmedIntegrationEvent implements IntegrationEventI
         public string $customerId,
         public string $checkoutSessionId,
         #[SensitiveData(fallbackCallable: static function (string $subjectId): array {
-            return PostalAddressMapper::toArray((new ErasedPostalAddress())($subjectId));
+            return PostalAddressMapper::toArray((new ErasedPostalAddress())());
         })]
         public array $shippingAddress,
         public \DateTimeImmutable $confirmedAt,

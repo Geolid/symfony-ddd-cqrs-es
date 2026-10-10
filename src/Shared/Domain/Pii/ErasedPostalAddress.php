@@ -9,7 +9,7 @@ use Shared\Domain\ValueObject\PostalAddress;
 
 final readonly class ErasedPostalAddress
 {
-    public function __invoke(string $subjectId): PostalAddress
+    public function __invoke(): PostalAddress
     {
         return PostalAddress::of('erased', Address::of('erased', '00000', 'erased', 'ZZ'));
     }

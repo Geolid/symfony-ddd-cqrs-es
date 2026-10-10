@@ -40,7 +40,7 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
 
         // Then
         $erased = $this->storedEventOf(CustomerShippingAddressDefined::class, $customer->id->toString());
-        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())($customer->id->toString())), PostalAddressMapper::toArray($erased->postalAddress));
+        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())()), PostalAddressMapper::toArray($erased->postalAddress));
     }
 
     #[Test]
@@ -57,7 +57,7 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
 
         // Then
         $erased = $this->storedEventOf(CustomerBillingAddressDefined::class, $customer->id->toString());
-        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())($customer->id->toString())), PostalAddressMapper::toArray($erased->postalAddress));
+        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())()), PostalAddressMapper::toArray($erased->postalAddress));
     }
 
     #[Test]
@@ -72,7 +72,7 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
 
         // Then
         $erased = $this->storedEventOf(CustomerShippingAddressDefinedIntegrationEvent::class, $customer->id->toString());
-        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())($customer->id->toString())), $erased->postalAddress);
+        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())()), $erased->postalAddress);
     }
 
     #[Test]
@@ -87,6 +87,6 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
 
         // Then
         $erased = $this->storedEventOf(CustomerBillingAddressDefinedIntegrationEvent::class, $customer->id->toString());
-        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())($customer->id->toString())), $erased->postalAddress);
+        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())()), $erased->postalAddress);
     }
 }
