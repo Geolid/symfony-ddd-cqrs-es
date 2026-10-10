@@ -12,9 +12,11 @@ use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Patchlevel\EventSourcing\Repository\RepositoryManager;
 
 /**
- * A Story of this family persists an identity together with the password it signs in with.
+ * A confirmed account that signs in with a password.
+ *
+ * @method static string password()
  */
-abstract class AbstractPasswordAccountStory extends AbstractAccountStory
+final class AccountConfirmedStory extends AbstractAccountStory
 {
     public function __construct(
         RepositoryManager $repositories,
@@ -24,25 +26,19 @@ abstract class AbstractPasswordAccountStory extends AbstractAccountStory
         parent::__construct($repositories);
     }
 
-    /**
-     * @param ?callable(PasswordCredentialFactory): PasswordCredentialFactory $credential
-     */
-    final protected function persistWithPassword(IdentityFactory $identityFactory, ?callable $credential = null): void
+    public function build(): void
     {
-        $identity = $identityFactory->create();
         $password = PasswordFactory::new()->create()->value;
-        $passwordCredential = PasswordCredentialFactory::new()
+        $identity = IdentityFactory::new()->confirmed()->create();
+        $credential = PasswordCredentialFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withPassword($password)
             ->withHasher($this->hasher)
-            ->withPasswordStrength($this->passwordStrength);
+            ->withPasswordStrength($this->passwordStrength)
+            ->create();
 
-        $this->persist($identity, (null !== $credential ? $credential($passwordCredential) : $passwordCredential)->create());
-        $this->addState('account', new Account(
-            $identity->id->toString(),
-            $identity->email->value,
-            $identity->fullName->value,
-            password: $password,
-        ));
+        $this->store($identity, $credential);
+        $this->addIdentityStates($identity);
+        $this->addState('password', $password);
     }
 }

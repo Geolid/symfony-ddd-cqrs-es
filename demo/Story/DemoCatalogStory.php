@@ -27,7 +27,7 @@ final class DemoCatalogStory extends AbstractAggregateStory
     public function build(): void
     {
         foreach (self::PRODUCTS as $label => $unitPriceInCents) {
-            $this->persist(ProductFactory::new()->withLabel(LabelFactory::new(['value' => $label])->create())->withUnitPriceInCents($unitPriceInCents)->create());
+            $this->store(ProductFactory::new()->withLabel(LabelFactory::new(['value' => $label])->create())->withUnitPriceInCents($unitPriceInCents)->create());
         }
     }
 }

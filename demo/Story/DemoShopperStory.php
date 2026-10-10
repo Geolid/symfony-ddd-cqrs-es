@@ -36,7 +36,7 @@ final class DemoShopperStory extends AbstractAggregateStory
     {
         $identity = IdentityFactory::new()->withEmail(EmailFactory::new(['value' => self::EMAIL])->create())->withFullName(FullNameFactory::new(['value' => 'Demo Shopper'])->create())->confirmed()->create();
 
-        $this->persist(
+        $this->store(
             $identity,
             PasswordCredentialFactory::new()
                 ->withIdentityId($identity->id->toString())

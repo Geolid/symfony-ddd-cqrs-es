@@ -4,19 +4,20 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Support\Story;
 
+use Iam\Identity\Domain\Identity;
 use Support\Foundry\Story\AbstractAggregateStory;
-use Webmozart\Assert\Assert;
 
 /**
- * A Story of this family leaves one `Account` as its `account` state: who it is, and every secret the
- * credentials it persisted were built from.
+ * @method static string id()
+ * @method static string email()
+ * @method static string fullName()
  */
 abstract class AbstractAccountStory extends AbstractAggregateStory
 {
-    final public static function account(): Account
+    final protected function addIdentityStates(Identity $identity): void
     {
-        Assert::isInstanceOf($account = self::get('account'), Account::class);
-
-        return $account;
+        $this->addState('id', $identity->id->toString());
+        $this->addState('email', $identity->email->value);
+        $this->addState('fullName', $identity->fullName->value);
     }
 }

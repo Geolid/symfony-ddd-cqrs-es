@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Storefront\Tests\Feature\SignIn;
 
 use Iam\Tests\Identity\Support\Factory\EmailFactory;
-use Iam\Tests\Support\Story\ConfirmedIdentityStory;
-use Iam\Tests\Support\Story\RegisteredAccountStory;
+use Iam\Tests\Support\Story\AccountRegisteredStory;
+use Iam\Tests\Support\Story\AccountWithoutPasswordStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\SignIn\Component\IdentifyForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
@@ -45,35 +45,33 @@ final class IdentifyTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(RegisteredAccountStory::class)]
+    #[WithStory(AccountRegisteredStory::class)]
     public function itRedirectsToConfirmation(): void
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $account = RegisteredAccountStory::account();
 
         // When
         $browser->visitRoute('storefront_signin_identify')
-            ->use(static function (IdentifyForm $identify) use ($account): void {
-                $identify->fillEmail($account->email)->submit();
+            ->use(static function (IdentifyForm $identify): void {
+                $identify->fillEmail(AccountRegisteredStory::email())->submit();
             });
 
         // Then
-        $browser->assertRedirectedToRoute('storefront_registration_confirm', ['identityId' => $account->id]);
+        $browser->assertRedirectedToRoute('storefront_registration_confirm', ['identityId' => AccountRegisteredStory::id()]);
     }
 
     #[Test]
-    #[WithStory(ConfirmedIdentityStory::class)]
+    #[WithStory(AccountWithoutPasswordStory::class)]
     public function itRedirectsToVerify(): void
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $account = ConfirmedIdentityStory::account();
 
         // When
         $browser->visitRoute('storefront_signin_identify')
-            ->use(static function (IdentifyForm $identify) use ($account): void {
-                $identify->fillEmail($account->email)->submit();
+            ->use(static function (IdentifyForm $identify): void {
+                $identify->fillEmail(AccountWithoutPasswordStory::email())->submit();
             });
 
         // Then
