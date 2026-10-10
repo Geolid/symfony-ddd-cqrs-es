@@ -11,6 +11,9 @@ final readonly class ErasedEmail
 {
     public function __invoke(string $subjectId): Email
     {
-        return Email::fromString((new ErasedFieldSentinel('%s@erased.invalid'))($subjectId));
+        $value = (new ErasedFieldSentinel('%s@erased.invalid'))($subjectId);
+        \assert(\is_string($value));
+
+        return Email::fromString($value);
     }
 }

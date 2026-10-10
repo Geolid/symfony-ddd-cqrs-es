@@ -10,6 +10,9 @@ final readonly class ErasedLabel
 {
     public function __invoke(string $subjectId): Label
     {
-        return Label::fromString((new ErasedFieldSentinel('erased-%s'))($subjectId));
+        $value = (new ErasedFieldSentinel('erased-%s'))($subjectId);
+        \assert(\is_string($value));
+
+        return Label::fromString($value);
     }
 }

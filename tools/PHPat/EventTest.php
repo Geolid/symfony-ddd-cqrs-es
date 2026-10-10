@@ -13,8 +13,8 @@ use PHPat\Test\Attributes\TestRule;
 use PHPat\Test\Builder\Rule;
 use PHPat\Test\PHPat;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\Pii\ErasedFieldSentinel;
-use Shared\Domain\Pii\ErasedValueObjectSentinel;
 
 final class EventTest
 {
@@ -47,7 +47,7 @@ final class EventTest
                     Selector::Not(Selector::isEnum()),
                     Selector::withFilepath('#/(ValueObject|Entity)/#', true),
                 ),
-                Selector::classname(ErasedValueObjectSentinel::class),
+                Selector::classname('#Domain.Pii.Erased#', true),
                 ...$this->esMetadataSelectors(),
             )
             ->because('A recorded fact stays internal to its own aggregate stream — any Domain-owned shape (Value Object, Entity, enum) decodes forever via the hydrator regardless of other types changing, and an upcaster handles any real shape change the same way either way; only an Integration Event crossing the boundary must stay primitive.');
@@ -81,9 +81,11 @@ final class EventTest
                     Selector::isEnum(),
                     Selector::withFilepath('#/Application/#', true),
                 ),
+                Selector::classname(PostalAddressMapper::class),
+                Selector::classname('#Domain.Pii.Erased#', true),
                 ...$this->esMetadataSelectors(),
             )
-            ->because('A Published Language must decode forever regardless of other types; its erasure already happened at the source, redoing it here duplicates that fact.');
+            ->because('A Published Language must decode forever regardless of other types; its payload stays primitive, and only its erasure fallback derives from the Domain\'s erased Value Object through the mapper.');
     }
 
     private function notInTests(): SelectorInterface
