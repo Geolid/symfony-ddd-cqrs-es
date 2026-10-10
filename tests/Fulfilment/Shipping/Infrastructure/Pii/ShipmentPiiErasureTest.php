@@ -25,8 +25,10 @@ final class ShipmentPiiErasureTest extends AbstractIntegrationTestCase
         $this->service(CipherKeyStore::class)->removeWithSubjectId($shipment->id->toString());
 
         // Then
-        $erased = $this->storedEventOf(ShipmentRequested::class, $shipment->id->toString());
+        $erased = $this->storedEventOf(ShipmentRequested::class, $shipment);
         self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())()), PostalAddressMapper::toArray($erased->origin));
         self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())()), PostalAddressMapper::toArray($erased->destination));
+        self::assertNotSame(PostalAddressMapper::toArray($shipment->origin), PostalAddressMapper::toArray($erased->origin));
+        self::assertNotSame(PostalAddressMapper::toArray($shipment->destination), PostalAddressMapper::toArray($erased->destination));
     }
 }

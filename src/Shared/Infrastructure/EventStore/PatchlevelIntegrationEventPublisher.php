@@ -27,7 +27,7 @@ final readonly class PatchlevelIntegrationEventPublisher implements IntegrationE
     ) {
     }
 
-    public function publish(string $aggregateClass, string $aggregateId, IntegrationEventInterface $event): void
+    public static function streamNameOf(string $aggregateClass, string $aggregateId): string
     {
         Assert::subclassOf(
             $aggregateClass,
@@ -35,11 +35,14 @@ final readonly class PatchlevelIntegrationEventPublisher implements IntegrationE
             'The aggregate class "%s" must implement %2$s to resolve its stream name.',
         );
 
-        $streamName = 'integration.'.$aggregateClass::metadata()->streamName($aggregateId);
+        return 'integration.'.$aggregateClass::metadata()->streamName($aggregateId);
+    }
 
+    public function publish(string $aggregateClass, string $aggregateId, IntegrationEventInterface $event): void
+    {
         $this->store->save(
             Message::create($event)
-                ->withHeader(new StreamNameHeader($streamName))
+                ->withHeader(new StreamNameHeader(self::streamNameOf($aggregateClass, $aggregateId)))
                 ->withHeader(new RecordedOnHeader($this->clock->now())),
         );
     }

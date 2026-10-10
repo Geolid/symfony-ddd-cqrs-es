@@ -34,7 +34,7 @@ final class ApiKeyCredentialPiiErasureTest extends AbstractIntegrationTestCase
         $this->cipherKeyStore->removeWithSubjectId($credential->id->toString());
 
         // Then
-        $erased = $this->storedEventOf(ApiKeyCredentialIssued::class, $credential->id->toString());
+        $erased = $this->storedEventOf(ApiKeyCredentialIssued::class, $credential);
         self::assertSame((new ErasedLabel())($credential->id->toString())->value, $erased->label->value);
     }
 }

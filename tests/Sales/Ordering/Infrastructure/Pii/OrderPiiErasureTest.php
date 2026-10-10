@@ -35,7 +35,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         $this->cipherKeyStore->removeWithSubjectId($order->id->toString());
 
         // Then
-        $erased = $this->storedEventOf(OrderConfirmed::class, $order->id->toString());
+        $erased = $this->storedEventOf(OrderConfirmed::class, $order);
         self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())()), PostalAddressMapper::toArray($erased->shippingAddress));
     }
 
@@ -50,7 +50,7 @@ final class OrderPiiErasureTest extends AbstractIntegrationTestCase
         $this->cipherKeyStore->removeWithSubjectId($order->id->toString());
 
         // Then
-        $erased = $this->storedEventOf(OrderConfirmedIntegrationEvent::class, $order->id->toString());
+        $erased = $this->storedIntegrationEventOf(OrderConfirmedIntegrationEvent::class, $order);
         self::assertSame([
             'recipientName' => 'erased',
             'address' => ['street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ'],

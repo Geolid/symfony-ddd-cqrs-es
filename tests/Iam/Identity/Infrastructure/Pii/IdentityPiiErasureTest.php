@@ -34,7 +34,7 @@ final class IdentityPiiErasureTest extends AbstractIntegrationTestCase
         $this->cipherKeyStore->removeWithSubjectId($identity->id->toString());
 
         // Then
-        $erased = $this->storedEventOf(IdentitySuspended::class, $identity->id->toString());
+        $erased = $this->storedEventOf(IdentitySuspended::class, $identity);
         self::assertSame((new ErasedReason())($identity->id->toString())->value, $erased->reason->value);
     }
 
@@ -49,7 +49,7 @@ final class IdentityPiiErasureTest extends AbstractIntegrationTestCase
         $this->cipherKeyStore->removeWithSubjectId($identity->id->toString());
 
         // Then
-        $erased = $this->storedEventOf(IdentityReactivated::class, $identity->id->toString());
+        $erased = $this->storedEventOf(IdentityReactivated::class, $identity);
         self::assertSame((new ErasedReason())($identity->id->toString())->value, $erased->reason->value);
     }
 }

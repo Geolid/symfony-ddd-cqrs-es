@@ -39,7 +39,7 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
         $this->cipherKeyStore->removeWithSubjectId($customer->id->toString());
 
         // Then
-        $erased = $this->storedEventOf(CustomerShippingAddressDefined::class, $customer->id->toString());
+        $erased = $this->storedEventOf(CustomerShippingAddressDefined::class, $customer);
         self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())()), PostalAddressMapper::toArray($erased->postalAddress));
     }
 
@@ -56,7 +56,7 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
         $this->cipherKeyStore->removeWithSubjectId($customer->id->toString());
 
         // Then
-        $erased = $this->storedEventOf(CustomerBillingAddressDefined::class, $customer->id->toString());
+        $erased = $this->storedEventOf(CustomerBillingAddressDefined::class, $customer);
         self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())()), PostalAddressMapper::toArray($erased->postalAddress));
     }
 
@@ -71,7 +71,7 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
         $this->cipherKeyStore->removeWithSubjectId($customer->id->toString());
 
         // Then
-        $erased = $this->storedEventOf(CustomerShippingAddressDefinedIntegrationEvent::class, $customer->id->toString());
+        $erased = $this->storedIntegrationEventOf(CustomerShippingAddressDefinedIntegrationEvent::class, $customer);
         self::assertSame([
             'recipientName' => 'erased',
             'address' => ['street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ'],
@@ -89,7 +89,7 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
         $this->cipherKeyStore->removeWithSubjectId($customer->id->toString());
 
         // Then
-        $erased = $this->storedEventOf(CustomerBillingAddressDefinedIntegrationEvent::class, $customer->id->toString());
+        $erased = $this->storedIntegrationEventOf(CustomerBillingAddressDefinedIntegrationEvent::class, $customer);
         self::assertSame([
             'recipientName' => 'erased',
             'address' => ['street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ'],
