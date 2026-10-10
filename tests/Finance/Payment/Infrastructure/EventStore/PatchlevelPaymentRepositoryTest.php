@@ -10,6 +10,7 @@ use Finance\Payment\Domain\Payment;
 use Finance\Payment\Domain\Repository\PaymentRepositoryInterface;
 use Finance\Tests\Payment\Support\Factory\PaymentFactory;
 use Finance\Tests\Payment\Support\Factory\PaymentIdFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -25,13 +26,11 @@ final class PatchlevelPaymentRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itSavesAndLoads(): void
+    #[DataProvider('provideLifecycle')]
+    public function itSavesAndLoads(PaymentFactory $factory): void
     {
         // Given
-        $payment = PaymentFactory::new()
-            ->authorized()
-            ->captured()
-            ->create();
+        $payment = $factory->create();
 
         // When
         $this->repository->save($payment);
@@ -39,6 +38,17 @@ final class PatchlevelPaymentRepositoryTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($this->propertiesOf($payment), $this->propertiesOf($loaded));
+    }
+
+    /**
+     * @return iterable<string, array{PaymentFactory}>
+     */
+    public static function provideLifecycle(): iterable
+    {
+        yield 'captured' => [PaymentFactory::new()->authorized()->captured()];
+        yield 'failed' => [PaymentFactory::new()->failed()];
+        yield 'abandoned' => [PaymentFactory::new()->abandoned()];
+        yield 'voided' => [PaymentFactory::new()->abandoned()->voided()];
     }
 
     #[Test]

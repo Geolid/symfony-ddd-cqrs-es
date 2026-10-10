@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Sales\Tests\Ordering\Infrastructure\EventStore;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Ordering\Domain\Order\Entity\OrderLine;
 use Sales\Ordering\Domain\Order\Exception\OrderAlreadyExistsException;
@@ -27,15 +28,11 @@ final class PatchlevelOrderRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itSavesAndLoads(): void
+    #[DataProvider('provideLifecycle')]
+    public function itSavesAndLoads(OrderFactory $factory): void
     {
         // Given
-        $order = OrderFactory::new()
-            ->prepared()
-            ->dispatched()
-            ->delivered()
-            ->erasureApproved()
-            ->create();
+        $order = $factory->create();
 
         // When
         $this->repository->save($order);
@@ -43,6 +40,16 @@ final class PatchlevelOrderRepositoryTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($this->propertiesOf($order), $this->propertiesOf($loaded));
+    }
+
+    /**
+     * @return iterable<string, array{OrderFactory}>
+     */
+    public static function provideLifecycle(): iterable
+    {
+        yield 'delivered' => [OrderFactory::new()->prepared()->dispatched()->delivered()->erasureApproved()];
+        yield 'cancelled' => [OrderFactory::new()->cancelled()];
+        yield 'failed' => [OrderFactory::new()->failed()];
     }
 
     #[Test]

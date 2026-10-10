@@ -10,6 +10,7 @@ use Compliance\Erasing\Domain\Exception\ErasureNotFoundException;
 use Compliance\Erasing\Domain\Repository\ErasureRepositoryInterface;
 use Compliance\Tests\Erasing\Support\Factory\ErasureFactory;
 use Compliance\Tests\Erasing\Support\Factory\ErasureIdFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -25,12 +26,11 @@ final class PatchlevelErasureRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itSavesAndLoads(): void
+    #[DataProvider('provideLifecycle')]
+    public function itSavesAndLoads(ErasureFactory $factory): void
     {
         // Given
-        $erasure = ErasureFactory::new()
-            ->approved()
-            ->create();
+        $erasure = $factory->create();
 
         // When
         $this->repository->save($erasure);
@@ -38,6 +38,15 @@ final class PatchlevelErasureRepositoryTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($this->propertiesOf($erasure), $this->propertiesOf($loaded));
+    }
+
+    /**
+     * @return iterable<string, array{ErasureFactory}>
+     */
+    public static function provideLifecycle(): iterable
+    {
+        yield 'approved' => [ErasureFactory::new()->approved()];
+        yield 'cancelled' => [ErasureFactory::new()->cancelled()];
     }
 
     #[Test]

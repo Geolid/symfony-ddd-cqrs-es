@@ -31,11 +31,17 @@ final class PatchlevelIdentityRepositoryTest extends AbstractIntegrationTestCase
     {
         // Given
         $identity = IdentityFactory::new()
+            ->confirmationRequested()
             ->confirmed()
             ->fullNameChanged(FullNameFactory::new()->create())
             ->emailChangeRequested(EmailFactory::new()->create())
+            ->emailChanged(EmailFactory::new()->create())
             ->suspended()
+            ->reactivated()
             ->erasureRequested()
+            ->erasureCancelled()
+            ->erasureRequested()
+            ->erased()
             ->create();
 
         // When
