@@ -167,5 +167,8 @@ Retouches relevées pendant la revue, à faire en une seule PR au sommet de la p
 - [ ] **Cart** : confirmer que l'état ne garde pas les dates par produit (`addedAt`, `changedAt`, `removedAt` restent dans le flux), ou les ajouter.
 - [ ] **DTO `Account`** des Stories (`tests/Iam/Support/Story/Account.php`) : le garder ou le remplacer par des états scalaires lus par `__callStatic` avec `@method static`.
 - [ ] **`EventSourcingResetter`** : décoration sans appel de l'interne ; décider d'un remplacement complet.
+- [ ] **Les `with*()` et les paramètres de transition prennent le VO, pas un scalaire**, quand l'aggregate stocke un VO : `suspended(?Reason $reason)`, `withEmail(Email $email)`, `withLabel(Label $label)`, `withKeyId(KeyId $keyId)`, `withReference(PaymentReference $reference)`, `withCurrency(Currency $currency)`, `manifested(?TrackingNumber $trackingNumber)`, adresses, etc. Les scalaires restent pour les vraies primitives du Domaine (références étrangères en `string`, secrets, dates, montants en centimes). Origine : règle héritée des Builders (« le paramètre reste la primitive »), jamais réévaluée. À faire : les factories des 8 BC, les appels dans les tests (plus de détour `->value` puis `fromString`), la règle de `tests.md` (section Factory, `with<Key>()`).
+
+**Ordre : appliquer seulement une fois tous les retours collectés** (cette liste doit être complète avant de toucher au code).
 
 Règles de la PR : une retouche par commit, un seul `castor qa` avant le push, CI verte avant de la déclarer prête ; une retouche qui change un comportement de test est signalée dans la description.
