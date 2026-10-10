@@ -15,11 +15,3 @@ parameters:
         providerClasses:
             - Support\Faker\CountryCodeFakerProvider
             - Support\Faker\CredentialFakerProvider
-
-    ignoreErrors:
-        -
-            # Same KernelTestCaseHelper indirection as above, reached from EventSourcingTrait::store().
-            message: '#^Service "Patchlevel\\EventSourcing\\Repository\\RepositoryManager" is private\.$#'
-            identifier: symfonyContainer.privateService
-            paths:
-                - '**/EventSourcingTrait.php'
