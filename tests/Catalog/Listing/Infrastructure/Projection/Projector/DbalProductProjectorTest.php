@@ -5,9 +5,10 @@ declare(strict_types=1);
 namespace Catalog\Tests\Listing\Infrastructure\Projection\Projector;
 
 use Catalog\Listing\Infrastructure\Projection\Projector\DbalProductProjector;
-use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
+use Catalog\Tests\Listing\Support\Factory\ProductFactory;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Tests\Support\Factory\MoneyFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
@@ -21,8 +22,7 @@ final class DbalProductProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnProductListed(): void
     {
         // Given
-        $builder = ProductBuilder::new();
-        $product = $builder->create();
+        $product = ProductFactory::new()->create();
 
         // When
         $this->store($product);
@@ -30,9 +30,9 @@ final class DbalProductProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($product->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($builder['label']->value, $row['label']);
-        self::assertSame($builder['unitPrice']->cents, (int) $row['unit_price_in_cents']);
-        self::assertSame($builder['listedAt']->format(self::DATE_FORMAT), $row['listed_at']);
+        self::assertSame($product->label->value, $row['label']);
+        self::assertSame($product->unitPrice->cents, (int) $row['unit_price_in_cents']);
+        self::assertSame($product->listedAt->format(self::DATE_FORMAT), $row['listed_at']);
         self::assertNull($row['repriced_at']);
     }
 
@@ -40,13 +40,11 @@ final class DbalProductProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnProductRepriced(): void
     {
         // Given
-        $otherBuilder = ProductBuilder::new();
-        $other = $otherBuilder->create();
+        $other = ProductFactory::new()->create();
         $this->store($other);
 
-        $unitPriceInCents = ProductBuilder::sample('unitPrice')->cents;
-        $builder = ProductBuilder::new()->withUnitPriceInCents($unitPriceInCents)->repriced($unitPriceInCents + 100);
-        $product = $builder->create();
+        $unitPriceInCents = MoneyFactory::new()->create()->cents;
+        $product = ProductFactory::new()->withUnitPriceInCents($unitPriceInCents)->repriced($unitPriceInCents + 100)->create();
 
         // When
         $this->store($product);
@@ -54,12 +52,12 @@ final class DbalProductProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($product->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($builder['unitPrice']->cents, (int) $row['unit_price_in_cents']);
-        self::assertSame($builder['repricedAt']->format(self::DATE_FORMAT), $row['repriced_at']);
+        self::assertSame($product->unitPrice->cents, (int) $row['unit_price_in_cents']);
+        self::assertSame($product->repricedAt?->format(self::DATE_FORMAT), $row['repriced_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
-        self::assertSame($otherBuilder['unitPrice']->cents, (int) $otherRow['unit_price_in_cents']);
+        self::assertSame($other->unitPrice->cents, (int) $otherRow['unit_price_in_cents']);
         self::assertNull($otherRow['repriced_at']);
     }
 
@@ -67,10 +65,10 @@ final class DbalProductProjectorTest extends AbstractIntegrationTestCase
     public function itRemovesOnProductDelisted(): void
     {
         // Given
-        $other = ProductBuilder::new()->create();
+        $other = ProductFactory::new()->create();
         $this->store($other);
 
-        $product = ProductBuilder::new()->delisted()->create();
+        $product = ProductFactory::new()->delisted()->create();
 
         // When
         $this->store($product);

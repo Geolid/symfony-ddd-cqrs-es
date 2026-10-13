@@ -25,7 +25,12 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     public private(set) ProductId $id;
-    private bool $delisted;
+    public private(set) Label $label;
+    public private(set) Money $unitPrice;
+    public private(set) \DateTimeImmutable $listedAt;
+    public private(set) ?\DateTimeImmutable $repricedAt = null;
+    public private(set) bool $delisted;
+    public private(set) ?\DateTimeImmutable $delistedAt = null;
 
     public static function list(ProductId $id, Label $label, Money $unitPrice, \DateTimeImmutable $listedAt): self
     {
@@ -72,17 +77,23 @@ final class Product implements AggregateRoot, AggregateRootMetadataAware
     private function applyListed(ProductListed $event): void
     {
         $this->id = $event->id;
+        $this->label = $event->label;
+        $this->unitPrice = $event->unitPrice;
+        $this->listedAt = $event->listedAt;
         $this->delisted = false;
     }
 
     #[Apply]
     private function applyRepriced(ProductRepriced $event): void
     {
+        $this->unitPrice = $event->unitPrice;
+        $this->repricedAt = $event->repricedAt;
     }
 
     #[Apply]
     private function applyDelisted(ProductDelisted $event): void
     {
         $this->delisted = true;
+        $this->delistedAt = $event->delistedAt;
     }
 }

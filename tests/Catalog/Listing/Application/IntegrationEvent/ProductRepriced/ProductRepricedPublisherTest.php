@@ -5,8 +5,9 @@ declare(strict_types=1);
 namespace Catalog\Tests\Listing\Application\IntegrationEvent\ProductRepriced;
 
 use Catalog\Listing\Application\IntegrationEvent\ProductRepriced\ProductRepricedIntegrationEvent;
-use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
+use Catalog\Tests\Listing\Support\Factory\ProductFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Shared\Tests\Support\Factory\MoneyFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ProductRepricedPublisherTest extends AbstractIntegrationTestCase
@@ -15,9 +16,8 @@ final class ProductRepricedPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $unitPriceInCents = ProductBuilder::sample('unitPrice')->cents;
-        $builder = ProductBuilder::new()->withUnitPriceInCents($unitPriceInCents)->repriced($unitPriceInCents + 100);
-        $product = $builder->create();
+        $unitPriceInCents = MoneyFactory::new()->create()->cents;
+        $product = ProductFactory::new()->withUnitPriceInCents($unitPriceInCents)->repriced($unitPriceInCents + 100)->create();
 
         // When
         $this->store($product);
@@ -25,10 +25,10 @@ final class ProductRepricedPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(ProductRepricedIntegrationEvent::class);
         self::assertSame($product->id->toString(), $event->productId);
-        self::assertSame($builder['unitPrice']->cents, $event->unitPriceInCents);
+        self::assertSame($product->unitPrice->cents, $event->unitPriceInCents);
         self::assertSame(
-            $builder['repricedAt']->format(\DateTimeInterface::ATOM),
-            $event->repricedAt->format(\DateTimeInterface::ATOM),
+            $product->repricedAt?->format(\DateTimeInterface::ATOM),
+            $event->repricedAt?->format(\DateTimeInterface::ATOM),
         );
     }
 }

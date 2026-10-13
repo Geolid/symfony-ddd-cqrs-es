@@ -7,7 +7,7 @@ namespace Catalog\Tests\Listing\Application\Query\ListProducts;
 use Catalog\Listing\Application\Finder\Product\ProductResult;
 use Catalog\Listing\Application\Query\ListProducts\ListProducts;
 use Catalog\Listing\Domain\Product;
-use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
+use Catalog\Tests\Listing\Support\Factory\ProductFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Finder\PaginationMetadata;
 use Shared\Application\Query\Result\PaginatedResult;
@@ -23,10 +23,9 @@ final class ListProductsHandlerTest extends AbstractIntegrationTestCase
     public function itPaginates(): void
     {
         // Given
-        $builder = ProductBuilder::new();
-        $product = $builder->create();
+        $product = ProductFactory::new()->create();
 
-        $others = ProductBuilder::new()->many(4)->create();
+        $others = ProductFactory::new()->many(4)->create();
 
         $products = [$product, ...$others];
         $this->store(...$products);
@@ -44,8 +43,8 @@ final class ListProductsHandlerTest extends AbstractIntegrationTestCase
         [$productResult] = $pages[1]->items;
 
         self::assertSame($product->id->toString(), $productResult->id);
-        self::assertSame($builder['label']->value, $productResult->label);
-        self::assertSame($builder['unitPrice']->cents, $productResult->unitPriceInCents);
+        self::assertSame($product->label->value, $productResult->label);
+        self::assertSame($product->unitPrice->cents, $productResult->unitPriceInCents);
     }
 
     #[Test]

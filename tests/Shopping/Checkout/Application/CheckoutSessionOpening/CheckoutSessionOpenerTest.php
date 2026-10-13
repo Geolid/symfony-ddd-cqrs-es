@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shopping\Tests\Checkout\Application\CheckoutSessionOpening;
 
-use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
+use Catalog\Tests\Listing\Support\Factory\ProductFactory;
 use Crm\Tests\Customer\Support\Factory\CustomerFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Psr\Clock\ClockInterface;
@@ -57,10 +57,8 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
     public function itOpens(): void
     {
         // Given
-        $productBuilder = ProductBuilder::new()->withUnitPriceInCents(5_002);
-        $catalogProduct = $productBuilder->create();
-        $secondProductBuilder = ProductBuilder::new()->withUnitPriceInCents(5_003);
-        $secondCatalogProduct = $secondProductBuilder->create();
+        $catalogProduct = ProductFactory::new()->withUnitPriceInCents(5_002)->create();
+        $secondCatalogProduct = ProductFactory::new()->withUnitPriceInCents(5_003)->create();
         $customer = CustomerFactory::new()
             ->shippingAddressDefined(PostalAddress::of('Jane Doe', Address::of('10 Rue de la Paix', '75002', 'Paris', 'FR')))
             ->billingAddressDefined()
@@ -80,8 +78,8 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
         // Then
         self::assertNotNull($customer->shippingAddress);
         $taxRate = $this->taxRateResolver->resolve($customer->shippingAddress->address->countryCode);
-        $firstExcludingTax = $productBuilder['unitPrice']->times($quantity);
-        $secondExcludingTax = $secondProductBuilder['unitPrice']->times($secondQuantity);
+        $firstExcludingTax = $catalogProduct->unitPrice->times($quantity);
+        $secondExcludingTax = $secondCatalogProduct->unitPrice->times($secondQuantity);
         $expectedTotal = TaxedAmount::of($firstExcludingTax, $this->taxAmountOf($firstExcludingTax, $taxRate->basisPoints))
             ->plus(TaxedAmount::of($secondExcludingTax, $this->taxAmountOf($secondExcludingTax, $taxRate->basisPoints)));
         self::assertSame($expectedTotal->excludingTax->cents, $result->total->excludingTax->cents);

@@ -8,7 +8,8 @@ use Catalog\Listing\Application\Finder\Product\Exception\ProductResultNotFoundEx
 use Catalog\Listing\Application\Finder\Product\ProductFinderInterface;
 use Catalog\Listing\Application\Finder\Product\ProductResult;
 use Catalog\Listing\Domain\Product;
-use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
+use Catalog\Tests\Listing\Support\Factory\ProductFactory;
+use Catalog\Tests\Listing\Support\Factory\ProductIdFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Finder\PaginationMetadata;
@@ -28,9 +29,8 @@ final class DbalProductFinderTest extends AbstractPaginatableFinderTestCase
     public function itGetsById(): void
     {
         // Given
-        $other = ProductBuilder::new()->create();
-        $builder = ProductBuilder::new();
-        $product = $builder->create();
+        $other = ProductFactory::new()->create();
+        $product = ProductFactory::new()->create();
         $this->store($other, $product);
 
         // When
@@ -38,10 +38,10 @@ final class DbalProductFinderTest extends AbstractPaginatableFinderTestCase
 
         // Then
         self::assertSame($product->id->toString(), $result->id);
-        self::assertSame($builder['label']->value, $result->label);
-        self::assertSame($builder['unitPrice']->cents, $result->unitPriceInCents);
+        self::assertSame($product->label->value, $result->label);
+        self::assertSame($product->unitPrice->cents, $result->unitPriceInCents);
         self::assertSame(
-            $builder['listedAt']->format(\DateTimeInterface::ATOM),
+            $product->listedAt->format(\DateTimeInterface::ATOM),
             $result->listedAt->format(\DateTimeInterface::ATOM),
         );
         self::assertNull($result->repricedAt);
@@ -54,7 +54,7 @@ final class DbalProductFinderTest extends AbstractPaginatableFinderTestCase
         $this->expectException(ProductResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(Uuid::uuid7()->toString());
+        $this->finder()->ofId(ProductIdFactory::new()->create()->toString());
     }
 
     #[Test]
@@ -99,7 +99,7 @@ final class DbalProductFinderTest extends AbstractPaginatableFinderTestCase
      */
     protected function seed(int $count): array
     {
-        $products = ProductBuilder::new()->many($count)->create();
+        $products = ProductFactory::new()->many($count)->create();
         $this->store(...$products);
 
         return array_map(static fn (Product $product): string => $product->id->toString(), $products);
@@ -119,8 +119,8 @@ final class DbalProductFinderTest extends AbstractPaginatableFinderTestCase
         $smallerId = Uuid::uuid7($now)->toString();
         $largerId = Uuid::uuid7($now->modify('+1 hour'))->toString();
 
-        $first = ProductBuilder::new()->withId($largerId)->withListedAt($now)->create();
-        $second = ProductBuilder::new()->withId($smallerId)->withListedAt($now->modify('+1 hour'))->create();
+        $first = ProductFactory::new()->withId($largerId)->withListedAt($now)->create();
+        $second = ProductFactory::new()->withId($smallerId)->withListedAt($now->modify('+1 hour'))->create();
         $this->store($first, $second);
 
         return [$largerId, $smallerId];

@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shopping\Tests\Cart\Infrastructure\Projection\Projector;
 
-use Catalog\Tests\Listing\Support\Builder\ProductBuilder;
+use Catalog\Tests\Listing\Support\Factory\ProductFactory;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Domain\ValueObject\Money;
@@ -21,8 +21,7 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnProductListed(): void
     {
         // Given
-        $builder = ProductBuilder::new();
-        $product = $builder->create();
+        $product = ProductFactory::new()->create();
 
         // When
         $this->store($product);
@@ -30,17 +29,16 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($product->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($builder['label']->value, $row['label']);
-        self::assertSame($builder['unitPrice']->cents, (int) $row['unit_price_in_cents']);
+        self::assertSame($product->label->value, $row['label']);
+        self::assertSame($product->unitPrice->cents, (int) $row['unit_price_in_cents']);
     }
 
     #[Test]
     public function itProjectsOnProductRepriced(): void
     {
         // Given
-        $otherBuilder = ProductBuilder::new();
-        $other = $otherBuilder->create();
-        $product = ProductBuilder::new()->create();
+        $other = ProductFactory::new()->create();
+        $product = ProductFactory::new()->create();
         $this->store($other, $product);
 
         // When
@@ -54,16 +52,16 @@ final class DbalListedProductProjectorTest extends AbstractIntegrationTestCase
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
-        self::assertSame($otherBuilder['unitPrice']->cents, (int) $otherRow['unit_price_in_cents']);
+        self::assertSame($other->unitPrice->cents, (int) $otherRow['unit_price_in_cents']);
     }
 
     #[Test]
     public function itRemovesOnProductDelisted(): void
     {
         // Given
-        $other = ProductBuilder::new()->create();
+        $other = ProductFactory::new()->create();
         $this->store($other);
-        $product = ProductBuilder::new()->delisted()->create();
+        $product = ProductFactory::new()->delisted()->create();
 
         // When
         $this->store($product);

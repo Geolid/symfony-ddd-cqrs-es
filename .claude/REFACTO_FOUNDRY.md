@@ -70,7 +70,8 @@ Source du code de référence : le spike, branche `ai/foundry-spike-storefront` 
 - Sales : fait sur `ai/foundry-sales` (état complet d'`Order`, `OrderFactory`, `OrderIdFactory`, `ProductFactory`, `OrderItemFactory`, aller-retour + `AlreadyExists`, `OrderPiiErasureTest` via `storedEventOf()`, `OrderBuilder` supprimé).
 - Finance : fait sur `ai/foundry-finance` (état complet de `Payment`, `PaymentFactory`, `PaymentIdFactory`, `PaymentReferenceFactory`, aller-retour + `AlreadyExists`, `PaymentBuilder` supprimé ; pas de test PII dans ce BC).
 - Fulfilment : fait sur `ai/foundry-fulfilment` (état complet de `Shipment`, `ShipmentFactory`, `ShipmentIdFactory`, `TrackingNumberFactory`, aller-retour + `AlreadyExists`, `ShipmentPiiErasureTest` via `storedEventOf()`, `ShipmentBuilder` supprimé).
-- Reste : Catalog, Compliance.
+- Catalog : fait sur `ai/foundry-catalog` (état complet de `Product`, `ProductFactory`, `ProductIdFactory`, aller-retour + `AlreadyExists`, `ProductBuilder` supprimé ; ses usages dans Shopping sont portés avec).
+- Reste : Compliance.
 
 **Ensuite : une PR par BC, empilées chacune sur la précédente** (une fois la PR socle mergée, la première se rebase sur `main`) :
 4. Iam.Authentication (credentials : factories de VO), Crm, Shopping, Sales, Finance, Fulfilment, Catalog, Compliance. Chaque PR : factories de VO et d'aggregate, état complet, test `AlreadyExists` du repository, suppression des Builders du BC. En dernier : `AbstractAggregateBuilder`, `SeededFaker`, `FakerSeedExtension`, les 3 subscribers de reset + `ResetState` + `EventSourcingExtension` + `ThrowawayKernelHelper`.
