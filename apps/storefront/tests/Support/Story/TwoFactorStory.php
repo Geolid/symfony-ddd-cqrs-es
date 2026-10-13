@@ -40,10 +40,11 @@ final class TwoFactorStory extends AbstractAggregateStory
         $persona = ConfirmedStory::persona();
         $totpSecret = faker()->totpSecret();
         $totp = TotpCredentialFactory::new()->withIdentityId($persona->id)->withSecret($totpSecret)->withCipher($this->cipher)->create();
-        $backupCodes = BackupCodeCredentialFactory::new()->withIdentityId($persona->id)->withPlainBackupCodes(faker()->backupCodes())->withBackupCodeHasher($this->backupCodeHasher)->create();
+        $plainBackupCodes = faker()->backupCodes();
+        $backupCodes = BackupCodeCredentialFactory::new()->withIdentityId($persona->id)->withPlainBackupCodes($plainBackupCodes)->withBackupCodeHasher($this->backupCodeHasher)->create();
 
         $this->uniqueness->claim(UniqueKey::for(AuthenticationUniqueKey::TOTP_CREDENTIAL_IDENTITY), $persona->id, $totp->id->toString());
         $this->store($totp, $backupCodes);
-        $this->addState('persona', $persona->withTotpSecret($totpSecret));
+        $this->addState('persona', $persona->withTotpSecret($totpSecret)->withBackupCodes($plainBackupCodes));
     }
 }

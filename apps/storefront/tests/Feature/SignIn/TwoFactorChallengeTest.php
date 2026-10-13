@@ -53,6 +53,25 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
 
     #[Test]
     #[WithStory(TwoFactorStory::class)]
+    public function itCompletesSignInWithBackupCode(): void
+    {
+        // Given
+        $persona = TwoFactorStory::persona();
+        $browser = $this->activeBrowser();
+        $browser->signInAs($persona->email, $persona->password());
+
+        $browser->visitRoute('storefront_two_factor_challenge', ['preferProvider' => 'backup_code']);
+        $browser->interceptRedirects();
+
+        // When
+        $browser->completeTwoFactorChallenge($persona->backupCode());
+
+        // Then
+        $browser->assertRedirectedToRoute('storefront_home_show');
+    }
+
+    #[Test]
+    #[WithStory(TwoFactorStory::class)]
     public function itSkipsOnTrustedDevice(): void
     {
         // Given
