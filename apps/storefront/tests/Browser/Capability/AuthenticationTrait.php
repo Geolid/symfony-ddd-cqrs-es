@@ -24,6 +24,11 @@ trait AuthenticationTrait
         return $this;
     }
 
+    public function signOut(): self
+    {
+        return $this->visitRoute('_logout_main');
+    }
+
     public function assertSignedIn(): self
     {
         $this->assertSeeElement('[data-testid="account-menu"]');

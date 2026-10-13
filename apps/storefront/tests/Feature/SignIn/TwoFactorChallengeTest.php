@@ -146,7 +146,7 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
         $browser->signInAs($persona->email, $persona->password());
 
         $browser->completeTwoFactorChallenge($browser->totpCode($persona->totpSecret()), trustDevice: true);
-        $browser->visitRoute('_logout_main');
+        $browser->signOut();
         $browser->visitRoute('storefront_signin_identify');
         $browser->use(static function (IdentifyForm $identify) use ($persona): void {
             $identify->fillEmail($persona->email)->submit();

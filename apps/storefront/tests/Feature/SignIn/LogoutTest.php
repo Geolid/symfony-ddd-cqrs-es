@@ -23,7 +23,7 @@ final class LogoutTest extends AbstractStorefrontTestCase
         $browser->interceptRedirects();
 
         // When
-        $browser->visitRoute('_logout_main');
+        $browser->signOut();
 
         // Then
         $browser->assertRedirectedToRoute('storefront_signin_identify');
