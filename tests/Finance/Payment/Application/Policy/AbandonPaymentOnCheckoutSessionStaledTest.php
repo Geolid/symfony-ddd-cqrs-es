@@ -37,10 +37,11 @@ final class AbandonPaymentOnCheckoutSessionStaledTest extends AbstractIntegratio
     public function itIgnoresWhenNoPaymentRequested(): void
     {
         // Given
+        $unknownCheckoutSessionId = Uuid::uuid7()->toString();
+
         $commandBus = $this->createMock(CommandBusInterface::class);
         $this->replace(CommandBusInterface::class, $commandBus);
         $commandBus->expects(self::never())->method('dispatch');
-        $unknownCheckoutSessionId = Uuid::uuid7()->toString();
 
         // When
         $this->trigger(AbandonPaymentOnCheckoutSessionStaled::class, new CheckoutSessionStaledIntegrationEvent($unknownCheckoutSessionId, Clock::get()->now()));
