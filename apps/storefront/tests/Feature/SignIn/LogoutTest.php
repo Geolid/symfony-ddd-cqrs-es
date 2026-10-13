@@ -4,17 +4,20 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\SignIn;
 
+use Iam\Tests\Support\Story\ConfirmedAccountStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
+use Zenstruck\Foundry\Attribute\WithStory;
 
 final class LogoutTest extends AbstractStorefrontTestCase
 {
     #[Test]
+    #[WithStory(ConfirmedAccountStory::class)]
     public function itLogsOut(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmed()->withPassword()->create();
+        $account = ConfirmedAccountStory::account();
         $browser->signInAs($account->email, $account->password());
 
         $browser->interceptRedirects();

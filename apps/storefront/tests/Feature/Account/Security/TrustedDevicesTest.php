@@ -13,11 +13,12 @@ use Zenstruck\Foundry\Attribute\WithStory;
 final class TrustedDevicesTest extends AbstractStorefrontTestCase
 {
     #[Test]
+    #[WithStory(TwoFactorAccountStory::class)]
     public function itShows(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmed()->withPassword()->withTotp()->create();
+        $account = TwoFactorAccountStory::account();
         $browser->signInAs($account->email, $account->password());
 
         $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()), trustDevice: true);
@@ -31,11 +32,12 @@ final class TrustedDevicesTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(TwoFactorAccountStory::class)]
     public function itRevokesOne(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmed()->withPassword()->withTotp()->create();
+        $account = TwoFactorAccountStory::account();
         $browser->signInAs($account->email, $account->password());
 
         $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()), trustDevice: true);
@@ -75,11 +77,12 @@ final class TrustedDevicesTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(TwoFactorAccountStory::class)]
     public function itRevokesAll(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmed()->withPassword()->withTotp()->create();
+        $account = TwoFactorAccountStory::account();
         $browser->signInAs($account->email, $account->password());
 
         $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()), trustDevice: true);
@@ -95,11 +98,12 @@ final class TrustedDevicesTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(TwoFactorAccountStory::class)]
     public function itRefusesRevokeAllWithInvalidCsrfToken(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmed()->withPassword()->withTotp()->create();
+        $account = TwoFactorAccountStory::account();
         $browser->signInAs($account->email, $account->password());
 
         $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()), trustDevice: true);

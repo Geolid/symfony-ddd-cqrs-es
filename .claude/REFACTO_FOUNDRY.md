@@ -72,7 +72,8 @@ Source du code de référence : le spike, branche `ai/foundry-spike-storefront` 
 - Fulfilment : fait sur `ai/foundry-fulfilment` (état complet de `Shipment`, `ShipmentFactory`, `ShipmentIdFactory`, `TrackingNumberFactory`, aller-retour + `AlreadyExists`, `ShipmentPiiErasureTest` via `storedEventOf()`, `ShipmentBuilder` supprimé).
 - Catalog : fait sur `ai/foundry-catalog` (état complet de `Product`, `ProductFactory`, `ProductIdFactory`, aller-retour + `AlreadyExists`, `ProductBuilder` supprimé ; ses usages dans Shopping sont portés avec).
 - Compliance : fait sur `ai/foundry-compliance` (état complet d'`Erasure`, `ErasureFactory`, `ErasureIdFactory`, aller-retour + `AlreadyExists`, `ErasureBuilder` supprimé).
-- Reste : plus aucun BC ; les étapes 5 à 7 (Stories de compte + `AccountBuilder`, démo, nettoyage final) restent à faire.
+- Étape 5 (Stories de compte) : faite sur `ai/foundry-account-stories` (11 Stories couvrent les 58 usages d'`account()` ; `AbstractPasswordAccountStory` porte l'identité et son mot de passe ; les secrets viennent du faker et sont tirés avant ; `AccountBuilder` et le DTO `Account` du storefront supprimés ; plus aucun `inputs()` dans les Stories).
+- Reste : étape 6 (démo) et étape 7 (nettoyage final : `AbstractAggregateBuilder`, `SeededFaker`, `sample()`/`inputs()`, règles).
 
 **Ensuite : une PR par BC, empilées chacune sur la précédente** (une fois la PR socle mergée, la première se rebase sur `main`) :
 4. Iam.Authentication (credentials : factories de VO), Crm, Shopping, Sales, Finance, Fulfilment, Catalog, Compliance. Chaque PR : factories de VO et d'aggregate, état complet, test `AlreadyExists` du repository, suppression des Builders du BC. En dernier : `AbstractAggregateBuilder`, `SeededFaker`, `FakerSeedExtension`, les 3 subscribers de reset + `ResetState` + `EventSourcingExtension` + `ThrowawayKernelHelper`.

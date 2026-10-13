@@ -5,9 +5,12 @@ declare(strict_types=1);
 namespace Storefront\Tests\Feature\SignIn;
 
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
+use Iam\Tests\Support\Story\ConfirmedIdentityStory;
+use Iam\Tests\Support\Story\RegisteredAccountStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\SignIn\Component\IdentifyForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
+use Zenstruck\Foundry\Attribute\WithStory;
 
 final class IdentifyTest extends AbstractStorefrontTestCase
 {
@@ -42,11 +45,12 @@ final class IdentifyTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(RegisteredAccountStory::class)]
     public function itRedirectsToConfirmation(): void
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $account = $this->account()->create();
+        $account = RegisteredAccountStory::account();
 
         // When
         $browser->visitRoute('storefront_signin_identify')
@@ -59,11 +63,12 @@ final class IdentifyTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(ConfirmedIdentityStory::class)]
     public function itRedirectsToVerify(): void
     {
         // Given
         $browser = $this->activeBrowser()->interceptRedirects();
-        $account = $this->account()->confirmed()->create();
+        $account = ConfirmedIdentityStory::account();
 
         // When
         $browser->visitRoute('storefront_signin_identify')

@@ -8,6 +8,8 @@ use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeHasherInter
 use Iam\Tests\Authentication\Support\Factory\BackupCodeCredentialFactory;
 use Patchlevel\EventSourcing\Repository\RepositoryManager;
 
+use function Zenstruck\Foundry\faker;
+
 /**
  * The two-factor account, plus its backup codes. Builds on TwoFactorAccountStory.
  */
@@ -23,17 +25,16 @@ final class TwoFactorWithBackupCodesAccountStory extends AbstractAccountStory
     public function build(): void
     {
         $base = TwoFactorAccountStory::account();
-        $backupCodes = BackupCodeCredentialFactory::new()->withIdentityId($base->id)->withBackupCodeHasher($this->backupCodeHasher)->create();
+        $plainBackupCodes = faker()->backupCodes();
 
-        $this->persist($backupCodes);
-
+        $this->persist(BackupCodeCredentialFactory::new()->withIdentityId($base->id)->withPlainBackupCodes($plainBackupCodes)->withBackupCodeHasher($this->backupCodeHasher)->create());
         $this->addState('account', new Account(
             $base->id,
             $base->email,
             $base->fullName,
             password: $base->password(),
             totpSecret: $base->totpSecret(),
-            plainBackupCodes: BackupCodeCredentialFactory::inputs($backupCodes)['plainBackupCodes'],
+            plainBackupCodes: $plainBackupCodes,
         ));
     }
 }

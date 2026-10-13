@@ -6,6 +6,7 @@ namespace Storefront\Tests\Feature\Account\Security;
 
 use Iam\Tests\Authentication\Support\Factory\PasswordFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
+use Iam\Tests\Support\Story\ConfirmedAccountStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\Account\Security\Component\ChangeEmailForm;
 use Storefront\Tests\Feature\Account\Security\Component\RequestEmailChangeForm;
@@ -13,17 +14,19 @@ use Storefront\Tests\Feature\Registration\Component\RegisterForm;
 use Storefront\Tests\Feature\SignIn\Component\IdentifyForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
 use Storefront\Tests\Support\VerificationCodeTrait;
+use Zenstruck\Foundry\Attribute\WithStory;
 
 final class ChangeEmailTest extends AbstractStorefrontTestCase
 {
     use VerificationCodeTrait;
 
     #[Test]
+    #[WithStory(ConfirmedAccountStory::class)]
     public function itChanges(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmed()->withPassword()->create();
+        $account = ConfirmedAccountStory::account();
         $browser->signInAs($account->email, $account->password());
 
         $newEmail = IdentityFactory::sample('email')->value;
@@ -51,11 +54,12 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(ConfirmedAccountStory::class)]
     public function itRefusesIncorrectCode(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmed()->withPassword()->create();
+        $account = ConfirmedAccountStory::account();
         $browser->signInAs($account->email, $account->password());
 
         $browser->visitRoute('storefront_account_security_request_email_change');
@@ -75,11 +79,12 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(ConfirmedAccountStory::class)]
     public function itResends(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmed()->withPassword()->create();
+        $account = ConfirmedAccountStory::account();
         $browser->signInAs($account->email, $account->password());
 
         $newEmail = IdentityFactory::sample('email')->value;
@@ -99,11 +104,12 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(ConfirmedAccountStory::class)]
     public function itRefusesInvalidCsrfToken(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmed()->withPassword()->create();
+        $account = ConfirmedAccountStory::account();
         $browser->signInAs($account->email, $account->password());
 
         $browser->visitRoute('storefront_account_security_request_email_change');
@@ -123,11 +129,12 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(ConfirmedAccountStory::class)]
     public function itRefusesResendWhenEmailAlreadyInUse(): void
     {
         // Given
         $browser = $this->activeBrowser();
-        $account = $this->account()->confirmed()->withPassword()->create();
+        $account = ConfirmedAccountStory::account();
         $browser->signInAs($account->email, $account->password());
 
         $targetEmail = IdentityFactory::sample('email')->value;
