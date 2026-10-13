@@ -76,7 +76,7 @@ final class CartTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itAddsAnotherProductAsNewLine(): void
+    public function itAddsProductWhenOtherProductAdded(): void
     {
         $this
             ->given($this->started(), $this->productAdded())
@@ -85,7 +85,7 @@ final class CartTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itAddsProductAgainByMergingIntoItsLine(): void
+    public function itAddsProductWhenAlreadyAdded(): void
     {
         $this
             ->given($this->started(), $this->productAdded(), $this->otherProductAdded())
@@ -94,7 +94,7 @@ final class CartTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itAddsProductAgainAsNewLineAfterRemoval(): void
+    public function itAddsProductWhenRemoved(): void
     {
         $this
             ->given($this->started(), $this->productAdded(), $this->productRemoved())
@@ -121,7 +121,7 @@ final class CartTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itRemovesTheMatchingLine(): void
+    public function itRemovesProductWhenOtherProductAdded(): void
     {
         $this
             ->given($this->started(), $this->productAdded(), $this->otherProductAdded())
@@ -157,7 +157,7 @@ final class CartTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itChangesQuantityOfTheMatchingLine(): void
+    public function itChangesQuantityWhenOtherProductAdded(): void
     {
         $this
             ->given($this->started(), $this->productAdded(), $this->otherProductAdded())
