@@ -11,6 +11,7 @@ use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
+use Iam\Tests\Identity\Support\Factory\ReasonFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
@@ -21,7 +22,7 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itReactivates(): void
     {
         // Given
-        $reason = IdentityFactory::sample('reason')->value;
+        $reason = ReasonFactory::new()->create()->value;
         $now = Clock::get()->now();
 
         $factory = IdentityFactory::new()->confirmed()->suspended();
@@ -57,7 +58,7 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new ReactivateIdentity(
             $identity->id->toString(),
-            IdentityFactory::sample('reason')->value,
+            ReasonFactory::new()->create()->value,
         ));
 
         // Then
@@ -73,7 +74,7 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new ReactivateIdentity(
             IdentityIdFactory::new()->create()->toString(),
-            IdentityFactory::sample('reason')->value,
+            ReasonFactory::new()->create()->value,
         ));
     }
 
@@ -90,7 +91,7 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new ReactivateIdentity(
             $identity->id->toString(),
-            IdentityFactory::sample('reason')->value,
+            ReasonFactory::new()->create()->value,
         ));
     }
 }

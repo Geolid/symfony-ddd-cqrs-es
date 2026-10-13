@@ -5,7 +5,8 @@ declare(strict_types=1);
 namespace Storefront\Tests\Feature\Registration;
 
 use Iam\Tests\Authentication\Support\Factory\PasswordFactory;
-use Iam\Tests\Identity\Support\Factory\IdentityFactory;
+use Iam\Tests\Identity\Support\Factory\EmailFactory;
+use Iam\Tests\Identity\Support\Factory\FullNameFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\Registration\Component\RegisterForm;
 use Storefront\Tests\Feature\SignIn\Component\IdentifyForm;
@@ -18,8 +19,8 @@ final class RegisterTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $email = IdentityFactory::sample('email')->value;
-        $fullName = IdentityFactory::sample('fullName')->value;
+        $email = EmailFactory::new()->create()->value;
+        $fullName = FullNameFactory::new()->create()->value;
         $password = PasswordFactory::new()->create()->value;
 
         $browser->visitRoute('storefront_signin_identify');
@@ -46,8 +47,8 @@ final class RegisterTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $email = IdentityFactory::sample('email')->value;
-        $fullName = IdentityFactory::sample('fullName')->value;
+        $email = EmailFactory::new()->create()->value;
+        $fullName = FullNameFactory::new()->create()->value;
         $password = PasswordFactory::new()->create()->value;
 
         $browser->visitRoute('storefront_signin_identify');
@@ -74,8 +75,8 @@ final class RegisterTest extends AbstractStorefrontTestCase
     {
         // Given
         $browser = $this->activeBrowser();
-        $email = IdentityFactory::sample('email')->value;
-        $fullName = IdentityFactory::sample('fullName')->value;
+        $email = EmailFactory::new()->create()->value;
+        $fullName = FullNameFactory::new()->create()->value;
         $password = PasswordFactory::new()->create()->value;
 
         $browser->visitRoute('storefront_signin_identify');

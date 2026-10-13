@@ -8,6 +8,7 @@ use Iam\Identity\Application\Command\ChangeFullName\ChangeFullName;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
+use Iam\Tests\Identity\Support\Factory\FullNameFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -28,7 +29,7 @@ final class ChangeFullNameHandlerTest extends AbstractIntegrationTestCase
     public function itChanges(): void
     {
         // Given
-        $newFullName = IdentityFactory::sample('fullName')->value;
+        $newFullName = FullNameFactory::new()->create()->value;
         $identity = IdentityFactory::new()->create();
         $this->store($identity);
 
@@ -62,7 +63,7 @@ final class ChangeFullNameHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new ChangeFullName(IdentityIdFactory::new()->create()->toString(), IdentityFactory::sample('fullName')->value));
+        $this->dispatch(new ChangeFullName(IdentityIdFactory::new()->create()->toString(), FullNameFactory::new()->create()->value));
     }
 
     #[Test]
@@ -76,6 +77,6 @@ final class ChangeFullNameHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityAlreadyErasedException::class);
 
         // When
-        $this->dispatch(new ChangeFullName($identity->id->toString(), IdentityFactory::sample('fullName')->value));
+        $this->dispatch(new ChangeFullName($identity->id->toString(), FullNameFactory::new()->create()->value));
     }
 }

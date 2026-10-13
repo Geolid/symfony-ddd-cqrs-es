@@ -15,9 +15,10 @@ use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Address;
 use Shared\Domain\ValueObject\PostalAddress;
 use Shopping\Checkout\Application\IntegrationEvent\CheckoutSessionCompleted\CheckoutSessionCompletedIntegrationEvent;
-use Support\Faker\SeededFaker;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
+
+use function Zenstruck\Foundry\faker;
 
 final class ConfirmOrderOnCheckoutSessionCompletedTest extends AbstractIntegrationTestCase
 {
@@ -32,10 +33,10 @@ final class ConfirmOrderOnCheckoutSessionCompletedTest extends AbstractIntegrati
         $billingAddress = PostalAddressMapper::toArray(PostalAddress::of('John Doe', Address::of('2 rue de Paris', '75001', 'Paris', 'FR')));
         $items = [[
             'productId' => Uuid::uuid7()->toString(),
-            'label' => SeededFaker::get()->sentence(3),
-            'unitPriceInCents' => SeededFaker::get()->numberBetween(500, 5_000),
-            'taxAmountInCents' => SeededFaker::get()->numberBetween(50, 500),
-            'quantity' => SeededFaker::get()->numberBetween(1, 5),
+            'label' => faker()->sentence(3),
+            'unitPriceInCents' => faker()->numberBetween(500, 5_000),
+            'taxAmountInCents' => faker()->numberBetween(50, 500),
+            'quantity' => faker()->numberBetween(1, 5),
         ]];
 
         // When

@@ -8,6 +8,7 @@ use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Quantity;
+use Shared\Tests\Support\Factory\QuantityFactory;
 use Shopping\Cart\Domain\Cart;
 use Shopping\Cart\Domain\Event\CartProductAdded;
 use Shopping\Cart\Domain\Event\CartProductQuantityChanged;
@@ -18,7 +19,6 @@ use Shopping\Cart\Domain\Exception\CartAlreadyPurchasedException;
 use Shopping\Cart\Domain\Exception\CartProductNotFoundException;
 use Shopping\Cart\Domain\ValueObject\CartId;
 use Shopping\Tests\Cart\Support\Factory\CartIdFactory;
-use Support\Faker\SeededFaker;
 use Symfony\Component\Clock\Clock;
 
 final class CartTest extends AggregateRootTestCase
@@ -41,7 +41,7 @@ final class CartTest extends AggregateRootTestCase
         $this->customerId = Uuid::uuid7()->toString();
         $this->startedAt = Clock::get()->now();
         $this->productId = Uuid::uuid7()->toString();
-        $this->quantity = Quantity::of(SeededFaker::get()->numberBetween(1, 5));
+        $this->quantity = QuantityFactory::new()->create();
         $this->addedAt = $this->startedAt->modify('+1 minute');
         $this->removedAt = $this->startedAt->modify('+2 minute');
         $this->changedAt = $this->startedAt->modify('+2 minute');

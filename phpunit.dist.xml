@@ -103,9 +103,7 @@
     </logging>
 
     <extensions>
-        <bootstrap class="Tools\PHPUnit\EventSourcingExtension"/>
         <bootstrap class="Tools\PHPUnit\ClockExtension"/>
-        <bootstrap class="Tools\PHPUnit\FakerSeedExtension"/>
         <bootstrap class="Tools\PHPUnit\ValkeyExtension"/>
         <bootstrap class="DAMA\DoctrineTestBundle\PHPUnit\PHPUnitExtension"/>
         <bootstrap class="Zenstruck\Browser\Test\BrowserExtension"/>

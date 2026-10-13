@@ -74,7 +74,8 @@ Source du code de référence : le spike, branche `ai/foundry-spike-storefront` 
 - Compliance : fait sur `ai/foundry-compliance` (état complet d'`Erasure`, `ErasureFactory`, `ErasureIdFactory`, aller-retour + `AlreadyExists`, `ErasureBuilder` supprimé).
 - Étape 5 (Stories de compte) : faite sur `ai/foundry-account-stories` (11 Stories couvrent les 58 usages d'`account()` ; `AbstractPasswordAccountStory` porte l'identité et son mot de passe ; les secrets viennent du faker et sont tirés avant ; `AccountBuilder` et le DTO `Account` du storefront supprimés ; plus aucun `inputs()` dans les Stories).
 - Étape 6 (démo) : faite sur `ai/foundry-demo` (`demo/Story/DemoCatalogStory` et `DemoShopperStory`, groupe `demo`, chargés par `foundry:load-fixtures demo` ; `demo/SeedCommand.php`, `seeds.php`, `console`, `WeightedPicker` et `.castor/demo.php` supprimés ; règle `demo.md` réécrite). Identifiants du compte de démo : `DemoShopperStory::EMAIL` / `::PASSWORD`.
-- Reste : étape 7 (nettoyage final : `AbstractAggregateBuilder`, `SeededFaker`, `sample()`/`inputs()`, règles).
+- Étape 7 (nettoyage final) : faite sur `ai/foundry-cleanup` (`AbstractAggregateBuilder`, `AggregateListBuilder`, `IdentityBuilder`, `SeededFaker`, `FakerSeedExtension`, les trois subscribers de reset, `EventSourcingExtension` et `ThrowawayKernelHelper` supprimés ; `sample()`/`inputs()` et `serializedEventOf()` retirés ; règles `tests.md`, `domain.md`, `dm.md` mises à jour).
+- Reste : rien dans le plan.
 
 **Ensuite : une PR par BC, empilées chacune sur la précédente** (une fois la PR socle mergée, la première se rebase sur `main`) :
 4. Iam.Authentication (credentials : factories de VO), Crm, Shopping, Sales, Finance, Fulfilment, Catalog, Compliance. Chaque PR : factories de VO et d'aggregate, état complet, test `AlreadyExists` du repository, suppression des Builders du BC. En dernier : `AbstractAggregateBuilder`, `SeededFaker`, `FakerSeedExtension`, les 3 subscribers de reset + `ResetState` + `EventSourcingExtension` + `ThrowawayKernelHelper`.
@@ -94,19 +95,17 @@ Source du code de référence : le spike, branche `ai/foundry-spike-storefront` 
 
 ## 6. Points ouverts / non vérifié
 
-- **castor et l'environnement** : `qa:test` tourne sous le contexte `test` (`castor.php`) ; `APP_ENV`, `FAKER_SEED` et `FOUNDRY_FAKER_SEED` posés en ligne atteignent le conteneur (voir §3).
-- **Playwright** : `castor debug:test` s'est arrêté sur un `TimeoutException` (le clic sur « submit » ne faisait rien) ; cause non élucidée.
-- `castor qa:static` (PHPStan, deptrac, PHPat, CS) et `qa:mutation` (Infection, min-msi 100) **jamais lancés** sur le nouveau code ; le typage `@phpstan-type Inputs` n'est pas vérifié.
-- Calque deptrac `demo/.*` (`deptrac_bc.yaml:60`) : autorise-t-il une dépendance vers `tests/` ?
-- DTO `Account` des Stories : remplacer par des états scalaires lus par `__callStatic` (`TwoFactorAccountStory::email()`) avec `@method static` ? Proposé, non tranché.
-- `EventSourcingResetter` : décoration sans appel de l'interne ; remplacement complet à décider.
-- Subscriptions en mémoire : passent dans tous les runs faits, non prouvé dans tous les ordres d'exécution.
-- Le test d'aller-retour du repository détecte la sérialisation, pas un `#[Apply]` oublié.
-- `composer.lock` : `symfony/error-handler` est passé de v8.1.5 à v8.1.8 pendant l'installation.
+Résolus pendant l'enchaînement des PRs : castor relaie `APP_ENV`, `FAKER_SEED` et `FOUNDRY_FAKER_SEED` posés en ligne (contexte `test`) ; Playwright n'est installé que pour `castor debug:test` ; `castor qa` (PHPStan, deptrac, PHPat, CS, Infection) est passé sur chaque PR ; le calque deptrac `demo/.*` n'empêche pas les Stories de démo d'utiliser les factories de `tests/` ; les aggregates de tous les BC exposent leur état complet ; les `*PiiErasureTest` relisent via le repository ou `storedEventOf()` ; les restes du spike sont retirés.
+
+Encore ouverts :
 - **Cart** : l'état garde `products` (productId → `Quantity`) mais pas les dates par produit (`addedAt`, `changedAt`, `removedAt` restent dans le flux) — choix à confirmer.
-- Domaines autres qu'Identity : état complet non essayé. Playwright, `cron` et `es-dashboard` non testés avec les stores réels.
-- **Tests `*PiiErasureTest`** : la sérialisation manuelle (`serializedEventOf()` + `deserialize()`) existait parce que l'event store en mémoire ne chiffrait rien. Avec le store et les clés en base, le test se réduit à : sauver, `removeWithSubjectId()`, relire (repository pour l'état d'un aggregate, `storedEventOf()` de `EventSourcingTrait` pour un événement, d'intégration compris). Fait pour Identity, `ApiKeyCredential`, Customer ; à faire dans la PR de chaque BC (Shopping, Sales, Fulfilment), puis supprimer `serializedEventOf()` de `EventSourcingTrait` s'il n'a plus d'appelant.
-- Restes du spike retirés (`tests/Iam/Identity/Spike/*`, `ShopperStory`, `BuilderShopperStory`, `CustomerFactory`, `CartFactory`, `demo:fixtures`). Reste : worktree `ai/foundry-spike`, stash `foundry-spike`.
+- DTO `Account` des Stories (`tests/Iam/Support/Story/Account.php`) : remplacer par des états scalaires lus par `__callStatic` avec `@method static` ? Non tranché.
+- `EventSourcingResetter` : décoration sans appel de l'interne ; remplacement complet à décider.
+- Le test d'aller-retour du repository détecte la sérialisation, pas un `#[Apply]` oublié (les deux côtés passent par les mêmes `#[Apply]`).
+- Subscriptions en mémoire : verts dans tous les ordres d'exécution rencontrés, non prouvé dans tous.
+- `composer.lock` : `symfony/error-handler` est passé de v8.1.5 à v8.1.8 pendant l'installation initiale de Foundry.
+- `castor qa` régénère `apps/cron/config/reference.php` et `apps/es-dashboard/config/reference.php` sans `declare(strict_types=1)` ; non commité.
+- Le worktree `../symfony-ddd-cqrs-es-foundry` (branche `ai/foundry-spike`) et le stash `foundry-spike` sont obsolètes ; à supprimer à la main (le hook bloque la suppression).
 
 ## 7. Reprendre
 

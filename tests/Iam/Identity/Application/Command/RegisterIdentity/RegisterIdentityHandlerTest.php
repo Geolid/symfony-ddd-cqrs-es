@@ -8,7 +8,8 @@ use Iam\Identity\Application\Command\RegisterIdentity\Exception\IdentityEmailAlr
 use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\IdentityVerificationStatus;
-use Iam\Tests\Identity\Support\Factory\IdentityFactory;
+use Iam\Tests\Identity\Support\Factory\EmailFactory;
+use Iam\Tests\Identity\Support\Factory\FullNameFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -21,8 +22,8 @@ final class RegisterIdentityHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $id = IdentityIdFactory::new()->create()->toString();
-        $fullName = IdentityFactory::sample('fullName')->value;
-        $email = IdentityFactory::sample('email')->value;
+        $fullName = FullNameFactory::new()->create()->value;
+        $email = EmailFactory::new()->create()->value;
         $now = Clock::get()->now();
 
         // When
@@ -47,10 +48,10 @@ final class RegisterIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenEmailAlreadyInUse(): void
     {
         // Given
-        $email = IdentityFactory::sample('email')->value;
+        $email = EmailFactory::new()->create()->value;
         $this->dispatch(new RegisterIdentity(
             IdentityIdFactory::new()->create()->toString(),
-            IdentityFactory::sample('fullName')->value,
+            FullNameFactory::new()->create()->value,
             $email,
         ));
 
@@ -60,7 +61,7 @@ final class RegisterIdentityHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new RegisterIdentity(
             IdentityIdFactory::new()->create()->toString(),
-            IdentityFactory::sample('fullName')->value,
+            FullNameFactory::new()->create()->value,
             $email,
         ));
     }

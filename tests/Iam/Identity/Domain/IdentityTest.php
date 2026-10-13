@@ -26,12 +26,15 @@ use Iam\Identity\Domain\ValueObject\Email;
 use Iam\Identity\Domain\ValueObject\FullName;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Reason;
-use Iam\Tests\Identity\Support\Factory\IdentityFactory;
+use Iam\Tests\Identity\Support\Factory\EmailFactory;
+use Iam\Tests\Identity\Support\Factory\FullNameFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
+use Iam\Tests\Identity\Support\Factory\ReasonFactory;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Domain\Service\CodeChallengerInterface;
 use Shared\Tests\Support\Double\FakeCodeChallenger;
+use Symfony\Component\Clock\Clock;
 
 final class IdentityTest extends AggregateRootTestCase
 {
@@ -58,22 +61,23 @@ final class IdentityTest extends AggregateRootTestCase
         parent::setUp();
 
         $this->id = IdentityIdFactory::new()->create();
-        $this->fullName = IdentityFactory::sample('fullName');
-        $this->email = IdentityFactory::sample('email');
-        $this->reason = IdentityFactory::sample('reason');
-        $this->registeredAt = IdentityFactory::sample('registeredAt');
-        $this->confirmedAt = IdentityFactory::sample('confirmedAt');
-        $this->confirmationCode = IdentityFactory::sample('confirmationCode');
-        $this->fullNameChangedAt = IdentityFactory::sample('fullNameChangedAt');
-        $this->emailChangeRequestedAt = IdentityFactory::sample('emailChangeRequestedAt');
-        $this->emailChangedAt = IdentityFactory::sample('emailChangedAt');
+        $this->fullName = FullNameFactory::new()->create();
+        $this->email = EmailFactory::new()->create();
+        $this->reason = ReasonFactory::new()->create();
+        $now = Clock::get()->now();
+        $this->registeredAt = $now;
+        $this->confirmedAt = $now->modify('+1 hour');
+        $this->confirmationCode = FakeCodeChallenger::CODE;
+        $this->fullNameChangedAt = $now->modify('+45 minutes');
+        $this->emailChangeRequestedAt = $now->modify('+50 minutes');
+        $this->emailChangedAt = $now->modify('+55 minutes');
         $this->codeChallenger = new FakeCodeChallenger();
-        $this->suspendedAt = IdentityFactory::sample('suspendedAt');
-        $this->reactivatedAt = IdentityFactory::sample('reactivatedAt');
-        $this->requestedAt = IdentityFactory::sample('requestedAt');
-        $this->cancelledAt = IdentityFactory::sample('cancelledAt');
-        $this->erasedAt = IdentityFactory::sample('erasedAt');
-        $this->confirmationRequestedAt = IdentityFactory::sample('confirmationRequestedAt');
+        $this->suspendedAt = $now->modify('+1 day');
+        $this->reactivatedAt = $now->modify('+2 day');
+        $this->requestedAt = $now->modify('+3 day');
+        $this->cancelledAt = $now->modify('+4 day');
+        $this->erasedAt = $now->modify('+5 day');
+        $this->confirmationRequestedAt = $now->modify('+30 minutes');
     }
 
     #[Test]
@@ -108,7 +112,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered(), $this->confirmed())
-            ->when(fn (Identity $identity) => $identity->confirm($this->confirmationCode, $this->codeChallenger, IdentityFactory::sample('confirmedAt')))
+            ->when(fn (Identity $identity) => $identity->confirm($this->confirmationCode, $this->codeChallenger, Clock::get()->now()->modify('+1 hour')))
             ->then();
     }
 
@@ -137,7 +141,7 @@ final class IdentityTest extends AggregateRootTestCase
     #[Test]
     public function itChangesFullName(): void
     {
-        $newFullName = IdentityFactory::sample('fullName');
+        $newFullName = FullNameFactory::new()->create();
 
         $this
             ->given($this->registered())
@@ -163,14 +167,14 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->erasureRequested(),
                 $this->erased(),
             )
-            ->when(fn (Identity $identity) => $identity->changeFullName(IdentityFactory::sample('fullName'), $this->fullNameChangedAt))
+            ->when(fn (Identity $identity) => $identity->changeFullName(FullNameFactory::new()->create(), $this->fullNameChangedAt))
             ->expectsException(IdentityAlreadyErasedException::class);
     }
 
     #[Test]
     public function itRequestsEmailChange(): void
     {
-        $newEmail = IdentityFactory::sample('email');
+        $newEmail = EmailFactory::new()->create();
 
         $this
             ->given($this->registered())
@@ -181,7 +185,7 @@ final class IdentityTest extends AggregateRootTestCase
     #[Test]
     public function itRequestsEmailChangeWhenNoPriorRequest(): void
     {
-        $newEmail = IdentityFactory::sample('email');
+        $newEmail = EmailFactory::new()->create();
         $requestedAt = $this->registeredAt->modify('+1 second');
 
         $this
@@ -208,7 +212,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->erasureRequested(),
                 $this->erased(),
             )
-            ->when(fn (Identity $identity) => $identity->requestEmailChange(IdentityFactory::sample('email'), $this->emailChangeRequestedAt))
+            ->when(fn (Identity $identity) => $identity->requestEmailChange(EmailFactory::new()->create(), $this->emailChangeRequestedAt))
             ->expectsException(IdentityAlreadyErasedException::class);
     }
 
@@ -218,9 +222,9 @@ final class IdentityTest extends AggregateRootTestCase
         $this
             ->given(
                 $this->registered(),
-                new IdentityEmailChangeRequested($this->id, IdentityFactory::sample('email'), $this->emailChangeRequestedAt),
+                new IdentityEmailChangeRequested($this->id, EmailFactory::new()->create(), $this->emailChangeRequestedAt),
             )
-            ->when(fn (Identity $identity) => $identity->requestEmailChange(IdentityFactory::sample('email'), $this->emailChangeRequestedAt->modify('+1 second')))
+            ->when(fn (Identity $identity) => $identity->requestEmailChange(EmailFactory::new()->create(), $this->emailChangeRequestedAt->modify('+1 second')))
             ->expectsException(EmailChangeRequestedTooRecentlyException::class)
             ->expectsExceptionMessage('requested too recently');
     }
@@ -228,7 +232,7 @@ final class IdentityTest extends AggregateRootTestCase
     #[Test]
     public function itChangesEmail(): void
     {
-        $newEmail = IdentityFactory::sample('email');
+        $newEmail = EmailFactory::new()->create();
 
         $this
             ->given($this->registered())
@@ -254,7 +258,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->erasureRequested(),
                 $this->erased(),
             )
-            ->when(fn (Identity $identity) => $identity->changeEmail(FakeCodeChallenger::CODE, $this->codeChallenger, IdentityFactory::sample('email'), $this->emailChangedAt))
+            ->when(fn (Identity $identity) => $identity->changeEmail(FakeCodeChallenger::CODE, $this->codeChallenger, EmailFactory::new()->create(), $this->emailChangedAt))
             ->expectsException(IdentityAlreadyErasedException::class);
     }
 
@@ -263,7 +267,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered())
-            ->when(fn (Identity $identity) => $identity->changeEmail('wrong', new FakeCodeChallenger(), IdentityFactory::sample('email'), $this->emailChangedAt))
+            ->when(fn (Identity $identity) => $identity->changeEmail('wrong', new FakeCodeChallenger(), EmailFactory::new()->create(), $this->emailChangedAt))
             ->expectsException(InvalidEmailChangeCodeException::class);
     }
 
@@ -294,7 +298,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->confirmed(),
                 $this->suspended(),
             )
-            ->when(fn (Identity $identity) => $identity->suspend(IdentityFactory::sample('reason'), $this->suspendedAt))
+            ->when(fn (Identity $identity) => $identity->suspend(ReasonFactory::new()->create(), $this->suspendedAt))
             ->then();
     }
 
@@ -332,7 +336,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->registered(),
                 $this->confirmed(),
             )
-            ->when(fn (Identity $identity) => $identity->reactivate(IdentityFactory::sample('reason'), $this->reactivatedAt))
+            ->when(fn (Identity $identity) => $identity->reactivate(ReasonFactory::new()->create(), $this->reactivatedAt))
             ->then();
     }
 
@@ -407,7 +411,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered(), $this->erasureRequested())
-            ->when(static fn (Identity $identity) => $identity->requestErasure(IdentityFactory::sample('requestedAt')))
+            ->when(static fn (Identity $identity) => $identity->requestErasure(Clock::get()->now()->modify('+3 day')))
             ->then();
     }
 
@@ -425,7 +429,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered())
-            ->when(static fn (Identity $identity) => $identity->cancelErasure(IdentityFactory::sample('cancelledAt')))
+            ->when(static fn (Identity $identity) => $identity->cancelErasure(Clock::get()->now()->modify('+4 day')))
             ->then();
     }
 
@@ -443,7 +447,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered())
-            ->when(static fn (Identity $identity) => $identity->erase(IdentityFactory::sample('erasedAt')))
+            ->when(static fn (Identity $identity) => $identity->erase(Clock::get()->now()->modify('+5 day')))
             ->then();
     }
 
@@ -456,7 +460,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->erasureRequested(),
                 $this->erased(),
             )
-            ->when(static fn (Identity $identity) => $identity->erase(IdentityFactory::sample('erasedAt')))
+            ->when(static fn (Identity $identity) => $identity->erase(Clock::get()->now()->modify('+5 day')))
             ->then();
     }
 
@@ -474,7 +478,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered(), $this->confirmed())
-            ->when(static fn (Identity $identity) => $identity->erasePending(IdentityFactory::sample('erasedAt')))
+            ->when(static fn (Identity $identity) => $identity->erasePending(Clock::get()->now()->modify('+5 day')))
             ->then();
     }
 
@@ -496,7 +500,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->erasureRequested(),
                 $this->erased(),
             )
-            ->when(static fn (Identity $identity) => $identity->erasePending(IdentityFactory::sample('erasedAt')))
+            ->when(static fn (Identity $identity) => $identity->erasePending(Clock::get()->now()->modify('+5 day')))
             ->then();
     }
 

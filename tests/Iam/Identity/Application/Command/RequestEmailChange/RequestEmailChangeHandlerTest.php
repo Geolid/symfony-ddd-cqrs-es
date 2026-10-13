@@ -10,6 +10,7 @@ use Iam\Identity\Application\IdentityUniqueKey;
 use Iam\Identity\Domain\Exception\EmailChangeRequestedTooRecentlyException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
+use Iam\Tests\Identity\Support\Factory\EmailFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -29,12 +30,12 @@ final class RequestEmailChangeHandlerTest extends AbstractIntegrationTestCase
         $this->store($identity);
 
         // When
-        $this->dispatch(new RequestEmailChange($identity->id->toString(), IdentityFactory::sample('email')->value));
+        $this->dispatch(new RequestEmailChange($identity->id->toString(), EmailFactory::new()->create()->value));
 
         // Then
         $this->expectException(EmailChangeRequestedTooRecentlyException::class);
 
-        $this->dispatch(new RequestEmailChange($identity->id->toString(), IdentityFactory::sample('email')->value));
+        $this->dispatch(new RequestEmailChange($identity->id->toString(), EmailFactory::new()->create()->value));
     }
 
     #[Test]
@@ -44,7 +45,7 @@ final class RequestEmailChangeHandlerTest extends AbstractIntegrationTestCase
         $identity = IdentityFactory::new()->create();
         $this->store($identity);
 
-        $email = IdentityFactory::sample('email')->value;
+        $email = EmailFactory::new()->create()->value;
         $this->service(UniquenessRegistryInterface::class)->claim(
             UniqueKey::for(IdentityUniqueKey::EMAIL),
             $email,
@@ -65,7 +66,7 @@ final class RequestEmailChangeHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new RequestEmailChange(IdentityIdFactory::new()->create()->toString(), IdentityFactory::sample('email')->value));
+        $this->dispatch(new RequestEmailChange(IdentityIdFactory::new()->create()->toString(), EmailFactory::new()->create()->value));
     }
 
     #[Test]
@@ -79,20 +80,20 @@ final class RequestEmailChangeHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityAlreadyErasedException::class);
 
         // When
-        $this->dispatch(new RequestEmailChange($identity->id->toString(), IdentityFactory::sample('email')->value));
+        $this->dispatch(new RequestEmailChange($identity->id->toString(), EmailFactory::new()->create()->value));
     }
 
     #[Test]
     public function itFailsWhenTooRecent(): void
     {
         // Given
-        $identity = IdentityFactory::new()->emailChangeRequested(IdentityFactory::sample('email')->value)->create();
+        $identity = IdentityFactory::new()->emailChangeRequested(EmailFactory::new()->create()->value)->create();
         $this->store($identity);
 
         // Then
         $this->expectException(EmailChangeRequestedTooRecentlyException::class);
 
         // When
-        $this->dispatch(new RequestEmailChange($identity->id->toString(), IdentityFactory::sample('email')->value));
+        $this->dispatch(new RequestEmailChange($identity->id->toString(), EmailFactory::new()->create()->value));
     }
 }

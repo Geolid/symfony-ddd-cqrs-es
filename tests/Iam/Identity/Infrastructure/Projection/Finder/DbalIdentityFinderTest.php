@@ -10,6 +10,7 @@ use Iam\Identity\Application\Finder\Identity\IdentityResult;
 use Iam\Identity\Application\IdentityModerationStatus;
 use Iam\Identity\Application\IdentityVerificationStatus;
 use Iam\Identity\Domain\Identity;
+use Iam\Tests\Identity\Support\Factory\EmailFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -19,7 +20,6 @@ use Shared\Application\Finder\PaginationMetadata;
 use Shared\Application\Finder\PaginatorInterface;
 use Shared\Tests\Support\TestCase\AbstractPaginatableFinderTestCase;
 use Shared\Tests\Support\TestCase\RealColumnLeadsTrait;
-use Support\Faker\SeededFaker;
 use Symfony\Component\Clock\Clock;
 
 /**
@@ -79,7 +79,7 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
 
         // When
         $found = $this->finder()->ofEmailOrNull($identity->email->value);
-        $notFound = $this->finder()->ofEmailOrNull(SeededFaker::get()->unique()->safeEmail());
+        $notFound = $this->finder()->ofEmailOrNull(EmailFactory::new()->create()->value);
 
         // Then
         self::assertSame($identity->id->toString(), $found?->id);

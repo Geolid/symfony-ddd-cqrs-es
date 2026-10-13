@@ -10,7 +10,7 @@ use Support\Faker\CountryCodeFakerProvider;
 use Support\Faker\CredentialFakerProvider;
 
 /**
- * SPIKE — single place building the Foundry faker (unit: UnitTestConfig::configure, kernel: faker.service).
+ * Single place building the Foundry faker (unit: UnitTestConfig::configure, kernel: faker.service).
  */
 final class FoundryFaker
 {
