@@ -70,7 +70,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         $other = $this->otherShipment();
         $this->store($other);
 
-        $trackingNumber = TrackingNumberFactory::new()->create()->value;
+        $trackingNumber = TrackingNumberFactory::new()->create();
 
         $shipment = ShipmentFactory::new()->prepared()->manifested($trackingNumber)->create();
 
@@ -81,7 +81,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($shipment->id->toString());
         self::assertNotFalse($row);
         self::assertSame(ShipmentStatus::MANIFESTED->value, $row['status']);
-        self::assertSame($trackingNumber, $row['tracking_number']);
+        self::assertSame($trackingNumber->value, $row['tracking_number']);
         self::assertNotNull($row['manifested_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());

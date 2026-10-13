@@ -26,7 +26,7 @@ final class DbalCartItemProjectorTest extends AbstractIntegrationTestCase
         $this->store($other);
 
         $productId = Uuid::uuid7()->toString();
-        $cart = CartFactory::new()->productAdded($productId)->create();
+        $cart = CartFactory::new()->productAdded($productId, $quantity = Quantity::of(2))->create();
 
         // When
         $this->store($cart);
@@ -34,29 +34,10 @@ final class DbalCartItemProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($cart->id->toString(), $productId);
         self::assertNotFalse($row);
-        self::assertSame($cart->products[$productId]->value, $row['quantity']);
+        self::assertSame($quantity->value, $row['quantity']);
 
         $otherRow = $this->fetchRow($other->id->toString(), $otherProductId);
         self::assertNotFalse($otherRow);
-    }
-
-    #[Test]
-    public function itProjectsOnCartProductAddedWhenAlreadyPresent(): void
-    {
-        // Given
-        $productId = Uuid::uuid7()->toString();
-        $cart = CartFactory::new()
-            ->productAdded($productId, Quantity::of(2))
-            ->productAdded($productId, Quantity::of(3))
-            ->create();
-
-        // When
-        $this->store($cart);
-
-        // Then
-        $row = $this->fetchRow($cart->id->toString(), $productId);
-        self::assertNotFalse($row);
-        self::assertSame(5, $row['quantity']);
     }
 
     #[Test]

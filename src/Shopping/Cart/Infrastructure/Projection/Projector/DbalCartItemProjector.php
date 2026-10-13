@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Shopping\Cart\Infrastructure\Projection\Projector;
 
-use Doctrine\DBAL\Exception\UniqueConstraintViolationException;
 use Doctrine\DBAL\Schema\Name\UnqualifiedName;
 use Doctrine\DBAL\Schema\PrimaryKeyConstraint;
 use Doctrine\DBAL\Schema\Schema;
@@ -24,23 +23,16 @@ final readonly class DbalCartItemProjector extends AbstractDbalProjector
     #[Subscribe(CartProductAdded::class)]
     public function onCartProductAdded(CartProductAdded $event): void
     {
-        try {
-            $this->connection->insert(
-                self::TABLE,
-                [
-                    'cart_id' => $event->id->toString(),
-                    'product_id' => $event->productId,
-                    'quantity' => $event->quantity->value,
-                    'added_at' => $event->addedAt,
-                ],
-                ['added_at' => Types::DATETIME_IMMUTABLE],
-            );
-        } catch (UniqueConstraintViolationException) {
-            $this->connection->executeStatement(
-                \sprintf('UPDATE %s SET quantity = quantity + :delta WHERE cart_id = :cartId AND product_id = :productId', self::TABLE),
-                ['delta' => $event->quantity->value, 'cartId' => $event->id->toString(), 'productId' => $event->productId],
-            );
-        }
+        $this->connection->insert(
+            self::TABLE,
+            [
+                'cart_id' => $event->id->toString(),
+                'product_id' => $event->productId,
+                'quantity' => $event->quantity->value,
+                'added_at' => $event->addedAt,
+            ],
+            ['added_at' => Types::DATETIME_IMMUTABLE],
+        );
     }
 
     #[Subscribe(CartProductRemoved::class)]

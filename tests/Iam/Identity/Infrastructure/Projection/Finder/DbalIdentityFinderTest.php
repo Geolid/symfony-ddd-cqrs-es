@@ -33,8 +33,9 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
     public function itGetsById(): void
     {
         // Given
+        $confirmationRequestedAt = Clock::get()->now()->modify('+30 minutes');
         $other = IdentityFactory::new()->create();
-        $identity = IdentityFactory::new()->confirmed()->create();
+        $identity = IdentityFactory::new()->confirmationRequested($confirmationRequestedAt)->confirmed()->create();
         $this->store($other, $identity);
 
         // When
@@ -47,14 +48,8 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
         self::assertSame(IdentityVerificationStatus::CONFIRMED, $result->verificationStatus);
         self::assertSame(IdentityModerationStatus::ACTIVE, $result->moderationStatus);
         self::assertNull($result->reason);
-        self::assertSame(
-            $identity->registeredAt->format(\DateTimeInterface::ATOM),
-            $result->registeredAt->format(\DateTimeInterface::ATOM),
-        );
-        self::assertSame(
-            $identity->registeredAt->format(\DateTimeInterface::ATOM),
-            $result->confirmationRequestedAt->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDateTime($identity->registeredAt, $result->registeredAt);
+        self::assertSameDateTime($confirmationRequestedAt, $result->confirmationRequestedAt);
         self::assertNull($result->suspendedAt);
         self::assertNull($result->reactivatedAt);
         self::assertSame(ErasureStatus::RETAINED, $result->erasureStatus);
@@ -63,11 +58,14 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
     #[Test]
     public function itThrowsWhenIdNotFound(): void
     {
+        // Given
+        $unknownId = IdentityIdFactory::new()->create()->toString();
+
         // Then
         $this->expectException(IdentityResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(IdentityIdFactory::new()->create()->toString());
+        $this->finder()->ofId($unknownId);
     }
 
     #[Test]
@@ -79,11 +77,22 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
 
         // When
         $found = $this->finder()->ofEmailOrNull($identity->email->value);
-        $notFound = $this->finder()->ofEmailOrNull(EmailFactory::new()->create()->value);
 
         // Then
         self::assertSame($identity->id->toString(), $found?->id);
-        self::assertNull($notFound);
+    }
+
+    #[Test]
+    public function itFindsNothingByEmail(): void
+    {
+        // Given
+        $email = EmailFactory::new()->create()->value;
+
+        // When
+        $result = $this->finder()->ofEmailOrNull($email);
+
+        // Then
+        self::assertNull($result);
     }
 
     #[Test]
@@ -148,8 +157,8 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
         $smallerId = Uuid::uuid7($now)->toString();
         $largerId = Uuid::uuid7($now->modify('+1 hour'))->toString();
 
-        $first = IdentityFactory::new()->withId($largerId)->withRegisteredAt($now)->create();
-        $second = IdentityFactory::new()->withId($smallerId)->withRegisteredAt($now->modify('+1 hour'))->create();
+        $first = IdentityFactory::new()->withId(IdentityIdFactory::new()->withId($largerId)->create())->withRegisteredAt($now)->create();
+        $second = IdentityFactory::new()->withId(IdentityIdFactory::new()->withId($smallerId)->create())->withRegisteredAt($now->modify('+1 hour'))->create();
         $this->store($first, $second);
 
         return [$largerId, $smallerId];

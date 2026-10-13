@@ -90,10 +90,11 @@ final class ApiKeyCredentialTest extends AggregateRootTestCase
     public function itCannotRevokeWhenOwnedByAnotherIdentity(): void
     {
         $anotherIdentityId = Uuid::uuid7()->toString();
+        $revokedAt = Clock::get()->now()->modify('+1 day');
 
         $this
             ->given($this->issued())
-            ->when(static fn (ApiKeyCredential $credential) => $credential->revoke($anotherIdentityId, Clock::get()->now()->modify('+1 day')))
+            ->when(static fn (ApiKeyCredential $credential) => $credential->revoke($anotherIdentityId, $revokedAt))
             ->expectsException(ApiKeyCredentialOwnedByAnotherIdentityException::class);
     }
 

@@ -9,8 +9,7 @@ use Iam\Authentication\Domain\ApiKeyCredential\ValueObject\KeyId;
 use Patchlevel\EventSourcing\Attribute\Event;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\DataSubjectId;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
-use Shared\Domain\Pii\ErasedFieldSentinel;
-use Shared\Domain\Pii\ErasedValueObjectSentinel;
+use Shared\Domain\Pii\ErasedLabel;
 use Shared\Domain\ValueObject\Label;
 
 #[Event('iam.authentication.api_key_credential.issued')]
@@ -20,7 +19,7 @@ final readonly class ApiKeyCredentialIssued
         #[DataSubjectId]
         public ApiKeyCredentialId $id,
         public string $identityId,
-        #[SensitiveData(fallbackCallable: new ErasedValueObjectSentinel(new ErasedFieldSentinel('erased-%s'), Label::class, 'fromString'))]
+        #[SensitiveData(fallbackCallable: new ErasedLabel())]
         public Label $label,
         public KeyId $keyId,
         public string $secretHash,

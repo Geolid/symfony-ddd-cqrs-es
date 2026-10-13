@@ -100,7 +100,6 @@ final class BackupCodeCredentialFactory extends AbstractAggregateFactory
 
     protected function initialize(): static
     {
-        // Both derive from the FINAL values, so a with([...]) override carries over.
         return parent::initialize()->beforeInstantiate(static function (array $parameters): array {
             Assert::string($parameters['identityId']);
             Assert::isNonEmptyList($parameters['plainBackupCodes']);

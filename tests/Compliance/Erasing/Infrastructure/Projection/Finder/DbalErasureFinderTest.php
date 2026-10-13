@@ -19,8 +19,6 @@ use Symfony\Component\Clock\Clock;
  */
 final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
 {
-    private const string DATE_FORMAT = 'Y-m-d H:i:s';
-
     #[Test]
     public function itGetsById(): void
     {
@@ -35,25 +33,22 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
         // Then
         self::assertSame($erasure->id->toString(), $result->id);
         self::assertSame(ErasureRequestStatus::CANCELLED, $result->status);
-        self::assertSame(
-            $erasure->requestedAt->format(self::DATE_FORMAT),
-            $result->requestedAt?->format(self::DATE_FORMAT),
-        );
-        self::assertSame(
-            $erasure->cancelledAt?->format(self::DATE_FORMAT),
-            $result->cancelledAt?->format(self::DATE_FORMAT),
-        );
+        self::assertSameDateTime($erasure->requestedAt, $result->requestedAt);
+        self::assertSameDateTime($erasure->cancelledAt, $result->cancelledAt);
         self::assertNull($result->approvedAt);
     }
 
     #[Test]
     public function itThrowsWhenIdNotFound(): void
     {
+        // Given
+        $unknownId = ErasureIdFactory::new()->create()->toString();
+
         // Then
         $this->expectException(ErasureResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(ErasureIdFactory::new()->create()->toString());
+        $this->finder()->ofId($unknownId);
     }
 
     #[Test]

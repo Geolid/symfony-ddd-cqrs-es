@@ -81,11 +81,17 @@ final class GlobexPaymentGatewayTest extends TestCase
     #[DataProvider('provideTransientFailures')]
     public function itThrowsTransientWhenPaymentProviderUnreachable(callable|MockResponse $response): void
     {
+        // Given
+        $paymentId = Uuid::uuid7()->toString();
+        $checkoutSessionId = Uuid::uuid7()->toString();
+        $expiresAt = $this->expiresAt();
+        $lines = $this->lines();
+
         // Then
         $this->expectException(PaymentTransientFailureException::class);
 
         // When
-        $this->gateway($response)->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $this->lines(), 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt());
+        $this->gateway($response)->requestPayment($paymentId, $checkoutSessionId, $lines, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $expiresAt);
     }
 
     /**
@@ -100,22 +106,35 @@ final class GlobexPaymentGatewayTest extends TestCase
     #[Test]
     public function itThrowsFatalWhenPaymentRequestRejected(): void
     {
+        // Given
+        $paymentId = Uuid::uuid7()->toString();
+        $checkoutSessionId = Uuid::uuid7()->toString();
+        $expiresAt = $this->expiresAt();
+        $lines = $this->lines();
+        $response = self::jsonResponse(['error' => 'invalid amount'], 400);
+
         // Then
         $this->expectException(PaymentFatalFailureException::class);
 
         // When
-        $this->gateway(self::jsonResponse(['error' => 'invalid amount'], 400))->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $this->lines(), 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt());
+        $this->gateway($response)->requestPayment($paymentId, $checkoutSessionId, $lines, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $expiresAt);
     }
 
     #[Test]
     #[DataProvider('provideUnreadableResponses')]
     public function itThrowsFatalWhenSessionResponseUnreadable(MockResponse $response): void
     {
+        // Given
+        $paymentId = Uuid::uuid7()->toString();
+        $checkoutSessionId = Uuid::uuid7()->toString();
+        $expiresAt = $this->expiresAt();
+        $lines = $this->lines();
+
         // Then
         $this->expectException(PaymentFatalFailureException::class);
 
         // When
-        $this->gateway($response)->requestPayment(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), $this->lines(), 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt());
+        $this->gateway($response)->requestPayment($paymentId, $checkoutSessionId, $lines, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $expiresAt);
     }
 
     /**

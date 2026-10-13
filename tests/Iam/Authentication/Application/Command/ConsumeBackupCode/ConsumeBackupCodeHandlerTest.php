@@ -62,10 +62,13 @@ final class ConsumeBackupCodeHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $unknownIdentityId = Uuid::uuid7()->toString();
+
         // Then
         $this->expectException(BackupCodeCredentialNotFoundException::class);
 
         // When
-        $this->dispatch(new ConsumeBackupCode(Uuid::uuid7()->toString(), 'INVALIDCODE'));
+        $this->dispatch(new ConsumeBackupCode($unknownIdentityId, 'INVALIDCODE'));
     }
 }

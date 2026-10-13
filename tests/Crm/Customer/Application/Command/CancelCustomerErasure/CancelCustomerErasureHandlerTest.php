@@ -35,12 +35,12 @@ final class CancelCustomerErasureHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = Uuid::uuid7()->toString();
+        $unknownId = Uuid::uuid7()->toString();
 
         // Then
         $this->expectException(CustomerNotFoundException::class);
 
         // When
-        $this->dispatch(new CancelCustomerErasure($id));
+        $this->dispatch(new CancelCustomerErasure($unknownId));
     }
 }

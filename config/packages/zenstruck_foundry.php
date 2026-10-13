@@ -14,8 +14,6 @@ return static function (ContainerConfigurator $container): void {
             ->set('foundry.faker', Generator::class)
             ->factory(FoundryFaker::create(...))
 
-            ->load('Iam\Tests\Support\Story\\', '%kernel.project_dir%/tests/Iam/Support/Story/*Story.php')->autowire()->autoconfigure()
-
             ->set(EventSourcingResetter::class)->decorate(OrmResetter::class);
 
         $container->extension('zenstruck_foundry', [

@@ -47,9 +47,9 @@ final class CheckoutSessionFactory extends AbstractAggregateFactory
         return CheckoutSession::class;
     }
 
-    public function withId(string $id): self
+    public function withId(CheckoutSessionId $id): self
     {
-        return $this->with(['id' => CheckoutSessionId::fromString($id)]);
+        return $this->with(['id' => $id]);
     }
 
     public function withCartId(string $cartId): self
@@ -70,14 +70,14 @@ final class CheckoutSessionFactory extends AbstractAggregateFactory
         return $this->with(['items' => $items]);
     }
 
-    public function withCurrency(string $currency): self
+    public function withCurrency(Currency $currency): self
     {
-        return $this->with(['currency' => Currency::from($currency)]);
+        return $this->with(['currency' => $currency]);
     }
 
-    public function withTaxRate(int $basisPoints): self
+    public function withTaxRate(TaxRate $taxRate): self
     {
-        return $this->with(['taxRate' => TaxRateFactory::new(['basisPoints' => $basisPoints])->create()]);
+        return $this->with(['taxRate' => $taxRate]);
     }
 
     public function withShippingAddress(PostalAddress $shippingAddress): self
@@ -147,7 +147,6 @@ final class CheckoutSessionFactory extends AbstractAggregateFactory
 
     protected function initialize(): static
     {
-        // The items share the FINAL currency and tax rate, so a withCurrency()/withTaxRate() override carries over.
         return parent::initialize()->beforeInstantiate(static function (array $parameters): array {
             Assert::isInstanceOf($parameters['currency'], Currency::class);
             $parameters['items'] ??= CheckoutItemFactory::new([

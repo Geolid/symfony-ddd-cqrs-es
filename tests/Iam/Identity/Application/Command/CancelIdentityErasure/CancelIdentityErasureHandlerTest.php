@@ -34,12 +34,12 @@ final class CancelIdentityErasureHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = IdentityIdFactory::new()->create()->toString();
+        $unknownId = IdentityIdFactory::new()->create()->toString();
 
         // Then
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new CancelIdentityErasure($id));
+        $this->dispatch(new CancelIdentityErasure($unknownId));
     }
 }

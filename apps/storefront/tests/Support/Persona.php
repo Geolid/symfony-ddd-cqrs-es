@@ -2,46 +2,37 @@
 
 declare(strict_types=1);
 
-namespace Iam\Tests\Support\Story;
+namespace Storefront\Tests\Support;
 
 use Webmozart\Assert\Assert;
 
-final readonly class Account
+final readonly class Persona
 {
-    /**
-     * @param ?list<non-empty-string> $plainBackupCodes
-     */
     public function __construct(
         public string $id,
         public string $email,
         public string $fullName,
         private ?string $password = null,
         private ?string $totpSecret = null,
-        private ?array $plainBackupCodes = null,
     ) {
     }
 
     public function password(): string
     {
-        Assert::notNull($this->password);
+        Assert::notNull($this->password, 'This persona has no password.');
 
         return $this->password;
     }
 
     public function totpSecret(): string
     {
-        Assert::notNull($this->totpSecret);
+        Assert::notNull($this->totpSecret, 'This persona has no TOTP secret.');
 
         return $this->totpSecret;
     }
 
-    /**
-     * @return list<non-empty-string>
-     */
-    public function plainBackupCodes(): array
+    public function withTotpSecret(string $totpSecret): self
     {
-        Assert::notNull($this->plainBackupCodes);
-
-        return $this->plainBackupCodes;
+        return clone ($this, ['totpSecret' => $totpSecret]);
     }
 }

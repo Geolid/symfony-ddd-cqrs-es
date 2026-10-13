@@ -9,9 +9,7 @@ use Patchlevel\Hydrator\Extension\Cryptography\Attribute\DataSubjectId;
 use Patchlevel\Hydrator\Extension\Cryptography\Attribute\SensitiveData;
 use Sales\Ordering\Domain\Order\Entity\OrderLine;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
-use Shared\Domain\Pii\ErasedFieldSentinel;
-use Shared\Domain\Pii\ErasedValueObjectSentinel;
-use Shared\Domain\ValueObject\Address;
+use Shared\Domain\Pii\ErasedPostalAddress;
 use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Domain\ValueObject\TaxedAmount;
 
@@ -27,14 +25,7 @@ final readonly class OrderConfirmed
         public string $cartId,
         public string $customerId,
         public string $checkoutSessionId,
-        #[SensitiveData(fallbackCallable: new ErasedValueObjectSentinel(
-            new ErasedFieldSentinel([
-                'erased',
-                new ErasedValueObjectSentinel(new ErasedFieldSentinel(['erased', '00000', 'erased', 'ZZ']), Address::class, 'of'),
-            ]),
-            PostalAddress::class,
-            'of',
-        ))]
+        #[SensitiveData(fallbackCallable: new ErasedPostalAddress())]
         public PostalAddress $shippingAddress,
         public array $lines,
         public TaxedAmount $total,

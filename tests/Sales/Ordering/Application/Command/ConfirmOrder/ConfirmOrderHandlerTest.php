@@ -8,17 +8,16 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\Command\ConfirmOrder\ConfirmOrder;
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
+use Sales\Ordering\Application\Mapper\OrderItemMapper;
 use Sales\Ordering\Application\OrderStatus;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Sales\Tests\Ordering\Support\Factory\OrderIdFactory;
+use Sales\Tests\Ordering\Support\Factory\OrderItemFactory;
 use Sales\Tests\Ordering\Support\PostalAddressResultMapper;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\Money;
-use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Domain\ValueObject\Currency;
+use Shared\Tests\Support\Factory\PostalAddressFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
-
-use function Zenstruck\Foundry\faker;
 
 final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
 {
@@ -38,10 +37,9 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
         $id = OrderIdFactory::new()->create()->toString();
         $customerId = Uuid::uuid7()->toString();
         $checkoutSessionId = Uuid::uuid7()->toString();
-        $unitPriceInCents = faker()->numberBetween(500, 5_000);
-        $quantity = faker()->numberBetween(1, 5);
-        $taxAmountInCents = faker()->numberBetween(50, 500);
-        $shippingAddress = PostalAddressMapper::toArray(PostalAddress::of('John Doe', Address::of('1 rue de Paris', '75001', 'Paris', 'FR')));
+        $item = OrderItemFactory::new()->create();
+        $currency = Currency::EUR;
+        $shippingAddress = PostalAddressMapper::toArray(PostalAddressFactory::new()->create());
 
         // When
         $this->dispatch(new ConfirmOrder(
@@ -49,14 +47,8 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
             cartId: Uuid::uuid7()->toString(),
             customerId: $customerId,
             checkoutSessionId: $checkoutSessionId,
-            lines: [[
-                'productId' => Uuid::uuid7()->toString(),
-                'label' => faker()->sentence(3),
-                'unitPriceInCents' => $unitPriceInCents,
-                'taxAmountInCents' => $taxAmountInCents,
-                'quantity' => $quantity,
-            ]],
-            currency: 'EUR',
+            lines: [OrderItemMapper::toArray($item)],
+            currency: $currency->value,
             shippingAddress: $shippingAddress,
         ));
 
@@ -68,28 +60,35 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
             $shippingAddress,
             PostalAddressResultMapper::toArray($result->shippingAddress),
         );
-        self::assertSame(Money::fromCents($unitPriceInCents * $quantity, 'EUR')->cents, $result->totalExcludingTaxInCents);
-        self::assertSame($taxAmountInCents, $result->totalTaxAmountInCents);
-        self::assertSame($unitPriceInCents * $quantity + $taxAmountInCents, $result->totalIncludingTaxInCents);
-        self::assertSame('EUR', $result->currency);
+        self::assertSame($item->taxedTotal()->excludingTax->cents, $result->totalExcludingTaxInCents);
+        self::assertSame($item->taxedTotal()->taxAmount->cents, $result->totalTaxAmountInCents);
+        self::assertSame($item->taxedTotal()->includingTax->cents, $result->totalIncludingTaxInCents);
+        self::assertSame($currency->value, $result->currency);
         self::assertSame(OrderStatus::CONFIRMED, $result->status);
     }
 
     #[Test]
     public function itFailsWhenWithoutLine(): void
     {
+        // Given
+        $id = OrderIdFactory::new()->create()->toString();
+        $cartId = Uuid::uuid7()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $checkoutSessionId = Uuid::uuid7()->toString();
+        $shippingAddress = PostalAddressMapper::toArray(PostalAddressFactory::new()->create());
+
         // Then
         $this->expectException(OrderWithoutLineException::class);
 
         // When
         $this->dispatch(new ConfirmOrder(
-            id: OrderIdFactory::new()->create()->toString(),
-            cartId: Uuid::uuid7()->toString(),
-            customerId: Uuid::uuid7()->toString(),
-            checkoutSessionId: Uuid::uuid7()->toString(),
+            id: $id,
+            cartId: $cartId,
+            customerId: $customerId,
+            checkoutSessionId: $checkoutSessionId,
             lines: [],
             currency: 'EUR',
-            shippingAddress: PostalAddressMapper::toArray(PostalAddress::of('John Doe', Address::of('1 rue de Paris', '75001', 'Paris', 'FR'))),
+            shippingAddress: $shippingAddress,
         ));
     }
 }

@@ -5,22 +5,22 @@ declare(strict_types=1);
 namespace Storefront\Tests\Feature\Account\Security;
 
 use Iam\Tests\Identity\Support\Factory\FullNameFactory;
-use Iam\Tests\Support\Story\ConfirmedAccountStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\Account\Security\Component\ChangeFullNameForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
+use Storefront\Tests\Support\Story\ConfirmedStory;
 use Zenstruck\Foundry\Attribute\WithStory;
 
 final class ChangeFullNameTest extends AbstractStorefrontTestCase
 {
     #[Test]
-    #[WithStory(ConfirmedAccountStory::class)]
+    #[WithStory(ConfirmedStory::class)]
     public function itChanges(): void
     {
         // Given
+        $persona = ConfirmedStory::persona();
         $browser = $this->activeBrowser();
-        $account = ConfirmedAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs($persona->email, $persona->password());
 
         $browser->visitRoute('storefront_account_security_change_full_name');
         $browser->interceptRedirects();

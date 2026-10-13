@@ -12,8 +12,7 @@ use Crm\Tests\Customer\Support\Factory\CustomerFactory;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Domain\Pii\ErasedPostalAddress;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
@@ -38,13 +37,10 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
 
         // When
         $this->cipherKeyStore->removeWithSubjectId($customer->id->toString());
-        $erased = $this->storedEventOf(
-            CustomerShippingAddressDefined::class,
-            static fn (CustomerShippingAddressDefined $event): bool => $event->id->equals($customer->id),
-        );
 
         // Then
-        self::assertSame($this->erasedPostalAddress(), PostalAddressMapper::toArray($erased->postalAddress));
+        $erased = $this->storedEventOf(CustomerShippingAddressDefined::class, $customer);
+        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())()), PostalAddressMapper::toArray($erased->postalAddress));
     }
 
     #[Test]
@@ -58,13 +54,10 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
 
         // When
         $this->cipherKeyStore->removeWithSubjectId($customer->id->toString());
-        $erased = $this->storedEventOf(
-            CustomerBillingAddressDefined::class,
-            static fn (CustomerBillingAddressDefined $event): bool => $event->id->equals($customer->id),
-        );
 
         // Then
-        self::assertSame($this->erasedPostalAddress(), PostalAddressMapper::toArray($erased->postalAddress));
+        $erased = $this->storedEventOf(CustomerBillingAddressDefined::class, $customer);
+        self::assertSame(PostalAddressMapper::toArray((new ErasedPostalAddress())()), PostalAddressMapper::toArray($erased->postalAddress));
     }
 
     #[Test]
@@ -76,13 +69,13 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
 
         // When
         $this->cipherKeyStore->removeWithSubjectId($customer->id->toString());
-        $erased = $this->storedEventOf(
-            CustomerShippingAddressDefinedIntegrationEvent::class,
-            static fn (CustomerShippingAddressDefinedIntegrationEvent $event): bool => $event->customerId === $customer->id->toString(),
-        );
 
         // Then
-        self::assertSame($this->erasedPostalAddress(), $erased->postalAddress);
+        $erased = $this->storedIntegrationEventOf(CustomerShippingAddressDefinedIntegrationEvent::class, $customer);
+        self::assertSame([
+            'recipientName' => 'erased',
+            'address' => ['street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ'],
+        ], $erased->postalAddress);
     }
 
     #[Test]
@@ -94,20 +87,12 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
 
         // When
         $this->cipherKeyStore->removeWithSubjectId($customer->id->toString());
-        $erased = $this->storedEventOf(
-            CustomerBillingAddressDefinedIntegrationEvent::class,
-            static fn (CustomerBillingAddressDefinedIntegrationEvent $event): bool => $event->customerId === $customer->id->toString(),
-        );
 
         // Then
-        self::assertSame($this->erasedPostalAddress(), $erased->postalAddress);
-    }
-
-    /**
-     * @return array{recipientName: string, address: array{street: string, postalCode: string, city: string, countryCode: string}}
-     */
-    private function erasedPostalAddress(): array
-    {
-        return PostalAddressMapper::toArray(PostalAddress::of('erased', Address::of('erased', '00000', 'erased', 'ZZ')));
+        $erased = $this->storedIntegrationEventOf(CustomerBillingAddressDefinedIntegrationEvent::class, $customer);
+        self::assertSame([
+            'recipientName' => 'erased',
+            'address' => ['street' => 'erased', 'postalCode' => '00000', 'city' => 'erased', 'countryCode' => 'ZZ'],
+        ], $erased->postalAddress);
     }
 }

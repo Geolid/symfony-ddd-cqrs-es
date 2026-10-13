@@ -24,9 +24,6 @@ final class IdentitySuspendedPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(IdentitySuspendedIntegrationEvent::class);
         self::assertSame($identity->id->toString(), $event->identityId);
-        self::assertSame(
-            $identity->suspendedAt?->format(\DateTimeInterface::ATOM),
-            $event->suspendedAt->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDateTime($identity->suspendedAt, $event->suspendedAt);
     }
 }

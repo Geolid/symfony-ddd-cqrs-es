@@ -10,6 +10,7 @@ use Compliance\Erasing\Domain\Exception\ErasureNotFoundException;
 use Compliance\Erasing\Domain\Repository\ErasureRepositoryInterface;
 use Compliance\Tests\Erasing\Support\Factory\ErasureFactory;
 use Compliance\Tests\Erasing\Support\Factory\ErasureIdFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -25,12 +26,11 @@ final class PatchlevelErasureRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itSavesAndLoads(): void
+    #[DataProvider('provideLifecycle')]
+    public function itSavesAndLoads(ErasureFactory $factory): void
     {
         // Given
-        $erasure = ErasureFactory::new()
-            ->approved()
-            ->create();
+        $erasure = $factory->create();
 
         // When
         $this->repository->save($erasure);
@@ -38,6 +38,15 @@ final class PatchlevelErasureRepositoryTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($this->propertiesOf($erasure), $this->propertiesOf($loaded));
+    }
+
+    /**
+     * @return iterable<string, array{ErasureFactory}>
+     */
+    public static function provideLifecycle(): iterable
+    {
+        yield 'approved' => [ErasureFactory::new()->approved()];
+        yield 'cancelled' => [ErasureFactory::new()->cancelled()];
     }
 
     #[Test]
@@ -48,7 +57,7 @@ final class PatchlevelErasureRepositoryTest extends AbstractIntegrationTestCase
             ->create();
         $this->store($erasure);
         $duplicate = ErasureFactory::new()
-            ->withId($erasure->id->toString())
+            ->withId($erasure->id)
             ->create();
 
         // Then
@@ -61,11 +70,14 @@ final class PatchlevelErasureRepositoryTest extends AbstractIntegrationTestCase
     #[Test]
     public function itThrowsWhenNotFound(): void
     {
+        // Given
+        $unknownId = ErasureIdFactory::new()->create();
+
         // Then
         $this->expectException(ErasureNotFoundException::class);
 
         // When
-        $this->repository->load(ErasureIdFactory::new()->create());
+        $this->repository->load($unknownId);
     }
 
     #[Test]
@@ -85,8 +97,11 @@ final class PatchlevelErasureRepositoryTest extends AbstractIntegrationTestCase
     #[Test]
     public function itHasNot(): void
     {
+        // Given
+        $unknownId = ErasureIdFactory::new()->create();
+
         // When
-        $notExists = $this->repository->has(ErasureIdFactory::new()->create());
+        $notExists = $this->repository->has($unknownId);
 
         // Then
         self::assertFalse($notExists);

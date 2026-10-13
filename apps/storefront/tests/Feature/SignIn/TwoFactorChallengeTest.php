@@ -4,26 +4,27 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\SignIn;
 
-use Iam\Tests\Support\Story\TwoFactorAccountStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\SignIn\Component\IdentifyForm;
 use Storefront\Tests\Feature\SignIn\Component\TwoFactorForm;
 use Storefront\Tests\Feature\SignIn\Component\VerifyForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
+use Storefront\Tests\Support\Story\TwoFactorStory;
+use Storefront\Tests\Support\Story\TwoFactorUnenrolledStory;
 use Zenstruck\Foundry\Attribute\WithStory;
 
 final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
 {
     #[Test]
-    #[WithStory(TwoFactorAccountStory::class)]
+    #[WithStory(TwoFactorStory::class)]
     public function itShowsTwoFactorChallenge(): void
     {
         // Given
+        $persona = TwoFactorStory::persona();
         $browser = $this->activeBrowser();
-        $account = TwoFactorAccountStory::account();
 
         // When
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs($persona->email, $persona->password());
 
         // Then
         $browser->assertSuccessful()
@@ -31,19 +32,19 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(TwoFactorAccountStory::class)]
+    #[WithStory(TwoFactorStory::class)]
     public function itCompletesSignIn(): void
     {
         // Given
+        $persona = TwoFactorStory::persona();
         $browser = $this->activeBrowser();
-        $account = TwoFactorAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs($persona->email, $persona->password());
 
         $browser->interceptRedirects();
 
         // When
-        $browser->use(static function (TwoFactorForm $twoFactor) use ($browser, $account): void {
-            $twoFactor->fillCode($browser->totpCode($account->totpSecret()))->submit();
+        $browser->use(static function (TwoFactorForm $twoFactor) use ($browser, $persona): void {
+            $twoFactor->fillCode($browser->totpCode($persona->totpSecret()))->submit();
         });
 
         // Then
@@ -51,13 +52,13 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(TwoFactorAccountStory::class)]
+    #[WithStory(TwoFactorStory::class)]
     public function itRefusesIncorrectCode(): void
     {
         // Given
+        $persona = TwoFactorStory::persona();
         $browser = $this->activeBrowser();
-        $account = TwoFactorAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs($persona->email, $persona->password());
 
         // When
         $browser->use(static function (TwoFactorForm $twoFactor): void {
@@ -71,13 +72,13 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(TwoFactorAccountStory::class)]
+    #[WithStory(TwoFactorStory::class)]
     public function itRefusesAfterTooManyAttempts(): void
     {
         // Given
+        $persona = TwoFactorStory::persona();
         $browser = $this->activeBrowser();
-        $account = TwoFactorAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs($persona->email, $persona->password());
 
         for ($i = 0; $i < 3; ++$i) {
             $browser->use(static function (TwoFactorForm $twoFactor): void {
@@ -86,8 +87,8 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
         }
 
         // When
-        $browser->use(static function (TwoFactorForm $twoFactor) use ($browser, $account): void {
-            $twoFactor->fillCode($browser->totpCode($account->totpSecret()))->submit();
+        $browser->use(static function (TwoFactorForm $twoFactor) use ($browser, $persona): void {
+            $twoFactor->fillCode($browser->totpCode($persona->totpSecret()))->submit();
         });
 
         // Then
@@ -95,25 +96,69 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(TwoFactorAccountStory::class)]
+    #[WithStory(TwoFactorStory::class)]
+    public function itCompletesSignInWithBackupCode(): void
+    {
+        // Given
+        $persona = TwoFactorStory::persona();
+        $backupCode = TwoFactorStory::getRandom('backupCodes');
+        \assert(\is_string($backupCode));
+
+        $browser = $this->activeBrowser();
+        $browser->signInAs($persona->email, $persona->password());
+
+        $browser->visitRoute('storefront_two_factor_challenge', ['preferProvider' => 'backup_code']);
+        $browser->interceptRedirects();
+
+        // When
+        $browser->completeTwoFactorChallenge($backupCode);
+
+        // Then
+        $browser->assertRedirectedToRoute('storefront_home_show');
+    }
+
+    #[Test]
+    #[WithStory(TwoFactorStory::class)]
+    public function itRefusesUsedBackupCode(): void
+    {
+        // Given
+        $persona = TwoFactorStory::persona();
+        $usedBackupCode = TwoFactorStory::getRandom('usedBackupCodes');
+        \assert(\is_string($usedBackupCode));
+
+        $browser = $this->activeBrowser();
+        $browser->signInAs($persona->email, $persona->password());
+
+        $browser->visitRoute('storefront_two_factor_challenge', ['preferProvider' => 'backup_code']);
+
+        // When
+        $browser->completeTwoFactorChallenge($usedBackupCode);
+
+        // Then
+        $browser->assertSeeElement('[data-testid="two-factor-error"]');
+    }
+
+    #[Test]
+    #[WithStory(TwoFactorStory::class)]
     public function itSkipsOnTrustedDevice(): void
     {
         // Given
+        $persona = TwoFactorStory::persona();
         $browser = $this->activeBrowser();
-        $account = TwoFactorAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs($persona->email, $persona->password());
 
-        $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()), trustDevice: true);
-        $browser->visitRoute('_logout_main');
+        $browser->completeTwoFactorChallenge($browser->totpCode($persona->totpSecret()), trustDevice: true);
+        $browser->signOut();
+
         $browser->visitRoute('storefront_signin_identify');
-        $browser->use(static function (IdentifyForm $identify) use ($account): void {
-            $identify->fillEmail($account->email)->submit();
+        $browser->use(static function (IdentifyForm $identify) use ($persona): void {
+            $identify->fillEmail($persona->email)->submit();
         });
         $browser->interceptRedirects();
 
         // When
-        $browser->use(static function (VerifyForm $verify) use ($account): void {
-            $verify->fillPassword($account->password())->submit();
+        $browser->use(static function (VerifyForm $verify) use ($persona): void {
+            $verify->fillPassword($persona->password())->submit();
         });
 
         // Then
@@ -121,22 +166,17 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(TwoFactorAccountStory::class)]
-    public function itRedemandsCodeWhenDeviceNotTrusted(): void
+    #[WithStory(TwoFactorUnenrolledStory::class)]
+    public function itSkipsChallengeWithoutTotp(): void
     {
         // Given
+        $persona = TwoFactorUnenrolledStory::persona();
         $browser = $this->activeBrowser();
-        $account = TwoFactorAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
-
-        $browser->completeTwoFactorChallenge($browser->totpCode($account->totpSecret()));
-        $browser->visitRoute('_logout_main');
 
         // When
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs($persona->email, $persona->password());
 
         // Then
-        $browser->assertSuccessful()
-            ->assertSeeElement('[data-testid="two-factor-form"]');
+        $browser->assertSignedIn();
     }
 }

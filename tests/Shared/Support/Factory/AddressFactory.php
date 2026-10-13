@@ -20,6 +20,11 @@ final class AddressFactory extends ObjectFactory
         return Address::class;
     }
 
+    public function withCountryCode(string $countryCode): self
+    {
+        return $this->with(['countryCode' => $countryCode]);
+    }
+
     protected function initialize(): static
     {
         return $this->instantiateWith(Instantiator::namedConstructor('of'));

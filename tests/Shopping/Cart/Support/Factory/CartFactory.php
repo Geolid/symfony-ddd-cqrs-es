@@ -31,9 +31,9 @@ final class CartFactory extends AbstractAggregateFactory
         return Cart::class;
     }
 
-    public function withId(string $id): self
+    public function withId(CartId $id): self
     {
-        return $this->with(['id' => CartId::fromString($id)]);
+        return $this->with(['id' => $id]);
     }
 
     public function withCustomerId(string $customerId): self
@@ -114,9 +114,9 @@ final class CartFactory extends AbstractAggregateFactory
 
     private static function lastProductId(Cart $cart): string
     {
-        $productId = array_key_last($cart->products);
-        Assert::string($productId);
+        $line = array_last($cart->lines);
+        Assert::notNull($line);
 
-        return $productId;
+        return $line->productId;
     }
 }

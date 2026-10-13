@@ -64,12 +64,15 @@ final class ApiKeyCredentialVerifierTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $unknownKeyId = KeyIdFactory::new()->create()->value;
+
         // Then
         $this->expectException(ApiKeyCredentialResultNotFoundException::class);
 
         // When
         $this->verifier->verify(
-            KeyIdFactory::new()->create()->value,
+            $unknownKeyId,
             faker()->apiKeySecret(),
         );
     }

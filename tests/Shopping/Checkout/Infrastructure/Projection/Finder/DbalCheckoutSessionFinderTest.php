@@ -48,11 +48,14 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
     #[Test]
     public function itThrowsWhenIdNotFound(): void
     {
+        // Given
+        $unknownId = CheckoutSessionIdFactory::new()->create()->toString();
+
         // Then
         $this->expectException(CheckoutSessionResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(CheckoutSessionIdFactory::new()->create()->toString());
+        $this->finder()->ofId($unknownId);
     }
 
     #[Test]
@@ -66,7 +69,6 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
 
         // When
         $result = $this->finder()->openOfCartOrNull($checkoutSession->cartId);
-        $nothing = $this->finder()->openOfCartOrNull(Uuid::uuid7()->toString());
 
         // Then
         self::assertNotNull($result);
@@ -104,9 +106,20 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
         self::assertSame($checkoutSession->total->excludingTax->currency->value, $result->currency);
         self::assertSame($checkoutSession->items[0]->taxRate->basisPoints, $result->taxRateBasisPoints);
         self::assertSame(CheckoutSessionStatus::OPEN, $result->status);
-        self::assertSame($checkoutSession->openedAt->format('Y-m-d H:i:s'), $result->openedAt->format('Y-m-d H:i:s'));
+        self::assertSameDateTime($checkoutSession->openedAt, $result->openedAt);
+    }
 
-        self::assertNull($nothing);
+    #[Test]
+    public function itFindsNothingOpenByCart(): void
+    {
+        // Given
+        $cartId = Uuid::uuid7()->toString();
+
+        // When
+        $result = $this->finder()->openOfCartOrNull($cartId);
+
+        // Then
+        self::assertNull($result);
     }
 
     #[Test]
@@ -172,8 +185,8 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
         $smallerId = Uuid::uuid7($now)->toString();
         $largerId = Uuid::uuid7($now->modify('+1 hour'))->toString();
 
-        $first = CheckoutSessionFactory::new()->withId($largerId)->withOpenedAt($now)->create();
-        $second = CheckoutSessionFactory::new()->withId($smallerId)->withOpenedAt($now->modify('+1 hour'))->create();
+        $first = CheckoutSessionFactory::new()->withId(CheckoutSessionIdFactory::new()->withId($largerId)->create())->withOpenedAt($now)->create();
+        $second = CheckoutSessionFactory::new()->withId(CheckoutSessionIdFactory::new()->withId($smallerId)->create())->withOpenedAt($now->modify('+1 hour'))->create();
         $this->store($first, $second);
 
         return [$largerId, $smallerId];

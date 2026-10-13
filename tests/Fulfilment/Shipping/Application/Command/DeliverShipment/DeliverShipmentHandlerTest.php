@@ -74,13 +74,13 @@ final class DeliverShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = ShipmentFactory::new()->create()->id->toString();
+        $unknownId = ShipmentFactory::new()->create()->id->toString();
 
         // Then
         $this->expectException(ShipmentNotFoundException::class);
 
         // When
-        $this->dispatch(new DeliverShipment($id));
+        $this->dispatch(new DeliverShipment($unknownId));
     }
 
     #[Test]

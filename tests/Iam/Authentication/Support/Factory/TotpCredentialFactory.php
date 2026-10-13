@@ -34,9 +34,9 @@ final class TotpCredentialFactory extends AbstractAggregateFactory
         return TotpCredential::class;
     }
 
-    public function withId(string $id): self
+    public function withId(TotpCredentialId $id): self
     {
-        return $this->with(['id' => TotpCredentialId::fromString($id)]);
+        return $this->with(['id' => $id]);
     }
 
     public function withIdentityId(string $identityId): self

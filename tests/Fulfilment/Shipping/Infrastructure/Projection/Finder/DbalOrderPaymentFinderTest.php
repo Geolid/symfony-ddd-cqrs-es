@@ -32,12 +32,23 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
 
         // When
         $found = $this->finder->ofOrderOrNull($orderId);
-        $notFound = $this->finder->ofOrderOrNull(Uuid::uuid7()->toString());
 
         // Then
         self::assertNotNull($found);
         self::assertSame($orderId, $found->orderId);
         self::assertTrue($found->paid);
-        self::assertNull($notFound);
+    }
+
+    #[Test]
+    public function itFindsNothingByOrder(): void
+    {
+        // Given
+        $orderId = Uuid::uuid7()->toString();
+
+        // When
+        $result = $this->finder->ofOrderOrNull($orderId);
+
+        // Then
+        self::assertNull($result);
     }
 }

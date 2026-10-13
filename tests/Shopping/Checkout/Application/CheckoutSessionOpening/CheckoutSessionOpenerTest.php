@@ -11,11 +11,9 @@ use Psr\Clock\ClockInterface;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\Money;
-use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Domain\ValueObject\Quantity;
-use Shared\Domain\ValueObject\TaxedAmount;
+use Shared\Tests\Support\Factory\AddressFactory;
+use Shared\Tests\Support\Factory\PostalAddressFactory;
 use Shopping\Checkout\Application\CheckoutSessionOpening\CheckoutSessionOpener;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerAddressesNotCompletedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerErasureRequestedException;
@@ -57,41 +55,34 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
     public function itOpens(): void
     {
         // Given
-        $catalogProduct = ProductFactory::new()->withUnitPriceInCents(5_002)->create();
-        $secondCatalogProduct = ProductFactory::new()->withUnitPriceInCents(5_003)->create();
+        $catalogProduct = ProductFactory::new()->withUnitPriceInCents(1_497)->create();
+        $otherCatalogProduct = ProductFactory::new()->withUnitPriceInCents(2_497)->create();
+        $shippingAddress = PostalAddressFactory::new()->withAddress(AddressFactory::new()->withCountryCode('FR')->create())->create();
         $customer = CustomerFactory::new()
-            ->shippingAddressDefined(PostalAddress::of('Jane Doe', Address::of('10 Rue de la Paix', '75002', 'Paris', 'FR')))
+            ->shippingAddressDefined($shippingAddress)
             ->billingAddressDefined()
             ->create();
         $cart = CartFactory::new()->withCustomerId($customer->id->toString())->productAdded(
             productId: $catalogProduct->id->toString(),
-            quantity: $quantity = Quantity::of(1),
+            quantity: Quantity::of(1),
         )->productAdded(
-            productId: $secondCatalogProduct->id->toString(),
-            quantity: $secondQuantity = Quantity::of(1),
+            productId: $otherCatalogProduct->id->toString(),
+            quantity: Quantity::of(1),
         )->create();
-        $this->store($cart, $catalogProduct, $secondCatalogProduct, $customer);
+        $this->store($cart, $catalogProduct, $otherCatalogProduct, $customer);
 
         // When
         $result = $this->service->openFor($cart->id->toString());
 
         // Then
+        self::assertSame(3_994, $result->total->excludingTax->cents);
+        self::assertSame(798, $result->total->taxAmount->cents);
+        self::assertSame(4_792, $result->total->includingTax->cents);
         self::assertNotNull($customer->shippingAddress);
-        $taxRate = $this->taxRateResolver->resolve($customer->shippingAddress->address->countryCode);
-        $firstExcludingTax = $catalogProduct->unitPrice->times($quantity);
-        $secondExcludingTax = $secondCatalogProduct->unitPrice->times($secondQuantity);
-        $expectedTotal = TaxedAmount::of($firstExcludingTax, $this->taxAmountOf($firstExcludingTax, $taxRate->basisPoints))
-            ->plus(TaxedAmount::of($secondExcludingTax, $this->taxAmountOf($secondExcludingTax, $taxRate->basisPoints)));
-        self::assertSame($expectedTotal->excludingTax->cents, $result->total->excludingTax->cents);
-        self::assertSame($expectedTotal->taxAmount->cents, $result->total->taxAmount->cents);
-        self::assertSame($expectedTotal->includingTax->cents, $result->total->includingTax->cents);
         self::assertSame(PostalAddressMapper::toArray($customer->shippingAddress), PostalAddressMapper::toArray($result->shippingAddress));
         self::assertNotNull($customer->billingAddress);
         self::assertSame(PostalAddressMapper::toArray($customer->billingAddress), PostalAddressMapper::toArray($result->billingAddress));
-        self::assertSame(
-            Clock::get()->now()->modify('+30 minutes')->format(\DateTimeInterface::ATOM),
-            $result->expiresAt->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDateTime(Clock::get()->now()->modify('+30 minutes'), $result->expiresAt);
         $event = $this->publishedEventOf(CheckoutSessionOpened::class);
         self::assertSame($result->checkoutSessionId, $event->id);
     }
@@ -99,11 +90,14 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $unknownCartId = Uuid::uuid7()->toString();
+
         // Then
         $this->expectException(CartResultNotFoundException::class);
 
         // When
-        $this->service->openFor(Uuid::uuid7()->toString());
+        $this->service->openFor($unknownCartId);
     }
 
     #[Test]
@@ -193,10 +187,5 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
 
         // When
         $this->service->openFor($cart->id->toString());
-    }
-
-    private function taxAmountOf(Money $excludingTax, int $basisPoints): Money
-    {
-        return Money::fromCents((int) round($excludingTax->cents * $basisPoints / 10_000), $excludingTax->currency->value);
     }
 }

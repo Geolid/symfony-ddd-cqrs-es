@@ -72,12 +72,12 @@ final class FailOrderHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = OrderIdFactory::new()->create()->toString();
+        $unknownId = OrderIdFactory::new()->create()->toString();
 
         // Then
         $this->expectException(OrderNotFoundException::class);
 
         // When
-        $this->dispatch(new FailOrder($id));
+        $this->dispatch(new FailOrder($unknownId));
     }
 }

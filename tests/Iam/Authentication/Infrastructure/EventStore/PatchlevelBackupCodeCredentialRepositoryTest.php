@@ -68,11 +68,14 @@ final class PatchlevelBackupCodeCredentialRepositoryTest extends AbstractIntegra
     #[Test]
     public function itThrowsWhenNotFound(): void
     {
+        // Given
+        $unknownId = BackupCodeCredentialId::forIdentity(Uuid::uuid7()->toString());
+
         // Then
         $this->expectException(BackupCodeCredentialNotFoundException::class);
 
         // When
-        $this->repository->load(BackupCodeCredentialId::forIdentity(Uuid::uuid7()->toString()));
+        $this->repository->load($unknownId);
     }
 
     #[Test]
@@ -92,8 +95,11 @@ final class PatchlevelBackupCodeCredentialRepositoryTest extends AbstractIntegra
     #[Test]
     public function itHasNot(): void
     {
+        // Given
+        $unknownId = BackupCodeCredentialId::forIdentity(Uuid::uuid7()->toString());
+
         // When
-        $notExists = $this->repository->has(BackupCodeCredentialId::forIdentity(Uuid::uuid7()->toString()));
+        $notExists = $this->repository->has($unknownId);
 
         // Then
         self::assertFalse($notExists);

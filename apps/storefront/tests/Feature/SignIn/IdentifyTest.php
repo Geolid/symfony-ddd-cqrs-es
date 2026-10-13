@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Storefront\Tests\Feature\SignIn;
 
 use Iam\Tests\Identity\Support\Factory\EmailFactory;
-use Iam\Tests\Support\Story\ConfirmedIdentityStory;
-use Iam\Tests\Support\Story\RegisteredAccountStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\SignIn\Component\IdentifyForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
+use Storefront\Tests\Support\Story\ConfirmedStory;
+use Storefront\Tests\Support\Story\PendingStory;
 use Zenstruck\Foundry\Attribute\WithStory;
 
 final class IdentifyTest extends AbstractStorefrontTestCase
@@ -45,35 +45,35 @@ final class IdentifyTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(RegisteredAccountStory::class)]
+    #[WithStory(PendingStory::class)]
     public function itRedirectsToConfirmation(): void
     {
         // Given
+        $persona = PendingStory::persona();
         $browser = $this->activeBrowser()->interceptRedirects();
-        $account = RegisteredAccountStory::account();
 
         // When
         $browser->visitRoute('storefront_signin_identify')
-            ->use(static function (IdentifyForm $identify) use ($account): void {
-                $identify->fillEmail($account->email)->submit();
+            ->use(static function (IdentifyForm $identify) use ($persona): void {
+                $identify->fillEmail($persona->email)->submit();
             });
 
         // Then
-        $browser->assertRedirectedToRoute('storefront_registration_confirm', ['identityId' => $account->id]);
+        $browser->assertRedirectedToRoute('storefront_registration_confirm', ['identityId' => $persona->id]);
     }
 
     #[Test]
-    #[WithStory(ConfirmedIdentityStory::class)]
+    #[WithStory(ConfirmedStory::class)]
     public function itRedirectsToVerify(): void
     {
         // Given
+        $persona = ConfirmedStory::persona();
         $browser = $this->activeBrowser()->interceptRedirects();
-        $account = ConfirmedIdentityStory::account();
 
         // When
         $browser->visitRoute('storefront_signin_identify')
-            ->use(static function (IdentifyForm $identify) use ($account): void {
-                $identify->fillEmail($account->email)->submit();
+            ->use(static function (IdentifyForm $identify) use ($persona): void {
+                $identify->fillEmail($persona->email)->submit();
             });
 
         // Then

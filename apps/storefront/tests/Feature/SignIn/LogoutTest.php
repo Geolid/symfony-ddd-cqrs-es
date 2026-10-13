@@ -4,26 +4,26 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\SignIn;
 
-use Iam\Tests\Support\Story\ConfirmedAccountStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
+use Storefront\Tests\Support\Story\ConfirmedStory;
 use Zenstruck\Foundry\Attribute\WithStory;
 
 final class LogoutTest extends AbstractStorefrontTestCase
 {
     #[Test]
-    #[WithStory(ConfirmedAccountStory::class)]
+    #[WithStory(ConfirmedStory::class)]
     public function itLogsOut(): void
     {
         // Given
+        $persona = ConfirmedStory::persona();
         $browser = $this->activeBrowser();
-        $account = ConfirmedAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs($persona->email, $persona->password());
 
         $browser->interceptRedirects();
 
         // When
-        $browser->visitRoute('_logout_main');
+        $browser->signOut();
 
         // Then
         $browser->assertRedirectedToRoute('storefront_signin_identify');

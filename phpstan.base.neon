@@ -23,6 +23,11 @@ parameters:
     level: 9
 
     treatPhpDocTypesAsCertain: false
+
+    faker:
+        providerClasses:
+            - Support\Faker\CountryCodeFakerProvider
+            - Support\Faker\CredentialFakerProvider
     exceptions:
         check:
             missingCheckedExceptionInThrows: true

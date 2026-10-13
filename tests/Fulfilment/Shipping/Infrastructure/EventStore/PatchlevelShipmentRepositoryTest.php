@@ -10,6 +10,7 @@ use Fulfilment\Shipping\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipping\Domain\Shipment;
 use Fulfilment\Tests\Shipping\Support\Factory\ShipmentFactory;
 use Fulfilment\Tests\Shipping\Support\Factory\ShipmentIdFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -26,16 +27,11 @@ final class PatchlevelShipmentRepositoryTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itSavesAndLoads(): void
+    #[DataProvider('provideLifecycle')]
+    public function itSavesAndLoads(ShipmentFactory $factory): void
     {
         // Given
-        $shipment = ShipmentFactory::new()
-            ->prepared()
-            ->manifested()
-            ->dispatched()
-            ->delivered()
-            ->erasureApproved()
-            ->create();
+        $shipment = $factory->create();
 
         // When
         $this->repository->save($shipment);
@@ -43,6 +39,16 @@ final class PatchlevelShipmentRepositoryTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($this->propertiesOf($shipment), $this->propertiesOf($loaded));
+    }
+
+    /**
+     * @return iterable<string, array{ShipmentFactory}>
+     */
+    public static function provideLifecycle(): iterable
+    {
+        yield 'delivered' => [ShipmentFactory::new()->prepared()->manifested()->dispatched()->delivered()->erasureApproved()];
+        yield 'cancelled' => [ShipmentFactory::new()->prepared()->cancelled()];
+        yield 'cancellation rejected' => [ShipmentFactory::new()->prepared()->manifested()->dispatched()->cancelled()];
     }
 
     #[Test]
@@ -66,11 +72,14 @@ final class PatchlevelShipmentRepositoryTest extends AbstractIntegrationTestCase
     #[Test]
     public function itThrowsWhenNotFound(): void
     {
+        // Given
+        $unknownId = ShipmentIdFactory::new()->create();
+
         // Then
         $this->expectException(ShipmentNotFoundException::class);
 
         // When
-        $this->repository->load(ShipmentIdFactory::new()->create());
+        $this->repository->load($unknownId);
     }
 
     #[Test]
@@ -90,8 +99,11 @@ final class PatchlevelShipmentRepositoryTest extends AbstractIntegrationTestCase
     #[Test]
     public function itHasNot(): void
     {
+        // Given
+        $unknownId = ShipmentIdFactory::new()->create();
+
         // When
-        $notExists = $this->repository->has(ShipmentIdFactory::new()->create());
+        $notExists = $this->repository->has($unknownId);
 
         // Then
         self::assertFalse($notExists);

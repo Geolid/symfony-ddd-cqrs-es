@@ -12,6 +12,7 @@ use Crm\Tests\Customer\Support\Factory\CustomerFactory;
 use Crm\Tests\Customer\Support\Factory\CustomerIdFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\PostalAddress;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -50,11 +51,14 @@ final class PatchlevelCustomerRepositoryTest extends AbstractIntegrationTestCase
     #[Test]
     public function itThrowsWhenNotFound(): void
     {
+        // Given
+        $unknownId = CustomerIdFactory::new()->create();
+
         // Then
         $this->expectException(CustomerNotFoundException::class);
 
         // When
-        $this->repository->load(CustomerIdFactory::new()->create());
+        $this->repository->load($unknownId);
     }
 
     #[Test]
@@ -90,8 +94,11 @@ final class PatchlevelCustomerRepositoryTest extends AbstractIntegrationTestCase
     #[Test]
     public function itHasNot(): void
     {
+        // Given
+        $unknownId = CustomerIdFactory::new()->create();
+
         // When
-        $notExists = $this->repository->has(CustomerIdFactory::new()->create());
+        $notExists = $this->repository->has($unknownId);
 
         // Then
         self::assertFalse($notExists);
@@ -103,13 +110,7 @@ final class PatchlevelCustomerRepositoryTest extends AbstractIntegrationTestCase
     private function propertiesOf(Customer $customer): array
     {
         $atom = static fn (?\DateTimeImmutable $date): ?string => $date?->format(\DateTimeInterface::ATOM);
-        $address = static fn (?PostalAddress $postalAddress): ?array => null === $postalAddress ? null : [
-            'recipientName' => $postalAddress->recipientName,
-            'street' => $postalAddress->address->street,
-            'postalCode' => $postalAddress->address->postalCode,
-            'city' => $postalAddress->address->city,
-            'countryCode' => $postalAddress->address->countryCode->value,
-        ];
+        $address = static fn (?PostalAddress $postalAddress): ?array => null === $postalAddress ? null : PostalAddressMapper::toArray($postalAddress);
 
         return [
             'id' => $customer->id->toString(),

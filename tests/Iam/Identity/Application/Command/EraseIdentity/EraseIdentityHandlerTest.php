@@ -71,10 +71,13 @@ final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $unknownId = IdentityIdFactory::new()->create()->toString();
+
         // Then
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new EraseIdentity(IdentityIdFactory::new()->create()->toString()));
+        $this->dispatch(new EraseIdentity($unknownId));
     }
 }

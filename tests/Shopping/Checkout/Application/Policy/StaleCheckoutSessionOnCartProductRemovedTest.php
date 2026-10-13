@@ -38,14 +38,17 @@ final class StaleCheckoutSessionOnCartProductRemovedTest extends AbstractIntegra
     public function itIgnoresWhenNoCheckoutSession(): void
     {
         // Given
+        $cartId = Uuid::uuid7()->toString();
+        $productId = Uuid::uuid7()->toString();
+
         $commandBus = $this->createMock(CommandBusInterface::class);
         $this->replace(CommandBusInterface::class, $commandBus);
         $commandBus->expects(self::never())->method('dispatch');
 
         // When
         $this->trigger(StaleCheckoutSessionOnCartProductRemoved::class, new CartProductRemovedIntegrationEvent(
-            cartId: Uuid::uuid7()->toString(),
-            productId: Uuid::uuid7()->toString(),
+            cartId: $cartId,
+            productId: $productId,
             removedAt: Clock::get()->now(),
         ));
     }

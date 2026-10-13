@@ -7,13 +7,13 @@ namespace Storefront\Tests\Feature\Account\Security;
 use Iam\Tests\Authentication\Support\Factory\PasswordFactory;
 use Iam\Tests\Identity\Support\Factory\EmailFactory;
 use Iam\Tests\Identity\Support\Factory\FullNameFactory;
-use Iam\Tests\Support\Story\ConfirmedAccountStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\Account\Security\Component\ChangeEmailForm;
 use Storefront\Tests\Feature\Account\Security\Component\RequestEmailChangeForm;
 use Storefront\Tests\Feature\Registration\Component\RegisterForm;
 use Storefront\Tests\Feature\SignIn\Component\IdentifyForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
+use Storefront\Tests\Support\Story\ConfirmedStory;
 use Storefront\Tests\Support\VerificationCodeTrait;
 use Zenstruck\Foundry\Attribute\WithStory;
 
@@ -22,13 +22,13 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
     use VerificationCodeTrait;
 
     #[Test]
-    #[WithStory(ConfirmedAccountStory::class)]
+    #[WithStory(ConfirmedStory::class)]
     public function itChanges(): void
     {
         // Given
+        $persona = ConfirmedStory::persona();
         $browser = $this->activeBrowser();
-        $account = ConfirmedAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs($persona->email, $persona->password());
 
         $newEmail = EmailFactory::new()->create()->value;
         $browser->visitRoute('storefront_account_security_request_email_change');
@@ -47,7 +47,7 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
             ->assertSeeIn('[data-testid="flash-success"]', 'change_email_flash_changed');
 
         $browser->followRedirects()
-            ->signInAs($newEmail, $account->password())
+            ->signInAs($newEmail, $persona->password())
             ->assertSignedIn();
 
         $browser->visitRoute('storefront_account_security_show');
@@ -55,13 +55,13 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(ConfirmedAccountStory::class)]
+    #[WithStory(ConfirmedStory::class)]
     public function itRefusesIncorrectCode(): void
     {
         // Given
+        $persona = ConfirmedStory::persona();
         $browser = $this->activeBrowser();
-        $account = ConfirmedAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs($persona->email, $persona->password());
 
         $browser->visitRoute('storefront_account_security_request_email_change');
         $browser->use(static function (RequestEmailChangeForm $requestEmailChangeForm): void {
@@ -80,13 +80,13 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(ConfirmedAccountStory::class)]
+    #[WithStory(ConfirmedStory::class)]
     public function itResends(): void
     {
         // Given
+        $persona = ConfirmedStory::persona();
         $browser = $this->activeBrowser();
-        $account = ConfirmedAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs($persona->email, $persona->password());
 
         $newEmail = EmailFactory::new()->create()->value;
         $browser->visitRoute('storefront_account_security_request_email_change');
@@ -105,13 +105,13 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(ConfirmedAccountStory::class)]
+    #[WithStory(ConfirmedStory::class)]
     public function itRefusesInvalidCsrfToken(): void
     {
         // Given
+        $persona = ConfirmedStory::persona();
         $browser = $this->activeBrowser();
-        $account = ConfirmedAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs($persona->email, $persona->password());
 
         $browser->visitRoute('storefront_account_security_request_email_change');
         $browser->use(static function (RequestEmailChangeForm $requestEmailChangeForm): void {
@@ -130,13 +130,13 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(ConfirmedAccountStory::class)]
+    #[WithStory(ConfirmedStory::class)]
     public function itRefusesResendWhenEmailAlreadyInUse(): void
     {
         // Given
+        $persona = ConfirmedStory::persona();
         $browser = $this->activeBrowser();
-        $account = ConfirmedAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs($persona->email, $persona->password());
 
         $targetEmail = EmailFactory::new()->create()->value;
         $browser->visitRoute('storefront_account_security_request_email_change');

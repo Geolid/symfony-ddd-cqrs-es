@@ -4,23 +4,23 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\Account\Security;
 
-use Iam\Tests\Support\Story\ConfirmedAccountStory;
-use Iam\Tests\Support\Story\ConfirmedWithBackupCodesAccountStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\Account\Security\Component\EnrollTotpForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
+use Storefront\Tests\Support\Story\ConfirmedStory;
+use Storefront\Tests\Support\Story\TwoFactorUnenrolledStory;
 use Zenstruck\Foundry\Attribute\WithStory;
 
 final class EnrollTotpTest extends AbstractStorefrontTestCase
 {
     #[Test]
-    #[WithStory(ConfirmedAccountStory::class)]
+    #[WithStory(ConfirmedStory::class)]
     public function itShows(): void
     {
         // Given
+        $persona = ConfirmedStory::persona();
         $browser = $this->activeBrowser();
-        $account = ConfirmedAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs($persona->email, $persona->password());
 
         // When
         $browser->visitRoute('storefront_account_security_two_factor_settings');
@@ -31,13 +31,13 @@ final class EnrollTotpTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(ConfirmedAccountStory::class)]
+    #[WithStory(ConfirmedStory::class)]
     public function itEnrolls(): void
     {
         // Given
+        $persona = ConfirmedStory::persona();
         $browser = $this->activeBrowser();
-        $account = ConfirmedAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs($persona->email, $persona->password());
 
         $browser->visitRoute('storefront_account_security_two_factor_settings');
 
@@ -53,15 +53,14 @@ final class EnrollTotpTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(ConfirmedWithBackupCodesAccountStory::class)]
+    #[WithStory(TwoFactorUnenrolledStory::class)]
     public function itEnrollsKeepingBackupCodes(): void
     {
         // Given
+        $persona = TwoFactorUnenrolledStory::persona();
         $browser = $this->activeBrowser();
-        $account = ConfirmedWithBackupCodesAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs($persona->email, $persona->password());
 
-        $browser->completeTwoFactorChallenge($account->plainBackupCodes()[0]);
         $browser->visitRoute('storefront_account_security_two_factor_settings');
 
         // When
@@ -76,13 +75,13 @@ final class EnrollTotpTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(ConfirmedAccountStory::class)]
+    #[WithStory(ConfirmedStory::class)]
     public function itRefusesIncorrectCode(): void
     {
         // Given
+        $persona = ConfirmedStory::persona();
         $browser = $this->activeBrowser();
-        $account = ConfirmedAccountStory::account();
-        $browser->signInAs($account->email, $account->password());
+        $browser->signInAs($persona->email, $persona->password());
 
         $browser->visitRoute('storefront_account_security_two_factor_settings');
 

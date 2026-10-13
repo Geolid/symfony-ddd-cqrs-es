@@ -49,7 +49,7 @@ final class PatchlevelProductRepositoryTest extends AbstractIntegrationTestCase
             ->create();
         $this->store($product);
         $duplicate = ProductFactory::new()
-            ->withId($product->id->toString())
+            ->withId($product->id)
             ->create();
 
         // Then
@@ -62,11 +62,14 @@ final class PatchlevelProductRepositoryTest extends AbstractIntegrationTestCase
     #[Test]
     public function itThrowsWhenNotFound(): void
     {
+        // Given
+        $unknownId = ProductIdFactory::new()->create();
+
         // Then
         $this->expectException(ProductNotFoundException::class);
 
         // When
-        $this->repository->load(ProductIdFactory::new()->create());
+        $this->repository->load($unknownId);
     }
 
     #[Test]
@@ -86,8 +89,11 @@ final class PatchlevelProductRepositoryTest extends AbstractIntegrationTestCase
     #[Test]
     public function itHasNot(): void
     {
+        // Given
+        $unknownId = ProductIdFactory::new()->create();
+
         // When
-        $notExists = $this->repository->has(ProductIdFactory::new()->create());
+        $notExists = $this->repository->has($unknownId);
 
         // Then
         self::assertFalse($notExists);

@@ -12,8 +12,7 @@ use Symfony\Component\HttpKernel\KernelInterface;
 use Zenstruck\Foundry\ORM\ResetDatabase\OrmResetter;
 
 /**
- * Replaces Foundry's ORM resetter (decorates it, never calls it): the same sequence as `castor db:reset`,
- * run through the console commands on the kernel Foundry hands in.
+ * Replaces Foundry's ORM resetter: it decorates it without calling it.
  */
 final class EventSourcingResetter implements OrmResetter
 {

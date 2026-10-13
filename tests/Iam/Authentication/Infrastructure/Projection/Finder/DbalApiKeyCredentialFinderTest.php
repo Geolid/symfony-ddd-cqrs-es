@@ -10,6 +10,7 @@ use Iam\Authentication\Application\Finder\ApiKeyCredential\Exception\ApiKeyCrede
 use Iam\Authentication\Domain\ApiKeyCredential\ApiKeyCredential;
 use Iam\Tests\Authentication\Support\Double\FakeApiKeyHasher;
 use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialFactory;
+use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialIdFactory;
 use Iam\Tests\Authentication\Support\Factory\KeyIdFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -46,10 +47,7 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIterableFinderTestCas
         self::assertSame($credential->label->value, $result->label);
         self::assertSame($credential->keyId->value, $result->keyId);
         self::assertFalse($result->revoked);
-        self::assertSame(
-            $credential->issuedAt->format(\DateTimeInterface::ATOM),
-            $result->issuedAt->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDateTime($credential->issuedAt, $result->issuedAt);
         self::assertNull($result->revokedAt);
         self::assertSame($hasher->hash($secret), $result->secretHash);
     }
@@ -57,11 +55,14 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIterableFinderTestCas
     #[Test]
     public function itThrowsWhenKeyIdNotFound(): void
     {
+        // Given
+        $unknownKeyId = KeyIdFactory::new()->create()->value;
+
         // Then
         $this->expectException(ApiKeyCredentialResultNotFoundException::class);
 
         // When
-        $this->finder()->ofKeyId(KeyIdFactory::new()->create()->value);
+        $this->finder()->ofKeyId($unknownKeyId);
     }
 
     #[Test]
@@ -114,8 +115,8 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIterableFinderTestCas
         $largerId = Uuid::uuid7($now->modify('+1 hour'))->toString();
 
         $hasher = new FakeApiKeyHasher();
-        $first = ApiKeyCredentialFactory::new()->withId($largerId)->withHasher($hasher)->withIssuedAt($now)->create();
-        $second = ApiKeyCredentialFactory::new()->withId($smallerId)->withHasher($hasher)->withIssuedAt($now->modify('+1 hour'))->create();
+        $first = ApiKeyCredentialFactory::new()->withId(ApiKeyCredentialIdFactory::new()->withId($largerId)->create())->withHasher($hasher)->withIssuedAt($now)->create();
+        $second = ApiKeyCredentialFactory::new()->withId(ApiKeyCredentialIdFactory::new()->withId($smallerId)->create())->withHasher($hasher)->withIssuedAt($now->modify('+1 hour'))->create();
         $this->store($first, $second);
 
         return [$largerId, $smallerId];

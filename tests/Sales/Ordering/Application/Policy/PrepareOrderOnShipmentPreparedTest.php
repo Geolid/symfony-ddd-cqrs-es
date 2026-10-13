@@ -34,8 +34,12 @@ final class PrepareOrderOnShipmentPreparedTest extends AbstractIntegrationTestCa
     #[Test]
     public function itIgnoresWhenNotFound(): void
     {
+        // Given
+        $shipmentId = Uuid::uuid7()->toString();
+        $orderId = Uuid::uuid7()->toString();
+
         // When
-        $this->trigger(PrepareOrderOnShipmentPrepared::class, new ShipmentPreparedIntegrationEvent(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), Clock::get()->now()));
+        $this->trigger(PrepareOrderOnShipmentPrepared::class, new ShipmentPreparedIntegrationEvent($shipmentId, $orderId, Clock::get()->now()));
 
         // Then
         self::expectNotToPerformAssertions();

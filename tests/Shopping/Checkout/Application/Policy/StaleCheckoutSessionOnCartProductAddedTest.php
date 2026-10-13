@@ -40,15 +40,19 @@ final class StaleCheckoutSessionOnCartProductAddedTest extends AbstractIntegrati
     public function itIgnoresWhenNoCheckoutSession(): void
     {
         // Given
+        $cartId = Uuid::uuid7()->toString();
+        $productId = Uuid::uuid7()->toString();
+        $quantity = QuantityFactory::new()->create()->value;
+
         $commandBus = $this->createMock(CommandBusInterface::class);
         $this->replace(CommandBusInterface::class, $commandBus);
         $commandBus->expects(self::never())->method('dispatch');
 
         // When
         $this->trigger(StaleCheckoutSessionOnCartProductAdded::class, new CartProductAddedIntegrationEvent(
-            cartId: Uuid::uuid7()->toString(),
-            productId: Uuid::uuid7()->toString(),
-            quantity: QuantityFactory::new()->create()->value,
+            cartId: $cartId,
+            productId: $productId,
+            quantity: $quantity,
             addedAt: Clock::get()->now(),
         ));
     }

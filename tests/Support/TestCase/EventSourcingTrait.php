@@ -5,8 +5,11 @@ declare(strict_types=1);
 namespace Support\TestCase;
 
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
+use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Repository\RepositoryManager;
+use Patchlevel\EventSourcing\Store\Criteria\CriteriaBuilder;
 use Patchlevel\EventSourcing\Store\Store;
+use Shared\Infrastructure\EventStore\PatchlevelIntegrationEventPublisher;
 
 trait EventSourcingTrait
 {
@@ -34,8 +37,6 @@ trait EventSourcingTrait
     }
 
     /**
-     * The persisted event of $eventClass, scanning the whole store.
-     *
      * @template T of object
      *
      * @param class-string<T> $eventClass
@@ -56,26 +57,52 @@ trait EventSourcingTrait
     }
 
     /**
-     * The matching event as the event store returns it: decrypted while its subject's cipher key exists,
-     * replaced by its erasure fallback once the key is dropped.
+     * Replaced by its erasure fallback once its subject's cipher key is dropped.
      *
      * @template T of object
      *
-     * @param class-string<T>   $eventClass
-     * @param callable(T): bool $matches
+     * @param class-string<T> $eventClass
      *
      * @return T
      */
-    protected function storedEventOf(string $eventClass, callable $matches): object
+    protected function storedEventOf(string $eventClass, AggregateRoot&AggregateRootMetadataAware $aggregate): object
     {
-        foreach ($this->service(Store::class)->load() as $message) {
+        return $this->firstStoredEventIn($eventClass, $aggregate::metadata()->streamName($aggregate->aggregateRootId()->toString()));
+    }
+
+    /**
+     * Replaced by its erasure fallback once its subject's cipher key is dropped.
+     *
+     * @template T of object
+     *
+     * @param class-string<T> $eventClass
+     *
+     * @return T
+     */
+    protected function storedIntegrationEventOf(string $eventClass, AggregateRoot&AggregateRootMetadataAware $aggregate): object
+    {
+        return $this->firstStoredEventIn($eventClass, PatchlevelIntegrationEventPublisher::streamNameOf($aggregate::class, $aggregate->aggregateRootId()->toString()));
+    }
+
+    /**
+     * @template T of object
+     *
+     * @param class-string<T> $eventClass
+     *
+     * @return T
+     */
+    private function firstStoredEventIn(string $eventClass, string $streamName): object
+    {
+        $stream = $this->service(Store::class)->load(new CriteriaBuilder()->streamName($streamName)->build());
+
+        foreach ($stream as $message) {
             $event = $message->event();
 
-            if ($event instanceof $eventClass && $matches($event)) {
+            if ($event instanceof $eventClass) {
                 return $event;
             }
         }
 
-        self::fail(\sprintf('%s event not found in the stream.', $eventClass));
+        self::fail(\sprintf('%s event not found in %s.', $eventClass, $streamName));
     }
 }

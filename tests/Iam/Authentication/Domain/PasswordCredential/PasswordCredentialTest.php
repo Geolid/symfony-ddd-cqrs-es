@@ -44,9 +44,8 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $this->identityId = Uuid::uuid7()->toString();
         $this->id = PasswordCredentialId::forIdentity($this->identityId);
         $this->password = PasswordFactory::new()->create();
-        $now = Clock::get()->now();
-        $this->definedAt = $now;
-        $this->requestedAt = $now->modify('+3 day');
+        $this->definedAt = Clock::get()->now();
+        $this->requestedAt = $this->definedAt->modify('+3 day');
         $this->hasher = new FakePasswordHasher();
         $this->codeChallenger = new FakeCodeChallenger();
     }
@@ -108,6 +107,8 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     #[Test]
     public function itCannotChangeWithInvalidCurrentPassword(): void
     {
+        $changedAt = Clock::get()->now()->modify('+1 day');
+
         $this
             ->given($this->defined())
             ->when(fn (PasswordCredential $credential) => $credential->change(
@@ -115,7 +116,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 Password::fromString('updated-password'),
                 new StubPasswordStrengthSpecification(),
                 $this->hasher,
-                Clock::get()->now()->modify('+1 day'),
+                $changedAt,
             ))
             ->expectsException(InvalidCurrentPasswordException::class);
     }
@@ -123,6 +124,8 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     #[Test]
     public function itCannotChangeToWeakPassword(): void
     {
+        $changedAt = Clock::get()->now()->modify('+1 day');
+
         $this
             ->given($this->defined())
             ->when(fn (PasswordCredential $credential) => $credential->change(
@@ -130,7 +133,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 Password::fromString('updated-password'),
                 new StubPasswordStrengthSpecification(sufficient: false),
                 $this->hasher,
-                Clock::get()->now()->modify('+1 day'),
+                $changedAt,
             ))
             ->expectsException(WeakPasswordException::class);
     }
@@ -138,6 +141,8 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     #[Test]
     public function itCannotChangeToSamePassword(): void
     {
+        $changedAt = Clock::get()->now()->modify('+1 day');
+
         $this
             ->given($this->defined())
             ->when(fn (PasswordCredential $credential) => $credential->change(
@@ -145,7 +150,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 $this->password,
                 new StubPasswordStrengthSpecification(),
                 $this->hasher,
-                Clock::get()->now()->modify('+1 day'),
+                $changedAt,
             ))
             ->expectsException(SamePasswordException::class);
     }
@@ -162,9 +167,11 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     #[Test]
     public function itCannotRequestResetTooSoon(): void
     {
+        $requestedAgainAt = $this->requestedAt->modify('+1 second');
+
         $this
             ->given($this->defined(), $this->resetRequested())
-            ->when(fn (PasswordCredential $credential) => $credential->requestReset($this->requestedAt->modify('+1 second')))
+            ->when(static fn (PasswordCredential $credential) => $credential->requestReset($requestedAgainAt))
             ->expectsException(PasswordResetRequestedTooRecentlyException::class)
             ->expectsExceptionMessage('requested too recently');
     }
@@ -195,6 +202,8 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     #[Test]
     public function itCannotResetWithInvalidCode(): void
     {
+        $resetAt = Clock::get()->now()->modify('+4 day');
+
         $this
             ->given($this->defined())
             ->when(fn (PasswordCredential $credential) => $credential->resetPassword(
@@ -203,7 +212,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 Password::fromString('updated-password'),
                 new StubPasswordStrengthSpecification(),
                 $this->hasher,
-                Clock::get()->now()->modify('+4 day'),
+                $resetAt,
             ))
             ->expectsException(InvalidPasswordResetCodeException::class);
     }
@@ -211,6 +220,8 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     #[Test]
     public function itCannotResetToWeakPassword(): void
     {
+        $resetAt = Clock::get()->now()->modify('+4 day');
+
         $this
             ->given($this->defined())
             ->when(fn (PasswordCredential $credential) => $credential->resetPassword(
@@ -219,7 +230,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 Password::fromString('updated-password'),
                 new StubPasswordStrengthSpecification(sufficient: false),
                 $this->hasher,
-                Clock::get()->now()->modify('+4 day'),
+                $resetAt,
             ))
             ->expectsException(WeakPasswordException::class);
     }
@@ -227,6 +238,8 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     #[Test]
     public function itCannotResetToSamePassword(): void
     {
+        $resetAt = Clock::get()->now()->modify('+4 day');
+
         $this
             ->given($this->defined())
             ->when(fn (PasswordCredential $credential) => $credential->resetPassword(
@@ -235,7 +248,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
                 $this->password,
                 new StubPasswordStrengthSpecification(),
                 $this->hasher,
-                Clock::get()->now()->modify('+4 day'),
+                $resetAt,
             ))
             ->expectsException(SamePasswordException::class);
     }

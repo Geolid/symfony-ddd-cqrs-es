@@ -4,34 +4,34 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\SignIn;
 
-use Iam\Tests\Support\Story\ConfirmedAccountStory;
-use Iam\Tests\Support\Story\SuspendedAccountStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\SignIn\Component\IdentifyForm;
 use Storefront\Tests\Feature\SignIn\Component\VerifyForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
+use Storefront\Tests\Support\Story\ConfirmedStory;
+use Storefront\Tests\Support\Story\SuspendedStory;
 use Zenstruck\Foundry\Attribute\WithStory;
 
 final class VerifyTest extends AbstractStorefrontTestCase
 {
     #[Test]
-    #[WithStory(ConfirmedAccountStory::class)]
+    #[WithStory(ConfirmedStory::class)]
     public function itShowsVerify(): void
     {
         // Given
+        $persona = ConfirmedStory::persona();
         $browser = $this->activeBrowser();
-        $account = ConfirmedAccountStory::account();
 
         // When
         $browser->visitRoute('storefront_signin_identify');
-        $browser->use(static function (IdentifyForm $identify) use ($account): void {
-            $identify->fillEmail($account->email)->submit();
+        $browser->use(static function (IdentifyForm $identify) use ($persona): void {
+            $identify->fillEmail($persona->email)->submit();
         });
 
         // Then
         $browser->assertSuccessful()
-            ->use(static function (VerifyForm $verify) use ($account): void {
-                $verify->assertEmailPrefilled($account->email);
+            ->use(static function (VerifyForm $verify) use ($persona): void {
+                $verify->assertEmailPrefilled($persona->email);
             });
     }
 
@@ -49,22 +49,22 @@ final class VerifyTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(ConfirmedAccountStory::class)]
+    #[WithStory(ConfirmedStory::class)]
     public function itSignsIn(): void
     {
         // Given
+        $persona = ConfirmedStory::persona();
         $browser = $this->activeBrowser();
-        $account = ConfirmedAccountStory::account();
 
         $browser->visitRoute('storefront_signin_identify');
-        $browser->use(static function (IdentifyForm $identify) use ($account): void {
-            $identify->fillEmail($account->email)->submit();
+        $browser->use(static function (IdentifyForm $identify) use ($persona): void {
+            $identify->fillEmail($persona->email)->submit();
         });
         $browser->interceptRedirects();
 
         // When
-        $browser->use(static function (VerifyForm $verify) use ($account): void {
-            $verify->fillPassword($account->password())->submit();
+        $browser->use(static function (VerifyForm $verify) use ($persona): void {
+            $verify->fillPassword($persona->password())->submit();
         });
 
         // Then
@@ -72,16 +72,16 @@ final class VerifyTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(ConfirmedAccountStory::class)]
+    #[WithStory(ConfirmedStory::class)]
     public function itRefusesIncorrectPassword(): void
     {
         // Given
+        $persona = ConfirmedStory::persona();
         $browser = $this->activeBrowser();
-        $account = ConfirmedAccountStory::account();
 
         $browser->visitRoute('storefront_signin_identify');
-        $browser->use(static function (IdentifyForm $identify) use ($account): void {
-            $identify->fillEmail($account->email)->submit();
+        $browser->use(static function (IdentifyForm $identify) use ($persona): void {
+            $identify->fillEmail($persona->email)->submit();
         });
 
         // When
@@ -90,27 +90,27 @@ final class VerifyTest extends AbstractStorefrontTestCase
         });
 
         // Then
-        $browser->use(static function (VerifyForm $verify) use ($account): void {
-            $verify->assertInvalidCredentialsError()->assertEmailPrefilled($account->email);
+        $browser->use(static function (VerifyForm $verify) use ($persona): void {
+            $verify->assertInvalidCredentialsError()->assertEmailPrefilled($persona->email);
         });
     }
 
     #[Test]
-    #[WithStory(SuspendedAccountStory::class)]
+    #[WithStory(SuspendedStory::class)]
     public function itRefusesSuspendedAccount(): void
     {
         // Given
+        $persona = SuspendedStory::persona();
         $browser = $this->activeBrowser();
-        $account = SuspendedAccountStory::account();
 
         $browser->visitRoute('storefront_signin_identify');
-        $browser->use(static function (IdentifyForm $identify) use ($account): void {
-            $identify->fillEmail($account->email)->submit();
+        $browser->use(static function (IdentifyForm $identify) use ($persona): void {
+            $identify->fillEmail($persona->email)->submit();
         });
 
         // When
-        $browser->use(static function (VerifyForm $verify) use ($account): void {
-            $verify->fillPassword($account->password())->submit();
+        $browser->use(static function (VerifyForm $verify) use ($persona): void {
+            $verify->fillPassword($persona->password())->submit();
         });
 
         // Then
@@ -120,16 +120,16 @@ final class VerifyTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(ConfirmedAccountStory::class)]
+    #[WithStory(ConfirmedStory::class)]
     public function itRefusesAfterTooManyAttempts(): void
     {
         // Given
+        $persona = ConfirmedStory::persona();
         $browser = $this->activeBrowser();
-        $account = ConfirmedAccountStory::account();
 
         $browser->visitRoute('storefront_signin_identify');
-        $browser->use(static function (IdentifyForm $identify) use ($account): void {
-            $identify->fillEmail($account->email)->submit();
+        $browser->use(static function (IdentifyForm $identify) use ($persona): void {
+            $identify->fillEmail($persona->email)->submit();
         });
 
         for ($i = 0; $i < 3; ++$i) {
@@ -139,8 +139,8 @@ final class VerifyTest extends AbstractStorefrontTestCase
         }
 
         // When
-        $browser->use(static function (VerifyForm $verify) use ($account): void {
-            $verify->fillPassword($account->password())->submit();
+        $browser->use(static function (VerifyForm $verify) use ($persona): void {
+            $verify->fillPassword($persona->password())->submit();
         });
 
         // Then

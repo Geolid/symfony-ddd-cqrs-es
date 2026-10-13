@@ -74,9 +74,9 @@ final class OrderFactory extends AbstractAggregateFactory
         return $this->with(['items' => $items]);
     }
 
-    public function withCurrency(string $currency): self
+    public function withCurrency(Currency $currency): self
     {
-        return $this->with(['currency' => Currency::from($currency)]);
+        return $this->with(['currency' => $currency]);
     }
 
     public function withConfirmedAt(\DateTimeImmutable $confirmedAt): self
@@ -154,7 +154,6 @@ final class OrderFactory extends AbstractAggregateFactory
 
     protected function initialize(): static
     {
-        // The id derives from the FINAL checkoutSessionId and the items from the FINAL currency, so a with() override carries over.
         return parent::initialize()->beforeInstantiate(static function (array $parameters): array {
             Assert::string($parameters['checkoutSessionId']);
             Assert::isInstanceOf($parameters['currency'], Currency::class);

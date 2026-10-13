@@ -102,7 +102,6 @@ final class CustomerFactory extends AbstractAggregateFactory
 
     protected function initialize(): static
     {
-        // The id derives from the FINAL identityId, so a with(['identityId' => ...]) override carries over.
         return parent::initialize()->beforeInstantiate(static function (array $parameters): array {
             Assert::string($parameters['identityId']);
             $parameters['id'] ??= CustomerId::forIdentity($parameters['identityId']);

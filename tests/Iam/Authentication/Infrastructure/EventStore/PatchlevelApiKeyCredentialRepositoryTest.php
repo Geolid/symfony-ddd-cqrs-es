@@ -51,7 +51,7 @@ final class PatchlevelApiKeyCredentialRepositoryTest extends AbstractIntegration
         // Given
         $credential = ApiKeyCredentialFactory::new()->withHasher($this->hasher)->create();
         $this->store($credential);
-        $duplicate = ApiKeyCredentialFactory::new()->withHasher($this->hasher)->withId($credential->id->toString())->create();
+        $duplicate = ApiKeyCredentialFactory::new()->withHasher($this->hasher)->withId($credential->id)->create();
 
         // Then
         $this->expectException(ApiKeyCredentialAlreadyExistsException::class);
@@ -63,11 +63,14 @@ final class PatchlevelApiKeyCredentialRepositoryTest extends AbstractIntegration
     #[Test]
     public function itThrowsWhenNotFound(): void
     {
+        // Given
+        $unknownId = ApiKeyCredentialId::fromString(Uuid::uuid7()->toString());
+
         // Then
         $this->expectException(ApiKeyCredentialNotFoundException::class);
 
         // When
-        $this->repository->load(ApiKeyCredentialId::fromString(Uuid::uuid7()->toString()));
+        $this->repository->load($unknownId);
     }
 
     #[Test]
@@ -87,8 +90,11 @@ final class PatchlevelApiKeyCredentialRepositoryTest extends AbstractIntegration
     #[Test]
     public function itHasNot(): void
     {
+        // Given
+        $unknownId = ApiKeyCredentialId::fromString(Uuid::uuid7()->toString());
+
         // When
-        $notExists = $this->repository->has(ApiKeyCredentialId::fromString(Uuid::uuid7()->toString()));
+        $notExists = $this->repository->has($unknownId);
 
         // Then
         self::assertFalse($notExists);

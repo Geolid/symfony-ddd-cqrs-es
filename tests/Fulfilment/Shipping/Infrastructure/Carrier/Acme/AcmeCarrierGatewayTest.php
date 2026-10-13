@@ -14,8 +14,7 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\Address;
-use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Tests\Support\Factory\PostalAddressFactory;
 use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Component\HttpClient\MockHttpClient;
 use Symfony\Component\HttpClient\Response\MockResponse;
@@ -28,9 +27,11 @@ final class AcmeCarrierGatewayTest extends TestCase
         // Given
         $shipmentId = Uuid::uuid7()->toString();
         $response = self::jsonResponse(['tracking_number' => 'ACME-4Q7X2K9']);
+        $origin = PostalAddressFactory::new()->create();
+        $destination = PostalAddressFactory::new()->create();
 
         // When
-        $trackingNumber = $this->gateway($response)->manifest($shipmentId, $this->originAddress(), $this->destinationAddress());
+        $trackingNumber = $this->gateway($response)->manifest($shipmentId, $origin, $destination);
 
         // Then
         self::assertSame('ACME-4Q7X2K9', $trackingNumber);
@@ -43,8 +44,8 @@ final class AcmeCarrierGatewayTest extends TestCase
         self::assertSame(
             [
                 'reference_number' => $shipmentId,
-                'shipper' => PostalAddressMapper::toArray($this->originAddress()),
-                'ship_to' => PostalAddressMapper::toArray($this->destinationAddress()),
+                'shipper' => PostalAddressMapper::toArray($origin),
+                'ship_to' => PostalAddressMapper::toArray($destination),
             ],
             $requestBody,
         );
@@ -54,11 +55,16 @@ final class AcmeCarrierGatewayTest extends TestCase
     #[DataProvider('provideTransientFailures')]
     public function itThrowsTransientWhenCarrierUnreachable(callable|MockResponse $response): void
     {
+        // Given
+        $shipmentId = Uuid::uuid7()->toString();
+        $origin = PostalAddressFactory::new()->create();
+        $destination = PostalAddressFactory::new()->create();
+
         // Then
         $this->expectException(CarrierTransientFailureException::class);
 
         // When
-        $this->gateway($response)->manifest(Uuid::uuid7()->toString(), $this->originAddress(), $this->destinationAddress());
+        $this->gateway($response)->manifest($shipmentId, $origin, $destination);
     }
 
     /**
@@ -73,22 +79,33 @@ final class AcmeCarrierGatewayTest extends TestCase
     #[Test]
     public function itThrowsFatalWhenManifestRequestRejected(): void
     {
+        // Given
+        $shipmentId = Uuid::uuid7()->toString();
+        $response = self::jsonResponse(['error' => 'invalid address'], 400);
+        $origin = PostalAddressFactory::new()->create();
+        $destination = PostalAddressFactory::new()->create();
+
         // Then
         $this->expectException(CarrierFatalFailureException::class);
 
         // When
-        $this->gateway(self::jsonResponse(['error' => 'invalid address'], 400))->manifest(Uuid::uuid7()->toString(), $this->originAddress(), $this->destinationAddress());
+        $this->gateway($response)->manifest($shipmentId, $origin, $destination);
     }
 
     #[Test]
     #[DataProvider('provideUnreadableResponses')]
     public function itThrowsFatalWhenManifestResponseUnreadable(MockResponse $response): void
     {
+        // Given
+        $shipmentId = Uuid::uuid7()->toString();
+        $origin = PostalAddressFactory::new()->create();
+        $destination = PostalAddressFactory::new()->create();
+
         // Then
         $this->expectException(CarrierFatalFailureException::class);
 
         // When
-        $this->gateway($response)->manifest(Uuid::uuid7()->toString(), $this->originAddress(), $this->destinationAddress());
+        $this->gateway($response)->manifest($shipmentId, $origin, $destination);
     }
 
     /**
@@ -165,16 +182,6 @@ final class AcmeCarrierGatewayTest extends TestCase
     private function gateway(callable|MockResponse $response): AcmeCarrierGateway
     {
         return new AcmeCarrierGateway(new AcmeClient(new MockHttpClient($response, 'https://carrier.acme.test')));
-    }
-
-    private function originAddress(): PostalAddress
-    {
-        return PostalAddress::of('Returns Department', Address::of("1 rue de l'Entrepot", '75012', 'Paris', 'FR'));
-    }
-
-    private function destinationAddress(): PostalAddress
-    {
-        return PostalAddress::of('Ada Lovelace', Address::of('12 rue des Lilas', '75001', 'Paris', 'FR'));
     }
 
     private static function jsonResponse(mixed $body, int $statusCode = 200): MockResponse

@@ -41,10 +41,13 @@ final class GetApiKeyCredentialByKeyIdHandlerTest extends AbstractIntegrationTes
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $keyId = KeyIdFactory::new()->create()->value;
+
         // Then
         $this->expectException(ApiKeyCredentialResultNotFoundException::class);
 
         // When
-        $this->ask(new GetApiKeyCredentialByKeyId(KeyIdFactory::new()->create()->value));
+        $this->ask(new GetApiKeyCredentialByKeyId($keyId));
     }
 }

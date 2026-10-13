@@ -84,12 +84,15 @@ final class RehashPasswordHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $unknownIdentityId = Uuid::uuid7()->toString();
+
         // Then
         $this->expectException(PasswordCredentialResultNotFoundException::class);
 
         // When
         $this->dispatch(new RehashPassword(
-            Uuid::uuid7()->toString(),
+            $unknownIdentityId,
             PasswordFactory::new()->create()->value,
         ));
     }

@@ -84,10 +84,10 @@ final class ShipmentFactory extends AbstractAggregateFactory
         );
     }
 
-    public function manifested(?string $trackingNumber = null, ?\DateTimeImmutable $manifestedAt = null): self
+    public function manifested(?TrackingNumber $trackingNumber = null, ?\DateTimeImmutable $manifestedAt = null): self
     {
         return $this->with(array_filter([
-            'trackingNumber' => null !== $trackingNumber ? TrackingNumber::fromString($trackingNumber) : null,
+            'trackingNumber' => $trackingNumber,
             'manifestedAt' => $manifestedAt,
         ]))->transition(
             static function (Shipment $shipment, array $inputs): void {
@@ -137,7 +137,6 @@ final class ShipmentFactory extends AbstractAggregateFactory
 
     protected function initialize(): static
     {
-        // The id derives from the FINAL orderId, so a with(['orderId' => ...]) override carries over.
         return parent::initialize()->beforeInstantiate(static function (array $parameters): array {
             Assert::string($parameters['orderId']);
             $parameters['id'] ??= ShipmentId::forOrder($parameters['orderId']);

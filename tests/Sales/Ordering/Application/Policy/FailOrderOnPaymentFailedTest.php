@@ -34,8 +34,11 @@ final class FailOrderOnPaymentFailedTest extends AbstractIntegrationTestCase
     #[Test]
     public function itIgnoresWhenNotFound(): void
     {
+        // Given
+        $unknownOrderId = Uuid::uuid7()->toString();
+
         // When
-        $this->trigger(FailOrderOnPaymentFailed::class, new PaymentFailedIntegrationEvent(Uuid::uuid7()->toString(), Clock::get()->now()));
+        $this->trigger(FailOrderOnPaymentFailed::class, new PaymentFailedIntegrationEvent($unknownOrderId, Clock::get()->now()));
 
         // Then
         self::expectNotToPerformAssertions();

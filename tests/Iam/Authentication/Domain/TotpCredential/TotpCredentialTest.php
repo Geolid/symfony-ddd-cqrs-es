@@ -81,10 +81,11 @@ final class TotpCredentialTest extends AggregateRootTestCase
     public function itCannotUnenrollWhenOwnedByAnotherIdentity(): void
     {
         $anotherIdentityId = Uuid::uuid7()->toString();
+        $unenrolledAt = Clock::get()->now()->modify('+1 day');
 
         $this
             ->given($this->enrolled())
-            ->when(static fn (TotpCredential $credential) => $credential->unenroll($anotherIdentityId, Clock::get()->now()->modify('+1 day')))
+            ->when(static fn (TotpCredential $credential) => $credential->unenroll($anotherIdentityId, $unenrolledAt))
             ->expectsException(TotpCredentialOwnedByAnotherIdentityException::class);
     }
 

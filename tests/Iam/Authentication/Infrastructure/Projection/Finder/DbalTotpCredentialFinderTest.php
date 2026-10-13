@@ -43,10 +43,7 @@ final class DbalTotpCredentialFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertSame($credential->id->toString(), $result->id);
         self::assertSame($credential->identityId, $result->identityId);
-        self::assertSame(
-            $credential->enrolledAt->format(\DateTimeInterface::ATOM),
-            $result->enrolledAt->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDateTime($credential->enrolledAt, $result->enrolledAt);
         self::assertFalse($result->unenrolled);
         self::assertNull($result->unenrolledAt);
         self::assertSame($this->cipher->encrypt($secret), $result->encryptedSecret);
@@ -55,11 +52,14 @@ final class DbalTotpCredentialFinderTest extends AbstractIntegrationTestCase
     #[Test]
     public function itThrowsWhenIdNotFound(): void
     {
+        // Given
+        $unknownId = Uuid::uuid7()->toString();
+
         // Then
         $this->expectException(TotpCredentialResultNotFoundException::class);
 
         // When
-        $this->finder->ofId(Uuid::uuid7()->toString());
+        $this->finder->ofId($unknownId);
     }
 
     #[Test]
@@ -97,8 +97,11 @@ final class DbalTotpCredentialFinderTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFindsNothingWhenNotEnrolled(): void
     {
+        // Given
+        $identityId = Uuid::uuid7()->toString();
+
         // When
-        $result = $this->finder->activeOfIdentityOrNull(Uuid::uuid7()->toString());
+        $result = $this->finder->activeOfIdentityOrNull($identityId);
 
         // Then
         self::assertNull($result);

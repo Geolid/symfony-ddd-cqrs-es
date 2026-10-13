@@ -9,9 +9,6 @@ use Faker\Generator;
 use Support\Faker\CountryCodeFakerProvider;
 use Support\Faker\CredentialFakerProvider;
 
-/**
- * Single place building the Foundry faker (unit: UnitTestConfig::configure, kernel: faker.service).
- */
 final class FoundryFaker
 {
     public static function create(): Generator

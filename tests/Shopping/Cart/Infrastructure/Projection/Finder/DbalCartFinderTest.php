@@ -39,17 +39,20 @@ final class DbalCartFinderTest extends AbstractIterableFinderTestCase
         self::assertSame($cart->id->toString(), $result->id);
         self::assertSame($cart->customerId, $result->customerId);
         self::assertSame(CartStatus::ACTIVE, $result->status);
-        self::assertSame($cart->startedAt->format('Y-m-d H:i:s'), $result->startedAt->format('Y-m-d H:i:s'));
+        self::assertSameDateTime($cart->startedAt, $result->startedAt);
     }
 
     #[Test]
     public function itThrowsWhenIdNotFound(): void
     {
+        // Given
+        $unknownId = CartIdFactory::new()->create()->toString();
+
         // Then
         $this->expectException(CartResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(CartIdFactory::new()->create()->toString());
+        $this->finder()->ofId($unknownId);
     }
 
     #[Test]
@@ -99,8 +102,8 @@ final class DbalCartFinderTest extends AbstractIterableFinderTestCase
         $smallerId = Uuid::uuid7($now)->toString();
         $largerId = Uuid::uuid7($now->modify('+1 hour'))->toString();
 
-        $first = CartFactory::new()->withId($largerId)->withStartedAt($now)->create();
-        $second = CartFactory::new()->withId($smallerId)->withStartedAt($now->modify('+1 hour'))->create();
+        $first = CartFactory::new()->withId(CartIdFactory::new()->withId($largerId)->create())->withStartedAt($now)->create();
+        $second = CartFactory::new()->withId(CartIdFactory::new()->withId($smallerId)->create())->withStartedAt($now->modify('+1 hour'))->create();
         $this->store($first, $second);
 
         return [$largerId, $smallerId];

@@ -51,12 +51,12 @@ final class FailPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = PaymentIdFactory::new()->create()->toString();
+        $unknownId = PaymentIdFactory::new()->create()->toString();
 
         // Then
         $this->expectException(PaymentNotFoundException::class);
 
         // When
-        $this->dispatch(new FailPayment($id, Uuid::uuid7()->toString()));
+        $this->dispatch(new FailPayment($unknownId, Uuid::uuid7()->toString()));
     }
 }

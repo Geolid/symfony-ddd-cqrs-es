@@ -71,13 +71,15 @@ final class ShipmentManifesterTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
+        $unknownShipmentId = ShipmentIdFactory::new()->create()->toString();
+
         $this->carrier->expects(self::never())->method('manifest');
 
         // Then
         $this->expectException(ShipmentResultNotFoundException::class);
 
         // When
-        $this->service->manifest(ShipmentIdFactory::new()->create()->toString());
+        $this->service->manifest($unknownShipmentId);
     }
 
     #[Test]

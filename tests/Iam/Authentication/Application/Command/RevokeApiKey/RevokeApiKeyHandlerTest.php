@@ -72,14 +72,15 @@ final class RevokeApiKeyHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $unknownId = Uuid::uuid7()->toString();
+        $identityId = Uuid::uuid7()->toString();
+
         // Then
         $this->expectException(ApiKeyCredentialNotFoundException::class);
 
         // When
-        $this->dispatch(new RevokeApiKey(
-            Uuid::uuid7()->toString(),
-            Uuid::uuid7()->toString(),
-        ));
+        $this->dispatch(new RevokeApiKey($unknownId, $identityId));
     }
 
     #[Test]

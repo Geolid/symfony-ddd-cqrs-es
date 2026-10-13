@@ -46,11 +46,14 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
     #[Test]
     public function itThrowsWhenIdNotFound(): void
     {
+        // Given
+        $unknownId = PaymentIdFactory::new()->create()->toString();
+
         // Then
         $this->expectException(PaymentResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(PaymentIdFactory::new()->create()->toString());
+        $this->finder()->ofId($unknownId);
     }
 
     #[Test]
@@ -79,9 +82,9 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
         self::assertSame($orderPayment->reference->value, $result->reference);
         self::assertSame($orderPayment->hostedPageUrl, $result->hostedPageUrl);
         self::assertSame(PaymentStatus::CAPTURED, $result->status);
-        self::assertSame($requestedAt->format('Y-m-d H:i:s'), $result->requestedAt->format('Y-m-d H:i:s'));
-        self::assertSame($authorizedAt->format('Y-m-d H:i:s'), $result->authorizedAt?->format('Y-m-d H:i:s'));
-        self::assertSame($capturedAt->format('Y-m-d H:i:s'), $result->capturedAt?->format('Y-m-d H:i:s'));
+        self::assertSameDateTime($requestedAt, $result->requestedAt);
+        self::assertSameDateTime($authorizedAt, $result->authorizedAt);
+        self::assertSameDateTime($capturedAt, $result->capturedAt);
         self::assertNull($result->failedAt);
         self::assertNull($result->abandonedAt);
         self::assertNull($result->voidedAt);
@@ -90,11 +93,14 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
     #[Test]
     public function itThrowsOnUnknownReference(): void
     {
+        // Given
+        $unknownReference = PaymentReferenceFactory::new()->create()->value;
+
         // Then
         $this->expectException(PaymentResultNotFoundException::class);
 
         // When
-        $this->finder()->ofReference(PaymentReferenceFactory::new()->create()->value);
+        $this->finder()->ofReference($unknownReference);
     }
 
     #[Test]
@@ -115,11 +121,14 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
     #[Test]
     public function itThrowsWhenCheckoutSessionNotFound(): void
     {
+        // Given
+        $unknownCheckoutSessionId = Uuid::uuid7()->toString();
+
         // Then
         $this->expectException(PaymentResultNotFoundException::class);
 
         // When
-        $this->finder()->ofCheckoutSession(Uuid::uuid7()->toString());
+        $this->finder()->ofCheckoutSession($unknownCheckoutSessionId);
     }
 
     #[Test]
@@ -141,11 +150,14 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
     #[Test]
     public function itThrowsWhenOrderIdNotFound(): void
     {
+        // Given
+        $unknownOrderId = Uuid::uuid7()->toString();
+
         // Then
         $this->expectException(PaymentResultNotFoundException::class);
 
         // When
-        $this->finder()->ofOrderId(Uuid::uuid7()->toString());
+        $this->finder()->ofOrderId($unknownOrderId);
     }
 
     #[Test]

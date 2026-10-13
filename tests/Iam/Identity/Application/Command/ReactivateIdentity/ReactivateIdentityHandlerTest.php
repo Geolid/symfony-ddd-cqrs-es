@@ -37,14 +37,8 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($identity->id->toString(), $result->id);
         self::assertSame(IdentityModerationStatus::ACTIVE, $result->moderationStatus);
         self::assertSame($reason, $result->reason);
-        self::assertSame(
-            $identity->registeredAt->format(\DateTimeInterface::ATOM),
-            $result->registeredAt->format(\DateTimeInterface::ATOM),
-        );
-        self::assertSame(
-            $now->format(\DateTimeInterface::ATOM),
-            $result->reactivatedAt?->format(\DateTimeInterface::ATOM),
-        );
+        self::assertSameDateTime($identity->registeredAt, $result->registeredAt);
+        self::assertSameDateTime($now, $result->reactivatedAt);
         self::assertNull($result->suspendedAt);
     }
 
@@ -68,12 +62,15 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $unknownId = IdentityIdFactory::new()->create()->toString();
+
         // Then
         $this->expectException(IdentityNotFoundException::class);
 
         // When
         $this->dispatch(new ReactivateIdentity(
-            IdentityIdFactory::new()->create()->toString(),
+            $unknownId,
             ReasonFactory::new()->create()->value,
         ));
     }

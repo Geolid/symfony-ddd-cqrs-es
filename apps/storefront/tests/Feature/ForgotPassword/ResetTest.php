@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\ForgotPassword;
 
-use Iam\Tests\Support\Story\PasswordResetRequestedAccountStory;
-use Iam\Tests\Support\Story\SuspendedPasswordResetRequestedAccountStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\ForgotPassword\Component\ResetForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
+use Storefront\Tests\Support\Story\ResetRequestedStory;
+use Storefront\Tests\Support\Story\SuspendedResetRequestedStory;
 use Storefront\Tests\Support\VerificationCodeTrait;
 use Zenstruck\Foundry\Attribute\WithStory;
 
@@ -17,15 +17,15 @@ final class ResetTest extends AbstractStorefrontTestCase
     use VerificationCodeTrait;
 
     #[Test]
-    #[WithStory(PasswordResetRequestedAccountStory::class)]
+    #[WithStory(ResetRequestedStory::class)]
     public function itShowsReset(): void
     {
         // Given
+        $persona = ResetRequestedStory::persona();
         $browser = $this->activeBrowser();
-        $account = PasswordResetRequestedAccountStory::account();
 
         // When
-        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
+        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $persona->id]);
 
         // Then
         $browser->assertSuccessful()
@@ -33,14 +33,14 @@ final class ResetTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(PasswordResetRequestedAccountStory::class)]
+    #[WithStory(ResetRequestedStory::class)]
     public function itResets(): void
     {
         // Given
+        $persona = ResetRequestedStory::persona();
         $browser = $this->activeBrowser()->interceptRedirects();
-        $account = PasswordResetRequestedAccountStory::account();
 
-        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
+        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $persona->id]);
 
         // When
         $browser->use(function (ResetForm $reset): void {
@@ -53,14 +53,14 @@ final class ResetTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(PasswordResetRequestedAccountStory::class)]
+    #[WithStory(ResetRequestedStory::class)]
     public function itRefusesPasswordMismatch(): void
     {
         // Given
+        $persona = ResetRequestedStory::persona();
         $browser = $this->activeBrowser();
-        $account = PasswordResetRequestedAccountStory::account();
 
-        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
+        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $persona->id]);
 
         // When
         $browser->use(function (ResetForm $reset): void {
@@ -76,14 +76,14 @@ final class ResetTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(SuspendedPasswordResetRequestedAccountStory::class)]
+    #[WithStory(SuspendedResetRequestedStory::class)]
     public function itRejectsSuspendedAccount(): void
     {
         // Given
+        $persona = SuspendedResetRequestedStory::persona();
         $browser = $this->activeBrowser();
-        $account = SuspendedPasswordResetRequestedAccountStory::account();
 
-        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
+        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $persona->id]);
 
         // When
         $browser->use(function (ResetForm $reset): void {
@@ -95,14 +95,14 @@ final class ResetTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(PasswordResetRequestedAccountStory::class)]
+    #[WithStory(ResetRequestedStory::class)]
     public function itRefusesIncorrectCode(): void
     {
         // Given
+        $persona = ResetRequestedStory::persona();
         $browser = $this->activeBrowser();
-        $account = PasswordResetRequestedAccountStory::account();
 
-        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
+        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $persona->id]);
 
         // When
         $browser->use(static function (ResetForm $reset): void {
@@ -116,14 +116,14 @@ final class ResetTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(PasswordResetRequestedAccountStory::class)]
+    #[WithStory(ResetRequestedStory::class)]
     public function itRefusesAfterTooManyAttempts(): void
     {
         // Given
+        $persona = ResetRequestedStory::persona();
         $browser = $this->activeBrowser();
-        $account = PasswordResetRequestedAccountStory::account();
 
-        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
+        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $persona->id]);
 
         for ($i = 0; $i < 3; ++$i) {
             $browser->use(static function (ResetForm $reset): void {
@@ -143,18 +143,18 @@ final class ResetTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(PasswordResetRequestedAccountStory::class)]
+    #[WithStory(ResetRequestedStory::class)]
     public function itRefusesSamePassword(): void
     {
         // Given
+        $persona = ResetRequestedStory::persona();
         $browser = $this->activeBrowser();
-        $account = PasswordResetRequestedAccountStory::account();
 
-        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
+        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $persona->id]);
 
         // When
-        $browser->use(function (ResetForm $reset) use ($account): void {
-            $reset->fillCode($this->verificationCode())->fillNewPassword($account->password())->submit();
+        $browser->use(function (ResetForm $reset) use ($persona): void {
+            $reset->fillCode($this->verificationCode())->fillNewPassword($persona->password())->submit();
         });
 
         // Then
@@ -164,14 +164,14 @@ final class ResetTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(PasswordResetRequestedAccountStory::class)]
+    #[WithStory(ResetRequestedStory::class)]
     public function itResends(): void
     {
         // Given
+        $persona = ResetRequestedStory::persona();
         $browser = $this->activeBrowser();
-        $account = PasswordResetRequestedAccountStory::account();
 
-        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
+        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $persona->id]);
         $this->advanceClock('+4 days');
 
         // When
@@ -180,18 +180,18 @@ final class ResetTest extends AbstractStorefrontTestCase
         });
 
         // Then
-        $this->assertEmailSent(2, $account->email, 'Reset your password');
+        $this->assertEmailSent(2, $persona->email, 'Reset your password');
     }
 
     #[Test]
-    #[WithStory(PasswordResetRequestedAccountStory::class)]
+    #[WithStory(ResetRequestedStory::class)]
     public function itRefusesInvalidCsrfToken(): void
     {
         // Given
+        $persona = ResetRequestedStory::persona();
         $browser = $this->activeBrowser()->interceptRedirects();
-        $account = PasswordResetRequestedAccountStory::account();
 
-        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
+        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $persona->id]);
 
         // When
         $browser->use(static function (ResetForm $reset): void {
@@ -199,7 +199,7 @@ final class ResetTest extends AbstractStorefrontTestCase
         });
 
         // Then
-        $browser->assertRedirectedToRoute('storefront_forgot_password_reset', ['identityId' => $account->id])
+        $browser->assertRedirectedToRoute('storefront_forgot_password_reset', ['identityId' => $persona->id])
             ->assertSeeIn('[data-testid="flash-error"]', 'flash_invalid_csrf_token');
     }
 }

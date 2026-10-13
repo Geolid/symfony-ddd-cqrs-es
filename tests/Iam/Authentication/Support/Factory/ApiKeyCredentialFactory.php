@@ -39,9 +39,9 @@ final class ApiKeyCredentialFactory extends AbstractAggregateFactory
         return ApiKeyCredential::class;
     }
 
-    public function withId(string $id): self
+    public function withId(ApiKeyCredentialId $id): self
     {
-        return $this->with(['id' => ApiKeyCredentialId::fromString($id)]);
+        return $this->with(['id' => $id]);
     }
 
     public function withIdentityId(string $identityId): self
@@ -49,14 +49,14 @@ final class ApiKeyCredentialFactory extends AbstractAggregateFactory
         return $this->with(['identityId' => $identityId]);
     }
 
-    public function withLabel(string $label): self
+    public function withLabel(Label $label): self
     {
-        return $this->with(['label' => Label::fromString($label)]);
+        return $this->with(['label' => $label]);
     }
 
-    public function withKeyId(string $keyId): self
+    public function withKeyId(KeyId $keyId): self
     {
-        return $this->with(['keyId' => KeyId::fromString($keyId)]);
+        return $this->with(['keyId' => $keyId]);
     }
 
     public function withSecret(string $secret): self

@@ -36,8 +36,11 @@ final class RequestCustomerErasureOnErasureRequestedTest extends AbstractIntegra
     #[Test]
     public function itIgnoresWhenNoneExist(): void
     {
+        // Given
+        $unknownIdentityId = Uuid::uuid7()->toString();
+
         // When
-        $this->trigger(RequestCustomerErasureOnErasureRequested::class, new ErasureRequestedIntegrationEvent(Uuid::uuid7()->toString(), Clock::get()->now()));
+        $this->trigger(RequestCustomerErasureOnErasureRequested::class, new ErasureRequestedIntegrationEvent($unknownIdentityId, Clock::get()->now()));
 
         // Then
         self::expectNotToPerformAssertions();

@@ -55,11 +55,14 @@ final class RequestPasswordResetHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenIdentityNotFound(): void
     {
+        // Given
+        $unknownIdentityId = Uuid::uuid7()->toString();
+
         // Then
         $this->expectException(IdentityResultNotFoundException::class);
 
         // When
-        $this->dispatch(new RequestPasswordReset(Uuid::uuid7()->toString()));
+        $this->dispatch(new RequestPasswordReset($unknownIdentityId));
     }
 
     #[Test]

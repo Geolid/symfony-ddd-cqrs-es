@@ -51,11 +51,14 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
     #[Test]
     public function itThrowsWhenIdNotFound(): void
     {
+        // Given
+        $unknownId = ShipmentIdFactory::new()->create()->toString();
+
         // Then
         $this->expectException(ShipmentResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(ShipmentIdFactory::new()->create()->toString());
+        $this->finder()->ofId($unknownId);
     }
 
     #[Test]
@@ -63,18 +66,18 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
     {
         // Given
         $other = ShipmentFactory::new()->prepared()->manifested()->dispatched()->create();
-        $trackingNumber = TrackingNumberFactory::new()->create()->value;
+        $trackingNumber = TrackingNumberFactory::new()->create();
         $tracked = ShipmentFactory::new()->prepared()->manifested($trackingNumber)->dispatched()->create();
         $this->store($other, $tracked);
 
         // When
-        $result = $this->finder()->ofTrackingNumber($trackingNumber);
+        $result = $this->finder()->ofTrackingNumber($trackingNumber->value);
 
         // Then
         self::assertSame($tracked->id->toString(), $result->id);
         self::assertSame($tracked->orderId, $result->orderId);
         self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
-        self::assertSame($trackingNumber, $result->trackingNumber);
+        self::assertSame($trackingNumber->value, $result->trackingNumber);
         self::assertNotNull($result->dispatchedAt);
         self::assertNull($result->deliveredAt);
     }
@@ -82,11 +85,14 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
     #[Test]
     public function itThrowsWhenTrackingNumberNotFound(): void
     {
+        // Given
+        $unknownTrackingNumber = TrackingNumberFactory::new()->create()->value;
+
         // Then
         $this->expectException(ShipmentResultNotFoundException::class);
 
         // When
-        $this->finder()->ofTrackingNumber(TrackingNumberFactory::new()->create()->value);
+        $this->finder()->ofTrackingNumber($unknownTrackingNumber);
     }
 
     #[Test]
@@ -99,12 +105,23 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
 
         // When
         $found = $this->finder()->ofOrderOrNull($shipment->orderId);
-        $notFound = $this->finder()->ofOrderOrNull(Uuid::uuid7()->toString());
 
         // Then
         self::assertNotNull($found);
         self::assertSame($shipment->id->toString(), $found->id);
-        self::assertNull($notFound);
+    }
+
+    #[Test]
+    public function itFindsNothingByOrder(): void
+    {
+        // Given
+        $orderId = Uuid::uuid7()->toString();
+
+        // When
+        $result = $this->finder()->ofOrderOrNull($orderId);
+
+        // Then
+        self::assertNull($result);
     }
 
     #[Test]
