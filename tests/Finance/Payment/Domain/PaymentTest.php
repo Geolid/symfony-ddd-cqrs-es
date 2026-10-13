@@ -209,15 +209,16 @@ final class PaymentTest extends AggregateRootTestCase
     #[Test]
     public function itDoesNotVoidWhenFailed(): void
     {
-        $laterAt = $this->authorizedAt->modify('+1 hour');
+        $failedAt = $this->authorizedAt->modify('+1 hour');
+        $voidedAt = $failedAt->modify('+1 hour');
 
         $this
             ->given(
                 $this->requested(),
                 $this->authorized(),
-                new PaymentFailed($this->id, $this->orderId, $laterAt),
+                new PaymentFailed($this->id, $this->orderId, $failedAt),
             )
-            ->when(static fn (Payment $orderPayment) => $orderPayment->void($laterAt))
+            ->when(static fn (Payment $orderPayment) => $orderPayment->void($voidedAt))
             ->then();
     }
 
