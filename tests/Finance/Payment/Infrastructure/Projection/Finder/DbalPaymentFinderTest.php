@@ -79,9 +79,9 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
         self::assertSame($orderPayment->reference->value, $result->reference);
         self::assertSame($orderPayment->hostedPageUrl, $result->hostedPageUrl);
         self::assertSame(PaymentStatus::CAPTURED, $result->status);
-        self::assertSameDate($requestedAt, $result->requestedAt);
-        self::assertSameDate($authorizedAt, $result->authorizedAt);
-        self::assertSameDate($capturedAt, $result->capturedAt);
+        self::assertSameDateTime($requestedAt, $result->requestedAt);
+        self::assertSameDateTime($authorizedAt, $result->authorizedAt);
+        self::assertSameDateTime($capturedAt, $result->capturedAt);
         self::assertNull($result->failedAt);
         self::assertNull($result->abandonedAt);
         self::assertNull($result->voidedAt);

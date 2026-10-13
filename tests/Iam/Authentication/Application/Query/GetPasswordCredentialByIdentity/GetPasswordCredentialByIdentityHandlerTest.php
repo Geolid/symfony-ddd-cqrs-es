@@ -43,7 +43,7 @@ final class GetPasswordCredentialByIdentityHandlerTest extends AbstractIntegrati
         self::assertNotNull($result);
         self::assertSame($credential->id->toString(), $result->id);
         self::assertSame($credential->identityId, $result->identityId);
-        self::assertSameDate($credential->definedAt, $result->changedAt);
+        self::assertSameDateTime($credential->definedAt, $result->changedAt);
 
         self::assertNull($nothing);
     }

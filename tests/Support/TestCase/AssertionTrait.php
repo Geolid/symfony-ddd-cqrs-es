@@ -8,10 +8,7 @@ use PHPUnit\Framework\Assert;
 
 trait AssertionTrait
 {
-    /**
-     * Compared to the second: the database keeps no microseconds.
-     */
-    protected static function assertSameDate(?\DateTimeInterface $expected, ?\DateTimeInterface $actual): void
+    protected static function assertSameDateTime(?\DateTimeInterface $expected, ?\DateTimeInterface $actual): void
     {
         Assert::assertSame(
             $expected?->format(\DateTimeInterface::ATOM),

@@ -47,8 +47,8 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($identity->id->toString(), $result->id);
         self::assertSame(IdentityModerationStatus::SUSPENDED, $result->moderationStatus);
         self::assertSame($reason, $result->reason);
-        self::assertSameDate($identity->registeredAt, $result->registeredAt);
-        self::assertSameDate($now, $result->suspendedAt);
+        self::assertSameDateTime($identity->registeredAt, $result->registeredAt);
+        self::assertSameDateTime($now, $result->suspendedAt);
         self::assertNull($result->reactivatedAt);
     }
 

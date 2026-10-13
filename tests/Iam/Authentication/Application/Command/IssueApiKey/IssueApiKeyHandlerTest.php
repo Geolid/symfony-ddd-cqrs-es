@@ -41,7 +41,7 @@ final class IssueApiKeyHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($identityId, $result->identityId);
         self::assertSame($label, $result->label);
         self::assertSame($keyId, $result->keyId);
-        self::assertSameDate($now, $result->issuedAt);
+        self::assertSameDateTime($now, $result->issuedAt);
         self::assertFalse($result->revoked);
         self::assertNull($result->revokedAt);
 

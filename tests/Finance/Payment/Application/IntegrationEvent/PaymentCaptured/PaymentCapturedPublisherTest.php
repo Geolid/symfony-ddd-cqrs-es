@@ -25,6 +25,6 @@ final class PaymentCapturedPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(PaymentCapturedIntegrationEvent::class);
         self::assertSame($orderId, $event->orderId);
-        self::assertSameDate($payment->capturedAt, $event->capturedAt);
+        self::assertSameDateTime($payment->capturedAt, $event->capturedAt);
     }
 }

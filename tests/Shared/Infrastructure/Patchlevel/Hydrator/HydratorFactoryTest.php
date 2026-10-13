@@ -40,7 +40,7 @@ final class HydratorFactoryTest extends TestCase
 
         // Then
         self::assertNotNull($object->dateTime);
-        self::assertSameDate($at, $object->dateTime);
+        self::assertSameDateTime($at, $object->dateTime);
     }
 
     #[Test]

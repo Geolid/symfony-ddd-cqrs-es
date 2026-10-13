@@ -33,8 +33,9 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
     public function itGetsById(): void
     {
         // Given
+        $confirmationRequestedAt = Clock::get()->now()->modify('+30 minutes');
         $other = IdentityFactory::new()->create();
-        $identity = IdentityFactory::new()->confirmed()->create();
+        $identity = IdentityFactory::new()->confirmationRequested($confirmationRequestedAt)->confirmed()->create();
         $this->store($other, $identity);
 
         // When
@@ -47,8 +48,8 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
         self::assertSame(IdentityVerificationStatus::CONFIRMED, $result->verificationStatus);
         self::assertSame(IdentityModerationStatus::ACTIVE, $result->moderationStatus);
         self::assertNull($result->reason);
-        self::assertSameDate($identity->registeredAt, $result->registeredAt);
-        self::assertSameDate($identity->registeredAt, $result->confirmationRequestedAt);
+        self::assertSameDateTime($identity->registeredAt, $result->registeredAt);
+        self::assertSameDateTime($confirmationRequestedAt, $result->confirmationRequestedAt);
         self::assertNull($result->suspendedAt);
         self::assertNull($result->reactivatedAt);
         self::assertSame(ErasureStatus::RETAINED, $result->erasureStatus);

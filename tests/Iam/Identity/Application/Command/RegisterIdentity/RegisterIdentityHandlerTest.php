@@ -36,7 +36,7 @@ final class RegisterIdentityHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($email, $result->email);
         self::assertSame(IdentityVerificationStatus::PENDING, $result->verificationStatus);
         self::assertNull($result->reason);
-        self::assertSameDate($now, $result->registeredAt);
+        self::assertSameDateTime($now, $result->registeredAt);
         self::assertNull($result->suspendedAt);
         self::assertNull($result->reactivatedAt);
     }

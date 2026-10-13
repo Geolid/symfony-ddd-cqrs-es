@@ -25,6 +25,6 @@ final class ProductListedPublisherTest extends AbstractIntegrationTestCase
         self::assertSame($product->id->toString(), $event->productId);
         self::assertSame($product->label->value, $event->label);
         self::assertSame($product->unitPrice->cents, $event->unitPriceInCents);
-        self::assertSameDate($product->listedAt, $event->listedAt);
+        self::assertSameDateTime($product->listedAt, $event->listedAt);
     }
 }

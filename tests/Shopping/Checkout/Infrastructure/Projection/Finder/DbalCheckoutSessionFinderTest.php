@@ -103,7 +103,7 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
         self::assertSame($checkoutSession->total->excludingTax->currency->value, $result->currency);
         self::assertSame($checkoutSession->items[0]->taxRate->basisPoints, $result->taxRateBasisPoints);
         self::assertSame(CheckoutSessionStatus::OPEN, $result->status);
-        self::assertSameDate($checkoutSession->openedAt, $result->openedAt);
+        self::assertSameDateTime($checkoutSession->openedAt, $result->openedAt);
     }
 
     #[Test]

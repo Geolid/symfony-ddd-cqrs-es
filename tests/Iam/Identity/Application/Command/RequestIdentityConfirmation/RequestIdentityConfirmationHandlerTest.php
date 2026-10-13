@@ -33,7 +33,7 @@ final class RequestIdentityConfirmationHandlerTest extends AbstractIntegrationTe
         // Then
         $result = $this->service(IdentityFinderInterface::class)->ofId($identity->id->toString());
         self::assertSame(IdentityVerificationStatus::PENDING, $result->verificationStatus);
-        self::assertSameDate($now, $result->confirmationRequestedAt);
+        self::assertSameDateTime($now, $result->confirmationRequestedAt);
     }
 
     #[Test]

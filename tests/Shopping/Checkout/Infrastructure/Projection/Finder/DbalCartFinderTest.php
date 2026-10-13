@@ -35,7 +35,7 @@ final class DbalCartFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertSame($cart->id->toString(), $result->id);
         self::assertSame($cart->customerId, $result->customerId);
-        self::assertSameDate($cart->startedAt, $result->startedAt);
+        self::assertSameDateTime($cart->startedAt, $result->startedAt);
     }
 
     #[Test]

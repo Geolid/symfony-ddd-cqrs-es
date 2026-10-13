@@ -24,6 +24,6 @@ final class ShipmentDeliveredPublisherTest extends AbstractIntegrationTestCase
         $event = $this->publishedEventOf(ShipmentDeliveredIntegrationEvent::class);
         self::assertSame($shipment->id->toString(), $event->shipmentId);
         self::assertSame($shipment->orderId, $event->orderId);
-        self::assertSameDate($shipment->deliveredAt, $event->deliveredAt);
+        self::assertSameDateTime($shipment->deliveredAt, $event->deliveredAt);
     }
 }

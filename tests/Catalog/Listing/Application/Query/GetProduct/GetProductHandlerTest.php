@@ -27,7 +27,7 @@ final class GetProductHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($product->id->toString(), $result->id);
         self::assertSame($product->label->value, $result->label);
         self::assertSame($product->unitPrice->cents, $result->unitPriceInCents);
-        self::assertSameDate($product->listedAt, $result->listedAt);
+        self::assertSameDateTime($product->listedAt, $result->listedAt);
         self::assertNull($result->repricedAt);
     }
 

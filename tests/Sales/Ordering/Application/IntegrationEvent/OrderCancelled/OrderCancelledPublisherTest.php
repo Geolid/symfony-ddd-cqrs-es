@@ -23,6 +23,6 @@ final class OrderCancelledPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(OrderCancelledIntegrationEvent::class);
         self::assertSame($order->id->toString(), $event->orderId);
-        self::assertSameDate($order->cancelledAt, $event->cancelledAt);
+        self::assertSameDateTime($order->cancelledAt, $event->cancelledAt);
     }
 }

@@ -33,8 +33,8 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
         // Then
         self::assertSame($erasure->id->toString(), $result->id);
         self::assertSame(ErasureRequestStatus::CANCELLED, $result->status);
-        self::assertSameDate($erasure->requestedAt, $result->requestedAt);
-        self::assertSameDate($erasure->cancelledAt, $result->cancelledAt);
+        self::assertSameDateTime($erasure->requestedAt, $result->requestedAt);
+        self::assertSameDateTime($erasure->cancelledAt, $result->cancelledAt);
         self::assertNull($result->approvedAt);
     }
 

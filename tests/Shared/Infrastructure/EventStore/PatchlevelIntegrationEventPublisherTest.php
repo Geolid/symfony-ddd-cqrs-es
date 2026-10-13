@@ -54,7 +54,7 @@ final class PatchlevelIntegrationEventPublisherTest extends TestCase
         self::assertSame('integration.fake_aggregate-aggregate-id', $message->header(StreamNameHeader::class)->streamName);
         self::assertFalse($message->hasHeader(PlayheadHeader::class));
 
-        self::assertSameDate($now, $message->header(RecordedOnHeader::class)->recordedOn);
+        self::assertSameDateTime($now, $message->header(RecordedOnHeader::class)->recordedOn);
     }
 
     #[Test]

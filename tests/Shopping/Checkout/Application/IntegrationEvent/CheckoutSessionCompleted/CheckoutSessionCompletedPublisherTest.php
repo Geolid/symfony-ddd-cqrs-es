@@ -42,6 +42,6 @@ final class CheckoutSessionCompletedPublisherTest extends AbstractIntegrationTes
         self::assertSame(PostalAddressMapper::toArray($checkoutSession->shippingAddress), $event->shippingAddress);
         self::assertSame(PostalAddressMapper::toArray($checkoutSession->billingAddress), $event->billingAddress);
         self::assertSame($checkoutSession->paymentId, $event->paymentId);
-        self::assertSameDate($checkoutSession->completedAt, $event->completedAt);
+        self::assertSameDateTime($checkoutSession->completedAt, $event->completedAt);
     }
 }

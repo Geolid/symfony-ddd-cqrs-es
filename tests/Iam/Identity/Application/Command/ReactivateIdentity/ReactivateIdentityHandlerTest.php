@@ -37,8 +37,8 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($identity->id->toString(), $result->id);
         self::assertSame(IdentityModerationStatus::ACTIVE, $result->moderationStatus);
         self::assertSame($reason, $result->reason);
-        self::assertSameDate($identity->registeredAt, $result->registeredAt);
-        self::assertSameDate($now, $result->reactivatedAt);
+        self::assertSameDateTime($identity->registeredAt, $result->registeredAt);
+        self::assertSameDateTime($now, $result->reactivatedAt);
         self::assertNull($result->suspendedAt);
     }
 

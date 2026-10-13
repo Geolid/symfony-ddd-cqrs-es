@@ -24,6 +24,6 @@ final class IdentityConfirmedPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(IdentityConfirmedIntegrationEvent::class);
         self::assertSame($identity->id->toString(), $event->identityId);
-        self::assertSameDate($identity->confirmedAt, $event->confirmedAt);
+        self::assertSameDateTime($identity->confirmedAt, $event->confirmedAt);
     }
 }

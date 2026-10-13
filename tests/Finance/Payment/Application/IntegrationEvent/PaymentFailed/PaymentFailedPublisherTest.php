@@ -25,6 +25,6 @@ final class PaymentFailedPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(PaymentFailedIntegrationEvent::class);
         self::assertSame($orderId, $event->orderId);
-        self::assertSameDate($payment->failedAt, $event->failedAt);
+        self::assertSameDateTime($payment->failedAt, $event->failedAt);
     }
 }
