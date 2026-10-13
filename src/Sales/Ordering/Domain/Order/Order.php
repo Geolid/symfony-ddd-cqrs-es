@@ -57,10 +57,23 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     public private(set) OrderId $id;
+    public private(set) string $cartId;
     public private(set) string $customerId;
+    public private(set) string $checkoutSessionId;
     public private(set) PostalAddress $shippingAddress;
-    private OrderState $operationalState;
-    private ErasureState $erasureState;
+    /** @var list<OrderLine> */
+    public private(set) array $lines;
+    public private(set) TaxedAmount $total;
+    public private(set) \DateTimeImmutable $confirmedAt;
+    public private(set) OrderState $operationalState;
+    public private(set) ?\DateTimeImmutable $preparedAt = null;
+    public private(set) ?\DateTimeImmutable $cancelledAt = null;
+    public private(set) ?\DateTimeImmutable $failedAt = null;
+    public private(set) ?\DateTimeImmutable $dispatchedAt = null;
+    public private(set) ?\DateTimeImmutable $deliveredAt = null;
+    public private(set) ErasureState $erasureState;
+    public private(set) ?\DateTimeImmutable $erasureApprovedAt = null;
+    public private(set) ?\DateTimeImmutable $erasedAt = null;
 
     /**
      * @param list<OrderItem> $items
@@ -236,8 +249,13 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private function applyConfirmed(OrderConfirmed $event): void
     {
         $this->id = $event->id;
+        $this->cartId = $event->cartId;
         $this->customerId = $event->customerId;
+        $this->checkoutSessionId = $event->checkoutSessionId;
         $this->shippingAddress = $event->shippingAddress;
+        $this->lines = $event->lines;
+        $this->total = $event->total;
+        $this->confirmedAt = $event->confirmedAt;
         $this->operationalState = OrderState::CONFIRMED;
         $this->erasureState = ErasureState::RETAINED;
     }
@@ -246,41 +264,48 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private function applyPrepared(OrderPrepared $event): void
     {
         $this->operationalState = OrderState::PREPARED;
+        $this->preparedAt = $event->preparedAt;
     }
 
     #[Apply]
     private function applyCancelled(OrderCancelled $event): void
     {
         $this->operationalState = OrderState::CANCELLED;
+        $this->cancelledAt = $event->cancelledAt;
     }
 
     #[Apply]
     private function applyFailed(OrderFailed $event): void
     {
         $this->operationalState = OrderState::FAILED;
+        $this->failedAt = $event->failedAt;
     }
 
     #[Apply]
     private function applyDispatched(OrderDispatched $event): void
     {
         $this->operationalState = OrderState::DISPATCHED;
+        $this->dispatchedAt = $event->dispatchedAt;
     }
 
     #[Apply]
     private function applyDelivered(OrderDelivered $event): void
     {
         $this->operationalState = OrderState::DELIVERED;
+        $this->deliveredAt = $event->deliveredAt;
     }
 
     #[Apply]
     private function applyErasureApproved(OrderErasureApproved $event): void
     {
         $this->erasureState = ErasureState::APPROVED;
+        $this->erasureApprovedAt = $event->approvedAt;
     }
 
     #[Apply]
     private function applyErased(OrderErased $event): void
     {
         $this->erasureState = ErasureState::ERASED;
+        $this->erasedAt = $event->erasedAt;
     }
 }

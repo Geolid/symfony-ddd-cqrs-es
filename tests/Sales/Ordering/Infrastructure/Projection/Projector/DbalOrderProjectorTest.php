@@ -8,12 +8,10 @@ use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\OrderStatus;
-use Sales\Ordering\Domain\Order\ValueObject\OrderItem;
 use Sales\Ordering\Infrastructure\Projection\Projector\DbalOrderProjector;
-use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
+use Sales\Tests\Ordering\Support\Factory\OrderFactory;
 use Shared\Application\ErasureStatus;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\TaxedAmount;
 use Shared\Infrastructure\Projection\SnakeCaseKeys;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -27,8 +25,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $builder = OrderBuilder::new()->withCustomerId($customerId);
-        $order = $builder->create();
+        $order = OrderFactory::new()->withCustomerId($customerId)->create();
 
         // When
         $this->store($order);
@@ -37,20 +34,16 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertSame($customerId, $row['customer_id']);
-        self::assertSame($builder['checkoutSessionId'], $row['checkout_session_id']);
+        self::assertSame($order->checkoutSessionId, $row['checkout_session_id']);
         self::assertSame(
-            SnakeCaseKeys::from(PostalAddressMapper::toArray($builder['shippingAddress'])),
+            SnakeCaseKeys::from(PostalAddressMapper::toArray($order->shippingAddress)),
             json_decode($row['shipping_address'], true),
         );
-        $total = array_reduce(
-            $builder['items'],
-            static fn (TaxedAmount $carry, OrderItem $item): TaxedAmount => $carry->plus($item->taxedTotal()),
-            TaxedAmount::zero($builder['currency']),
-        );
+        $total = $order->total;
         self::assertSame($total->excludingTax->cents, (int) $row['total_excluding_tax_in_cents']);
         self::assertSame($total->taxAmount->cents, (int) $row['total_tax_amount_in_cents']);
         self::assertSame($total->includingTax->cents, (int) $row['total_including_tax_in_cents']);
-        self::assertSame($builder['currency']->value, $row['currency']);
+        self::assertSame($total->excludingTax->currency->value, $row['currency']);
         self::assertSame(OrderStatus::CONFIRMED->value, $row['status']);
         self::assertNotNull($row['confirmed_at']);
         self::assertNull($row['prepared_at']);
@@ -65,9 +58,9 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderCancelled(): void
     {
         // Given
-        $other = OrderBuilder::new()->create();
+        $other = OrderFactory::new()->create();
         $this->store($other);
-        $order = OrderBuilder::new()->cancelled()->create();
+        $order = OrderFactory::new()->cancelled()->create();
 
         // When
         $this->store($order);
@@ -87,9 +80,9 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderFailed(): void
     {
         // Given
-        $other = OrderBuilder::new()->create();
+        $other = OrderFactory::new()->create();
         $this->store($other);
-        $order = OrderBuilder::new()->failed()->create();
+        $order = OrderFactory::new()->failed()->create();
 
         // When
         $this->store($order);
@@ -109,9 +102,9 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderPrepared(): void
     {
         // Given
-        $other = OrderBuilder::new()->create();
+        $other = OrderFactory::new()->create();
         $this->store($other);
-        $order = OrderBuilder::new()->prepared()->create();
+        $order = OrderFactory::new()->prepared()->create();
 
         // When
         $this->store($order);
@@ -131,9 +124,9 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderDispatched(): void
     {
         // Given
-        $other = OrderBuilder::new()->prepared()->create();
+        $other = OrderFactory::new()->prepared()->create();
         $this->store($other);
-        $order = OrderBuilder::new()->prepared()->dispatched()->create();
+        $order = OrderFactory::new()->prepared()->dispatched()->create();
 
         // When
         $this->store($order);
@@ -153,9 +146,9 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderDelivered(): void
     {
         // Given
-        $other = OrderBuilder::new()->prepared()->dispatched()->create();
+        $other = OrderFactory::new()->prepared()->dispatched()->create();
         $this->store($other);
-        $order = OrderBuilder::new()->prepared()->dispatched()->delivered()->create();
+        $order = OrderFactory::new()->prepared()->dispatched()->delivered()->create();
 
         // When
         $this->store($order);
@@ -176,9 +169,9 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderErasureApproved(): void
     {
         // Given
-        $other = OrderBuilder::new()->create();
+        $other = OrderFactory::new()->create();
         $this->store($other);
-        $order = OrderBuilder::new()->erasureApproved()->create();
+        $order = OrderFactory::new()->erasureApproved()->create();
 
         // When
         $this->store($order);
@@ -197,9 +190,9 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderErased(): void
     {
         // Given
-        $other = OrderBuilder::new()->prepared()->dispatched()->delivered()->create();
+        $other = OrderFactory::new()->prepared()->dispatched()->delivered()->create();
         $this->store($other);
-        $order = OrderBuilder::new()->prepared()->dispatched()->delivered()->erasureApproved()->create();
+        $order = OrderFactory::new()->prepared()->dispatched()->delivered()->erasureApproved()->create();
 
         // When
         $this->store($order);

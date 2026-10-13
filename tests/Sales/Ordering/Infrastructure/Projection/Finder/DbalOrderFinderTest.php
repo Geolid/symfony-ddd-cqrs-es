@@ -12,12 +12,11 @@ use Sales\Ordering\Application\Finder\Order\OrderResult;
 use Sales\Ordering\Application\OrderStatus;
 use Sales\Ordering\Domain\Order\Order;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
-use Sales\Ordering\Domain\Order\ValueObject\OrderItem;
-use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
+use Sales\Tests\Ordering\Support\Factory\OrderFactory;
+use Sales\Tests\Ordering\Support\Factory\OrderIdFactory;
 use Sales\Tests\Ordering\Support\PostalAddressResultMapper;
 use Shared\Application\ErasureStatus;
 use Shared\Application\Mapper\PostalAddressMapper;
-use Shared\Domain\ValueObject\TaxedAmount;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 use Shared\Tests\Support\TestCase\RealColumnLeadsTrait;
 use Symfony\Component\Clock\Clock;
@@ -33,8 +32,7 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
     public function itGets(): void
     {
         // Given
-        $builder = OrderBuilder::new()->prepared()->dispatched()->delivered();
-        $order = $builder->create();
+        $order = OrderFactory::new()->prepared()->dispatched()->delivered()->create();
         $this->store($order);
 
         // When
@@ -42,26 +40,22 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
 
         // Then
         self::assertSame($order->id->toString(), $result->id);
-        self::assertSame($builder['customerId'], $result->customerId);
-        self::assertSame($builder['checkoutSessionId'], $result->checkoutSessionId);
+        self::assertSame($order->customerId, $result->customerId);
+        self::assertSame($order->checkoutSessionId, $result->checkoutSessionId);
         self::assertSame(
-            PostalAddressMapper::toArray($builder['shippingAddress']),
+            PostalAddressMapper::toArray($order->shippingAddress),
             PostalAddressResultMapper::toArray($result->shippingAddress),
         );
-        $total = array_reduce(
-            $builder['items'],
-            static fn (TaxedAmount $carry, OrderItem $item): TaxedAmount => $carry->plus($item->taxedTotal()),
-            TaxedAmount::zero($builder['currency']),
-        );
+        $total = $order->total;
         self::assertSame($total->excludingTax->cents, $result->totalExcludingTaxInCents);
         self::assertSame($total->taxAmount->cents, $result->totalTaxAmountInCents);
         self::assertSame($total->includingTax->cents, $result->totalIncludingTaxInCents);
-        self::assertSame($builder['currency']->value, $result->currency);
+        self::assertSame($total->excludingTax->currency->value, $result->currency);
         self::assertSame(OrderStatus::DELIVERED, $result->status);
-        self::assertSame($builder['confirmedAt']->format('Y-m-d H:i:s'), $result->confirmedAt->format('Y-m-d H:i:s'));
-        self::assertSame($builder['preparedAt']->format('Y-m-d H:i:s'), $result->preparedAt?->format('Y-m-d H:i:s'));
-        self::assertSame($builder['dispatchedAt']->format('Y-m-d H:i:s'), $result->dispatchedAt?->format('Y-m-d H:i:s'));
-        self::assertSame($builder['deliveredAt']->format('Y-m-d H:i:s'), $result->deliveredAt?->format('Y-m-d H:i:s'));
+        self::assertSame($order->confirmedAt->format('Y-m-d H:i:s'), $result->confirmedAt->format('Y-m-d H:i:s'));
+        self::assertSame($order->preparedAt?->format('Y-m-d H:i:s'), $result->preparedAt?->format('Y-m-d H:i:s'));
+        self::assertSame($order->dispatchedAt?->format('Y-m-d H:i:s'), $result->dispatchedAt?->format('Y-m-d H:i:s'));
+        self::assertSame($order->deliveredAt?->format('Y-m-d H:i:s'), $result->deliveredAt?->format('Y-m-d H:i:s'));
         self::assertNull($result->cancelledAt);
         self::assertNull($result->failedAt);
         self::assertSame(ErasureStatus::RETAINED, $result->erasureStatus);
@@ -74,7 +68,7 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
         $this->expectException(OrderResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(Uuid::uuid7()->toString());
+        $this->finder()->ofId(OrderIdFactory::new()->create()->toString());
     }
 
     #[Test]
@@ -82,8 +76,8 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $other = OrderBuilder::new()->create();
-        $order = OrderBuilder::new()->withCustomerId($customerId)->create();
+        $other = OrderFactory::new()->create();
+        $order = OrderFactory::new()->withCustomerId($customerId)->create();
         $this->store($other, $order);
 
         // When
@@ -104,7 +98,7 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
      */
     protected function seed(int $count): array
     {
-        $orders = OrderBuilder::new()->many($count)->create();
+        $orders = OrderFactory::new()->many($count)->create();
         $this->store(...$orders);
 
         return array_map(static fn (Order $order): string => $order->id->toString(), $orders);
@@ -128,8 +122,8 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
         [$smallerId, $largerId] = array_keys($checkoutSessionIdByOrderId);
 
         $now = Clock::get()->now();
-        $first = OrderBuilder::new()->withCheckoutSessionId($checkoutSessionIdByOrderId[$largerId])->withConfirmedAt($now)->create();
-        $second = OrderBuilder::new()->withCheckoutSessionId($checkoutSessionIdByOrderId[$smallerId])->withConfirmedAt($now->modify('+1 hour'))->create();
+        $first = OrderFactory::new()->withCheckoutSessionId($checkoutSessionIdByOrderId[$largerId])->withConfirmedAt($now)->create();
+        $second = OrderFactory::new()->withCheckoutSessionId($checkoutSessionIdByOrderId[$smallerId])->withConfirmedAt($now->modify('+1 hour'))->create();
         $this->store($first, $second);
 
         return [$largerId, $smallerId];

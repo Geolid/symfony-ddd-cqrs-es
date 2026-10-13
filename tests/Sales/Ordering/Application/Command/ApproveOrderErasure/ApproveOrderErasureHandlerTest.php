@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Sales\Tests\Ordering\Application\Command\ApproveOrderErasure;
 
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\Command\ApproveOrderErasure\ApproveOrderErasure;
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
-use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
+use Sales\Tests\Ordering\Support\Factory\OrderFactory;
+use Sales\Tests\Ordering\Support\Factory\OrderIdFactory;
 use Shared\Application\ErasureStatus;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -28,7 +28,7 @@ final class ApproveOrderErasureHandlerTest extends AbstractIntegrationTestCase
     public function itApproves(): void
     {
         // Given
-        $order = OrderBuilder::new()->create();
+        $order = OrderFactory::new()->create();
         $this->store($order);
 
         // When
@@ -43,7 +43,7 @@ final class ApproveOrderErasureHandlerTest extends AbstractIntegrationTestCase
     public function itApprovesAndErasesWhenAlreadyDelivered(): void
     {
         // Given
-        $order = OrderBuilder::new()->prepared()->dispatched()->delivered()->create();
+        $order = OrderFactory::new()->prepared()->dispatched()->delivered()->create();
         $this->store($order);
 
         // When
@@ -58,7 +58,7 @@ final class ApproveOrderErasureHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyApproved(): void
     {
         // Given
-        $order = OrderBuilder::new()->erasureApproved()->create();
+        $order = OrderFactory::new()->erasureApproved()->create();
         $this->store($order);
 
         // When
@@ -76,6 +76,6 @@ final class ApproveOrderErasureHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(OrderNotFoundException::class);
 
         // When
-        $this->dispatch(new ApproveOrderErasure(Uuid::uuid7()->toString()));
+        $this->dispatch(new ApproveOrderErasure(OrderIdFactory::new()->create()->toString()));
     }
 }

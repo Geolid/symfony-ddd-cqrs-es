@@ -10,6 +10,7 @@ use Sales\Ordering\Application\Command\ConfirmOrder\ConfirmOrder;
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\OrderStatus;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
+use Sales\Tests\Ordering\Support\Factory\OrderIdFactory;
 use Sales\Tests\Ordering\Support\PostalAddressResultMapper;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Address;
@@ -33,7 +34,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
     public function itConfirms(): void
     {
         // Given
-        $id = Uuid::uuid7()->toString();
+        $id = OrderIdFactory::new()->create()->toString();
         $customerId = Uuid::uuid7()->toString();
         $checkoutSessionId = Uuid::uuid7()->toString();
         $unitPriceInCents = SeededFaker::get()->numberBetween(500, 5_000);
@@ -81,7 +82,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new ConfirmOrder(
-            id: Uuid::uuid7()->toString(),
+            id: OrderIdFactory::new()->create()->toString(),
             cartId: Uuid::uuid7()->toString(),
             customerId: Uuid::uuid7()->toString(),
             checkoutSessionId: Uuid::uuid7()->toString(),

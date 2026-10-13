@@ -18,7 +18,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
 use Ramsey\Uuid\Uuid;
-use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
+use Sales\Tests\Ordering\Support\Factory\OrderFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -48,7 +48,7 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
         $checkoutSessionId = Uuid::uuid7()->toString();
         $paymentBuilder = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionId)->authorized();
         $payment = $paymentBuilder->create();
-        $order = OrderBuilder::new()->withCheckoutSessionId($checkoutSessionId)->create();
+        $order = OrderFactory::new()->withCheckoutSessionId($checkoutSessionId)->create();
         $this->store($payment, $order);
         $this->paymentGateway->expects(self::once())->method('capture')
             ->with($paymentBuilder['reference']->value)
@@ -87,7 +87,7 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
         $checkoutSessionId = Uuid::uuid7()->toString();
         $paymentBuilder = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionId)->authorized();
         $payment = $paymentBuilder->create();
-        $order = OrderBuilder::new()->withCheckoutSessionId($checkoutSessionId)->create();
+        $order = OrderFactory::new()->withCheckoutSessionId($checkoutSessionId)->create();
         $this->store($payment, $order);
         $this->paymentGateway->expects(self::once())->method('capture')->willReturn(PaymentGatewayStatus::AUTHORIZED);
 
@@ -110,7 +110,7 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
         $checkoutSessionId = Uuid::uuid7()->toString();
         $paymentBuilder = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionId)->authorized();
         $payment = $paymentBuilder->create();
-        $order = OrderBuilder::new()->withCheckoutSessionId($checkoutSessionId)->create();
+        $order = OrderFactory::new()->withCheckoutSessionId($checkoutSessionId)->create();
         $this->store($payment, $order);
         $this->paymentGateway->expects(self::once())->method('capture')->willReturn(PaymentGatewayStatus::DECLINED);
 
@@ -134,7 +134,7 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
         $checkoutSessionId = Uuid::uuid7()->toString();
         $paymentBuilder = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionId)->authorized();
         $payment = $paymentBuilder->create();
-        $order = OrderBuilder::new()->withCheckoutSessionId($checkoutSessionId)->create();
+        $order = OrderFactory::new()->withCheckoutSessionId($checkoutSessionId)->create();
         $this->store($payment, $order);
         $message = Message::create(new ShipmentPreparedIntegrationEvent(Uuid::uuid7()->toString(), $order->id->toString(), Clock::get()->now()));
         $error = PaymentFatalFailureException::forReason('rejected');

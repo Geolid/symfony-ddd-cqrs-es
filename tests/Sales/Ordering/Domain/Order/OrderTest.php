@@ -23,10 +23,13 @@ use Sales\Ordering\Domain\Order\Order;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Sales\Ordering\Domain\Order\ValueObject\OrderItem;
 use Sales\Ordering\Domain\Order\ValueObject\OrderLineId;
-use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
+use Sales\Tests\Ordering\Support\Factory\OrderIdFactory;
+use Sales\Tests\Ordering\Support\Factory\OrderItemFactory;
 use Shared\Domain\ValueObject\Currency;
 use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Domain\ValueObject\TaxedAmount;
+use Shared\Tests\Support\Factory\PostalAddressFactory;
+use Symfony\Component\Clock\Clock;
 
 final class OrderTest extends AggregateRootTestCase
 {
@@ -53,20 +56,21 @@ final class OrderTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->id = OrderId::fromString(Uuid::uuid7()->toString());
-        $this->cartId = OrderBuilder::sample('cartId');
-        $this->customerId = OrderBuilder::sample('customerId');
-        $this->checkoutSessionId = OrderBuilder::sample('checkoutSessionId');
-        $this->shippingAddress = OrderBuilder::sample('shippingAddress');
-        $this->items = OrderBuilder::sample('items');
-        $this->currency = OrderBuilder::sample('currency');
-        $this->confirmedAt = OrderBuilder::sample('confirmedAt');
-        $this->preparedAt = OrderBuilder::sample('preparedAt');
-        $this->cancelledAt = OrderBuilder::sample('cancelledAt');
-        $this->failedAt = OrderBuilder::sample('failedAt');
-        $this->dispatchedAt = OrderBuilder::sample('dispatchedAt');
-        $this->deliveredAt = OrderBuilder::sample('deliveredAt');
-        $this->erasureApprovedAt = OrderBuilder::sample('erasureApprovedAt');
+        $this->id = OrderIdFactory::new()->create();
+        $this->cartId = Uuid::uuid7()->toString();
+        $this->customerId = Uuid::uuid7()->toString();
+        $this->checkoutSessionId = Uuid::uuid7()->toString();
+        $this->shippingAddress = PostalAddressFactory::new()->create();
+        $this->items = OrderItemFactory::new()->many(2)->create();
+        $this->currency = Currency::EUR;
+        $now = Clock::get()->now();
+        $this->confirmedAt = $now;
+        $this->preparedAt = $now->modify('+1 day');
+        $this->cancelledAt = $now->modify('+1 day');
+        $this->failedAt = $now->modify('+1 day');
+        $this->dispatchedAt = $now->modify('+2 day');
+        $this->deliveredAt = $now->modify('+3 day');
+        $this->erasureApprovedAt = $now->modify('+4 day');
     }
 
     #[Test]
@@ -110,7 +114,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given($this->confirmed(), $this->prepared())
-            ->when(static fn (Order $order) => $order->prepare(OrderBuilder::sample('preparedAt')))
+            ->when(static fn (Order $order) => $order->prepare(Clock::get()->now()->modify('+1 day')))
             ->then();
     }
 
@@ -128,7 +132,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given($this->confirmed(), $this->cancelled())
-            ->when(fn (Order $order) => $order->cancel($this->customerId, OrderBuilder::sample('cancelledAt')))
+            ->when(fn (Order $order) => $order->cancel($this->customerId, Clock::get()->now()->modify('+1 day')))
             ->then();
     }
 
@@ -149,7 +153,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given($this->confirmed(), $this->prepared())
-            ->when(fn (Order $order) => $order->cancel($this->customerId, OrderBuilder::sample('cancelledAt')))
+            ->when(fn (Order $order) => $order->cancel($this->customerId, Clock::get()->now()->modify('+1 day')))
             ->expectsException(OrderNotCancellableException::class);
     }
 
@@ -197,7 +201,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given($this->confirmed(), $this->prepared(), $this->dispatched())
-            ->when(static fn (Order $order) => $order->fail(OrderBuilder::sample('failedAt')))
+            ->when(static fn (Order $order) => $order->fail(Clock::get()->now()->modify('+1 day')))
             ->then();
     }
 
@@ -215,7 +219,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given($this->confirmed())
-            ->when(static fn (Order $order) => $order->dispatch(OrderBuilder::sample('dispatchedAt')))
+            ->when(static fn (Order $order) => $order->dispatch(Clock::get()->now()->modify('+2 day')))
             ->then();
     }
 
@@ -233,7 +237,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given($this->confirmed(), $this->prepared())
-            ->when(static fn (Order $order) => $order->deliver(OrderBuilder::sample('deliveredAt')))
+            ->when(static fn (Order $order) => $order->deliver(Clock::get()->now()->modify('+3 day')))
             ->then();
     }
 
@@ -292,7 +296,7 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given($this->confirmed(), $this->erasureApproved())
-            ->when(static fn (Order $order) => $order->approveErasure(OrderBuilder::sample('erasureApprovedAt')))
+            ->when(static fn (Order $order) => $order->approveErasure(Clock::get()->now()->modify('+4 day')))
             ->then();
     }
 

@@ -11,7 +11,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Domain\Order\Event\OrderErased;
 use Sales\Ordering\Infrastructure\CipherKey\DropCipherKeyOnOrderErased;
-use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
+use Sales\Tests\Ordering\Support\Factory\OrderFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -30,7 +30,7 @@ final class DropCipherKeyOnOrderErasedTest extends AbstractIntegrationTestCase
     public function itDrops(): void
     {
         // Given
-        $order = OrderBuilder::new()->create();
+        $order = OrderFactory::new()->create();
         $this->store($order);
         $orderId = $order->id->toString();
         $now = Clock::get()->now();

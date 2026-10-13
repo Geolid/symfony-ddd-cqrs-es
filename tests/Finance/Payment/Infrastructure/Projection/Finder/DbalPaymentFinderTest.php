@@ -13,7 +13,7 @@ use Finance\Payment\Domain\ValueObject\PaymentId;
 use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
-use Sales\Tests\Ordering\Support\Builder\OrderBuilder;
+use Sales\Tests\Ordering\Support\Factory\OrderFactory;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 use Shared\Tests\Support\TestCase\RealColumnLeadsTrait;
 use Symfony\Component\Clock\Clock;
@@ -55,7 +55,7 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
     public function itGetsByReference(): void
     {
         // Given
-        $order = OrderBuilder::new()->create();
+        $order = OrderFactory::new()->create();
         $requestedAt = Clock::get()->now()->modify('-4 days');
         $authorizedAt = $requestedAt->modify('+1 hour');
         $capturedAt = $requestedAt->modify('+1 day 2 hours');
@@ -126,7 +126,7 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
     {
         // Given
         $other = PaymentBuilder::new()->create();
-        $order = OrderBuilder::new()->create();
+        $order = OrderFactory::new()->create();
         $orderPayment = PaymentBuilder::new()->authorized()->captured($order->id->toString())->create();
         $this->store($other, $orderPayment);
 
