@@ -54,26 +54,6 @@ final class ResetTest extends AbstractStorefrontTestCase
 
     #[Test]
     #[WithStory(ResetRequestedStory::class)]
-    public function itResends(): void
-    {
-        // Given
-        $persona = ResetRequestedStory::persona();
-        $browser = $this->activeBrowser();
-
-        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $persona->id]);
-        $this->advanceClock('+4 days');
-
-        // When
-        $browser->use(static function (ResetForm $reset): void {
-            $reset->clickResend();
-        });
-
-        // Then
-        $this->assertEmailSent(2, $persona->email, 'Reset your password');
-    }
-
-    #[Test]
-    #[WithStory(ResetRequestedStory::class)]
     public function itRefusesPasswordMismatch(): void
     {
         // Given
@@ -181,6 +161,26 @@ final class ResetTest extends AbstractStorefrontTestCase
         $browser->use(static function (ResetForm $reset): void {
             $reset->assertSamePasswordError();
         });
+    }
+
+    #[Test]
+    #[WithStory(ResetRequestedStory::class)]
+    public function itResends(): void
+    {
+        // Given
+        $persona = ResetRequestedStory::persona();
+        $browser = $this->activeBrowser();
+
+        $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $persona->id]);
+        $this->advanceClock('+4 days');
+
+        // When
+        $browser->use(static function (ResetForm $reset): void {
+            $reset->clickResend();
+        });
+
+        // Then
+        $this->assertEmailSent(2, $persona->email, 'Reset your password');
     }
 
     #[Test]

@@ -53,6 +53,50 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
 
     #[Test]
     #[WithStory(TwoFactorStory::class)]
+    public function itRefusesIncorrectCode(): void
+    {
+        // Given
+        $persona = TwoFactorStory::persona();
+        $browser = $this->activeBrowser();
+        $browser->signInAs($persona->email, $persona->password());
+
+        // When
+        $browser->use(static function (TwoFactorForm $twoFactor): void {
+            $twoFactor->fillCode('000000')->submit();
+        });
+
+        // Then
+        $browser->use(static function (TwoFactorForm $twoFactor): void {
+            $twoFactor->assertInvalidCodeError();
+        });
+    }
+
+    #[Test]
+    #[WithStory(TwoFactorStory::class)]
+    public function itRefusesAfterTooManyAttempts(): void
+    {
+        // Given
+        $persona = TwoFactorStory::persona();
+        $browser = $this->activeBrowser();
+        $browser->signInAs($persona->email, $persona->password());
+
+        for ($i = 0; $i < 3; ++$i) {
+            $browser->use(static function (TwoFactorForm $twoFactor): void {
+                $twoFactor->fillCode('000000')->submit();
+            });
+        }
+
+        // When
+        $browser->use(static function (TwoFactorForm $twoFactor) use ($browser, $persona): void {
+            $twoFactor->fillCode($browser->totpCode($persona->totpSecret()))->submit();
+        });
+
+        // Then
+        $browser->assertSeeIn('[data-testid="two-factor-error"]', 'Too many failed login attempts');
+    }
+
+    #[Test]
+    #[WithStory(TwoFactorStory::class)]
     public function itCompletesSignInWithBackupCode(): void
     {
         // Given
@@ -70,6 +114,26 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
 
         // Then
         $browser->assertRedirectedToRoute('storefront_home_show');
+    }
+
+    #[Test]
+    #[WithStory(TwoFactorStory::class)]
+    public function itRefusesUsedBackupCode(): void
+    {
+        // Given
+        $persona = TwoFactorStory::persona();
+        $usedBackupCode = TwoFactorStory::getRandom('usedBackupCodes');
+        \assert(\is_string($usedBackupCode));
+        $browser = $this->activeBrowser();
+        $browser->signInAs($persona->email, $persona->password());
+
+        $browser->visitRoute('storefront_two_factor_challenge', ['preferProvider' => 'backup_code']);
+
+        // When
+        $browser->completeTwoFactorChallenge($usedBackupCode);
+
+        // Then
+        $browser->assertSeeElement('[data-testid="two-factor-error"]');
     }
 
     #[Test]
@@ -111,69 +175,5 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
 
         // Then
         $browser->assertSignedIn();
-    }
-
-    #[Test]
-    #[WithStory(TwoFactorStory::class)]
-    public function itRefusesIncorrectCode(): void
-    {
-        // Given
-        $persona = TwoFactorStory::persona();
-        $browser = $this->activeBrowser();
-        $browser->signInAs($persona->email, $persona->password());
-
-        // When
-        $browser->use(static function (TwoFactorForm $twoFactor): void {
-            $twoFactor->fillCode('000000')->submit();
-        });
-
-        // Then
-        $browser->use(static function (TwoFactorForm $twoFactor): void {
-            $twoFactor->assertInvalidCodeError();
-        });
-    }
-
-    #[Test]
-    #[WithStory(TwoFactorStory::class)]
-    public function itRefusesUsedBackupCode(): void
-    {
-        // Given
-        $persona = TwoFactorStory::persona();
-        $usedBackupCode = TwoFactorStory::getRandom('usedBackupCodes');
-        \assert(\is_string($usedBackupCode));
-        $browser = $this->activeBrowser();
-        $browser->signInAs($persona->email, $persona->password());
-
-        $browser->visitRoute('storefront_two_factor_challenge', ['preferProvider' => 'backup_code']);
-
-        // When
-        $browser->completeTwoFactorChallenge($usedBackupCode);
-
-        // Then
-        $browser->assertSeeElement('[data-testid="two-factor-error"]');
-    }
-
-    #[Test]
-    #[WithStory(TwoFactorStory::class)]
-    public function itRefusesAfterTooManyAttempts(): void
-    {
-        // Given
-        $persona = TwoFactorStory::persona();
-        $browser = $this->activeBrowser();
-        $browser->signInAs($persona->email, $persona->password());
-
-        for ($i = 0; $i < 3; ++$i) {
-            $browser->use(static function (TwoFactorForm $twoFactor): void {
-                $twoFactor->fillCode('000000')->submit();
-            });
-        }
-
-        // When
-        $browser->use(static function (TwoFactorForm $twoFactor) use ($browser, $persona): void {
-            $twoFactor->fillCode($browser->totpCode($persona->totpSecret()))->submit();
-        });
-
-        // Then
-        $browser->assertSeeIn('[data-testid="two-factor-error"]', 'Too many failed login attempts');
     }
 }

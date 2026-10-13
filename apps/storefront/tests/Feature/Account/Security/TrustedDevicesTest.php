@@ -54,27 +54,6 @@ final class TrustedDevicesTest extends AbstractStorefrontTestCase
 
     #[Test]
     #[WithStory(TrustedDeviceStory::class)]
-    public function itRevokesAll(): void
-    {
-        // Given
-        $persona = TrustedDeviceStory::persona();
-        $browser = $this->activeBrowser();
-        $browser->signInAs($persona->email, $persona->password());
-
-        $browser->completeTwoFactorChallenge($browser->totpCode($persona->totpSecret()));
-        $browser->visitRoute('storefront_account_security_trusted_devices');
-        $browser->interceptRedirects();
-
-        // When
-        $browser->click('[data-testid="revoke-trusted-devices-submit"]');
-
-        // Then
-        $browser->assertRedirectedToRoute('storefront_account_security_trusted_devices')
-            ->assertSeeIn('[data-testid="flash-success"]', 'trusted_devices_flash_revoked_all');
-    }
-
-    #[Test]
-    #[WithStory(TrustedDeviceStory::class)]
     public function itRefusesRevokeWithInvalidCsrfToken(): void
     {
         // Given
@@ -95,6 +74,27 @@ final class TrustedDevicesTest extends AbstractStorefrontTestCase
         // Then
         $browser->assertRedirectedToRoute('storefront_account_security_trusted_devices')
             ->assertSeeIn('[data-testid="flash-error"]', 'flash_invalid_csrf_token');
+    }
+
+    #[Test]
+    #[WithStory(TrustedDeviceStory::class)]
+    public function itRevokesAll(): void
+    {
+        // Given
+        $persona = TrustedDeviceStory::persona();
+        $browser = $this->activeBrowser();
+        $browser->signInAs($persona->email, $persona->password());
+
+        $browser->completeTwoFactorChallenge($browser->totpCode($persona->totpSecret()));
+        $browser->visitRoute('storefront_account_security_trusted_devices');
+        $browser->interceptRedirects();
+
+        // When
+        $browser->click('[data-testid="revoke-trusted-devices-submit"]');
+
+        // Then
+        $browser->assertRedirectedToRoute('storefront_account_security_trusted_devices')
+            ->assertSeeIn('[data-testid="flash-success"]', 'trusted_devices_flash_revoked_all');
     }
 
     #[Test]

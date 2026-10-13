@@ -56,31 +56,6 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
 
     #[Test]
     #[WithStory(ConfirmedStory::class)]
-    public function itResends(): void
-    {
-        // Given
-        $persona = ConfirmedStory::persona();
-        $browser = $this->activeBrowser();
-        $browser->signInAs($persona->email, $persona->password());
-
-        $newEmail = EmailFactory::new()->create()->value;
-        $browser->visitRoute('storefront_account_security_request_email_change');
-        $browser->use(static function (RequestEmailChangeForm $requestEmailChangeForm) use ($newEmail): void {
-            $requestEmailChangeForm->fillNewEmail($newEmail)->submit();
-        });
-        $this->advanceClock('+2 minutes');
-
-        // When
-        $browser->use(static function (ChangeEmailForm $form): void {
-            $form->clickResend();
-        });
-
-        // Then
-        $this->assertEmailSent(2, $newEmail, 'Confirm your new email address');
-    }
-
-    #[Test]
-    #[WithStory(ConfirmedStory::class)]
     public function itRefusesIncorrectCode(): void
     {
         // Given
@@ -102,6 +77,31 @@ final class ChangeEmailTest extends AbstractStorefrontTestCase
         $browser->use(static function (ChangeEmailForm $form): void {
             $form->assertInvalidCodeError();
         });
+    }
+
+    #[Test]
+    #[WithStory(ConfirmedStory::class)]
+    public function itResends(): void
+    {
+        // Given
+        $persona = ConfirmedStory::persona();
+        $browser = $this->activeBrowser();
+        $browser->signInAs($persona->email, $persona->password());
+
+        $newEmail = EmailFactory::new()->create()->value;
+        $browser->visitRoute('storefront_account_security_request_email_change');
+        $browser->use(static function (RequestEmailChangeForm $requestEmailChangeForm) use ($newEmail): void {
+            $requestEmailChangeForm->fillNewEmail($newEmail)->submit();
+        });
+        $this->advanceClock('+2 minutes');
+
+        // When
+        $browser->use(static function (ChangeEmailForm $form): void {
+            $form->clickResend();
+        });
+
+        // Then
+        $this->assertEmailSent(2, $newEmail, 'Confirm your new email address');
     }
 
     #[Test]

@@ -53,27 +53,6 @@ final class TwoFactorSettingsTest extends AbstractStorefrontTestCase
 
     #[Test]
     #[WithStory(TwoFactorStory::class)]
-    public function itUnenrolls(): void
-    {
-        // Given
-        $persona = TwoFactorStory::persona();
-        $browser = $this->activeBrowser();
-        $browser->signInAs($persona->email, $persona->password());
-
-        $browser->completeTwoFactorChallenge($browser->totpCode($persona->totpSecret()));
-        $browser->visitRoute('storefront_account_security_two_factor_settings');
-        $browser->interceptRedirects();
-
-        // When
-        $browser->click('[data-testid="unenroll-totp-submit"]');
-
-        // Then
-        $browser->assertRedirectedToRoute('storefront_account_security_show')
-            ->assertSeeIn('[data-testid="flash-success"]', 'two_factor_settings_flash_unenrolled');
-    }
-
-    #[Test]
-    #[WithStory(TwoFactorStory::class)]
     public function itRefusesRegenerateBackupCodesWithInvalidCsrfToken(): void
     {
         // Given
@@ -94,6 +73,27 @@ final class TwoFactorSettingsTest extends AbstractStorefrontTestCase
         // Then
         $browser->assertRedirectedToRoute('storefront_account_security_two_factor_settings')
             ->assertSeeIn('[data-testid="flash-error"]', 'flash_invalid_csrf_token');
+    }
+
+    #[Test]
+    #[WithStory(TwoFactorStory::class)]
+    public function itUnenrolls(): void
+    {
+        // Given
+        $persona = TwoFactorStory::persona();
+        $browser = $this->activeBrowser();
+        $browser->signInAs($persona->email, $persona->password());
+
+        $browser->completeTwoFactorChallenge($browser->totpCode($persona->totpSecret()));
+        $browser->visitRoute('storefront_account_security_two_factor_settings');
+        $browser->interceptRedirects();
+
+        // When
+        $browser->click('[data-testid="unenroll-totp-submit"]');
+
+        // Then
+        $browser->assertRedirectedToRoute('storefront_account_security_show')
+            ->assertSeeIn('[data-testid="flash-success"]', 'two_factor_settings_flash_unenrolled');
     }
 
     #[Test]

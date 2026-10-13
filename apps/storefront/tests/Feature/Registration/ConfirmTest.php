@@ -38,47 +38,6 @@ final class ConfirmTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    #[WithStory(PendingStory::class)]
-    public function itResends(): void
-    {
-        // Given
-        $persona = PendingStory::persona();
-        $browser = $this->activeBrowser();
-
-        $browser->visitRoute('storefront_registration_confirm', ['identityId' => $persona->id]);
-        $this->advanceClock('+2 minutes');
-
-        // When
-        $browser->use(static function (ConfirmForm $confirm): void {
-            $confirm->clickResend();
-        });
-
-        // Then
-        $this->assertEmailSent(2, $persona->email, 'Confirm your email address');
-    }
-
-    #[Test]
-    #[WithStory(ConfirmedStory::class)]
-    public function itResendsWhenAlreadyConfirmed(): void
-    {
-        // Given
-        $persona = ConfirmedStory::persona();
-        $browser = $this->activeBrowser();
-
-        $browser->visitRoute('storefront_registration_confirm', ['identityId' => $persona->id]);
-        $browser->interceptRedirects();
-
-        // When
-        $browser->use(static function (ConfirmForm $confirm): void {
-            $confirm->clickResend();
-        });
-
-        // Then
-        $browser->assertRedirectedToRoute('storefront_signin_identify')
-            ->assertSeeIn('[data-testid="flash-success"]', 'confirm_resend_flash_already_confirmed');
-    }
-
-    #[Test]
     #[WithStory(ErasedStory::class)]
     public function itRefusesWhenErased(): void
     {
@@ -144,6 +103,47 @@ final class ConfirmTest extends AbstractStorefrontTestCase
         $browser->use(static function (ConfirmForm $confirm): void {
             $confirm->assertAttemptsExceededError();
         });
+    }
+
+    #[Test]
+    #[WithStory(PendingStory::class)]
+    public function itResends(): void
+    {
+        // Given
+        $persona = PendingStory::persona();
+        $browser = $this->activeBrowser();
+
+        $browser->visitRoute('storefront_registration_confirm', ['identityId' => $persona->id]);
+        $this->advanceClock('+2 minutes');
+
+        // When
+        $browser->use(static function (ConfirmForm $confirm): void {
+            $confirm->clickResend();
+        });
+
+        // Then
+        $this->assertEmailSent(2, $persona->email, 'Confirm your email address');
+    }
+
+    #[Test]
+    #[WithStory(ConfirmedStory::class)]
+    public function itResendsWhenAlreadyConfirmed(): void
+    {
+        // Given
+        $persona = ConfirmedStory::persona();
+        $browser = $this->activeBrowser();
+
+        $browser->visitRoute('storefront_registration_confirm', ['identityId' => $persona->id]);
+        $browser->interceptRedirects();
+
+        // When
+        $browser->use(static function (ConfirmForm $confirm): void {
+            $confirm->clickResend();
+        });
+
+        // Then
+        $browser->assertRedirectedToRoute('storefront_signin_identify')
+            ->assertSeeIn('[data-testid="flash-success"]', 'confirm_resend_flash_already_confirmed');
     }
 
     #[Test]

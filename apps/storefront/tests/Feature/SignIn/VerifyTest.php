@@ -36,6 +36,19 @@ final class VerifyTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    public function itRedirectsToIdentifyWhenAccessedDirectly(): void
+    {
+        // Given
+        $browser = $this->activeBrowser()->interceptRedirects();
+
+        // When
+        $browser->visitRoute('storefront_signin_verify');
+
+        // Then
+        $browser->assertRedirectedToRoute('storefront_signin_identify');
+    }
+
+    #[Test]
     #[WithStory(ConfirmedStory::class)]
     public function itSignsIn(): void
     {
@@ -56,19 +69,6 @@ final class VerifyTest extends AbstractStorefrontTestCase
 
         // Then
         $browser->assertRedirectedToRoute('storefront_home_show');
-    }
-
-    #[Test]
-    public function itRedirectsToIdentifyWhenAccessedDirectly(): void
-    {
-        // Given
-        $browser = $this->activeBrowser()->interceptRedirects();
-
-        // When
-        $browser->visitRoute('storefront_signin_verify');
-
-        // Then
-        $browser->assertRedirectedToRoute('storefront_signin_identify');
     }
 
     #[Test]
