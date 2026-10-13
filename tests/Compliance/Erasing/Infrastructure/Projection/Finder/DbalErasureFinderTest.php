@@ -8,9 +8,9 @@ use Compliance\Erasing\Application\ErasureRequestStatus;
 use Compliance\Erasing\Application\Finder\Erasure\ErasureFinderInterface;
 use Compliance\Erasing\Application\Finder\Erasure\Exception\ErasureResultNotFoundException;
 use Compliance\Erasing\Domain\Erasure;
-use Compliance\Tests\Erasing\Support\Builder\ErasureBuilder;
+use Compliance\Tests\Erasing\Support\Factory\ErasureFactory;
+use Compliance\Tests\Erasing\Support\Factory\ErasureIdFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -25,9 +25,8 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
     public function itGetsById(): void
     {
         // Given
-        $other = ErasureBuilder::new()->create();
-        $builder = ErasureBuilder::new()->cancelled();
-        $erasure = $builder->create();
+        $other = ErasureFactory::new()->create();
+        $erasure = ErasureFactory::new()->cancelled()->create();
         $this->store($other, $erasure);
 
         // When
@@ -37,11 +36,11 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
         self::assertSame($erasure->id->toString(), $result->id);
         self::assertSame(ErasureRequestStatus::CANCELLED, $result->status);
         self::assertSame(
-            $builder['requestedAt']->format(self::DATE_FORMAT),
+            $erasure->requestedAt->format(self::DATE_FORMAT),
             $result->requestedAt?->format(self::DATE_FORMAT),
         );
         self::assertSame(
-            $builder['cancelledAt']->format(self::DATE_FORMAT),
+            $erasure->cancelledAt?->format(self::DATE_FORMAT),
             $result->cancelledAt?->format(self::DATE_FORMAT),
         );
         self::assertNull($result->approvedAt);
@@ -54,7 +53,7 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
         $this->expectException(ErasureResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(Uuid::uuid7()->toString());
+        $this->finder()->ofId(ErasureIdFactory::new()->create()->toString());
     }
 
     #[Test]
@@ -62,9 +61,9 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $fresh = ErasureBuilder::new()->withRequestedAt($now->modify('-1 day'))->create();
-        $due = ErasureBuilder::new()->withRequestedAt($now->modify('-31 days'))->create();
-        $approved = ErasureBuilder::new()->withRequestedAt($now->modify('-31 days'))->approved()->create();
+        $fresh = ErasureFactory::new()->withRequestedAt($now->modify('-1 day'))->create();
+        $due = ErasureFactory::new()->withRequestedAt($now->modify('-31 days'))->create();
+        $approved = ErasureFactory::new()->withRequestedAt($now->modify('-31 days'))->approved()->create();
         $this->store($fresh, $due, $approved);
 
         // When
@@ -85,7 +84,7 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
      */
     protected function seed(int $count): array
     {
-        $erasures = ErasureBuilder::new()->many($count)->create();
+        $erasures = ErasureFactory::new()->many($count)->create();
         $this->store(...$erasures);
 
         return array_map(static fn (Erasure $erasure): string => $erasure->id->toString(), $erasures);

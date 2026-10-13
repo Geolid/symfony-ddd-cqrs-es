@@ -8,11 +8,13 @@ use Compliance\Erasing\Domain\Erasure;
 use Compliance\Erasing\Domain\Event\ErasureApproved;
 use Compliance\Erasing\Domain\Event\ErasureCancelled;
 use Compliance\Erasing\Domain\Event\ErasureRequested;
+use Compliance\Erasing\Domain\Specification\ErasureRetentionExpiredSpecification;
 use Compliance\Erasing\Domain\ValueObject\ErasureId;
-use Compliance\Tests\Erasing\Support\Builder\ErasureBuilder;
+use Compliance\Tests\Erasing\Support\Factory\ErasureIdFactory;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Symfony\Component\Clock\Clock;
 
 final class ErasureTest extends AggregateRootTestCase
 {
@@ -26,11 +28,12 @@ final class ErasureTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->id = ErasureId::fromString(Uuid::uuid7()->toString());
-        $this->identityId = ErasureBuilder::sample('identityId');
-        $this->requestedAt = ErasureBuilder::sample('requestedAt');
-        $this->cancelledAt = ErasureBuilder::sample('cancelledAt');
-        $this->approvedAt = ErasureBuilder::sample('approvedAt');
+        $this->id = ErasureIdFactory::new()->create();
+        $this->identityId = Uuid::uuid7()->toString();
+        $now = Clock::get()->now();
+        $this->requestedAt = $now;
+        $this->cancelledAt = $now->modify('+1 hour');
+        $this->approvedAt = $now->modify(\sprintf('+%d days', ErasureRetentionExpiredSpecification::DAYS + 1));
     }
 
     #[Test]
@@ -56,7 +59,7 @@ final class ErasureTest extends AggregateRootTestCase
     {
         $this
             ->given($this->requested(), $this->cancelled())
-            ->when(static fn (Erasure $erasure) => $erasure->cancel(ErasureBuilder::sample('cancelledAt')))
+            ->when(static fn (Erasure $erasure) => $erasure->cancel(Clock::get()->now()->modify('+1 hour')))
             ->then();
     }
 

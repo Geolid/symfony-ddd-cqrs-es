@@ -34,7 +34,9 @@ final class Erasure implements AggregateRoot, AggregateRootMetadataAware
     public private(set) ErasureId $id;
     public private(set) string $identityId;
     public private(set) ErasureRequestState $state;
-    private \DateTimeImmutable $requestedAt;
+    public private(set) \DateTimeImmutable $requestedAt;
+    public private(set) ?\DateTimeImmutable $cancelledAt = null;
+    public private(set) ?\DateTimeImmutable $approvedAt = null;
 
     public static function request(ErasureId $id, string $identityId, \DateTimeImmutable $requestedAt): self
     {
@@ -96,11 +98,13 @@ final class Erasure implements AggregateRoot, AggregateRootMetadataAware
     private function applyCancelled(ErasureCancelled $event): void
     {
         $this->state = ErasureRequestState::CANCELLED;
+        $this->cancelledAt = $event->cancelledAt;
     }
 
     #[Apply]
     private function applyApproved(ErasureApproved $event): void
     {
         $this->state = ErasureRequestState::APPROVED;
+        $this->approvedAt = $event->approvedAt;
     }
 }

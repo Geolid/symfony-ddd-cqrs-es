@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Compliance\Tests\Erasing\Application\IntegrationEvent\ErasureCancelled;
 
 use Compliance\Erasing\Application\IntegrationEvent\ErasureCancelled\ErasureCancelledIntegrationEvent;
-use Compliance\Tests\Erasing\Support\Builder\ErasureBuilder;
+use Compliance\Tests\Erasing\Support\Factory\ErasureFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -15,18 +15,17 @@ final class ErasureCancelledPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $builder = ErasureBuilder::new()->cancelled();
-        $erasure = $builder->create();
+        $erasure = ErasureFactory::new()->cancelled()->create();
 
         // When
         $this->store($erasure);
 
         // Then
         $event = $this->publishedEventOf(ErasureCancelledIntegrationEvent::class);
-        self::assertSame($builder['identityId'], $event->identityId);
+        self::assertSame($erasure->identityId, $event->identityId);
         self::assertSame(
-            $builder['cancelledAt']->format(\DateTimeInterface::ATOM),
-            $event->cancelledAt->format(\DateTimeInterface::ATOM),
+            $erasure->cancelledAt?->format(\DateTimeInterface::ATOM),
+            $event->cancelledAt?->format(\DateTimeInterface::ATOM),
         );
     }
 }

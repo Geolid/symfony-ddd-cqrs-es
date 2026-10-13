@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Compliance\Tests\Erasing\Application\Query\ListErasuresDueForApproval;
 
 use Compliance\Erasing\Application\Query\ListErasuresDueForApproval\ListErasuresDueForApproval;
-use Compliance\Tests\Erasing\Support\Builder\ErasureBuilder;
+use Compliance\Tests\Erasing\Support\Factory\ErasureFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
@@ -17,9 +17,9 @@ final class ListErasuresDueForApprovalHandlerTest extends AbstractIntegrationTes
     {
         // Given
         $now = Clock::get()->now();
-        $fresh = ErasureBuilder::new()->withRequestedAt($now->modify('-1 day'))->create();
-        $due = ErasureBuilder::new()->withRequestedAt($now->modify('-31 days'))->create();
-        $cancelled = ErasureBuilder::new()->withRequestedAt($now->modify('-31 days'))->cancelled()->create();
+        $fresh = ErasureFactory::new()->withRequestedAt($now->modify('-1 day'))->create();
+        $due = ErasureFactory::new()->withRequestedAt($now->modify('-31 days'))->create();
+        $cancelled = ErasureFactory::new()->withRequestedAt($now->modify('-31 days'))->cancelled()->create();
         $this->store($fresh, $due, $cancelled);
 
         // When
