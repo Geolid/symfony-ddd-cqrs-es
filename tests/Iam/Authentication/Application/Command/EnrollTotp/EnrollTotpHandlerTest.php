@@ -8,13 +8,14 @@ use Iam\Authentication\Application\AuthenticationUniqueKey;
 use Iam\Authentication\Application\Command\EnrollTotp\EnrollTotp;
 use Iam\Authentication\Application\Command\EnrollTotp\Exception\TotpAlreadyEnrolledException;
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInterface;
-use Iam\Tests\Authentication\Support\Builder\TotpCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
+
+use function Zenstruck\Foundry\faker;
 
 final class EnrollTotpHandlerTest extends AbstractIntegrationTestCase
 {
@@ -23,8 +24,8 @@ final class EnrollTotpHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $id = Uuid::uuid7()->toString();
-        $identityId = TotpCredentialBuilder::sample('identityId');
-        $secret = TotpCredentialBuilder::sample('secret');
+        $identityId = Uuid::uuid7()->toString();
+        $secret = faker()->totpSecret();
         $now = Clock::get()->now();
 
         // When
@@ -48,7 +49,7 @@ final class EnrollTotpHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenIdentityAlreadyEnrolled(): void
     {
         // Given
-        $identityId = TotpCredentialBuilder::sample('identityId');
+        $identityId = Uuid::uuid7()->toString();
         $this->service(UniquenessRegistryInterface::class)->claim(
             UniqueKey::for(AuthenticationUniqueKey::TOTP_CREDENTIAL_IDENTITY),
             $identityId,
@@ -62,7 +63,7 @@ final class EnrollTotpHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new EnrollTotp(
             Uuid::uuid7()->toString(),
             $identityId,
-            TotpCredentialBuilder::sample('secret'),
+            faker()->totpSecret(),
         ));
     }
 }

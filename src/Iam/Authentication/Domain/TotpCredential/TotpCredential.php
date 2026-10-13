@@ -23,8 +23,11 @@ final class TotpCredential implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     public private(set) TotpCredentialId $id;
-    private string $identityId;
-    private bool $unenrolled;
+    public private(set) string $identityId;
+    public private(set) string $encryptedSecret;
+    public private(set) \DateTimeImmutable $enrolledAt;
+    public private(set) bool $unenrolled;
+    public private(set) ?\DateTimeImmutable $unenrolledAt = null;
 
     public static function enroll(
         TotpCredentialId $id,
@@ -69,6 +72,8 @@ final class TotpCredential implements AggregateRoot, AggregateRootMetadataAware
     {
         $this->id = $event->id;
         $this->identityId = $event->identityId;
+        $this->encryptedSecret = $event->encryptedSecret;
+        $this->enrolledAt = $event->enrolledAt;
         $this->unenrolled = false;
     }
 
@@ -76,5 +81,6 @@ final class TotpCredential implements AggregateRoot, AggregateRootMetadataAware
     private function applyUnenrolled(TotpCredentialUnenrolled $event): void
     {
         $this->unenrolled = true;
+        $this->unenrolledAt = $event->unenrolledAt;
     }
 }

@@ -8,13 +8,16 @@ use Iam\Authentication\Application\AuthenticationUniqueKey;
 use Iam\Authentication\Application\Command\IssueApiKey\Exception\ApiKeyCredentialLabelAlreadyInUseException;
 use Iam\Authentication\Application\Command\IssueApiKey\IssueApiKey;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
-use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
+use Iam\Tests\Authentication\Support\Factory\KeyIdFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
+use Shared\Tests\Support\Factory\LabelFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
+
+use function Zenstruck\Foundry\faker;
 
 final class IssueApiKeyHandlerTest extends AbstractIntegrationTestCase
 {
@@ -22,11 +25,11 @@ final class IssueApiKeyHandlerTest extends AbstractIntegrationTestCase
     public function itIssues(): void
     {
         // Given
-        $identityId = ApiKeyCredentialBuilder::sample('identityId');
+        $identityId = Uuid::uuid7()->toString();
         $id = Uuid::uuid7()->toString();
-        $label = ApiKeyCredentialBuilder::sample('label')->value;
-        $keyId = ApiKeyCredentialBuilder::sample('keyId')->value;
-        $secret = ApiKeyCredentialBuilder::sample('secret');
+        $label = LabelFactory::new()->create()->value;
+        $keyId = KeyIdFactory::new()->create()->value;
+        $secret = faker()->apiKeySecret();
         $now = Clock::get()->now();
 
         // When
@@ -52,9 +55,9 @@ final class IssueApiKeyHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenLabelAlreadyInUse(): void
     {
         // Given
-        $identityId = ApiKeyCredentialBuilder::sample('identityId');
+        $identityId = Uuid::uuid7()->toString();
 
-        $label = ApiKeyCredentialBuilder::sample('label')->value;
+        $label = LabelFactory::new()->create()->value;
         $this->service(UniquenessRegistryInterface::class)->claim(
             UniqueKey::for(AuthenticationUniqueKey::API_KEY_CREDENTIAL_LABEL, $identityId),
             $label,
@@ -69,8 +72,8 @@ final class IssueApiKeyHandlerTest extends AbstractIntegrationTestCase
             Uuid::uuid7()->toString(),
             $identityId,
             $label,
-            ApiKeyCredentialBuilder::sample('keyId')->value,
-            ApiKeyCredentialBuilder::sample('secret'),
+            KeyIdFactory::new()->create()->value,
+            faker()->apiKeySecret(),
         ));
     }
 }

@@ -7,11 +7,11 @@ namespace Iam\Tests\Authentication\Infrastructure\Uniqueness;
 use Iam\Authentication\Application\AuthenticationUniqueKey;
 use Iam\Authentication\Infrastructure\Uniqueness\ReleaseApiKeyLabelsOnIdentityErased;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
-use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
+use Shared\Tests\Support\Factory\LabelFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -30,11 +30,11 @@ final class ReleaseApiKeyLabelsOnIdentityErasedTest extends AbstractIntegrationT
     public function itReleases(): void
     {
         // Given
-        $identityId = ApiKeyCredentialBuilder::sample('identityId');
-        $otherIdentityId = ApiKeyCredentialBuilder::sample('identityId');
+        $identityId = Uuid::uuid7()->toString();
+        $otherIdentityId = Uuid::uuid7()->toString();
 
-        $label = ApiKeyCredentialBuilder::sample('label')->value;
-        $otherLabel = ApiKeyCredentialBuilder::sample('label')->value;
+        $label = LabelFactory::new()->create()->value;
+        $otherLabel = LabelFactory::new()->create()->value;
 
         $this->claimLabel($identityId, $label);
         $this->claimLabel($identityId, $otherLabel);

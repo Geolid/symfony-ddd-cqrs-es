@@ -39,9 +39,13 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
 
     #[Id]
     public private(set) PasswordCredentialId $id;
-    private string $identityId;
-    private string $passwordHash;
-    private ?\DateTimeImmutable $resetRequestedAt = null;
+    public private(set) string $identityId;
+    public private(set) string $passwordHash;
+    public private(set) \DateTimeImmutable $definedAt;
+    public private(set) ?\DateTimeImmutable $changedAt = null;
+    public private(set) ?\DateTimeImmutable $rehashedAt = null;
+    public private(set) ?\DateTimeImmutable $resetRequestedAt = null;
+    public private(set) ?\DateTimeImmutable $resetAt = null;
 
     /**
      * @throws WeakPasswordException
@@ -159,18 +163,21 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
         $this->id = $event->id;
         $this->identityId = $event->identityId;
         $this->passwordHash = $event->passwordHash;
+        $this->definedAt = $event->definedAt;
     }
 
     #[Apply]
     private function applyChanged(PasswordCredentialChanged $event): void
     {
         $this->passwordHash = $event->passwordHash;
+        $this->changedAt = $event->changedAt;
     }
 
     #[Apply]
     private function applyRehashed(PasswordCredentialRehashed $event): void
     {
         $this->passwordHash = $event->passwordHash;
+        $this->rehashedAt = $event->rehashedAt;
     }
 
     #[Apply]
@@ -183,5 +190,6 @@ final class PasswordCredential implements AggregateRoot, AggregateRootMetadataAw
     private function applyReset(PasswordCredentialReset $event): void
     {
         $this->passwordHash = $event->passwordHash;
+        $this->resetAt = $event->resetAt;
     }
 }

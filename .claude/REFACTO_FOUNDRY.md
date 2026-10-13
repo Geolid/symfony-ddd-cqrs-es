@@ -63,6 +63,10 @@ Source du code de référence : le spike, branche `ai/foundry-spike-storefront` 
 - 3. Tranche Identity : factories de VO + `IdentityFactory`, état complet, aller-retour + `AlreadyExists`, `IdentityBuilder` supprimé.
 - Avant de pousser : retirer les restes du spike (§6), `castor qa` vert (lancé par l'utilisateur), commits recomposés pour passer chacun.
 
+**Avancement des PRs par BC** (une par ligne, mise à jour à chaque étape) :
+- Iam.Authentication : fait sur `ai/foundry-iam-authentication` (état complet, factories de VO + `ApiKeyCredential`/`TrustedDevice`, aller-retour + `AlreadyExists`, `*PiiErasureTest` via le store réel, 5 Builders supprimés, `AccountBuilder` porté sur les factories de credentials).
+- Reste : Crm, Shopping, Sales, Finance, Fulfilment, Catalog, Compliance.
+
 **Ensuite : une PR par BC, empilées chacune sur la précédente** (une fois la PR socle mergée, la première se rebase sur `main`) :
 4. Iam.Authentication (credentials : factories de VO), Crm, Shopping, Sales, Finance, Fulfilment, Catalog, Compliance. Chaque PR : factories de VO et d'aggregate, état complet, test `AlreadyExists` du repository, suppression des Builders du BC. En dernier : `AbstractAggregateBuilder`, `SeededFaker`, `FakerSeedExtension`, les 3 subscribers de reset + `ResetState` + `EventSourcingExtension` + `ThrowawayKernelHelper`.
 5. Stories de compte + storefront : porter les usages restants d'`account()` (11 combinaisons : 5 Stories couvrent 48 appels sur 62 ; le reste en factories inline), supprimer `AccountBuilder`.

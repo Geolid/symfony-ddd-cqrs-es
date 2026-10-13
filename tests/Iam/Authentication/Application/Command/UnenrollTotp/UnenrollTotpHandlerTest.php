@@ -10,7 +10,7 @@ use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInt
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialNotFoundException;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialOwnedByAnotherIdentityException;
 use Iam\Authentication\Domain\TotpCredential\Service\TotpCipherInterface;
-use Iam\Tests\Authentication\Support\Builder\TotpCredentialBuilder;
+use Iam\Tests\Authentication\Support\Factory\TotpCredentialFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
@@ -36,33 +36,31 @@ final class UnenrollTotpHandlerTest extends AbstractIntegrationTestCase
     public function itUnenrolls(): void
     {
         // Given
-        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher);
-        $credential = $builder->create();
+        $credential = TotpCredentialFactory::new()->withCipher($this->cipher)->create();
         $this->store($credential);
 
         $identityKey = UniqueKey::for(AuthenticationUniqueKey::TOTP_CREDENTIAL_IDENTITY);
-        $this->uniqueness->claim($identityKey, $builder['identityId'], $credential->id->toString());
+        $this->uniqueness->claim($identityKey, $credential->identityId, $credential->id->toString());
 
         // When
-        $this->dispatch(new UnenrollTotp($credential->id->toString(), $builder['identityId']));
+        $this->dispatch(new UnenrollTotp($credential->id->toString(), $credential->identityId));
 
         // Then
         $result = $this->finder->ofId($credential->id->toString());
         self::assertTrue($result->unenrolled);
 
-        self::assertFalse($this->uniqueness->isClaimed($identityKey, $builder['identityId']));
+        self::assertFalse($this->uniqueness->isClaimed($identityKey, $credential->identityId));
     }
 
     #[Test]
     public function itIgnoresWhenAlreadyUnenrolled(): void
     {
         // Given
-        $builder = TotpCredentialBuilder::new()->withCipher($this->cipher)->unenrolled();
-        $credential = $builder->create();
+        $credential = TotpCredentialFactory::new()->withCipher($this->cipher)->unenrolled()->create();
         $this->store($credential);
 
         // When
-        $this->dispatch(new UnenrollTotp($credential->id->toString(), $builder['identityId']));
+        $this->dispatch(new UnenrollTotp($credential->id->toString(), $credential->identityId));
 
         // Then
         self::expectNotToPerformAssertions();
@@ -77,7 +75,7 @@ final class UnenrollTotpHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new UnenrollTotp(
             Uuid::uuid7()->toString(),
-            TotpCredentialBuilder::sample('identityId'),
+            Uuid::uuid7()->toString(),
         ));
     }
 
@@ -85,7 +83,7 @@ final class UnenrollTotpHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenOwnedByAnotherIdentity(): void
     {
         // Given
-        $credential = TotpCredentialBuilder::new()->withCipher($this->cipher)->create();
+        $credential = TotpCredentialFactory::new()->withCipher($this->cipher)->create();
         $this->store($credential);
 
         // Then
@@ -94,7 +92,7 @@ final class UnenrollTotpHandlerTest extends AbstractIntegrationTestCase
         // When
         $this->dispatch(new UnenrollTotp(
             $credential->id->toString(),
-            TotpCredentialBuilder::sample('identityId'),
+            Uuid::uuid7()->toString(),
         ));
     }
 }

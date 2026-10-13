@@ -6,8 +6,8 @@ namespace Iam\Tests\Authentication\Infrastructure\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
 use Iam\Authentication\Infrastructure\Projection\Projector\DbalApiKeyCredentialProjector;
-use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakeApiKeyHasher;
+use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -32,8 +32,7 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
     public function itProjectsOnApiKeyCredentialIssued(): void
     {
         // Given
-        $builder = ApiKeyCredentialBuilder::new()->withHasher($this->hasher);
-        $credential = $builder->create();
+        $credential = ApiKeyCredentialFactory::new()->withHasher($this->hasher)->create();
 
         // When
         $this->store($credential);
@@ -41,8 +40,8 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
         // Then
         $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($builder['label']->value, $row['label']);
-        self::assertSame($builder['issuedAt']->format(self::DATE_FORMAT), $row['issued_at']);
+        self::assertSame($credential->label->value, $row['label']);
+        self::assertSame($credential->issuedAt->format(self::DATE_FORMAT), $row['issued_at']);
         self::assertFalse((bool) $row['revoked']);
         self::assertNull($row['revoked_at']);
     }
@@ -51,13 +50,13 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
     public function itProjectsOnApiKeyCredentialRevoked(): void
     {
         // Given
-        $other = ApiKeyCredentialBuilder::new()->withHasher($this->hasher)->create();
+        $other = ApiKeyCredentialFactory::new()->withHasher($this->hasher)->create();
         $this->store($other);
 
-        $builder = ApiKeyCredentialBuilder::new()
+        $credential = ApiKeyCredentialFactory::new()
             ->withHasher($this->hasher)
-            ->revoked();
-        $credential = $builder->create();
+            ->revoked()
+            ->create();
 
         // When
         $this->store($credential);
@@ -66,7 +65,7 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
         $row = $this->fetchRow($credential->id->toString());
         self::assertNotFalse($row);
         self::assertTrue((bool) $row['revoked']);
-        self::assertSame($builder['revokedAt']->format(self::DATE_FORMAT), $row['revoked_at']);
+        self::assertSame($credential->revokedAt?->format(self::DATE_FORMAT), $row['revoked_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
@@ -78,11 +77,11 @@ final class DbalApiKeyCredentialProjectorTest extends AbstractIntegrationTestCas
     public function itRemovesOnIdentityErasedIntegrationEvent(): void
     {
         // Given
-        $other = ApiKeyCredentialBuilder::new()->withHasher($this->hasher)->create();
+        $other = ApiKeyCredentialFactory::new()->withHasher($this->hasher)->create();
         $this->store($other);
 
         $identity = IdentityFactory::new()->erasureRequested()->erased()->create();
-        $credential = ApiKeyCredentialBuilder::new()
+        $credential = ApiKeyCredentialFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withHasher($this->hasher)
             ->create();

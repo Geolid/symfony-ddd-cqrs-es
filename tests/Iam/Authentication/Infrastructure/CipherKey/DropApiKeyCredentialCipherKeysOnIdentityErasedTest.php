@@ -6,8 +6,8 @@ namespace Iam\Tests\Authentication\Infrastructure\CipherKey;
 
 use Iam\Authentication\Infrastructure\CipherKey\DropApiKeyCredentialCipherKeysOnIdentityErased;
 use Iam\Identity\Application\IntegrationEvent\IdentityErased\IdentityErasedIntegrationEvent;
-use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakeApiKeyHasher;
+use Iam\Tests\Authentication\Support\Factory\ApiKeyCredentialFactory;
 use Patchlevel\Hydrator\Extension\Cryptography\Cipher\CipherKey;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyNotExists;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
@@ -32,10 +32,10 @@ final class DropApiKeyCredentialCipherKeysOnIdentityErasedTest extends AbstractI
     {
         // Given
         $hasher = new FakeApiKeyHasher();
-        $other = ApiKeyCredentialBuilder::new()->withHasher($hasher)->create();
+        $other = ApiKeyCredentialFactory::new()->withHasher($hasher)->create();
 
-        $identityId = ApiKeyCredentialBuilder::sample('identityId');
-        $credential = ApiKeyCredentialBuilder::new()->withIdentityId($identityId)->withHasher($hasher)->create();
+        $identityId = Uuid::uuid7()->toString();
+        $credential = ApiKeyCredentialFactory::new()->withIdentityId($identityId)->withHasher($hasher)->create();
         $this->store($other, $credential);
 
         $now = Clock::get()->now();

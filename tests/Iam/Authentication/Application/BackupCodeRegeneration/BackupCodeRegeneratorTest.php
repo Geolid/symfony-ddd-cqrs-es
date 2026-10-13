@@ -8,9 +8,12 @@ use Iam\Authentication\Application\BackupCodeRegeneration\BackupCodeRegeneratorI
 use Iam\Authentication\Application\BackupCodeRegeneration\Exception\BackupCodeCredentialNotGeneratedException;
 use Iam\Authentication\Application\CredentialVerification\BackupCodeCredentialVerifierInterface;
 use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeHasherInterface;
-use Iam\Tests\Authentication\Support\Builder\BackupCodeCredentialBuilder;
+use Iam\Tests\Authentication\Support\Factory\BackupCodeCredentialFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
+
+use function Zenstruck\Foundry\faker;
 
 final class BackupCodeRegeneratorTest extends AbstractIntegrationTestCase
 {
@@ -31,19 +34,19 @@ final class BackupCodeRegeneratorTest extends AbstractIntegrationTestCase
     public function itRegenerates(): void
     {
         // Given
-        $builder = BackupCodeCredentialBuilder::new()->withBackupCodeHasher($this->backupCodeHasher);
-        $credential = $builder->create();
+        $plainBackupCodes = faker()->backupCodes();
+        $credential = BackupCodeCredentialFactory::new()->withPlainBackupCodes($plainBackupCodes)->withBackupCodeHasher($this->backupCodeHasher)->create();
         $this->store($credential);
 
         // When
-        $newBackupCodes = $this->regenerator->regenerateFor($builder['identityId']);
+        $newBackupCodes = $this->regenerator->regenerateFor($credential->identityId);
 
         // Then
         $backupCodeCount = self::getContainer()->getParameter('iam.authentication.backup_code_count');
         self::assertIsInt($backupCodeCount);
         self::assertCount($backupCodeCount, $newBackupCodes);
-        self::assertFalse($this->verifier->verify($builder['identityId'], $builder['plainBackupCodes'][0]));
-        self::assertTrue($this->verifier->verify($builder['identityId'], $newBackupCodes[0]));
+        self::assertFalse($this->verifier->verify($credential->identityId, $plainBackupCodes[0]));
+        self::assertTrue($this->verifier->verify($credential->identityId, $newBackupCodes[0]));
     }
 
     #[Test]
@@ -53,6 +56,6 @@ final class BackupCodeRegeneratorTest extends AbstractIntegrationTestCase
         $this->expectException(BackupCodeCredentialNotGeneratedException::class);
 
         // When
-        $this->regenerator->regenerateFor(BackupCodeCredentialBuilder::sample('identityId'));
+        $this->regenerator->regenerateFor(Uuid::uuid7()->toString());
     }
 }

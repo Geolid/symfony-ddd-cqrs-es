@@ -8,8 +8,10 @@ use Iam\Authentication\Application\CredentialVerification\PasswordCredentialVeri
 use Iam\Authentication\Application\Finder\PasswordCredential\PasswordCredentialFinderInterface;
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
-use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
+use Iam\Tests\Authentication\Support\Factory\PasswordCredentialFactory;
+use Iam\Tests\Authentication\Support\Factory\PasswordFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
@@ -34,14 +36,16 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itAccepts(): void
     {
         // Given
-        $builder = PasswordCredentialBuilder::new()
+        $password = PasswordFactory::new()->create()->value;
+        $credential = PasswordCredentialFactory::new()
+            ->withPassword($password)
             ->withPasswordStrength($this->passwordStrength)
-            ->withHasher($this->hasher);
-        $credential = $builder->create();
+            ->withHasher($this->hasher)
+            ->create();
         $this->store($credential);
 
         // When
-        $verified = $this->verifier->verify($builder['identityId'], $builder['password']->value);
+        $verified = $this->verifier->verify($credential->identityId, $password);
 
         // Then
         self::assertTrue($verified);
@@ -51,14 +55,14 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itRefuses(): void
     {
         // Given
-        $builder = PasswordCredentialBuilder::new()
+        $credential = PasswordCredentialFactory::new()
             ->withPasswordStrength($this->passwordStrength)
-            ->withHasher($this->hasher);
-        $credential = $builder->create();
+            ->withHasher($this->hasher)
+            ->create();
         $this->store($credential);
 
         // When
-        $verified = $this->verifier->verify($builder['identityId'], 'WrongPassword456!');
+        $verified = $this->verifier->verify($credential->identityId, 'WrongPassword456!');
 
         // Then
         self::assertFalse($verified);
@@ -69,8 +73,8 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
     {
         // When
         $verified = $this->verifier->verify(
-            PasswordCredentialBuilder::sample('identityId'),
-            PasswordCredentialBuilder::sample('password')->value,
+            Uuid::uuid7()->toString(),
+            PasswordFactory::new()->create()->value,
         );
 
         // Then

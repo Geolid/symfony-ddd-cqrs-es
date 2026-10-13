@@ -8,11 +8,11 @@ use Iam\Authentication\Application\ApiKeyIssuance\ApiKeyIssuerInterface;
 use Iam\Authentication\Application\AuthenticationUniqueKey;
 use Iam\Authentication\Application\Command\IssueApiKey\Exception\ApiKeyCredentialLabelAlreadyInUseException;
 use Iam\Authentication\Application\Finder\ApiKeyCredential\ApiKeyCredentialFinderInterface;
-use Iam\Tests\Authentication\Support\Builder\ApiKeyCredentialBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
+use Shared\Tests\Support\Factory\LabelFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ApiKeyIssuerTest extends AbstractIntegrationTestCase
@@ -30,8 +30,8 @@ final class ApiKeyIssuerTest extends AbstractIntegrationTestCase
     public function itIssues(): void
     {
         // Given
-        $identityId = ApiKeyCredentialBuilder::sample('identityId');
-        $label = ApiKeyCredentialBuilder::sample('label')->value;
+        $identityId = Uuid::uuid7()->toString();
+        $label = LabelFactory::new()->create()->value;
 
         // When
         $apiKey = $this->issuer->issueFor($identityId, $label);
@@ -49,9 +49,9 @@ final class ApiKeyIssuerTest extends AbstractIntegrationTestCase
     public function itFailsWhenLabelAlreadyInUse(): void
     {
         // Given
-        $identityId = ApiKeyCredentialBuilder::sample('identityId');
+        $identityId = Uuid::uuid7()->toString();
 
-        $label = ApiKeyCredentialBuilder::sample('label')->value;
+        $label = LabelFactory::new()->create()->value;
         $this->service(UniquenessRegistryInterface::class)->claim(
             UniqueKey::for(AuthenticationUniqueKey::API_KEY_CREDENTIAL_LABEL, $identityId),
             $label,

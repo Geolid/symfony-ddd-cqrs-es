@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\ForgotPassword;
 
-use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Support\Story\PasswordResetRequestedAccountStory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\ForgotPassword\Component\ResetForm;
@@ -147,8 +146,8 @@ final class ResetTest extends AbstractStorefrontTestCase
         $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $account->id]);
 
         // When
-        $browser->use(function (ResetForm $reset): void {
-            $reset->fillCode($this->verificationCode())->fillNewPassword(PasswordCredentialBuilder::sample('password')->value)->submit();
+        $browser->use(function (ResetForm $reset) use ($account): void {
+            $reset->fillCode($this->verificationCode())->fillNewPassword($account->password())->submit();
         });
 
         // Then

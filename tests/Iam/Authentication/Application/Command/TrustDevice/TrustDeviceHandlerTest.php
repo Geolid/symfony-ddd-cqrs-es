@@ -6,10 +6,11 @@ namespace Iam\Tests\Authentication\Application\Command\TrustDevice;
 
 use Iam\Authentication\Application\Command\TrustDevice\TrustDevice;
 use Iam\Authentication\Application\Finder\TrustedDevice\TrustedDeviceFinderInterface;
-use Iam\Tests\Authentication\Support\Builder\TrustedDeviceBuilder;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
+
+use function Zenstruck\Foundry\faker;
 
 final class TrustDeviceHandlerTest extends AbstractIntegrationTestCase
 {
@@ -18,9 +19,9 @@ final class TrustDeviceHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $id = Uuid::uuid7()->toString();
-        $identityId = TrustedDeviceBuilder::sample('identityId');
-        $userAgent = TrustedDeviceBuilder::sample('userAgent');
-        $ip = TrustedDeviceBuilder::sample('ip');
+        $identityId = Uuid::uuid7()->toString();
+        $userAgent = faker()->userAgent();
+        $ip = faker()->ipv4();
 
         // When
         $this->dispatch(new TrustDevice($id, $identityId, $userAgent, $ip));

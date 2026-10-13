@@ -6,11 +6,13 @@ namespace Iam\Tests\Authentication\Infrastructure\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
 use Iam\Authentication\Infrastructure\Projection\Projector\DbalBackupCodeCredentialProjector;
-use Iam\Tests\Authentication\Support\Builder\BackupCodeCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakeBackupCodeHasher;
+use Iam\Tests\Authentication\Support\Factory\BackupCodeCredentialFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
+
+use function Zenstruck\Foundry\faker;
 
 /**
  * @phpstan-type Row array{generated_at: string, regenerated_at: string|null, remaining_count: int}
@@ -32,78 +34,77 @@ final class DbalBackupCodeCredentialProjectorTest extends AbstractIntegrationTes
     public function itProjectsOnBackupCodeCredentialGenerated(): void
     {
         // Given
-        $builder = BackupCodeCredentialBuilder::new()->withBackupCodeHasher($this->backupCodeHasher);
-        $credential = $builder->create();
+        $plainBackupCodes = faker()->backupCodes();
+        $credential = BackupCodeCredentialFactory::new()->withPlainBackupCodes($plainBackupCodes)->withBackupCodeHasher($this->backupCodeHasher)->create();
 
         // When
         $this->store($credential);
 
         // Then
-        $row = $this->fetchRow($builder['identityId']);
+        $row = $this->fetchRow($credential->identityId);
         self::assertNotFalse($row);
-        self::assertSame($builder['generatedAt']->format(self::DATE_FORMAT), $row['generated_at']);
+        self::assertSame($credential->generatedAt->format(self::DATE_FORMAT), $row['generated_at']);
         self::assertNull($row['regenerated_at']);
-        self::assertSame(\count($builder['plainBackupCodes']), (int) $row['remaining_count']);
+        self::assertSame(\count($plainBackupCodes), (int) $row['remaining_count']);
     }
 
     #[Test]
     public function itProjectsOnBackupCodeCredentialRegenerated(): void
     {
         // Given
-        $otherBuilder = BackupCodeCredentialBuilder::new()->withBackupCodeHasher($this->backupCodeHasher);
-        $other = $otherBuilder->create();
+        $otherPlainBackupCodes = faker()->backupCodes();
+        $other = BackupCodeCredentialFactory::new()->withPlainBackupCodes($otherPlainBackupCodes)->withBackupCodeHasher($this->backupCodeHasher)->create();
 
-        $builder = BackupCodeCredentialBuilder::new()->withBackupCodeHasher($this->backupCodeHasher)->regenerated();
-        $credential = $builder->create();
+        $regeneratedBackupCodes = faker()->backupCodes();
+        $credential = BackupCodeCredentialFactory::new()->withBackupCodeHasher($this->backupCodeHasher)->regenerated($regeneratedBackupCodes)->create();
 
         // When
         $this->store($other, $credential);
 
         // Then
-        $row = $this->fetchRow($builder['identityId']);
+        $row = $this->fetchRow($credential->identityId);
         self::assertNotFalse($row);
-        self::assertSame($builder['regeneratedAt']->format(self::DATE_FORMAT), $row['regenerated_at']);
-        self::assertSame(\count($builder['regeneratedBackupCodes']), (int) $row['remaining_count']);
+        self::assertSame($credential->regeneratedAt?->format(self::DATE_FORMAT), $row['regenerated_at']);
+        self::assertSame(\count($regeneratedBackupCodes), (int) $row['remaining_count']);
 
-        $otherRow = $this->fetchRow($otherBuilder['identityId']);
+        $otherRow = $this->fetchRow($other->identityId);
         self::assertNotFalse($otherRow);
         self::assertNull($otherRow['regenerated_at']);
-        self::assertSame(\count($otherBuilder['plainBackupCodes']), (int) $otherRow['remaining_count']);
+        self::assertSame(\count($otherPlainBackupCodes), (int) $otherRow['remaining_count']);
     }
 
     #[Test]
     public function itProjectsOnBackupCodeCredentialConsumed(): void
     {
         // Given
-        $otherBuilder = BackupCodeCredentialBuilder::new()->withBackupCodeHasher($this->backupCodeHasher);
-        $other = $otherBuilder->create();
+        $otherPlainBackupCodes = faker()->backupCodes();
+        $other = BackupCodeCredentialFactory::new()->withPlainBackupCodes($otherPlainBackupCodes)->withBackupCodeHasher($this->backupCodeHasher)->create();
+        $plainBackupCodes = faker()->backupCodes();
 
-        $builder = BackupCodeCredentialBuilder::new()->withBackupCodeHasher($this->backupCodeHasher)->consumed();
-        $credential = $builder->create();
+        $credential = BackupCodeCredentialFactory::new()->withPlainBackupCodes($plainBackupCodes)->withBackupCodeHasher($this->backupCodeHasher)->consumed()->create();
 
         // When
         $this->store($other, $credential);
 
         // Then
-        $row = $this->fetchRow($builder['identityId']);
+        $row = $this->fetchRow($credential->identityId);
         self::assertNotFalse($row);
-        self::assertSame(\count($builder['plainBackupCodes']) - 1, (int) $row['remaining_count']);
+        self::assertSame(\count($plainBackupCodes) - 1, (int) $row['remaining_count']);
 
-        $otherRow = $this->fetchRow($otherBuilder['identityId']);
+        $otherRow = $this->fetchRow($other->identityId);
         self::assertNotFalse($otherRow);
-        self::assertSame(\count($otherBuilder['plainBackupCodes']), (int) $otherRow['remaining_count']);
+        self::assertSame(\count($otherPlainBackupCodes), (int) $otherRow['remaining_count']);
     }
 
     #[Test]
     public function itRemovesOnIdentityErasedIntegrationEvent(): void
     {
         // Given
-        $otherBuilder = BackupCodeCredentialBuilder::new()->withBackupCodeHasher($this->backupCodeHasher);
-        $other = $otherBuilder->create();
+        $other = BackupCodeCredentialFactory::new()->withBackupCodeHasher($this->backupCodeHasher)->create();
         $this->store($other);
 
         $identity = IdentityFactory::new()->erasureRequested()->erased()->create();
-        $credential = BackupCodeCredentialBuilder::new()
+        $credential = BackupCodeCredentialFactory::new()
             ->withIdentityId($identity->id->toString())
             ->withBackupCodeHasher($this->backupCodeHasher)
             ->create();
@@ -113,7 +114,7 @@ final class DbalBackupCodeCredentialProjectorTest extends AbstractIntegrationTes
 
         // Then
         self::assertFalse($this->fetchRow($identity->id->toString()));
-        self::assertNotFalse($this->fetchRow($otherBuilder['identityId']));
+        self::assertNotFalse($this->fetchRow($other->identityId));
     }
 
     /**

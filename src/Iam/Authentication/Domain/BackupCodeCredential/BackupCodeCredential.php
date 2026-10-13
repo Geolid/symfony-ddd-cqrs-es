@@ -25,8 +25,11 @@ final class BackupCodeCredential implements AggregateRoot, AggregateRootMetadata
 
     #[Id]
     public private(set) BackupCodeCredentialId $id;
+    public private(set) string $identityId;
     /** @var list<BackupCode> */
-    private array $backupCodes;
+    public private(set) array $backupCodes;
+    public private(set) \DateTimeImmutable $generatedAt;
+    public private(set) ?\DateTimeImmutable $regeneratedAt = null;
 
     /**
      * @param list<non-empty-string> $plainBackupCodes
@@ -94,13 +97,16 @@ final class BackupCodeCredential implements AggregateRoot, AggregateRootMetadata
     private function applyGenerated(BackupCodeCredentialGenerated $event): void
     {
         $this->id = $event->id;
+        $this->identityId = $event->identityId;
         $this->backupCodes = $event->backupCodes;
+        $this->generatedAt = $event->generatedAt;
     }
 
     #[Apply]
     private function applyRegenerated(BackupCodeCredentialRegenerated $event): void
     {
         $this->backupCodes = $event->backupCodes;
+        $this->regeneratedAt = $event->regeneratedAt;
     }
 
     #[Apply]

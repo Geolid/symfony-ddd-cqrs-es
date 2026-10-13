@@ -7,8 +7,9 @@ namespace Iam\Tests\Authentication\Infrastructure\Projection\Finder;
 use Iam\Authentication\Application\Finder\TrustedDevice\TrustedDeviceFinderInterface;
 use Iam\Authentication\Application\Finder\TrustedDevice\TrustedDeviceResult;
 use Iam\Authentication\Domain\TrustedDevice\TrustedDevice;
-use Iam\Tests\Authentication\Support\Builder\TrustedDeviceBuilder;
+use Iam\Tests\Authentication\Support\Factory\TrustedDeviceFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -21,23 +22,22 @@ final class DbalTrustedDeviceFinderTest extends AbstractIterableFinderTestCase
     public function itFiltersActiveByIdentity(): void
     {
         // Given
-        $builder = TrustedDeviceBuilder::new();
-        $trustedDevice = $builder->create();
+        $trustedDevice = TrustedDeviceFactory::new()->create();
 
-        $other = TrustedDeviceBuilder::new()->create();
-        $revoked = TrustedDeviceBuilder::new()->withIdentityId($builder['identityId'])->revoked()->create();
+        $other = TrustedDeviceFactory::new()->create();
+        $revoked = TrustedDeviceFactory::new()->withIdentityId($trustedDevice->identityId)->revoked()->create();
 
         $this->store($other, $revoked, $trustedDevice);
 
         // When
-        $results = iterator_to_array($this->finder()->activeByIdentity($builder['identityId']));
+        $results = iterator_to_array($this->finder()->activeByIdentity($trustedDevice->identityId));
 
         // Then
         self::assertCount(1, $results);
         self::assertSame($trustedDevice->id->toString(), $results[0]->id);
-        self::assertSame($builder['identityId'], $results[0]->identityId);
-        self::assertSame($builder['userAgent'], $results[0]->userAgent);
-        self::assertSame($builder['ip'], $results[0]->ip);
+        self::assertSame($trustedDevice->identityId, $results[0]->identityId);
+        self::assertSame($trustedDevice->userAgent, $results[0]->userAgent);
+        self::assertSame($trustedDevice->ip, $results[0]->ip);
     }
 
     #[Test]
@@ -48,14 +48,14 @@ final class DbalTrustedDeviceFinderTest extends AbstractIterableFinderTestCase
         self::assertIsInt($lifetime);
 
         $now = Clock::get()->now();
-        $identityId = TrustedDeviceBuilder::sample('identityId');
+        $identityId = Uuid::uuid7()->toString();
 
-        $expired = TrustedDeviceBuilder::new()
+        $expired = TrustedDeviceFactory::new()
             ->withIdentityId($identityId)
             ->withTrustedAt($now->modify(\sprintf('-%d seconds', $lifetime + 1)))
             ->create();
 
-        $stillActive = TrustedDeviceBuilder::new()
+        $stillActive = TrustedDeviceFactory::new()
             ->withIdentityId($identityId)
             ->withTrustedAt($now->modify(\sprintf('-%d seconds', $lifetime)))
             ->create();
@@ -80,7 +80,7 @@ final class DbalTrustedDeviceFinderTest extends AbstractIterableFinderTestCase
      */
     protected function seed(int $count): array
     {
-        $trustedDevices = TrustedDeviceBuilder::new()->many($count)->create();
+        $trustedDevices = TrustedDeviceFactory::new()->many($count)->create();
         $this->store(...$trustedDevices);
 
         return array_reverse(array_map(
