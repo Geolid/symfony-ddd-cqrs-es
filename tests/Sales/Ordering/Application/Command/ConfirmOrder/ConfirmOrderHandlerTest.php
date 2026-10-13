@@ -15,6 +15,7 @@ use Sales\Tests\Ordering\Support\Factory\OrderIdFactory;
 use Sales\Tests\Ordering\Support\Factory\OrderItemFactory;
 use Sales\Tests\Ordering\Support\PostalAddressResultMapper;
 use Shared\Application\Mapper\PostalAddressMapper;
+use Shared\Domain\ValueObject\Currency;
 use Shared\Tests\Support\Factory\PostalAddressFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -37,6 +38,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
         $customerId = Uuid::uuid7()->toString();
         $checkoutSessionId = Uuid::uuid7()->toString();
         $item = OrderItemFactory::new()->create();
+        $currency = Currency::EUR;
         $shippingAddress = PostalAddressMapper::toArray(PostalAddressFactory::new()->create());
 
         // When
@@ -46,7 +48,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
             customerId: $customerId,
             checkoutSessionId: $checkoutSessionId,
             lines: [OrderItemMapper::toArray($item)],
-            currency: $item->taxAmount->currency->value,
+            currency: $currency->value,
             shippingAddress: $shippingAddress,
         ));
 
@@ -61,7 +63,7 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($item->taxedTotal()->excludingTax->cents, $result->totalExcludingTaxInCents);
         self::assertSame($item->taxedTotal()->taxAmount->cents, $result->totalTaxAmountInCents);
         self::assertSame($item->taxedTotal()->includingTax->cents, $result->totalIncludingTaxInCents);
-        self::assertSame($item->taxAmount->currency->value, $result->currency);
+        self::assertSame($currency->value, $result->currency);
         self::assertSame(OrderStatus::CONFIRMED, $result->status);
     }
 

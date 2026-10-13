@@ -14,6 +14,7 @@ use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Sales\Tests\Ordering\Support\Factory\OrderItemFactory;
 use Sales\Tests\Ordering\Support\PostalAddressResultMapper;
 use Shared\Application\Mapper\PostalAddressMapper;
+use Shared\Domain\ValueObject\Currency;
 use Shared\Tests\Support\Factory\PostalAddressFactory;
 use Shopping\Checkout\Application\IntegrationEvent\CheckoutSessionCompleted\CheckoutSessionCompletedIntegrationEvent;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -31,6 +32,7 @@ final class ConfirmOrderOnCheckoutSessionCompletedTest extends AbstractIntegrati
         $shippingAddress = PostalAddressMapper::toArray(PostalAddressFactory::new()->create());
         $billingAddress = PostalAddressMapper::toArray(PostalAddressFactory::new()->create());
         $item = OrderItemFactory::new()->create();
+        $currency = Currency::EUR;
 
         // When
         $this->trigger(ConfirmOrderOnCheckoutSessionCompleted::class, new CheckoutSessionCompletedIntegrationEvent(
@@ -38,7 +40,7 @@ final class ConfirmOrderOnCheckoutSessionCompletedTest extends AbstractIntegrati
             cartId: $cartId,
             customerId: $customerId,
             items: [OrderItemMapper::toArray($item)],
-            currency: $item->taxAmount->currency->value,
+            currency: $currency->value,
             shippingAddress: $shippingAddress,
             billingAddress: $billingAddress,
             paymentId: Uuid::uuid7()->toString(),

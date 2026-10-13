@@ -12,6 +12,8 @@ use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shared\Domain\ValueObject\Quantity;
+use Shared\Tests\Support\Factory\AddressFactory;
+use Shared\Tests\Support\Factory\PostalAddressFactory;
 use Shopping\Checkout\Application\CheckoutSessionOpening\CheckoutSessionOpener;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerAddressesNotCompletedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerErasureRequestedException;
@@ -25,7 +27,6 @@ use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductFinderInterf
 use Shopping\Checkout\Application\Tax\TaxRateResolverInterface;
 use Shopping\Checkout\Domain\Event\CheckoutSessionOpened;
 use Shopping\Tests\Cart\Support\Factory\CartFactory;
-use Shopping\Tests\Checkout\Support\Factory\CheckoutItemFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -56,16 +57,17 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
         // Given
         $catalogProduct = ProductFactory::new()->withUnitPriceInCents(5_002)->create();
         $secondCatalogProduct = ProductFactory::new()->withUnitPriceInCents(5_003)->create();
+        $shippingAddress = PostalAddressFactory::new()->withAddress(AddressFactory::new()->withCountryCode('FR')->create())->create();
         $customer = CustomerFactory::new()
-            ->shippingAddressDefined()
+            ->shippingAddressDefined($shippingAddress)
             ->billingAddressDefined()
             ->create();
         $cart = CartFactory::new()->withCustomerId($customer->id->toString())->productAdded(
             productId: $catalogProduct->id->toString(),
-            quantity: $quantity = Quantity::of(1),
+            quantity: Quantity::of(1),
         )->productAdded(
             productId: $secondCatalogProduct->id->toString(),
-            quantity: $secondQuantity = Quantity::of(1),
+            quantity: Quantity::of(1),
         )->create();
         $this->store($cart, $catalogProduct, $secondCatalogProduct, $customer);
 
@@ -73,14 +75,10 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
         $result = $this->service->openFor($cart->id->toString());
 
         // Then
+        self::assertSame(10_005, $result->total->excludingTax->cents);
+        self::assertSame(2_001, $result->total->taxAmount->cents);
+        self::assertSame(12_006, $result->total->includingTax->cents);
         self::assertNotNull($customer->shippingAddress);
-        $taxRate = $this->taxRateResolver->resolve($customer->shippingAddress->address->countryCode);
-        $item = CheckoutItemFactory::new()->withUnitPrice($catalogProduct->unitPrice)->withQuantity($quantity)->withTaxRate($taxRate)->create();
-        $secondItem = CheckoutItemFactory::new()->withUnitPrice($secondCatalogProduct->unitPrice)->withQuantity($secondQuantity)->withTaxRate($taxRate)->create();
-        $expectedTotal = $item->taxedTotal()->plus($secondItem->taxedTotal());
-        self::assertSame($expectedTotal->excludingTax->cents, $result->total->excludingTax->cents);
-        self::assertSame($expectedTotal->taxAmount->cents, $result->total->taxAmount->cents);
-        self::assertSame($expectedTotal->includingTax->cents, $result->total->includingTax->cents);
         self::assertSame(PostalAddressMapper::toArray($customer->shippingAddress), PostalAddressMapper::toArray($result->shippingAddress));
         self::assertNotNull($customer->billingAddress);
         self::assertSame(PostalAddressMapper::toArray($customer->billingAddress), PostalAddressMapper::toArray($result->billingAddress));
