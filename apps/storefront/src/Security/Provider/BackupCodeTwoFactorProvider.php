@@ -6,6 +6,7 @@ namespace Storefront\Security\Provider;
 
 use Iam\Authentication\Application\CredentialVerification\BackupCodeCredentialVerifierInterface;
 use Iam\Authentication\Application\Query\GetBackupCodeCredentialByIdentity\GetBackupCodeCredentialByIdentity;
+use Iam\Authentication\Application\Query\GetTotpCredentialByIdentity\GetTotpCredentialByIdentity;
 use Scheb\TwoFactorBundle\Security\TwoFactor\AuthenticationContextInterface;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\DefaultTwoFactorFormRenderer;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\TwoFactorFormRendererInterface;
@@ -39,6 +40,7 @@ final readonly class BackupCodeTwoFactorProvider implements TwoFactorProviderInt
         $user = $context->getUser();
 
         return $user instanceof PasswordUser
+            && null !== $this->queryBus->ask(new GetTotpCredentialByIdentity($user->identityId()))
             && null !== $this->queryBus->ask(new GetBackupCodeCredentialByIdentity($user->identityId()));
     }
 

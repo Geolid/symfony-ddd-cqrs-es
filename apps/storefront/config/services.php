@@ -12,4 +12,10 @@ return static function (ContainerConfigurator $container): void {
     $container->services()
         ->defaults()->autowire()->autoconfigure()
         ->load('Ui\\', '%kernel.project_dir%/ui/src/');
+
+    if ('test' === $container->env()) {
+        $container->services()
+            ->defaults()->autowire()->autoconfigure()
+            ->load('Storefront\\Tests\\Support\\Story\\', '%kernel.project_dir%/apps/storefront/tests/Support/Story/*Story.php');
+    }
 };

@@ -11,6 +11,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Feature\Registration\Component\RegisterForm;
 use Storefront\Tests\Feature\SignIn\Component\IdentifyForm;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
+use Storefront\Tests\Support\Story\ConfirmedStory;
+use Zenstruck\Foundry\Attribute\WithStory;
 
 final class RegisterTest extends AbstractStorefrontTestCase
 {
@@ -71,22 +73,18 @@ final class RegisterTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    #[WithStory(ConfirmedStory::class)]
     public function itRefusesWhenEmailAlreadyRegistered(): void
     {
         // Given
+        $persona = ConfirmedStory::persona();
         $browser = $this->activeBrowser();
-        $email = EmailFactory::new()->create()->value;
         $fullName = FullNameFactory::new()->create()->value;
         $password = PasswordFactory::new()->create()->value;
 
         $browser->visitRoute('storefront_signin_identify');
-        $browser->use(static function (IdentifyForm $identify) use ($email): void {
-            $identify->fillEmail($email)->submit();
-        });
-        $browser->click('[data-testid="create-account-button"]');
-
-        $browser->use(static function (RegisterForm $register) use ($fullName, $password): void {
-            $register->fillFullName($fullName)->fillPassword($password)->submit();
+        $browser->use(static function (IdentifyForm $identify) use ($persona): void {
+            $identify->fillEmail($persona->email)->submit();
         });
 
         // When
