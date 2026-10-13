@@ -103,6 +103,7 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
         $persona = TwoFactorStory::persona();
         $backupCode = TwoFactorStory::getRandom('backupCodes');
         \assert(\is_string($backupCode));
+
         $browser = $this->activeBrowser();
         $browser->signInAs($persona->email, $persona->password());
 
@@ -124,6 +125,7 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
         $persona = TwoFactorStory::persona();
         $usedBackupCode = TwoFactorStory::getRandom('usedBackupCodes');
         \assert(\is_string($usedBackupCode));
+
         $browser = $this->activeBrowser();
         $browser->signInAs($persona->email, $persona->password());
 
@@ -147,6 +149,7 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
 
         $browser->completeTwoFactorChallenge($browser->totpCode($persona->totpSecret()), trustDevice: true);
         $browser->signOut();
+
         $browser->visitRoute('storefront_signin_identify');
         $browser->use(static function (IdentifyForm $identify) use ($persona): void {
             $identify->fillEmail($persona->email)->submit();

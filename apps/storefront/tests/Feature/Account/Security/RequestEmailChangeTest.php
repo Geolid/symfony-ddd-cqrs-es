@@ -62,6 +62,7 @@ final class RequestEmailChangeTest extends AbstractStorefrontTestCase
         // Given
         $persona = ConfirmedStory::persona();
         $otherEmail = OtherConfirmedStory::persona()->email;
+
         $browser = $this->activeBrowser();
         $browser->signInAs($persona->email, $persona->password());
 
