@@ -135,6 +135,26 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
 
     #[Test]
     #[WithStory(TwoFactorStory::class)]
+    public function itRefusesUsedBackupCode(): void
+    {
+        // Given
+        $persona = TwoFactorStory::persona();
+        $usedBackupCode = TwoFactorStory::getRandom('usedBackupCodes');
+        \assert(\is_string($usedBackupCode));
+        $browser = $this->activeBrowser();
+        $browser->signInAs($persona->email, $persona->password());
+
+        $browser->visitRoute('storefront_two_factor_challenge', ['preferProvider' => 'backup_code']);
+
+        // When
+        $browser->completeTwoFactorChallenge($usedBackupCode);
+
+        // Then
+        $browser->assertSeeElement('[data-testid="two-factor-error"]');
+    }
+
+    #[Test]
+    #[WithStory(TwoFactorStory::class)]
     public function itRefusesAfterTooManyAttempts(): void
     {
         // Given
