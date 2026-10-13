@@ -7,7 +7,7 @@ namespace Crm\Tests\Customer\Application\Policy;
 use Compliance\Erasing\Application\IntegrationEvent\ErasureApproved\ErasureApprovedIntegrationEvent;
 use Crm\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Crm\Customer\Application\Policy\EraseCustomerOnErasureApproved;
-use Crm\Tests\Customer\Support\Builder\CustomerBuilder;
+use Crm\Tests\Customer\Support\Factory\CustomerFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -19,12 +19,12 @@ final class EraseCustomerOnErasureApprovedTest extends AbstractIntegrationTestCa
     public function itErases(): void
     {
         // Given
-        $builder = CustomerBuilder::new()->erasureRequested();
-        $customer = $builder->create();
+        $identityId = Uuid::uuid7()->toString();
+        $customer = CustomerFactory::new()->withIdentityId($identityId)->erasureRequested()->create();
         $this->store($customer);
 
         // When
-        $this->trigger(EraseCustomerOnErasureApproved::class, new ErasureApprovedIntegrationEvent($builder['identityId'], Clock::get()->now()));
+        $this->trigger(EraseCustomerOnErasureApproved::class, new ErasureApprovedIntegrationEvent($identityId, Clock::get()->now()));
 
         // Then
         self::assertNull($this->service(CustomerFinderInterface::class)->ofIdOrNull($customer->id->toString()));

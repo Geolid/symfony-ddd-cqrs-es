@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Crm\Tests\Customer\Infrastructure\Projection\Finder;
 
 use Crm\Customer\Application\Finder\Customer\CustomerFinderInterface;
-use Crm\Tests\Customer\Support\Builder\CustomerBuilder;
+use Crm\Tests\Customer\Support\Factory\CustomerFactory;
 use Crm\Tests\Customer\Support\PostalAddressResultMapper;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -28,9 +28,8 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
     public function itFinds(): void
     {
         // Given
-        $other = CustomerBuilder::new()->create();
-        $builder = CustomerBuilder::new()->shippingAddressDefined()->billingAddressDefined();
-        $customer = $builder->create();
+        $other = CustomerFactory::new()->create();
+        $customer = CustomerFactory::new()->shippingAddressDefined()->billingAddressDefined()->create();
         $this->store($other, $customer);
 
         // When
@@ -41,13 +40,15 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
         self::assertNotNull($found);
         self::assertSame($customer->id->toString(), $found->id);
         self::assertSame(
-            $builder['registeredAt']->format(\DateTimeInterface::ATOM),
+            $customer->registeredAt->format(\DateTimeInterface::ATOM),
             $found->registeredAt->format(\DateTimeInterface::ATOM),
         );
         self::assertNotNull($found->shippingAddress);
-        self::assertSame(PostalAddressMapper::toArray($builder['shippingAddress']), PostalAddressResultMapper::toArray($found->shippingAddress));
+        \assert(null !== $customer->shippingAddress);
+        self::assertSame(PostalAddressMapper::toArray($customer->shippingAddress), PostalAddressResultMapper::toArray($found->shippingAddress));
         self::assertNotNull($found->billingAddress);
-        self::assertSame(PostalAddressMapper::toArray($builder['billingAddress']), PostalAddressResultMapper::toArray($found->billingAddress));
+        \assert(null !== $customer->billingAddress);
+        self::assertSame(PostalAddressMapper::toArray($customer->billingAddress), PostalAddressResultMapper::toArray($found->billingAddress));
         self::assertSame(ErasureStatus::RETAINED, $found->erasureStatus);
         self::assertNull($notFound);
     }
@@ -56,7 +57,7 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
     public function itFindsWithNoAddress(): void
     {
         // Given
-        $customer = CustomerBuilder::new()->create();
+        $customer = CustomerFactory::new()->create();
         $this->store($customer);
 
         // When

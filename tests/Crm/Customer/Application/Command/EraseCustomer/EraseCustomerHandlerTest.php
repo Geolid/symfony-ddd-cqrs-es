@@ -7,7 +7,7 @@ namespace Crm\Tests\Customer\Application\Command\EraseCustomer;
 use Crm\Customer\Application\Command\EraseCustomer\EraseCustomer;
 use Crm\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Crm\Customer\Domain\Customer\Exception\CustomerNotFoundException;
-use Crm\Tests\Customer\Support\Builder\CustomerBuilder;
+use Crm\Tests\Customer\Support\Factory\CustomerFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -18,7 +18,7 @@ final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase
     public function itErases(): void
     {
         // Given
-        $customer = CustomerBuilder::new()->erasureRequested()->create();
+        $customer = CustomerFactory::new()->erasureRequested()->create();
         $this->store($customer);
 
         // When
@@ -32,7 +32,7 @@ final class EraseCustomerHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyErased(): void
     {
         // Given
-        $customer = CustomerBuilder::new()->erasureRequested()->erased()->create();
+        $customer = CustomerFactory::new()->erasureRequested()->erased()->create();
         $this->store($customer);
 
         // When

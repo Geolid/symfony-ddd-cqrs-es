@@ -7,7 +7,7 @@ namespace Crm\Tests\Customer\Application\Command\CancelCustomerErasure;
 use Crm\Customer\Application\Command\CancelCustomerErasure\CancelCustomerErasure;
 use Crm\Customer\Application\Finder\Customer\CustomerFinderInterface;
 use Crm\Customer\Domain\Customer\Exception\CustomerNotFoundException;
-use Crm\Tests\Customer\Support\Builder\CustomerBuilder;
+use Crm\Tests\Customer\Support\Factory\CustomerFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\ErasureStatus;
@@ -19,7 +19,7 @@ final class CancelCustomerErasureHandlerTest extends AbstractIntegrationTestCase
     public function itCancels(): void
     {
         // Given
-        $customer = CustomerBuilder::new()->erasureRequested()->create();
+        $customer = CustomerFactory::new()->erasureRequested()->create();
         $this->store($customer);
 
         // When

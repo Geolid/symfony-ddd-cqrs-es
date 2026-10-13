@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shopping\Tests\Checkout\Infrastructure\Projection\Projector;
 
-use Crm\Tests\Customer\Support\Builder\CustomerBuilder;
+use Crm\Tests\Customer\Support\Factory\CustomerFactory;
 use Doctrine\DBAL\Connection;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\ErasureStatus;
@@ -22,7 +22,7 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnCustomerRegistered(): void
     {
         // Given
-        $customer = CustomerBuilder::new()->create();
+        $customer = CustomerFactory::new()->create();
 
         // When
         $this->store($customer);
@@ -37,9 +37,9 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnCustomerErasureRequested(): void
     {
         // Given
-        $other = CustomerBuilder::new()->create();
+        $other = CustomerFactory::new()->create();
         $this->store($other);
-        $customer = CustomerBuilder::new()->erasureRequested()->create();
+        $customer = CustomerFactory::new()->erasureRequested()->create();
 
         // When
         $this->store($customer);
@@ -58,9 +58,9 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnCustomerErasureCancelled(): void
     {
         // Given
-        $other = CustomerBuilder::new()->erasureRequested()->create();
+        $other = CustomerFactory::new()->erasureRequested()->create();
         $this->store($other);
-        $customer = CustomerBuilder::new()->erasureRequested()->erasureCancelled()->create();
+        $customer = CustomerFactory::new()->erasureRequested()->erasureCancelled()->create();
 
         // When
         $this->store($customer);
@@ -79,11 +79,9 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnCustomerShippingAddressDefined(): void
     {
         // Given
-        $otherBuilder = CustomerBuilder::new()->shippingAddressDefined();
-        $other = $otherBuilder->create();
+        $other = CustomerFactory::new()->shippingAddressDefined()->create();
         $this->store($other);
-        $builder = CustomerBuilder::new()->shippingAddressDefined();
-        $customer = $builder->create();
+        $customer = CustomerFactory::new()->shippingAddressDefined()->create();
 
         // When
         $this->store($customer);
@@ -92,16 +90,18 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($customer->id->toString());
         self::assertNotFalse($row);
         self::assertNotNull($row['shipping_address']);
+        \assert(null !== $customer->shippingAddress);
         self::assertSame(
-            SnakeCaseKeys::from(PostalAddressMapper::toArray($builder['shippingAddress'])),
+            SnakeCaseKeys::from(PostalAddressMapper::toArray($customer->shippingAddress)),
             $this->decoded($row['shipping_address']),
         );
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertNotNull($otherRow['shipping_address']);
+        \assert(null !== $other->shippingAddress);
         self::assertSame(
-            SnakeCaseKeys::from(PostalAddressMapper::toArray($otherBuilder['shippingAddress'])),
+            SnakeCaseKeys::from(PostalAddressMapper::toArray($other->shippingAddress)),
             $this->decoded($otherRow['shipping_address']),
         );
     }
@@ -110,11 +110,9 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnCustomerBillingAddressDefined(): void
     {
         // Given
-        $otherBuilder = CustomerBuilder::new()->billingAddressDefined();
-        $other = $otherBuilder->create();
+        $other = CustomerFactory::new()->billingAddressDefined()->create();
         $this->store($other);
-        $builder = CustomerBuilder::new()->billingAddressDefined();
-        $customer = $builder->create();
+        $customer = CustomerFactory::new()->billingAddressDefined()->create();
 
         // When
         $this->store($customer);
@@ -123,16 +121,18 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($customer->id->toString());
         self::assertNotFalse($row);
         self::assertNotNull($row['billing_address']);
+        \assert(null !== $customer->billingAddress);
         self::assertSame(
-            SnakeCaseKeys::from(PostalAddressMapper::toArray($builder['billingAddress'])),
+            SnakeCaseKeys::from(PostalAddressMapper::toArray($customer->billingAddress)),
             $this->decoded($row['billing_address']),
         );
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertNotNull($otherRow['billing_address']);
+        \assert(null !== $other->billingAddress);
         self::assertSame(
-            SnakeCaseKeys::from(PostalAddressMapper::toArray($otherBuilder['billingAddress'])),
+            SnakeCaseKeys::from(PostalAddressMapper::toArray($other->billingAddress)),
             $this->decoded($otherRow['billing_address']),
         );
     }
@@ -141,9 +141,9 @@ final class DbalCustomerProjectorTest extends AbstractIntegrationTestCase
     public function itRemovesOnCustomerErased(): void
     {
         // Given
-        $other = CustomerBuilder::new()->create();
+        $other = CustomerFactory::new()->create();
         $this->store($other);
-        $customer = CustomerBuilder::new()->erasureRequested()->erased()->create();
+        $customer = CustomerFactory::new()->erasureRequested()->erased()->create();
 
         // When
         $this->store($customer);

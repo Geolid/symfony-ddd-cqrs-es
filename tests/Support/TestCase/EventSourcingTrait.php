@@ -58,6 +58,30 @@ trait EventSourcingTrait
     }
 
     /**
+     * The matching event as the event store returns it: decrypted while its subject's cipher key exists,
+     * replaced by its erasure fallback once the key is dropped.
+     *
+     * @template T of object
+     *
+     * @param class-string<T>   $eventClass
+     * @param callable(T): bool $matches
+     *
+     * @return T
+     */
+    protected function storedEventOf(string $eventClass, callable $matches): object
+    {
+        foreach ($this->service(Store::class)->load() as $message) {
+            $event = $message->event();
+
+            if ($event instanceof $eventClass && $matches($event)) {
+                return $event;
+            }
+        }
+
+        self::fail(\sprintf('%s event not found in the stream.', $eventClass));
+    }
+
+    /**
      * Serializes the matching event now, while its subject's cipher key still exists — the InMemoryStore
      * used in tests never round-trips events through the serializer, so crypto-shredding can't be
      * observed on it otherwise.

@@ -8,8 +8,7 @@ use Crm\Customer\Application\IntegrationEvent\CustomerBillingAddressDefined\Cust
 use Crm\Customer\Application\IntegrationEvent\CustomerShippingAddressDefined\CustomerShippingAddressDefinedIntegrationEvent;
 use Crm\Customer\Domain\Customer\Event\CustomerBillingAddressDefined;
 use Crm\Customer\Domain\Customer\Event\CustomerShippingAddressDefined;
-use Crm\Tests\Customer\Support\Builder\CustomerBuilder;
-use Patchlevel\EventSourcing\Serializer\EventSerializer;
+use Crm\Tests\Customer\Support\Factory\CustomerFactory;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Mapper\PostalAddressMapper;
@@ -21,98 +20,87 @@ final class CustomerPiiErasureTest extends AbstractIntegrationTestCase
 {
     private CipherKeyStore $cipherKeyStore;
 
-    private EventSerializer $serializer;
-
     protected function setUp(): void
     {
         parent::setUp();
 
         $this->cipherKeyStore = $this->service(CipherKeyStore::class);
-        $this->serializer = $this->service(EventSerializer::class);
     }
 
     #[Test]
     public function itCryptoShredsShippingAddressOnErasure(): void
     {
         // Given
-        $customer = CustomerBuilder::new()
+        $customer = CustomerFactory::new()
             ->shippingAddressDefined()
             ->create();
         $this->store($customer);
-        $serialized = $this->serializedEventOf(
+
+        // When
+        $this->cipherKeyStore->removeWithSubjectId($customer->id->toString());
+        $erased = $this->storedEventOf(
             CustomerShippingAddressDefined::class,
             static fn (CustomerShippingAddressDefined $event): bool => $event->id->equals($customer->id),
         );
 
-        // When
-        $this->cipherKeyStore->removeWithSubjectId($customer->id->toString());
-
         // Then
-        $rehydrated = $this->serializer->deserialize($serialized);
-        self::assertInstanceOf(CustomerShippingAddressDefined::class, $rehydrated);
-        self::assertSame($this->erasedPostalAddress(), PostalAddressMapper::toArray($rehydrated->postalAddress));
+        self::assertSame($this->erasedPostalAddress(), PostalAddressMapper::toArray($erased->postalAddress));
     }
 
     #[Test]
     public function itCryptoShredsBillingAddressOnErasure(): void
     {
         // Given
-        $customer = CustomerBuilder::new()
+        $customer = CustomerFactory::new()
             ->billingAddressDefined()
             ->create();
         $this->store($customer);
-        $serialized = $this->serializedEventOf(
+
+        // When
+        $this->cipherKeyStore->removeWithSubjectId($customer->id->toString());
+        $erased = $this->storedEventOf(
             CustomerBillingAddressDefined::class,
             static fn (CustomerBillingAddressDefined $event): bool => $event->id->equals($customer->id),
         );
 
-        // When
-        $this->cipherKeyStore->removeWithSubjectId($customer->id->toString());
-
         // Then
-        $rehydrated = $this->serializer->deserialize($serialized);
-        self::assertInstanceOf(CustomerBillingAddressDefined::class, $rehydrated);
-        self::assertSame($this->erasedPostalAddress(), PostalAddressMapper::toArray($rehydrated->postalAddress));
+        self::assertSame($this->erasedPostalAddress(), PostalAddressMapper::toArray($erased->postalAddress));
     }
 
     #[Test]
     public function itCryptoShredsCustomerShippingAddressDefinedIntegrationEventDataOnErasure(): void
     {
         // Given
-        $customer = CustomerBuilder::new()->shippingAddressDefined()->create();
+        $customer = CustomerFactory::new()->shippingAddressDefined()->create();
         $this->store($customer);
-        $serialized = $this->serializedEventOf(
+
+        // When
+        $this->cipherKeyStore->removeWithSubjectId($customer->id->toString());
+        $erased = $this->storedEventOf(
             CustomerShippingAddressDefinedIntegrationEvent::class,
             static fn (CustomerShippingAddressDefinedIntegrationEvent $event): bool => $event->customerId === $customer->id->toString(),
         );
 
-        // When
-        $this->cipherKeyStore->removeWithSubjectId($customer->id->toString());
-
         // Then
-        $rehydrated = $this->serializer->deserialize($serialized);
-        self::assertInstanceOf(CustomerShippingAddressDefinedIntegrationEvent::class, $rehydrated);
-        self::assertSame($this->erasedPostalAddress(), $rehydrated->postalAddress);
+        self::assertSame($this->erasedPostalAddress(), $erased->postalAddress);
     }
 
     #[Test]
     public function itCryptoShredsCustomerBillingAddressDefinedIntegrationEventDataOnErasure(): void
     {
         // Given
-        $customer = CustomerBuilder::new()->billingAddressDefined()->create();
+        $customer = CustomerFactory::new()->billingAddressDefined()->create();
         $this->store($customer);
-        $serialized = $this->serializedEventOf(
+
+        // When
+        $this->cipherKeyStore->removeWithSubjectId($customer->id->toString());
+        $erased = $this->storedEventOf(
             CustomerBillingAddressDefinedIntegrationEvent::class,
             static fn (CustomerBillingAddressDefinedIntegrationEvent $event): bool => $event->customerId === $customer->id->toString(),
         );
 
-        // When
-        $this->cipherKeyStore->removeWithSubjectId($customer->id->toString());
-
         // Then
-        $rehydrated = $this->serializer->deserialize($serialized);
-        self::assertInstanceOf(CustomerBillingAddressDefinedIntegrationEvent::class, $rehydrated);
-        self::assertSame($this->erasedPostalAddress(), $rehydrated->postalAddress);
+        self::assertSame($this->erasedPostalAddress(), $erased->postalAddress);
     }
 
     /**
