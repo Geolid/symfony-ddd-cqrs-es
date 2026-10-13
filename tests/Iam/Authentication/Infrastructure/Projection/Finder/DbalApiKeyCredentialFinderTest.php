@@ -112,8 +112,8 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIterableFinderTestCas
         $largerId = Uuid::uuid7($now->modify('+1 hour'))->toString();
 
         $hasher = new FakeApiKeyHasher();
-        $first = ApiKeyCredentialFactory::new()->withId(ApiKeyCredentialIdFactory::new(['id' => $largerId])->create())->withHasher($hasher)->withIssuedAt($now)->create();
-        $second = ApiKeyCredentialFactory::new()->withId(ApiKeyCredentialIdFactory::new(['id' => $smallerId])->create())->withHasher($hasher)->withIssuedAt($now->modify('+1 hour'))->create();
+        $first = ApiKeyCredentialFactory::new()->withId(ApiKeyCredentialIdFactory::new()->withId($largerId)->create())->withHasher($hasher)->withIssuedAt($now)->create();
+        $second = ApiKeyCredentialFactory::new()->withId(ApiKeyCredentialIdFactory::new()->withId($smallerId)->create())->withHasher($hasher)->withIssuedAt($now->modify('+1 hour'))->create();
         $this->store($first, $second);
 
         return [$largerId, $smallerId];

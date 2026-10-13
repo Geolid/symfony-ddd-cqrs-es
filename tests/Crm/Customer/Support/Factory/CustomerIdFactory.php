@@ -19,6 +19,11 @@ final class CustomerIdFactory extends ObjectFactory
         return CustomerId::class;
     }
 
+    public function withId(string $id): self
+    {
+        return $this->with(['id' => $id]);
+    }
+
     protected function initialize(): static
     {
         return $this->instantiateWith(Instantiator::namedConstructor('fromString'));
