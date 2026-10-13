@@ -69,10 +69,10 @@ final class TotpCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itRefusesWhenNotEnrolled(): void
     {
         // Given
-        $unknownIdentityId = Uuid::uuid7()->toString();
+        $identityId = Uuid::uuid7()->toString();
 
         // When
-        $verified = $this->credentialVerifier->verify($unknownIdentityId, '000000');
+        $verified = $this->credentialVerifier->verify($identityId, '000000');
 
         // Then
         self::assertFalse($verified);

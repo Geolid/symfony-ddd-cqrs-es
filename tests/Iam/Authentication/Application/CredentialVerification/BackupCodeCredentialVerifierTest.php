@@ -59,10 +59,10 @@ final class BackupCodeCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itRefusesWhenNotGenerated(): void
     {
         // Given
-        $unknownIdentityId = Uuid::uuid7()->toString();
+        $identityId = Uuid::uuid7()->toString();
 
         // When
-        $verified = $this->verifier->verify($unknownIdentityId, 'INVALIDCODE');
+        $verified = $this->verifier->verify($identityId, 'INVALIDCODE');
 
         // Then
         self::assertFalse($verified);

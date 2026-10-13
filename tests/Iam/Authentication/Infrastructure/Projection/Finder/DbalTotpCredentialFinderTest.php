@@ -98,10 +98,10 @@ final class DbalTotpCredentialFinderTest extends AbstractIntegrationTestCase
     public function itFindsNothingWhenNotEnrolled(): void
     {
         // Given
-        $unknownIdentityId = Uuid::uuid7()->toString();
+        $identityId = Uuid::uuid7()->toString();
 
         // When
-        $result = $this->finder->activeOfIdentityOrNull($unknownIdentityId);
+        $result = $this->finder->activeOfIdentityOrNull($identityId);
 
         // Then
         self::assertNull($result);

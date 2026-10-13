@@ -72,11 +72,11 @@ final class PasswordCredentialVerifierTest extends AbstractIntegrationTestCase
     public function itRefusesWhenCredentialMissing(): void
     {
         // Given
-        $unknownIdentityId = Uuid::uuid7()->toString();
+        $identityId = Uuid::uuid7()->toString();
 
         // When
         $verified = $this->verifier->verify(
-            $unknownIdentityId,
+            $identityId,
             PasswordFactory::new()->create()->value,
         );
 
