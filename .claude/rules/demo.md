@@ -8,13 +8,11 @@ paths:
 ### Rules
 
 **ALWAYS**
-- Seeder: `#[AsCommand('demo:<subdomain>:<subject>')] final readonly` invokable class, `demo/<Subdomain>/Seed<Subject>Command.php`. Auto-loaded (namespace `Demo\`, `demo` env) — the only registration is an entry in `demo/seeds.php`, in dependency order.
-- Data is built via the BC's own Builder + `Demo\Shared\WeightedPicker` (weighted status distribution), then persisted through the Repository directly (`$repository->save($aggregate)`) — the Command bus only where the use case enforces an invariant the aggregate cannot (reserving a unique value), otherwise the seeded data violates it. Input is a DTO with `#[MapInput]` on the parameter, properties tagged `#[Option]`.
-- Output: `progressStart`/`progressAdvance`/`progressFinish` plus a per-status count, summarized in a final `$io->success()`.
+- A demo scenario is a Foundry `Story` — `demo/Story/<Name>Story.php`, `final`, extending `Support\Foundry\Story\AbstractAggregateStory`, tagged `#[AsFixture(name: 'demo-<name>', groups: ['demo'])]`. Auto-loaded (namespace `Demo\Story\`, `demo` env), no further registration.
+- Data is built through the BC's own factories (aggregate and Value Object), then persisted through the Repository directly (`$this->persist(...)`) — the Command bus only where the use case enforces an invariant the aggregate cannot (reserving a unique value), otherwise the seeded data violates it.
 
 **NEVER**
 - Dispatch a Command whose only purpose is to make another BC react — persist through the Repository directly and let the real Domain Event fire; cross-BC fan-out (Policy, Processor, Reducer) then reacts exactly as it would outside a demo.
 
 ### Conventions
-- `demo/console` is a dedicated entrypoint hardcoding `new Kernel('demo', ...)`.
-- `demo/SeedCommand.php` (`demo:seed`) is the only orchestrator: it reads `demo/seeds.php` and runs each listed command through `Application::doRun()`.
+- The demo loads with `foundry:load-fixtures demo` under the `demo` castor context (`castor --context=demo sh -- php bin/console foundry:load-fixtures demo`); the `demo` env only isolates the database.

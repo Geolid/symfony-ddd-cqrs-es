@@ -37,7 +37,7 @@ castor qa                                          # static + test + mutation (g
 - `src/<Subdomain>/<BC>/` — a BC's `Domain/` `Application/` `Infrastructure/`.
 - `bootstrap/` — cross-BC DI wiring.
 - `config/` — global config + per-subdomain services.
-- `demo/` — Seeders
+- `demo/` — Demo Stories
 - `tests/` — mirrors `src/`.
 - `tools/` — QA rules and test tooling
 - `ui/` — Assets, shared Twig, i18n

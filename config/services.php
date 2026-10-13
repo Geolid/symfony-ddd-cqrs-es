@@ -9,7 +9,7 @@ return static function (ContainerConfigurator $container): void {
     if ('demo' === $container->env()) {
         $container->services()
             ->defaults()->autowire()->autoconfigure()
-            ->load('Demo\\', '%kernel.project_dir%/demo/**/*{Command}.php');
+            ->load('Demo\\Story\\', '%kernel.project_dir%/demo/Story/*Story.php');
     }
 
     if ('test' === $container->env()) {
