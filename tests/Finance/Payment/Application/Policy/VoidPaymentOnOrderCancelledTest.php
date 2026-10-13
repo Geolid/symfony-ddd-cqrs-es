@@ -7,7 +7,7 @@ namespace Finance\Tests\Payment\Application\Policy;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
 use Finance\Payment\Application\Policy\VoidPaymentOnOrderCancelled;
-use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
+use Finance\Tests\Payment\Support\Factory\PaymentFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\IntegrationEvent\OrderCancelled\OrderCancelledIntegrationEvent;
@@ -22,8 +22,7 @@ final class VoidPaymentOnOrderCancelledTest extends AbstractIntegrationTestCase
     {
         // Given
         $checkoutSessionId = Uuid::uuid7()->toString();
-        $paymentBuilder = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionId)->authorized();
-        $payment = $paymentBuilder->create();
+        $payment = PaymentFactory::new()->withCheckoutSessionId($checkoutSessionId)->authorized()->create();
         $order = OrderFactory::new()->withCheckoutSessionId($checkoutSessionId)->create();
         $this->store($payment, $order);
 
@@ -31,7 +30,7 @@ final class VoidPaymentOnOrderCancelledTest extends AbstractIntegrationTestCase
         $this->trigger(VoidPaymentOnOrderCancelled::class, new OrderCancelledIntegrationEvent($order->id->toString(), $order->customerId, Clock::get()->now()));
 
         // Then
-        $result = $this->service(PaymentFinderInterface::class)->ofReference($paymentBuilder['reference']->value);
+        $result = $this->service(PaymentFinderInterface::class)->ofReference($payment->reference->value);
         self::assertSame(PaymentStatus::VOIDED, $result->status);
     }
 

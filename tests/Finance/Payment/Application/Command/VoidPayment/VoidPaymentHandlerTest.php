@@ -7,9 +7,9 @@ namespace Finance\Tests\Payment\Application\Command\VoidPayment;
 use Finance\Payment\Application\Command\VoidPayment\VoidPayment;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
-use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
+use Finance\Tests\Payment\Support\Factory\PaymentFactory;
+use Finance\Tests\Payment\Support\Factory\PaymentIdFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class VoidPaymentHandlerTest extends AbstractIntegrationTestCase
@@ -27,15 +27,14 @@ final class VoidPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itVoidsWhenAuthorized(): void
     {
         // Given
-        $paymentBuilder = PaymentBuilder::new()->authorized();
-        $orderPayment = $paymentBuilder->create();
+        $orderPayment = PaymentFactory::new()->authorized()->create();
         $this->store($orderPayment);
 
         // When
         $this->dispatch(new VoidPayment($orderPayment->id->toString()));
 
         // Then
-        $result = $this->finder->ofReference($paymentBuilder['reference']->value);
+        $result = $this->finder->ofReference($orderPayment->reference->value);
         self::assertSame(PaymentStatus::VOIDED, $result->status);
     }
 
@@ -43,7 +42,7 @@ final class VoidPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenRequested(): void
     {
         // Given
-        $orderPayment = PaymentBuilder::new()->create();
+        $orderPayment = PaymentFactory::new()->create();
         $this->store($orderPayment);
 
         // When
@@ -57,7 +56,7 @@ final class VoidPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenNotFound(): void
     {
         // When
-        $this->dispatch(new VoidPayment(Uuid::uuid7()->toString()));
+        $this->dispatch(new VoidPayment(PaymentIdFactory::new()->create()->toString()));
 
         // Then
         self::expectNotToPerformAssertions();

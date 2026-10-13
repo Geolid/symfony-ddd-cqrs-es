@@ -7,7 +7,7 @@ namespace Finance\Tests\Payment\Infrastructure\Projection\Projector;
 use Doctrine\DBAL\Connection;
 use Finance\Payment\Application\PaymentStatus;
 use Finance\Payment\Infrastructure\Projection\Projector\DbalPaymentProjector;
-use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
+use Finance\Tests\Payment\Support\Factory\PaymentFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Tests\Ordering\Support\Factory\OrderFactory;
@@ -22,8 +22,7 @@ final class DbalPaymentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnPaymentRequested(): void
     {
         // Given
-        $paymentBuilder = PaymentBuilder::new();
-        $orderPayment = $paymentBuilder->create();
+        $orderPayment = PaymentFactory::new()->create();
 
         // When
         $this->store($orderPayment);
@@ -31,11 +30,11 @@ final class DbalPaymentProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($orderPayment->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($paymentBuilder['checkoutSessionId'], $row['checkout_session_id']);
+        self::assertSame($orderPayment->checkoutSessionId, $row['checkout_session_id']);
         self::assertNull($row['order_id']);
-        self::assertSame($paymentBuilder['amount']->cents, (int) $row['amount_in_cents']);
-        self::assertSame($paymentBuilder['reference']->value, $row['reference']);
-        self::assertSame($paymentBuilder['hostedPageUrl'], $row['hosted_page_url']);
+        self::assertSame($orderPayment->amount->cents, (int) $row['amount_in_cents']);
+        self::assertSame($orderPayment->reference->value, $row['reference']);
+        self::assertSame($orderPayment->hostedPageUrl, $row['hosted_page_url']);
         self::assertSame(PaymentStatus::REQUESTED->value, $row['status']);
         self::assertNull($row['authorized_at']);
         self::assertNull($row['captured_at']);
@@ -48,9 +47,9 @@ final class DbalPaymentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnPaymentAuthorized(): void
     {
         // Given
-        $other = PaymentBuilder::new()->create();
+        $other = PaymentFactory::new()->create();
         $this->store($other);
-        $orderPayment = PaymentBuilder::new()->authorized()->create();
+        $orderPayment = PaymentFactory::new()->authorized()->create();
 
         // When
         $this->store($orderPayment);
@@ -71,9 +70,9 @@ final class DbalPaymentProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $order = OrderFactory::new()->create();
-        $other = PaymentBuilder::new()->create();
+        $other = PaymentFactory::new()->create();
         $this->store($order, $other);
-        $orderPayment = PaymentBuilder::new()->authorized()->captured($order->id->toString())->create();
+        $orderPayment = PaymentFactory::new()->authorized()->captured($order->id->toString())->create();
 
         // When
         $this->store($orderPayment);
@@ -95,9 +94,9 @@ final class DbalPaymentProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $order = OrderFactory::new()->create();
-        $other = PaymentBuilder::new()->create();
+        $other = PaymentFactory::new()->create();
         $this->store($order, $other);
-        $orderPayment = PaymentBuilder::new()->authorized()->failed($order->id->toString())->create();
+        $orderPayment = PaymentFactory::new()->authorized()->failed($order->id->toString())->create();
 
         // When
         $this->store($orderPayment);
@@ -118,9 +117,9 @@ final class DbalPaymentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnPaymentAbandoned(): void
     {
         // Given
-        $other = PaymentBuilder::new()->create();
+        $other = PaymentFactory::new()->create();
         $this->store($other);
-        $orderPayment = PaymentBuilder::new()->abandoned()->create();
+        $orderPayment = PaymentFactory::new()->abandoned()->create();
 
         // When
         $this->store($orderPayment);
@@ -140,10 +139,10 @@ final class DbalPaymentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderConfirmed(): void
     {
         // Given
-        $other = PaymentBuilder::new()->create();
+        $other = PaymentFactory::new()->create();
         $this->store($other);
         $checkoutSessionId = Uuid::uuid7()->toString();
-        $payment = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionId)->create();
+        $payment = PaymentFactory::new()->withCheckoutSessionId($checkoutSessionId)->create();
         $order = OrderFactory::new()->withCheckoutSessionId($checkoutSessionId)->create();
 
         // When
@@ -163,9 +162,9 @@ final class DbalPaymentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnPaymentVoided(): void
     {
         // Given
-        $other = PaymentBuilder::new()->authorized()->create();
+        $other = PaymentFactory::new()->authorized()->create();
         $this->store($other);
-        $orderPayment = PaymentBuilder::new()->authorized()->voided()->create();
+        $orderPayment = PaymentFactory::new()->authorized()->voided()->create();
 
         // When
         $this->store($orderPayment);

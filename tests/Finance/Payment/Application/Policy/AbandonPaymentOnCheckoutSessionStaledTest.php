@@ -7,7 +7,7 @@ namespace Finance\Tests\Payment\Application\Policy;
 use Finance\Payment\Application\Command\AbandonPayment\AbandonPayment;
 use Finance\Payment\Application\Policy\AbandonPaymentOnCheckoutSessionStaled;
 use Finance\Payment\Domain\ValueObject\PaymentId;
-use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
+use Finance\Tests\Payment\Support\Factory\PaymentFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
@@ -25,7 +25,7 @@ final class AbandonPaymentOnCheckoutSessionStaledTest extends AbstractIntegratio
         $this->replace(CommandBusInterface::class, $commandBus);
         $checkoutSessionId = Uuid::uuid7()->toString();
         $paymentId = PaymentId::forCheckoutSession($checkoutSessionId);
-        $payment = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionId)->create();
+        $payment = PaymentFactory::new()->withCheckoutSessionId($checkoutSessionId)->create();
         $this->store($payment);
         $commandBus->expects(self::once())->method('dispatch')->with(new AbandonPayment($paymentId->toString()));
 

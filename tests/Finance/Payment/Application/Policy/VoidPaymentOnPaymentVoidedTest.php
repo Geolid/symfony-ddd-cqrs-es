@@ -9,7 +9,7 @@ use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Application\PSP\PaymentGatewayStatus;
 use Finance\Payment\Domain\Event\PaymentVoided;
 use Finance\Payment\Domain\ValueObject\PaymentId;
-use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
+use Finance\Tests\Payment\Support\Factory\PaymentReferenceFactory;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
 use Ramsey\Uuid\Uuid;
@@ -32,7 +32,7 @@ final class VoidPaymentOnPaymentVoidedTest extends AbstractIntegrationTestCase
     public function itVoids(): void
     {
         // Given
-        $reference = PaymentBuilder::sample('reference');
+        $reference = PaymentReferenceFactory::new()->create();
         $this->paymentGateway->expects(self::once())->method('void')->with($reference->value)->willReturn(PaymentGatewayStatus::VOIDED);
 
         // When

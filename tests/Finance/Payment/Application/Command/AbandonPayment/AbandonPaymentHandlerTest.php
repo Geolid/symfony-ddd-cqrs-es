@@ -9,9 +9,9 @@ use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
 use Finance\Payment\Application\PaymentUniqueKey;
 use Finance\Payment\Domain\Exception\PaymentNotFoundException;
-use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
+use Finance\Tests\Payment\Support\Factory\PaymentFactory;
+use Finance\Tests\Payment\Support\Factory\PaymentIdFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -33,26 +33,25 @@ final class AbandonPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itAbandonsWhenRequested(): void
     {
         // Given
-        $paymentBuilder = PaymentBuilder::new();
-        $orderPayment = $paymentBuilder->create();
+        $orderPayment = PaymentFactory::new()->create();
         $this->store($orderPayment);
         $checkoutSessionKey = UniqueKey::for(PaymentUniqueKey::CHECKOUT_SESSION);
-        $this->uniqueness->claim($checkoutSessionKey, $paymentBuilder['checkoutSessionId'], $orderPayment->id->toString());
+        $this->uniqueness->claim($checkoutSessionKey, $orderPayment->checkoutSessionId, $orderPayment->id->toString());
 
         // When
         $this->dispatch(new AbandonPayment($orderPayment->id->toString()));
 
         // Then
-        $result = $this->finder->ofReference($paymentBuilder['reference']->value);
+        $result = $this->finder->ofReference($orderPayment->reference->value);
         self::assertSame(PaymentStatus::ABANDONED, $result->status);
-        self::assertFalse($this->uniqueness->isClaimed($checkoutSessionKey, $paymentBuilder['checkoutSessionId']));
+        self::assertFalse($this->uniqueness->isClaimed($checkoutSessionKey, $orderPayment->checkoutSessionId));
     }
 
     #[Test]
     public function itIgnoresWhenAlreadyAbandoned(): void
     {
         // Given
-        $orderPayment = PaymentBuilder::new()->abandoned()->create();
+        $orderPayment = PaymentFactory::new()->abandoned()->create();
         $this->store($orderPayment);
 
         // When
@@ -66,7 +65,7 @@ final class AbandonPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = Uuid::uuid7()->toString();
+        $id = PaymentIdFactory::new()->create()->toString();
 
         // Then
         $this->expectException(PaymentNotFoundException::class);

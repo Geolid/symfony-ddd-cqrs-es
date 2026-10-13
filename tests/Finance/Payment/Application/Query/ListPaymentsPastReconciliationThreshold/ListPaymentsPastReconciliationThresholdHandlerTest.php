@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Finance\Tests\Payment\Application\Query\ListPaymentsPastReconciliationThreshold;
 
 use Finance\Payment\Application\Query\ListPaymentsPastReconciliationThreshold\ListPaymentsPastReconciliationThreshold;
-use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
+use Finance\Tests\Payment\Support\Factory\PaymentFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
@@ -17,13 +17,13 @@ final class ListPaymentsPastReconciliationThresholdHandlerTest extends AbstractI
     {
         // Given
         $now = Clock::get()->now();
-        $stuck = PaymentBuilder::new()
+        $stuck = PaymentFactory::new()
             ->withRequestedAt($now->modify('-90 minutes'))
             ->create();
-        $fresh = PaymentBuilder::new()
+        $fresh = PaymentFactory::new()
             ->withRequestedAt($now->modify('-5 minutes'))
             ->create();
-        $authorized = PaymentBuilder::new()
+        $authorized = PaymentFactory::new()
             ->withRequestedAt($now->modify('-90 minutes'))
             ->authorized()
             ->create();

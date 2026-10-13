@@ -8,7 +8,7 @@ use Finance\Payment\Application\PaymentStatus;
 use Finance\Payment\Application\Reconciliation\Exception\UnsupportedPaymentStatusException;
 use Finance\Payment\Application\Reconciliation\PaymentReconciler;
 use Finance\Payment\Application\Reconciliation\PaymentStatusReconcilerInterface;
-use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
+use Finance\Tests\Payment\Support\Factory\PaymentReferenceFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -30,7 +30,7 @@ final class PaymentReconcilerTest extends AbstractIntegrationTestCase
         $router = new PaymentReconciler([$unsupporting, $matching]);
 
         // When
-        $result = $router->reconcile(Uuid::uuid7()->toString(), PaymentStatus::REQUESTED, PaymentBuilder::sample('reference')->value);
+        $result = $router->reconcile(Uuid::uuid7()->toString(), PaymentStatus::REQUESTED, PaymentReferenceFactory::new()->create()->value);
 
         // Then
         self::assertTrue($result);
@@ -46,6 +46,6 @@ final class PaymentReconcilerTest extends AbstractIntegrationTestCase
         $this->expectException(UnsupportedPaymentStatusException::class);
 
         // When
-        $router->reconcile(Uuid::uuid7()->toString(), PaymentStatus::CAPTURED, PaymentBuilder::sample('reference')->value);
+        $router->reconcile(Uuid::uuid7()->toString(), PaymentStatus::CAPTURED, PaymentReferenceFactory::new()->create()->value);
     }
 }

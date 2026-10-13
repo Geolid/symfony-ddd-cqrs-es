@@ -40,8 +40,17 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
     #[Id]
     public private(set) PaymentId $id;
     public private(set) PaymentReference $reference;
-    private string $checkoutSessionId;
-    private PaymentState $operationalState;
+    public private(set) string $checkoutSessionId;
+    public private(set) Money $amount;
+    public private(set) string $hostedPageUrl;
+    public private(set) \DateTimeImmutable $requestedAt;
+    public private(set) PaymentState $operationalState;
+    public private(set) ?\DateTimeImmutable $authorizedAt = null;
+    public private(set) ?string $orderId = null;
+    public private(set) ?\DateTimeImmutable $failedAt = null;
+    public private(set) ?\DateTimeImmutable $capturedAt = null;
+    public private(set) ?\DateTimeImmutable $abandonedAt = null;
+    public private(set) ?\DateTimeImmutable $voidedAt = null;
 
     public static function request(
         PaymentId $id,
@@ -148,6 +157,9 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
         $this->id = $event->id;
         $this->checkoutSessionId = $event->checkoutSessionId;
         $this->reference = $event->reference;
+        $this->amount = $event->amount;
+        $this->hostedPageUrl = $event->hostedPageUrl;
+        $this->requestedAt = $event->requestedAt;
         $this->operationalState = PaymentState::REQUESTED;
     }
 
@@ -155,29 +167,36 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
     private function applyAuthorized(PaymentAuthorized $event): void
     {
         $this->operationalState = PaymentState::AUTHORIZED;
+        $this->authorizedAt = $event->authorizedAt;
     }
 
     #[Apply]
     private function applyFailed(PaymentFailed $event): void
     {
         $this->operationalState = PaymentState::FAILED;
+        $this->orderId = $event->orderId;
+        $this->failedAt = $event->failedAt;
     }
 
     #[Apply]
     private function applyCaptured(PaymentCaptured $event): void
     {
         $this->operationalState = PaymentState::CAPTURED;
+        $this->orderId = $event->orderId;
+        $this->capturedAt = $event->capturedAt;
     }
 
     #[Apply]
     private function applyAbandoned(PaymentAbandoned $event): void
     {
         $this->operationalState = PaymentState::ABANDONED;
+        $this->abandonedAt = $event->abandonedAt;
     }
 
     #[Apply]
     private function applyVoided(PaymentVoided $event): void
     {
         $this->operationalState = PaymentState::VOIDED;
+        $this->voidedAt = $event->voidedAt;
     }
 }

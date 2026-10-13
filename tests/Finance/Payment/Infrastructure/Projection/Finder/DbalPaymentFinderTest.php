@@ -10,7 +10,9 @@ use Finance\Payment\Application\Finder\Payment\PaymentResult;
 use Finance\Payment\Application\PaymentStatus;
 use Finance\Payment\Domain\Payment;
 use Finance\Payment\Domain\ValueObject\PaymentId;
-use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
+use Finance\Tests\Payment\Support\Factory\PaymentFactory;
+use Finance\Tests\Payment\Support\Factory\PaymentIdFactory;
+use Finance\Tests\Payment\Support\Factory\PaymentReferenceFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Sales\Tests\Ordering\Support\Factory\OrderFactory;
@@ -29,8 +31,8 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
     public function itGetsById(): void
     {
         // Given
-        $other = PaymentBuilder::new()->create();
-        $orderPayment = PaymentBuilder::new()->authorized()->create();
+        $other = PaymentFactory::new()->create();
+        $orderPayment = PaymentFactory::new()->authorized()->create();
         $this->store($other, $orderPayment);
 
         // When
@@ -48,7 +50,7 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
         $this->expectException(PaymentResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(Uuid::uuid7()->toString());
+        $this->finder()->ofId(PaymentIdFactory::new()->create()->toString());
     }
 
     #[Test]
@@ -59,23 +61,23 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
         $requestedAt = Clock::get()->now()->modify('-4 days');
         $authorizedAt = $requestedAt->modify('+1 hour');
         $capturedAt = $requestedAt->modify('+1 day 2 hours');
-        $paymentFactory = PaymentBuilder::new()
+        $orderPayment = PaymentFactory::new()
             ->withRequestedAt($requestedAt)
             ->authorized($authorizedAt)
-            ->captured($order->id->toString(), $capturedAt);
-        $orderPayment = $paymentFactory->create();
+            ->captured($order->id->toString(), $capturedAt)
+            ->create();
         $this->store($order, $orderPayment);
 
         // When
-        $result = $this->finder()->ofReference($paymentFactory['reference']->value);
+        $result = $this->finder()->ofReference($orderPayment->reference->value);
 
         // Then
         self::assertSame($orderPayment->id->toString(), $result->id);
-        self::assertSame($paymentFactory['checkoutSessionId'], $result->checkoutSessionId);
+        self::assertSame($orderPayment->checkoutSessionId, $result->checkoutSessionId);
         self::assertSame($order->id->toString(), $result->orderId);
-        self::assertSame($paymentFactory['amount']->cents, $result->amountInCents);
-        self::assertSame($paymentFactory['reference']->value, $result->reference);
-        self::assertSame($paymentFactory['hostedPageUrl'], $result->hostedPageUrl);
+        self::assertSame($orderPayment->amount->cents, $result->amountInCents);
+        self::assertSame($orderPayment->reference->value, $result->reference);
+        self::assertSame($orderPayment->hostedPageUrl, $result->hostedPageUrl);
         self::assertSame(PaymentStatus::CAPTURED, $result->status);
         self::assertSame($requestedAt->format('Y-m-d H:i:s'), $result->requestedAt->format('Y-m-d H:i:s'));
         self::assertSame($authorizedAt->format('Y-m-d H:i:s'), $result->authorizedAt?->format('Y-m-d H:i:s'));
@@ -92,20 +94,19 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
         $this->expectException(PaymentResultNotFoundException::class);
 
         // When
-        $this->finder()->ofReference(PaymentBuilder::sample('reference')->value);
+        $this->finder()->ofReference(PaymentReferenceFactory::new()->create()->value);
     }
 
     #[Test]
     public function itGetsByCheckoutSession(): void
     {
         // Given
-        $other = PaymentBuilder::new()->create();
-        $paymentBuilder = PaymentBuilder::new();
-        $orderPayment = $paymentBuilder->create();
+        $other = PaymentFactory::new()->create();
+        $orderPayment = PaymentFactory::new()->create();
         $this->store($other, $orderPayment);
 
         // When
-        $result = $this->finder()->ofCheckoutSession($paymentBuilder['checkoutSessionId']);
+        $result = $this->finder()->ofCheckoutSession($orderPayment->checkoutSessionId);
 
         // Then
         self::assertSame($orderPayment->id->toString(), $result->id);
@@ -125,9 +126,9 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
     public function itGetsByOrderId(): void
     {
         // Given
-        $other = PaymentBuilder::new()->create();
+        $other = PaymentFactory::new()->create();
         $order = OrderFactory::new()->create();
-        $orderPayment = PaymentBuilder::new()->authorized()->captured($order->id->toString())->create();
+        $orderPayment = PaymentFactory::new()->authorized()->captured($order->id->toString())->create();
         $this->store($other, $orderPayment);
 
         // When
@@ -152,8 +153,8 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $freshRequested = PaymentBuilder::new()->withRequestedAt($now->modify('+1 day'))->create();
-        $staleRequested = PaymentBuilder::new()->withRequestedAt($now->modify('-1 day'))->create();
+        $freshRequested = PaymentFactory::new()->withRequestedAt($now->modify('+1 day'))->create();
+        $staleRequested = PaymentFactory::new()->withRequestedAt($now->modify('-1 day'))->create();
         $this->store($freshRequested, $staleRequested);
 
         // When
@@ -174,7 +175,7 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
      */
     protected function seed(int $count): array
     {
-        $payments = PaymentBuilder::new()->many($count)->create();
+        $payments = PaymentFactory::new()->many($count)->create();
         $this->store(...$payments);
 
         return array_map(static fn (Payment $payment): string => $payment->id->toString(), $payments);
@@ -198,8 +199,8 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
         [$smallerId, $largerId] = array_keys($checkoutSessionIdByPaymentId);
 
         $now = Clock::get()->now();
-        $first = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionIdByPaymentId[$largerId])->withRequestedAt($now)->create();
-        $second = PaymentBuilder::new()->withCheckoutSessionId($checkoutSessionIdByPaymentId[$smallerId])->withRequestedAt($now->modify('+1 hour'))->create();
+        $first = PaymentFactory::new()->withCheckoutSessionId($checkoutSessionIdByPaymentId[$largerId])->withRequestedAt($now)->create();
+        $second = PaymentFactory::new()->withCheckoutSessionId($checkoutSessionIdByPaymentId[$smallerId])->withRequestedAt($now->modify('+1 hour'))->create();
         $this->store($first, $second);
 
         return [$largerId, $smallerId];

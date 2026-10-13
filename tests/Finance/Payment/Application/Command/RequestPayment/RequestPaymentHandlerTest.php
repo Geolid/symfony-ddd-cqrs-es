@@ -10,7 +10,8 @@ use Finance\Payment\Application\Command\RequestPayment\RequestPayment;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
 use Finance\Payment\Application\PaymentUniqueKey;
-use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
+use Finance\Tests\Payment\Support\Factory\PaymentFactory;
+use Finance\Tests\Payment\Support\Factory\PaymentReferenceFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
@@ -34,22 +35,21 @@ final class RequestPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itRequests(): void
     {
         // Given
-        $paymentFactory = PaymentBuilder::new();
-        $payment = $paymentFactory->create();
+        $payment = PaymentFactory::new()->create();
 
         // When
         $this->dispatch(new RequestPayment(
             id: $payment->id->toString(),
-            checkoutSessionId: $paymentFactory['checkoutSessionId'],
-            amountInCents: $paymentFactory['amount']->cents,
-            currency: $paymentFactory['amount']->currency->value,
-            reference: $paymentFactory['reference']->value,
-            hostedPageUrl: $paymentFactory['hostedPageUrl'],
+            checkoutSessionId: $payment->checkoutSessionId,
+            amountInCents: $payment->amount->cents,
+            currency: $payment->amount->currency->value,
+            reference: $payment->reference->value,
+            hostedPageUrl: $payment->hostedPageUrl,
         ));
 
         // Then
-        $result = $this->finder->ofReference($paymentFactory['reference']->value);
-        self::assertSame($paymentFactory['reference']->value, $result->reference);
+        $result = $this->finder->ofReference($payment->reference->value);
+        self::assertSame($payment->reference->value, $result->reference);
         self::assertSame(PaymentStatus::REQUESTED, $result->status);
     }
 
@@ -57,8 +57,8 @@ final class RequestPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenReferenceAlreadyInUse(): void
     {
         // Given
-        $checkoutSessionId = PaymentBuilder::sample('checkoutSessionId');
-        $reference = PaymentBuilder::sample('reference')->value;
+        $checkoutSessionId = Uuid::uuid7()->toString();
+        $reference = PaymentReferenceFactory::new()->create()->value;
         $this->uniqueness->claim(UniqueKey::for(PaymentUniqueKey::REFERENCE), $reference, Uuid::uuid7()->toString());
 
         // Then
@@ -79,9 +79,9 @@ final class RequestPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenAlreadyClaimedForCheckoutSession(): void
     {
         // Given
-        $checkoutSessionId = PaymentBuilder::sample('checkoutSessionId');
+        $checkoutSessionId = Uuid::uuid7()->toString();
         $this->uniqueness->claim(UniqueKey::for(PaymentUniqueKey::CHECKOUT_SESSION), $checkoutSessionId, Uuid::uuid7()->toString());
-        $reference = PaymentBuilder::sample('reference')->value;
+        $reference = PaymentReferenceFactory::new()->create()->value;
 
         // Then
         $this->expectException(PaymentAlreadyClaimedException::class);

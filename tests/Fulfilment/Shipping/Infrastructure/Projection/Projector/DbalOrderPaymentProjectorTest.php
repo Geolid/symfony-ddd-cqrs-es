@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipping\Infrastructure\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
-use Finance\Tests\Payment\Support\Builder\PaymentBuilder;
+use Finance\Tests\Payment\Support\Factory\PaymentFactory;
 use Fulfilment\Shipping\Infrastructure\Projection\Projector\DbalOrderPaymentProjector;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -21,8 +21,8 @@ final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
-        $other = PaymentBuilder::new()->create();
-        $payment = PaymentBuilder::new()->authorized()->captured($orderId)->create();
+        $other = PaymentFactory::new()->create();
+        $payment = PaymentFactory::new()->authorized()->captured($orderId)->create();
         $this->store($other, $payment);
 
         // Then
