@@ -113,7 +113,7 @@ final class PaymentTest extends AggregateRootTestCase
     #[Test]
     public function itFailsWhenAuthorized(): void
     {
-        $failedAt = $this->authorizedAt;
+        $failedAt = $this->authorizedAt->modify('+1 hour');
 
         $this
             ->given($this->requested(), $this->authorized())
@@ -160,7 +160,7 @@ final class PaymentTest extends AggregateRootTestCase
     #[Test]
     public function itAbandonsWhenRequested(): void
     {
-        $abandonedAt = $this->authorizedAt;
+        $abandonedAt = $this->requestedAt->modify('+1 hour');
 
         $this
             ->given($this->requested())
@@ -180,7 +180,7 @@ final class PaymentTest extends AggregateRootTestCase
     #[Test]
     public function itVoidsWhenAuthorized(): void
     {
-        $voidedAt = $this->authorizedAt;
+        $voidedAt = $this->authorizedAt->modify('+1 hour');
 
         $this
             ->given($this->requested(), $this->authorized())
@@ -209,7 +209,7 @@ final class PaymentTest extends AggregateRootTestCase
     #[Test]
     public function itDoesNotVoidWhenFailed(): void
     {
-        $laterAt = $this->authorizedAt;
+        $laterAt = $this->authorizedAt->modify('+1 hour');
 
         $this
             ->given(
