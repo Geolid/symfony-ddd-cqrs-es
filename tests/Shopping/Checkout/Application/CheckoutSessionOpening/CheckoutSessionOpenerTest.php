@@ -56,7 +56,7 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
     {
         // Given
         $catalogProduct = ProductFactory::new()->withUnitPriceInCents(1_497)->create();
-        $secondCatalogProduct = ProductFactory::new()->withUnitPriceInCents(2_497)->create();
+        $otherCatalogProduct = ProductFactory::new()->withUnitPriceInCents(2_497)->create();
         $shippingAddress = PostalAddressFactory::new()->withAddress(AddressFactory::new()->withCountryCode('FR')->create())->create();
         $customer = CustomerFactory::new()
             ->shippingAddressDefined($shippingAddress)
@@ -66,10 +66,10 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
             productId: $catalogProduct->id->toString(),
             quantity: Quantity::of(1),
         )->productAdded(
-            productId: $secondCatalogProduct->id->toString(),
+            productId: $otherCatalogProduct->id->toString(),
             quantity: Quantity::of(1),
         )->create();
-        $this->store($cart, $catalogProduct, $secondCatalogProduct, $customer);
+        $this->store($cart, $catalogProduct, $otherCatalogProduct, $customer);
 
         // When
         $result = $this->service->openFor($cart->id->toString());
