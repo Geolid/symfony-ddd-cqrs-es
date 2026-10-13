@@ -40,15 +40,19 @@ final class StaleCheckoutSessionOnCartProductQuantityChangedTest extends Abstrac
     public function itIgnoresWhenNoCheckoutSession(): void
     {
         // Given
+        $cartId = Uuid::uuid7()->toString();
+        $productId = Uuid::uuid7()->toString();
+        $quantity = QuantityFactory::new()->create()->value;
+
         $commandBus = $this->createMock(CommandBusInterface::class);
         $this->replace(CommandBusInterface::class, $commandBus);
         $commandBus->expects(self::never())->method('dispatch');
 
         // When
         $this->trigger(StaleCheckoutSessionOnCartProductQuantityChanged::class, new CartProductQuantityChangedIntegrationEvent(
-            cartId: Uuid::uuid7()->toString(),
-            productId: Uuid::uuid7()->toString(),
-            quantity: QuantityFactory::new()->create()->value,
+            cartId: $cartId,
+            productId: $productId,
+            quantity: $quantity,
             changedAt: Clock::get()->now(),
         ));
     }

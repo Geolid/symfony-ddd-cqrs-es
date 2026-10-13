@@ -61,19 +61,27 @@ final class CompleteCheckoutSessionHandlerTest extends AbstractIntegrationTestCa
     {
         // Given
         $checkoutSession = CheckoutSessionFactory::new()->completed()->create();
+        $cartId = Uuid::uuid7()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $items = array_map(CheckoutItemMapper::toArray(...), CheckoutItemFactory::new()->many(2)->create());
+        $taxRateBasisPoints = TaxRateFactory::new()->create()->basisPoints;
+        $shippingAddress = PostalAddressMapper::toArray(PostalAddressFactory::new()->create());
+        $billingAddress = PostalAddressMapper::toArray(PostalAddressFactory::new()->create());
+        $paymentId = Uuid::uuid7()->toString();
+
         $this->store($checkoutSession);
 
         // When
         $this->dispatch(new CompleteCheckoutSession(
             id: $checkoutSession->id->toString(),
-            cartId: Uuid::uuid7()->toString(),
-            customerId: Uuid::uuid7()->toString(),
-            items: array_map(CheckoutItemMapper::toArray(...), CheckoutItemFactory::new()->many(2)->create()),
+            cartId: $cartId,
+            customerId: $customerId,
+            items: $items,
             currency: Currency::EUR->value,
-            taxRateBasisPoints: TaxRateFactory::new()->create()->basisPoints,
-            shippingAddress: PostalAddressMapper::toArray(PostalAddressFactory::new()->create()),
-            billingAddress: PostalAddressMapper::toArray(PostalAddressFactory::new()->create()),
-            paymentId: Uuid::uuid7()->toString(),
+            taxRateBasisPoints: $taxRateBasisPoints,
+            shippingAddress: $shippingAddress,
+            billingAddress: $billingAddress,
+            paymentId: $paymentId,
         ));
 
         // Then
@@ -83,20 +91,30 @@ final class CompleteCheckoutSessionHandlerTest extends AbstractIntegrationTestCa
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $id = CheckoutSessionIdFactory::new()->create()->toString();
+        $cartId = Uuid::uuid7()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $items = array_map(CheckoutItemMapper::toArray(...), CheckoutItemFactory::new()->many(2)->create());
+        $taxRateBasisPoints = TaxRateFactory::new()->create()->basisPoints;
+        $shippingAddress = PostalAddressMapper::toArray(PostalAddressFactory::new()->create());
+        $billingAddress = PostalAddressMapper::toArray(PostalAddressFactory::new()->create());
+        $paymentId = Uuid::uuid7()->toString();
+
         // Then
         $this->expectException(CheckoutSessionNotFoundException::class);
 
         // When
         $this->dispatch(new CompleteCheckoutSession(
-            id: CheckoutSessionIdFactory::new()->create()->toString(),
-            cartId: Uuid::uuid7()->toString(),
-            customerId: Uuid::uuid7()->toString(),
-            items: array_map(CheckoutItemMapper::toArray(...), CheckoutItemFactory::new()->many(2)->create()),
+            id: $id,
+            cartId: $cartId,
+            customerId: $customerId,
+            items: $items,
             currency: Currency::EUR->value,
-            taxRateBasisPoints: TaxRateFactory::new()->create()->basisPoints,
-            shippingAddress: PostalAddressMapper::toArray(PostalAddressFactory::new()->create()),
-            billingAddress: PostalAddressMapper::toArray(PostalAddressFactory::new()->create()),
-            paymentId: Uuid::uuid7()->toString(),
+            taxRateBasisPoints: $taxRateBasisPoints,
+            shippingAddress: $shippingAddress,
+            billingAddress: $billingAddress,
+            paymentId: $paymentId,
         ));
     }
 }

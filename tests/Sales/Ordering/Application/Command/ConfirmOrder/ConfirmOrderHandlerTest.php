@@ -68,18 +68,25 @@ final class ConfirmOrderHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenWithoutLine(): void
     {
+        // Given
+        $id = OrderIdFactory::new()->create()->toString();
+        $cartId = Uuid::uuid7()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $checkoutSessionId = Uuid::uuid7()->toString();
+        $shippingAddress = PostalAddressMapper::toArray(PostalAddressFactory::new()->create());
+
         // Then
         $this->expectException(OrderWithoutLineException::class);
 
         // When
         $this->dispatch(new ConfirmOrder(
-            id: OrderIdFactory::new()->create()->toString(),
-            cartId: Uuid::uuid7()->toString(),
-            customerId: Uuid::uuid7()->toString(),
-            checkoutSessionId: Uuid::uuid7()->toString(),
+            id: $id,
+            cartId: $cartId,
+            customerId: $customerId,
+            checkoutSessionId: $checkoutSessionId,
             lines: [],
             currency: 'EUR',
-            shippingAddress: PostalAddressMapper::toArray(PostalAddressFactory::new()->create()),
+            shippingAddress: $shippingAddress,
         ));
     }
 }

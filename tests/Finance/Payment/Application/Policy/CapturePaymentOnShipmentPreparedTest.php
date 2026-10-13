@@ -69,14 +69,13 @@ final class CapturePaymentOnShipmentPreparedTest extends AbstractIntegrationTest
     public function itIgnoresWhenNotFound(): void
     {
         // Given
+        $shipmentId = Uuid::uuid7()->toString();
+        $orderId = Uuid::uuid7()->toString();
+
         $this->paymentGateway->expects(self::never())->method('capture');
 
         // When
-        $this->trigger(CapturePaymentOnShipmentPrepared::class, new ShipmentPreparedIntegrationEvent(
-            Uuid::uuid7()->toString(),
-            Uuid::uuid7()->toString(),
-            Clock::get()->now(),
-        ));
+        $this->trigger(CapturePaymentOnShipmentPrepared::class, new ShipmentPreparedIntegrationEvent($shipmentId, $orderId, Clock::get()->now()));
     }
 
     #[Test]

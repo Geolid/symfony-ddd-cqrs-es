@@ -25,6 +25,8 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
         // Given
         $orderId = Uuid::uuid7()->toString();
         $customerId = Uuid::uuid7()->toString();
+        $cartId = Uuid::uuid7()->toString();
+        $checkoutSessionId = Uuid::uuid7()->toString();
         $destinationData = PostalAddressMapper::toArray(PostalAddressFactory::new()->create());
         $warehouseAddressProvider = $this->service(WarehouseAddressProvider::class);
 
@@ -39,9 +41,9 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
         // When
         $this->trigger(RequestShipmentOnOrderConfirmed::class, new OrderConfirmedIntegrationEvent(
             orderId: $orderId,
-            cartId: Uuid::uuid7()->toString(),
+            cartId: $cartId,
             customerId: $customerId,
-            checkoutSessionId: Uuid::uuid7()->toString(),
+            checkoutSessionId: $checkoutSessionId,
             shippingAddress: $destinationData,
             confirmedAt: Clock::get()->now(),
         ));

@@ -55,11 +55,16 @@ final class AcmeCarrierGatewayTest extends TestCase
     #[DataProvider('provideTransientFailures')]
     public function itThrowsTransientWhenCarrierUnreachable(callable|MockResponse $response): void
     {
+        // Given
+        $shipmentId = Uuid::uuid7()->toString();
+        $origin = PostalAddressFactory::new()->create();
+        $destination = PostalAddressFactory::new()->create();
+
         // Then
         $this->expectException(CarrierTransientFailureException::class);
 
         // When
-        $this->gateway($response)->manifest(Uuid::uuid7()->toString(), PostalAddressFactory::new()->create(), PostalAddressFactory::new()->create());
+        $this->gateway($response)->manifest($shipmentId, $origin, $destination);
     }
 
     /**
@@ -74,22 +79,33 @@ final class AcmeCarrierGatewayTest extends TestCase
     #[Test]
     public function itThrowsFatalWhenManifestRequestRejected(): void
     {
+        // Given
+        $shipmentId = Uuid::uuid7()->toString();
+        $response = self::jsonResponse(['error' => 'invalid address'], 400);
+        $origin = PostalAddressFactory::new()->create();
+        $destination = PostalAddressFactory::new()->create();
+
         // Then
         $this->expectException(CarrierFatalFailureException::class);
 
         // When
-        $this->gateway(self::jsonResponse(['error' => 'invalid address'], 400))->manifest(Uuid::uuid7()->toString(), PostalAddressFactory::new()->create(), PostalAddressFactory::new()->create());
+        $this->gateway($response)->manifest($shipmentId, $origin, $destination);
     }
 
     #[Test]
     #[DataProvider('provideUnreadableResponses')]
     public function itThrowsFatalWhenManifestResponseUnreadable(MockResponse $response): void
     {
+        // Given
+        $shipmentId = Uuid::uuid7()->toString();
+        $origin = PostalAddressFactory::new()->create();
+        $destination = PostalAddressFactory::new()->create();
+
         // Then
         $this->expectException(CarrierFatalFailureException::class);
 
         // When
-        $this->gateway($response)->manifest(Uuid::uuid7()->toString(), PostalAddressFactory::new()->create(), PostalAddressFactory::new()->create());
+        $this->gateway($response)->manifest($shipmentId, $origin, $destination);
     }
 
     /**

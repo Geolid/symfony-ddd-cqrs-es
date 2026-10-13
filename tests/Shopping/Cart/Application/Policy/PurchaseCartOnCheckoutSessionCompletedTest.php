@@ -23,6 +23,9 @@ final class PurchaseCartOnCheckoutSessionCompletedTest extends AbstractIntegrati
     {
         // Given
         $cartId = CartIdFactory::new()->create()->toString();
+        $checkoutSessionId = Uuid::uuid7()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $paymentId = Uuid::uuid7()->toString();
         $commandBus = $this->createMock(CommandBusInterface::class);
         $this->replace(CommandBusInterface::class, $commandBus);
         $commandBus->expects(self::once())->method('dispatch')->with(new PurchaseCart($cartId));
@@ -30,14 +33,14 @@ final class PurchaseCartOnCheckoutSessionCompletedTest extends AbstractIntegrati
 
         // When
         $this->trigger(PurchaseCartOnCheckoutSessionCompleted::class, new CheckoutSessionCompletedIntegrationEvent(
-            checkoutSessionId: Uuid::uuid7()->toString(),
+            checkoutSessionId: $checkoutSessionId,
             cartId: $cartId,
-            customerId: Uuid::uuid7()->toString(),
+            customerId: $customerId,
             items: [],
             currency: 'EUR',
             shippingAddress: $address,
             billingAddress: $address,
-            paymentId: Uuid::uuid7()->toString(),
+            paymentId: $paymentId,
             completedAt: Clock::get()->now(),
         ));
     }

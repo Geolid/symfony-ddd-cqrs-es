@@ -82,17 +82,16 @@ final class ChangePasswordHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $identityId = Uuid::uuid7()->toString();
+        $currentPassword = PasswordFactory::new()->create()->value;
+        $newPassword = PasswordFactory::new()->create()->value;
+
         // Then
         $this->expectException(PasswordCredentialNotFoundException::class);
 
         // When
-        $this->dispatch(
-            new ChangePassword(
-                Uuid::uuid7()->toString(),
-                PasswordFactory::new()->create()->value,
-                PasswordFactory::new()->create()->value,
-            ),
-        );
+        $this->dispatch(new ChangePassword($identityId, $currentPassword, $newPassword));
     }
 
     #[Test]
