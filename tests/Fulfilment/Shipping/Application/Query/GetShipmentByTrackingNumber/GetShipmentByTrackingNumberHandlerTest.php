@@ -7,7 +7,8 @@ namespace Fulfilment\Tests\Shipping\Application\Query\GetShipmentByTrackingNumbe
 use Fulfilment\Shipping\Application\Finder\Shipment\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipping\Application\Query\GetShipmentByTrackingNumber\GetShipmentByTrackingNumber;
 use Fulfilment\Shipping\Application\ShipmentStatus;
-use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
+use Fulfilment\Tests\Shipping\Support\Factory\ShipmentFactory;
+use Fulfilment\Tests\Shipping\Support\Factory\TrackingNumberFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -17,19 +18,19 @@ final class GetShipmentByTrackingNumberHandlerTest extends AbstractIntegrationTe
     public function itGets(): void
     {
         // Given
-        $other = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->create();
-        $builder = ShipmentBuilder::new()->prepared()->manifested()->dispatched();
-        $shipment = $builder->create();
+        $other = ShipmentFactory::new()->prepared()->manifested()->dispatched()->create();
+        $trackingNumber = TrackingNumberFactory::new()->create()->value;
+        $shipment = ShipmentFactory::new()->prepared()->manifested($trackingNumber)->dispatched()->create();
         $this->store($other, $shipment);
 
         // When
-        $result = $this->ask(new GetShipmentByTrackingNumber($builder['trackingNumber']->value));
+        $result = $this->ask(new GetShipmentByTrackingNumber($trackingNumber));
 
         // Then
         self::assertSame($shipment->id->toString(), $result->id);
-        self::assertSame($builder['orderId'], $result->orderId);
+        self::assertSame($shipment->orderId, $result->orderId);
         self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
-        self::assertSame($builder['trackingNumber']->value, $result->trackingNumber);
+        self::assertSame($trackingNumber, $result->trackingNumber);
         self::assertNotNull($result->createdAt);
         self::assertNotNull($result->dispatchedAt);
         self::assertNull($result->deliveredAt);
@@ -42,6 +43,6 @@ final class GetShipmentByTrackingNumberHandlerTest extends AbstractIntegrationTe
         $this->expectException(ShipmentResultNotFoundException::class);
 
         // When
-        $this->ask(new GetShipmentByTrackingNumber(ShipmentBuilder::sample('trackingNumber')->value));
+        $this->ask(new GetShipmentByTrackingNumber(TrackingNumberFactory::new()->create()->value));
     }
 }

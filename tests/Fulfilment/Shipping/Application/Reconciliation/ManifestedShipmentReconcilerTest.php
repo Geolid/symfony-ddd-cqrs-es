@@ -8,8 +8,9 @@ use Fulfilment\Shipping\Application\Carrier\CarrierGatewayStatus;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\Reconciliation\ManifestedShipmentReconciler;
 use Fulfilment\Shipping\Application\ShipmentStatus;
-use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
 use Fulfilment\Tests\Shipping\Support\Double\CarrierGatewayStubTrait;
+use Fulfilment\Tests\Shipping\Support\Factory\ShipmentFactory;
+use Fulfilment\Tests\Shipping\Support\Factory\TrackingNumberFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Command\CommandBusInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -34,8 +35,8 @@ final class ManifestedShipmentReconcilerTest extends AbstractIntegrationTestCase
     public function itReconcilesWhenDispatched(): void
     {
         // Given
-        $trackingNumber = ShipmentBuilder::sample('trackingNumber')->value;
-        $shipment = ShipmentBuilder::new()->prepared()->manifested($trackingNumber)->create();
+        $trackingNumber = TrackingNumberFactory::new()->create()->value;
+        $shipment = ShipmentFactory::new()->prepared()->manifested($trackingNumber)->create();
         $this->store($shipment);
         $reconciler = new ManifestedShipmentReconciler($this->carrierGatewayReturning(CarrierGatewayStatus::DISPATCHED), $this->commandBus);
 
@@ -52,8 +53,8 @@ final class ManifestedShipmentReconcilerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenStillManifested(): void
     {
         // Given
-        $trackingNumber = ShipmentBuilder::sample('trackingNumber')->value;
-        $shipment = ShipmentBuilder::new()->prepared()->manifested($trackingNumber)->create();
+        $trackingNumber = TrackingNumberFactory::new()->create()->value;
+        $shipment = ShipmentFactory::new()->prepared()->manifested($trackingNumber)->create();
         $this->store($shipment);
         $reconciler = new ManifestedShipmentReconciler($this->carrierGatewayReturning(CarrierGatewayStatus::REQUESTED), $this->commandBus);
 

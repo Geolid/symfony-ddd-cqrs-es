@@ -56,9 +56,19 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     public private(set) string $orderId;
     public private(set) PostalAddress $origin;
     public private(set) PostalAddress $destination;
-    private ?TrackingNumber $trackingNumber = null;
-    private ShipmentState $operationalState;
-    private ErasureState $erasureState;
+    public private(set) string $customerId;
+    public private(set) \DateTimeImmutable $createdAt;
+    public private(set) ShipmentState $operationalState;
+    public private(set) ?\DateTimeImmutable $preparedAt = null;
+    public private(set) ?TrackingNumber $trackingNumber = null;
+    public private(set) ?\DateTimeImmutable $manifestedAt = null;
+    public private(set) ?\DateTimeImmutable $dispatchedAt = null;
+    public private(set) ?\DateTimeImmutable $deliveredAt = null;
+    public private(set) ?\DateTimeImmutable $cancelledAt = null;
+    public private(set) ?\DateTimeImmutable $cancellationRejectedAt = null;
+    public private(set) ErasureState $erasureState;
+    public private(set) ?\DateTimeImmutable $erasureApprovedAt = null;
+    public private(set) ?\DateTimeImmutable $erasedAt = null;
 
     public static function request(
         ShipmentId $id,
@@ -236,6 +246,8 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     {
         $this->id = $event->id;
         $this->orderId = $event->orderId;
+        $this->customerId = $event->customerId;
+        $this->createdAt = $event->createdAt;
         $this->origin = $event->origin;
         $this->destination = $event->destination;
         $this->trackingNumber = null;
@@ -247,12 +259,14 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     private function applyPrepared(ShipmentPrepared $event): void
     {
         $this->operationalState = ShipmentState::PREPARED;
+        $this->preparedAt = $event->preparedAt;
     }
 
     #[Apply]
     private function applyManifested(ShipmentManifested $event): void
     {
         $this->trackingNumber = $event->trackingNumber;
+        $this->manifestedAt = $event->manifestedAt;
         $this->operationalState = ShipmentState::MANIFESTED;
     }
 
@@ -260,34 +274,40 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     private function applyDispatched(ShipmentDispatched $event): void
     {
         $this->operationalState = ShipmentState::DISPATCHED;
+        $this->dispatchedAt = $event->dispatchedAt;
     }
 
     #[Apply]
     private function applyDelivered(ShipmentDelivered $event): void
     {
         $this->operationalState = ShipmentState::DELIVERED;
+        $this->deliveredAt = $event->deliveredAt;
     }
 
     #[Apply]
     private function applyCancelled(ShipmentCancelled $event): void
     {
         $this->operationalState = ShipmentState::CANCELLED;
+        $this->cancelledAt = $event->cancelledAt;
     }
 
     #[Apply]
     private function applyCancellationRejected(ShipmentCancellationRejected $event): void
     {
+        $this->cancellationRejectedAt = $event->rejectedAt;
     }
 
     #[Apply]
     private function applyErasureApproved(ShipmentErasureApproved $event): void
     {
         $this->erasureState = ErasureState::APPROVED;
+        $this->erasureApprovedAt = $event->approvedAt;
     }
 
     #[Apply]
     private function applyErased(ShipmentErased $event): void
     {
         $this->erasureState = ErasureState::ERASED;
+        $this->erasedAt = $event->erasedAt;
     }
 }

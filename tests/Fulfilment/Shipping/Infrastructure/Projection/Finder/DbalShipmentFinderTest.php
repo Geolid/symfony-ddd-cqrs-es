@@ -10,7 +10,9 @@ use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentResult;
 use Fulfilment\Shipping\Application\ShipmentStatus;
 use Fulfilment\Shipping\Domain\Shipment;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
-use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
+use Fulfilment\Tests\Shipping\Support\Factory\ShipmentFactory;
+use Fulfilment\Tests\Shipping\Support\Factory\ShipmentIdFactory;
+use Fulfilment\Tests\Shipping\Support\Factory\TrackingNumberFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\ErasureStatus;
@@ -29,9 +31,8 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
     public function itGetsById(): void
     {
         // Given
-        $other = ShipmentBuilder::new()->create();
-        $builder = ShipmentBuilder::new()->prepared()->manifested()->dispatched();
-        $shipment = $builder->create();
+        $other = ShipmentFactory::new()->create();
+        $shipment = ShipmentFactory::new()->prepared()->manifested()->dispatched()->create();
         $this->store($other, $shipment);
 
         // When
@@ -39,11 +40,11 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
 
         // Then
         self::assertSame($shipment->id->toString(), $result->id);
-        self::assertSame($builder['orderId'], $result->orderId);
+        self::assertSame($shipment->orderId, $result->orderId);
         self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
-        self::assertSame($builder['origin']->recipientName, $result->origin->recipientName);
-        self::assertSame($builder['destination']->recipientName, $result->destination->recipientName);
-        self::assertSame($builder['customerId'], $result->customerId);
+        self::assertSame($shipment->origin->recipientName, $result->origin->recipientName);
+        self::assertSame($shipment->destination->recipientName, $result->destination->recipientName);
+        self::assertSame($shipment->customerId, $result->customerId);
         self::assertSame(ErasureStatus::RETAINED, $result->erasureStatus);
     }
 
@@ -54,26 +55,26 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
         $this->expectException(ShipmentResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(Uuid::uuid7()->toString());
+        $this->finder()->ofId(ShipmentIdFactory::new()->create()->toString());
     }
 
     #[Test]
     public function itGetsByTrackingNumber(): void
     {
         // Given
-        $other = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->create();
-        $builder = ShipmentBuilder::new()->prepared()->manifested()->dispatched();
-        $tracked = $builder->create();
+        $other = ShipmentFactory::new()->prepared()->manifested()->dispatched()->create();
+        $trackingNumber = TrackingNumberFactory::new()->create()->value;
+        $tracked = ShipmentFactory::new()->prepared()->manifested($trackingNumber)->dispatched()->create();
         $this->store($other, $tracked);
 
         // When
-        $result = $this->finder()->ofTrackingNumber($builder['trackingNumber']->value);
+        $result = $this->finder()->ofTrackingNumber($trackingNumber);
 
         // Then
         self::assertSame($tracked->id->toString(), $result->id);
-        self::assertSame($builder['orderId'], $result->orderId);
+        self::assertSame($tracked->orderId, $result->orderId);
         self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
-        self::assertSame($builder['trackingNumber']->value, $result->trackingNumber);
+        self::assertSame($trackingNumber, $result->trackingNumber);
         self::assertNotNull($result->dispatchedAt);
         self::assertNull($result->deliveredAt);
     }
@@ -85,21 +86,20 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
         $this->expectException(ShipmentResultNotFoundException::class);
 
         // When
-        $this->finder()->ofTrackingNumber(ShipmentBuilder::sample('trackingNumber')->value);
+        $this->finder()->ofTrackingNumber(TrackingNumberFactory::new()->create()->value);
     }
 
     #[Test]
     public function itFindsByOrder(): void
     {
         // Given
-        $other = ShipmentBuilder::new()->create();
-        $builder = ShipmentBuilder::new();
-        $shipment = $builder->create();
+        $other = ShipmentFactory::new()->create();
+        $shipment = ShipmentFactory::new()->create();
         $this->store($other, $shipment);
 
         // When
-        $found = $this->finder()->ofOrderOrNull($builder['orderId']);
-        $notFound = $this->finder()->ofOrderOrNull(ShipmentBuilder::sample('orderId'));
+        $found = $this->finder()->ofOrderOrNull($shipment->orderId);
+        $notFound = $this->finder()->ofOrderOrNull(Uuid::uuid7()->toString());
 
         // Then
         self::assertNotNull($found);
@@ -112,8 +112,8 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $other = ShipmentBuilder::new()->create();
-        $shipment = ShipmentBuilder::new()->withCustomerId($customerId)->create();
+        $other = ShipmentFactory::new()->create();
+        $shipment = ShipmentFactory::new()->withCustomerId($customerId)->create();
         $this->store($other, $shipment);
 
         // When
@@ -129,10 +129,10 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $freshManifested = ShipmentBuilder::new()->prepared()->manifested(manifestedAt: $now->modify('+1 day'))->create();
-        $notManifested = ShipmentBuilder::new()->prepared()->create();
-        $staleManifested = ShipmentBuilder::new()->prepared()->manifested(manifestedAt: $now->modify('-1 day'))->create();
-        $staleDispatched = ShipmentBuilder::new()
+        $freshManifested = ShipmentFactory::new()->prepared()->manifested(manifestedAt: $now->modify('+1 day'))->create();
+        $notManifested = ShipmentFactory::new()->prepared()->create();
+        $staleManifested = ShipmentFactory::new()->prepared()->manifested(manifestedAt: $now->modify('-1 day'))->create();
+        $staleDispatched = ShipmentFactory::new()
             ->prepared()
             ->manifested(manifestedAt: $now->modify('-2 days'))
             ->dispatched($now->modify('-1 day'))
@@ -160,7 +160,7 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
      */
     protected function seed(int $count): array
     {
-        $shipments = ShipmentBuilder::new()->many($count)->create();
+        $shipments = ShipmentFactory::new()->many($count)->create();
         $this->store(...$shipments);
 
         return array_map(static fn (Shipment $shipment): string => $shipment->id->toString(), $shipments);
@@ -184,8 +184,8 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
         [$smallerId, $largerId] = array_keys($orderIdByShipmentId);
 
         $now = Clock::get()->now();
-        $first = ShipmentBuilder::new()->withOrderId($orderIdByShipmentId[$largerId])->withCreatedAt($now)->create();
-        $second = ShipmentBuilder::new()->withOrderId($orderIdByShipmentId[$smallerId])->withCreatedAt($now->modify('+1 hour'))->create();
+        $first = ShipmentFactory::new()->withOrderId($orderIdByShipmentId[$largerId])->withCreatedAt($now)->create();
+        $second = ShipmentFactory::new()->withOrderId($orderIdByShipmentId[$smallerId])->withCreatedAt($now->modify('+1 hour'))->create();
         $this->store($first, $second);
 
         return [$largerId, $smallerId];

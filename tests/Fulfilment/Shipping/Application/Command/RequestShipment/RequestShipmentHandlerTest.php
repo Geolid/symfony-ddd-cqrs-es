@@ -9,10 +9,11 @@ use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\ShipmentStatus;
 use Fulfilment\Shipping\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
-use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
+use Fulfilment\Tests\Shipping\Support\Factory\ShipmentIdFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Mapper\PostalAddressMapper;
+use Shared\Tests\Support\Factory\PostalAddressFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
@@ -30,11 +31,11 @@ final class RequestShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itRequests(): void
     {
         // Given
-        $id = Uuid::uuid7()->toString();
-        $orderId = ShipmentBuilder::sample('orderId');
-        $customerId = ShipmentBuilder::sample('customerId');
-        $originData = PostalAddressMapper::toArray(ShipmentBuilder::sample('origin'));
-        $destinationData = PostalAddressMapper::toArray(ShipmentBuilder::sample('destination'));
+        $id = ShipmentIdFactory::new()->create()->toString();
+        $orderId = Uuid::uuid7()->toString();
+        $customerId = Uuid::uuid7()->toString();
+        $originData = PostalAddressMapper::toArray(PostalAddressFactory::new()->create());
+        $destinationData = PostalAddressMapper::toArray(PostalAddressFactory::new()->create());
 
         // When
         $this->dispatch(new RequestShipment($id, $orderId, $customerId, $originData, $destinationData));

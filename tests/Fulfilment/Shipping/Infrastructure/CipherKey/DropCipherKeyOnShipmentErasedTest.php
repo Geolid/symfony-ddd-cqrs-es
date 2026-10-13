@@ -6,7 +6,7 @@ namespace Fulfilment\Tests\Shipping\Infrastructure\CipherKey;
 
 use Fulfilment\Shipping\Domain\Event\ShipmentErased;
 use Fulfilment\Shipping\Infrastructure\CipherKey\DropCipherKeyOnShipmentErased;
-use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
+use Fulfilment\Tests\Shipping\Support\Factory\ShipmentFactory;
 use Patchlevel\Hydrator\Extension\Cryptography\Cipher\CipherKey;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyNotExists;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
@@ -30,7 +30,7 @@ final class DropCipherKeyOnShipmentErasedTest extends AbstractIntegrationTestCas
     public function itDrops(): void
     {
         // Given
-        $shipment = ShipmentBuilder::new()->create();
+        $shipment = ShipmentFactory::new()->create();
         $this->store($shipment);
         $shipmentId = $shipment->id->toString();
         $now = Clock::get()->now();

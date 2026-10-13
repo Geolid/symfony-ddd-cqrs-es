@@ -13,10 +13,11 @@ use Fulfilment\Shipping\Application\Manifesting\Exception\ManifestDeniedExceptio
 use Fulfilment\Shipping\Application\Manifesting\Exception\ManifestPostponedException;
 use Fulfilment\Shipping\Application\Manifesting\ShipmentManifester;
 use Fulfilment\Shipping\Application\ShipmentStatus;
-use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
+use Fulfilment\Tests\Shipping\Support\Factory\ShipmentFactory;
+use Fulfilment\Tests\Shipping\Support\Factory\ShipmentIdFactory;
+use Fulfilment\Tests\Shipping\Support\Factory\TrackingNumberFactory;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
-use Ramsey\Uuid\Uuid;
 use Sales\Tests\Ordering\Support\Factory\OrderFactory;
 use Shared\Application\Command\CommandBusInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -49,12 +50,11 @@ final class ShipmentManifesterTest extends AbstractIntegrationTestCase
         // Given
         $order = OrderFactory::new()->create();
         $payment = PaymentFactory::new()->authorized()->captured($order->id->toString())->create();
-        $shipmentBuilder = ShipmentBuilder::new()->withOrderId($order->id->toString())->prepared();
-        $shipment = $shipmentBuilder->create();
+        $shipment = ShipmentFactory::new()->withOrderId($order->id->toString())->prepared()->create();
         $this->store($order, $payment, $shipment);
-        $trackingNumber = ShipmentBuilder::sample('trackingNumber')->value;
+        $trackingNumber = TrackingNumberFactory::new()->create()->value;
         $this->carrier->expects(self::once())->method('manifest')
-            ->with($shipment->id->toString(), $shipmentBuilder['origin'], $shipmentBuilder['destination'])
+            ->with($shipment->id->toString(), $shipment->origin, $shipment->destination)
             ->willReturn($trackingNumber);
 
         // When
@@ -77,14 +77,14 @@ final class ShipmentManifesterTest extends AbstractIntegrationTestCase
         $this->expectException(ShipmentResultNotFoundException::class);
 
         // When
-        $this->service->manifest(Uuid::uuid7()->toString());
+        $this->service->manifest(ShipmentIdFactory::new()->create()->toString());
     }
 
     #[Test]
     public function itFailsWhenCancelled(): void
     {
         // Given
-        $shipment = ShipmentBuilder::new()->prepared()->cancelled()->create();
+        $shipment = ShipmentFactory::new()->prepared()->cancelled()->create();
         $this->store($shipment);
         $this->carrier->expects(self::never())->method('manifest');
 
@@ -101,7 +101,7 @@ final class ShipmentManifesterTest extends AbstractIntegrationTestCase
         // Given
         $order = OrderFactory::new()->create();
         $payment = PaymentFactory::new()->create();
-        $shipment = ShipmentBuilder::new()->withOrderId($order->id->toString())->prepared()->create();
+        $shipment = ShipmentFactory::new()->withOrderId($order->id->toString())->prepared()->create();
         $this->store($order, $payment, $shipment);
         $this->carrier->expects(self::never())->method('manifest');
 

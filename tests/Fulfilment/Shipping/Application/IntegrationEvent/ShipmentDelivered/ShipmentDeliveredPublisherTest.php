@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipping\Application\IntegrationEvent\ShipmentDelivered;
 
 use Fulfilment\Shipping\Application\IntegrationEvent\ShipmentDelivered\ShipmentDeliveredIntegrationEvent;
-use Fulfilment\Tests\Shipping\Support\Builder\ShipmentBuilder;
+use Fulfilment\Tests\Shipping\Support\Factory\ShipmentFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -15,8 +15,7 @@ final class ShipmentDeliveredPublisherTest extends AbstractIntegrationTestCase
     public function itPublishes(): void
     {
         // Given
-        $builder = ShipmentBuilder::new()->prepared()->manifested()->dispatched()->delivered();
-        $shipment = $builder->create();
+        $shipment = ShipmentFactory::new()->prepared()->manifested()->dispatched()->delivered()->create();
 
         // When
         $this->store($shipment);
@@ -24,10 +23,10 @@ final class ShipmentDeliveredPublisherTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(ShipmentDeliveredIntegrationEvent::class);
         self::assertSame($shipment->id->toString(), $event->shipmentId);
-        self::assertSame($builder['orderId'], $event->orderId);
+        self::assertSame($shipment->orderId, $event->orderId);
         self::assertSame(
-            $builder['deliveredAt']->format(\DateTimeInterface::ATOM),
-            $event->deliveredAt->format(\DateTimeInterface::ATOM),
+            $shipment->deliveredAt?->format(\DateTimeInterface::ATOM),
+            $event->deliveredAt?->format(\DateTimeInterface::ATOM),
         );
     }
 }
