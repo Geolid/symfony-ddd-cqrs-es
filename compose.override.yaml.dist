@@ -6,11 +6,13 @@ services:
 
   app:
     environment:
+      DISPLAY: ${DISPLAY:-}
       COMPOSER_CACHE_DIR: /home/app/.cache/composer
       COMPOSER_HOME: /home/app/.config/composer
     volumes:
       - ~/.cache/composer:/home/app/.cache/composer
       - ~/.config/composer:/home/app/.config/composer
+      - /tmp/.X11-unix:/tmp/.X11-unix
 
   db:
     ports:
@@ -24,6 +26,6 @@ services:
     environment:
       PAYMENT_WEBHOOK_SECRET: ${PAYMENT_WEBHOOK_SECRET}
       CARRIER_WEBHOOK_SECRET: ${CARRIER_WEBHOOK_SECRET}
-      FAKE_CHECKOUT_BASE_URL: http://localhost:8081
+      GLOBEX_CHECKOUT_BASE_URL: http://checkout.globex.localhost:8081
     ports:
       - '8081:80'
