@@ -90,7 +90,7 @@ final class PaymentTest extends AggregateRootTestCase
     {
         $now = Clock::get()->now();
         $abandonedAt = $now->modify('+1 day');
-        $lateAuthorizedAt = $now->modify('+1 day');
+        $lateAuthorizedAt = $abandonedAt->modify('+1 hour');
 
         $this
             ->given(

@@ -33,7 +33,7 @@ final class CustomerTest extends AggregateRootTestCase
         $this->id = CustomerIdFactory::new()->create();
         $this->registeredAt = Clock::get()->now();
         $this->requestedAt = $this->registeredAt->modify('+1 day');
-        $this->cancelledAt = $this->registeredAt->modify('+2 days');
+        $this->cancelledAt = $this->registeredAt->modify('+2 day');
         $this->erasedAt = $this->registeredAt->modify('+2 day');
     }
 
