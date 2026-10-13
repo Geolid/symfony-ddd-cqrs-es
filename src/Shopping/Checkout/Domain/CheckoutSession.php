@@ -39,8 +39,19 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
 
     #[Id]
     public private(set) CheckoutSessionId $id;
-    private CheckoutSessionState $operationalState;
-    private \DateTimeImmutable $openedAt;
+    public private(set) string $cartId;
+    public private(set) string $customerId;
+    /** @var list<CheckoutItem> */
+    public private(set) array $items;
+    public private(set) PostalAddress $shippingAddress;
+    public private(set) PostalAddress $billingAddress;
+    public private(set) TaxedAmount $total;
+    public private(set) CheckoutSessionState $operationalState;
+    public private(set) \DateTimeImmutable $openedAt;
+    public private(set) ?\DateTimeImmutable $expiredAt = null;
+    public private(set) ?\DateTimeImmutable $staledAt = null;
+    public private(set) ?string $paymentId = null;
+    public private(set) ?\DateTimeImmutable $completedAt = null;
 
     /**
      * @param list<CheckoutItem> $items
@@ -155,6 +166,12 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
     private function applyOpened(CheckoutSessionOpened $event): void
     {
         $this->id = CheckoutSessionId::fromString($event->id);
+        $this->cartId = $event->cartId;
+        $this->customerId = $event->customerId;
+        $this->items = $event->items;
+        $this->shippingAddress = $event->shippingAddress;
+        $this->billingAddress = $event->billingAddress;
+        $this->total = $event->total;
         $this->operationalState = CheckoutSessionState::OPEN;
         $this->openedAt = $event->openedAt;
     }
@@ -163,17 +180,27 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
     private function applyExpired(CheckoutSessionExpired $event): void
     {
         $this->operationalState = CheckoutSessionState::EXPIRED;
+        $this->expiredAt = $event->expiredAt;
     }
 
     #[Apply]
     private function applyStaled(CheckoutSessionStaled $event): void
     {
         $this->operationalState = CheckoutSessionState::STALE;
+        $this->staledAt = $event->staledAt;
     }
 
     #[Apply]
     private function applyCompleted(CheckoutSessionCompleted $event): void
     {
+        $this->cartId = $event->cartId;
+        $this->customerId = $event->customerId;
+        $this->items = $event->items;
+        $this->shippingAddress = $event->shippingAddress;
+        $this->billingAddress = $event->billingAddress;
+        $this->total = $event->total;
         $this->operationalState = CheckoutSessionState::COMPLETED;
+        $this->paymentId = $event->paymentId;
+        $this->completedAt = $event->completedAt;
     }
 }

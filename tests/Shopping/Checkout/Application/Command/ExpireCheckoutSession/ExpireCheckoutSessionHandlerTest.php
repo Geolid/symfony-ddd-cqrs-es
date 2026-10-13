@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Shopping\Tests\Checkout\Application\Command\ExpireCheckoutSession;
 
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shopping\Checkout\Application\CheckoutSessionStatus;
 use Shopping\Checkout\Application\Command\ExpireCheckoutSession\ExpireCheckoutSession;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionFinderInterface;
 use Shopping\Checkout\Domain\Exception\CheckoutSessionNotFoundException;
-use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
+use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionFactory;
+use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionIdFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -29,7 +29,7 @@ final class ExpireCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
     public function itExpires(): void
     {
         // Given
-        $checkoutSession = CheckoutSessionBuilder::new()->withOpenedAt(Clock::get()->now()->modify('-31 minutes'))->create();
+        $checkoutSession = CheckoutSessionFactory::new()->withOpenedAt(Clock::get()->now()->modify('-31 minutes'))->create();
         $this->store($checkoutSession);
 
         // When
@@ -44,7 +44,7 @@ final class ExpireCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyExpired(): void
     {
         // Given
-        $checkoutSession = CheckoutSessionBuilder::new()->expired()->create();
+        $checkoutSession = CheckoutSessionFactory::new()->expired()->create();
         $this->store($checkoutSession);
 
         // When
@@ -58,7 +58,7 @@ final class ExpireCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenTTLNotElapsed(): void
     {
         // Given
-        $checkoutSession = CheckoutSessionBuilder::new()->create();
+        $checkoutSession = CheckoutSessionFactory::new()->create();
         $this->store($checkoutSession);
 
         // When
@@ -75,6 +75,6 @@ final class ExpireCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(CheckoutSessionNotFoundException::class);
 
         // When
-        $this->dispatch(new ExpireCheckoutSession(Uuid::uuid7()->toString()));
+        $this->dispatch(new ExpireCheckoutSession(CheckoutSessionIdFactory::new()->create()->toString()));
     }
 }

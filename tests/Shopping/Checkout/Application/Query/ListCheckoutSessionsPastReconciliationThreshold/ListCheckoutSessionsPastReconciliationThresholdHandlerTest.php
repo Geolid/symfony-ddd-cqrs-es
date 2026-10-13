@@ -6,7 +6,7 @@ namespace Shopping\Tests\Checkout\Application\Query\ListCheckoutSessionsPastReco
 
 use PHPUnit\Framework\Attributes\Test;
 use Shopping\Checkout\Application\Query\ListCheckoutSessionsPastReconciliationThreshold\ListCheckoutSessionsPastReconciliationThreshold;
-use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
+use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -17,13 +17,13 @@ final class ListCheckoutSessionsPastReconciliationThresholdHandlerTest extends A
     {
         // Given
         $now = Clock::get()->now();
-        $stuck = CheckoutSessionBuilder::new()
+        $stuck = CheckoutSessionFactory::new()
             ->withOpenedAt($now->modify('-45 minutes'))
             ->create();
-        $fresh = CheckoutSessionBuilder::new()
+        $fresh = CheckoutSessionFactory::new()
             ->withOpenedAt($now->modify('-5 minutes'))
             ->create();
-        $completed = CheckoutSessionBuilder::new()
+        $completed = CheckoutSessionFactory::new()
             ->withOpenedAt($now->modify('-45 minutes'))
             ->completed()
             ->create();

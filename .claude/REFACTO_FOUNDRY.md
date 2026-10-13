@@ -66,7 +66,8 @@ Source du code de référence : le spike, branche `ai/foundry-spike-storefront` 
 **Avancement des PRs par BC** (une par ligne, mise à jour à chaque étape) :
 - Iam.Authentication : fait sur `ai/foundry-iam-authentication` (état complet, factories de VO + `ApiKeyCredential`/`TrustedDevice`, aller-retour + `AlreadyExists`, `*PiiErasureTest` via le store réel, 5 Builders supprimés, `AccountBuilder` porté sur les factories de credentials).
 - Crm : fait sur `ai/foundry-crm` (état complet de `Customer`, `AddressFactory`/`PostalAddressFactory` dans `tests/Shared/Support/Factory/`, `CustomerFactory`, nouveau `PatchlevelCustomerRepositoryTest` avec `AlreadyExists`, `CustomerPiiErasureTest` via `storedEventOf()`, `CustomerBuilder` supprimé). Les usages de `CustomerBuilder` dans Shopping sont portés dans cette PR.
-- Reste : Shopping, Sales, Finance, Fulfilment, Catalog, Compliance.
+- Shopping : fait sur `ai/foundry-shopping` (état complet de `Cart` et `CheckoutSession`, `CartFactory`/`CheckoutSessionFactory`, factories de VO `QuantityFactory`/`MoneyFactory` (Shared), `CartIdFactory`, `CheckoutSessionIdFactory`, `TaxRateFactory`, `CheckoutItemFactory`, aller-retour + `AlreadyExists` des deux repositories, `CheckoutSessionPiiErasureTest` via `storedEventOf()`, `CartBuilder` et `CheckoutSessionBuilder` supprimés).
+- Reste : Sales, Finance, Fulfilment, Catalog, Compliance.
 
 **Ensuite : une PR par BC, empilées chacune sur la précédente** (une fois la PR socle mergée, la première se rebase sur `main`) :
 4. Iam.Authentication (credentials : factories de VO), Crm, Shopping, Sales, Finance, Fulfilment, Catalog, Compliance. Chaque PR : factories de VO et d'aggregate, état complet, test `AlreadyExists` du repository, suppression des Builders du BC. En dernier : `AbstractAggregateBuilder`, `SeededFaker`, `FakerSeedExtension`, les 3 subscribers de reset + `ResetState` + `EventSourcingExtension` + `ThrowawayKernelHelper`.
@@ -95,6 +96,7 @@ Source du code de référence : le spike, branche `ai/foundry-spike-storefront` 
 - Subscriptions en mémoire : passent dans tous les runs faits, non prouvé dans tous les ordres d'exécution.
 - Le test d'aller-retour du repository détecte la sérialisation, pas un `#[Apply]` oublié.
 - `composer.lock` : `symfony/error-handler` est passé de v8.1.5 à v8.1.8 pendant l'installation.
+- **Cart** : l'état garde `products` (productId → `Quantity`) mais pas les dates par produit (`addedAt`, `changedAt`, `removedAt` restent dans le flux) — choix à confirmer.
 - Domaines autres qu'Identity : état complet non essayé. Playwright, `cron` et `es-dashboard` non testés avec les stores réels.
 - **Tests `*PiiErasureTest`** : la sérialisation manuelle (`serializedEventOf()` + `deserialize()`) existait parce que l'event store en mémoire ne chiffrait rien. Avec le store et les clés en base, le test se réduit à : sauver, `removeWithSubjectId()`, relire (repository pour l'état d'un aggregate, `storedEventOf()` de `EventSourcingTrait` pour un événement, d'intégration compris). Fait pour Identity, `ApiKeyCredential`, Customer ; à faire dans la PR de chaque BC (Shopping, Sales, Fulfilment), puis supprimer `serializedEventOf()` de `EventSourcingTrait` s'il n'a plus d'appelant.
 - Restes du spike retirés (`tests/Iam/Identity/Spike/*`, `ShopperStory`, `BuilderShopperStory`, `CustomerFactory`, `CartFactory`, `demo:fixtures`). Reste : worktree `ai/foundry-spike`, stash `foundry-spike`.

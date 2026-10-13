@@ -10,7 +10,8 @@ use Shared\Domain\ValueObject\Quantity;
 use Shopping\Cart\Application\Command\ChangeCartProductQuantity\ChangeCartProductQuantity;
 use Shopping\Cart\Application\Finder\CartItem\CartItemFinderInterface;
 use Shopping\Cart\Domain\Exception\CartNotFoundException;
-use Shopping\Tests\Cart\Support\Builder\CartBuilder;
+use Shopping\Tests\Cart\Support\Factory\CartFactory;
+use Shopping\Tests\Cart\Support\Factory\CartIdFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ChangeCartProductQuantityHandlerTest extends AbstractIntegrationTestCase
@@ -29,7 +30,7 @@ final class ChangeCartProductQuantityHandlerTest extends AbstractIntegrationTest
     {
         // Given
         $productId = Uuid::uuid7()->toString();
-        $cart = CartBuilder::new()->productAdded($productId, Quantity::of(1))->create();
+        $cart = CartFactory::new()->productAdded($productId, Quantity::of(1))->create();
         $this->store($cart);
 
         // When
@@ -48,6 +49,6 @@ final class ChangeCartProductQuantityHandlerTest extends AbstractIntegrationTest
         $this->expectException(CartNotFoundException::class);
 
         // When
-        $this->dispatch(new ChangeCartProductQuantity(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), 1));
+        $this->dispatch(new ChangeCartProductQuantity(CartIdFactory::new()->create()->toString(), Uuid::uuid7()->toString(), 1));
     }
 }

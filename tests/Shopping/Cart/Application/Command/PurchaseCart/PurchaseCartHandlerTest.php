@@ -5,14 +5,14 @@ declare(strict_types=1);
 namespace Shopping\Tests\Cart\Application\Command\PurchaseCart;
 
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Shopping\Cart\Application\CartUniqueKey;
 use Shopping\Cart\Application\Command\PurchaseCart\PurchaseCart;
 use Shopping\Cart\Domain\Event\CartPurchased;
 use Shopping\Cart\Domain\Exception\CartNotFoundException;
-use Shopping\Tests\Cart\Support\Builder\CartBuilder;
+use Shopping\Tests\Cart\Support\Factory\CartFactory;
+use Shopping\Tests\Cart\Support\Factory\CartIdFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class PurchaseCartHandlerTest extends AbstractIntegrationTestCase
@@ -30,11 +30,10 @@ final class PurchaseCartHandlerTest extends AbstractIntegrationTestCase
     public function itPurchases(): void
     {
         // Given
-        $cartBuilder = CartBuilder::new()->productAdded();
-        $cart = $cartBuilder->create();
+        $cart = CartFactory::new()->productAdded()->create();
         $this->store($cart);
         $customerKey = UniqueKey::for(CartUniqueKey::CUSTOMER);
-        $this->uniqueness->claim($customerKey, $cartBuilder['customerId'], $cart->id->toString());
+        $this->uniqueness->claim($customerKey, $cart->customerId, $cart->id->toString());
 
         // When
         $this->dispatch(new PurchaseCart($cart->id->toString()));
@@ -42,7 +41,7 @@ final class PurchaseCartHandlerTest extends AbstractIntegrationTestCase
         // Then
         $event = $this->publishedEventOf(CartPurchased::class);
         self::assertSame($cart->id->toString(), $event->id->toString());
-        self::assertFalse($this->uniqueness->isClaimed($customerKey, $cartBuilder['customerId']));
+        self::assertFalse($this->uniqueness->isClaimed($customerKey, $cart->customerId));
     }
 
     #[Test]
@@ -52,6 +51,6 @@ final class PurchaseCartHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(CartNotFoundException::class);
 
         // When
-        $this->dispatch(new PurchaseCart(Uuid::uuid7()->toString()));
+        $this->dispatch(new PurchaseCart(CartIdFactory::new()->create()->toString()));
     }
 }

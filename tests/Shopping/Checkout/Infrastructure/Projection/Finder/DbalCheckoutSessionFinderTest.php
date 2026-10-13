@@ -18,7 +18,8 @@ use Shopping\Checkout\Application\Finder\CheckoutSession\Exception\CheckoutSessi
 use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
 use Shopping\Checkout\Domain\CheckoutSession;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
-use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
+use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionFactory;
+use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionIdFactory;
 use Shopping\Tests\Checkout\Support\PostalAddressResultMapper;
 use Symfony\Component\Clock\Clock;
 
@@ -33,8 +34,8 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
     public function itGets(): void
     {
         // Given
-        $other = CheckoutSessionBuilder::new()->create();
-        $checkoutSession = CheckoutSessionBuilder::new()->create();
+        $other = CheckoutSessionFactory::new()->create();
+        $checkoutSession = CheckoutSessionFactory::new()->create();
         $this->store($other, $checkoutSession);
 
         // When
@@ -51,30 +52,29 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
         $this->expectException(CheckoutSessionResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(Uuid::uuid7()->toString());
+        $this->finder()->ofId(CheckoutSessionIdFactory::new()->create()->toString());
     }
 
     #[Test]
     public function itFindsOpenByCart(): void
     {
         // Given
-        $other = CheckoutSessionBuilder::new()->create();
-        $builder = CheckoutSessionBuilder::new();
-        $checkoutSession = $builder->create();
-        $staledOnSameCart = CheckoutSessionBuilder::new()->withCartId($builder['cartId'])->staled()->create();
+        $other = CheckoutSessionFactory::new()->create();
+        $checkoutSession = CheckoutSessionFactory::new()->create();
+        $staledOnSameCart = CheckoutSessionFactory::new()->withCartId($checkoutSession->cartId)->staled()->create();
         $this->store($other, $checkoutSession, $staledOnSameCart);
 
         // When
-        $result = $this->finder()->openOfCartOrNull($builder['cartId']);
-        $nothing = $this->finder()->openOfCartOrNull(CheckoutSessionBuilder::sample('cartId'));
+        $result = $this->finder()->openOfCartOrNull($checkoutSession->cartId);
+        $nothing = $this->finder()->openOfCartOrNull(Uuid::uuid7()->toString());
 
         // Then
         self::assertNotNull($result);
         self::assertSame($checkoutSession->id->toString(), $result->id);
-        self::assertSame($builder['cartId'], $result->cartId);
-        self::assertSame($builder['customerId'], $result->customerId);
+        self::assertSame($checkoutSession->cartId, $result->cartId);
+        self::assertSame($checkoutSession->customerId, $result->customerId);
         self::assertSame(
-            array_map(CheckoutItemMapper::toArray(...), $builder['items']),
+            array_map(CheckoutItemMapper::toArray(...), $checkoutSession->items),
             array_map(
                 static fn (CheckoutSessionItemResult $item): array => [
                     'productId' => $item->productId,
@@ -86,25 +86,25 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
             ),
         );
         self::assertSame(
-            PostalAddressMapper::toArray($builder['shippingAddress']),
+            PostalAddressMapper::toArray($checkoutSession->shippingAddress),
             PostalAddressResultMapper::toArray($result->shippingAddress),
         );
         self::assertSame(
-            PostalAddressMapper::toArray($builder['billingAddress']),
+            PostalAddressMapper::toArray($checkoutSession->billingAddress),
             PostalAddressResultMapper::toArray($result->billingAddress),
         );
         $total = array_reduce(
-            $builder['items'],
+            $checkoutSession->items,
             static fn (TaxedAmount $carry, CheckoutItem $item): TaxedAmount => $carry->plus($item->taxedTotal()),
-            TaxedAmount::zero($builder['currency']),
+            TaxedAmount::zero($checkoutSession->total->excludingTax->currency),
         );
         self::assertSame($total->excludingTax->cents, $result->totalExcludingTaxInCents);
         self::assertSame($total->taxAmount->cents, $result->totalTaxAmountInCents);
         self::assertSame($total->includingTax->cents, $result->totalIncludingTaxInCents);
-        self::assertSame($builder['currency']->value, $result->currency);
-        self::assertSame($builder['taxRate']->basisPoints, $result->taxRateBasisPoints);
+        self::assertSame($checkoutSession->total->excludingTax->currency->value, $result->currency);
+        self::assertSame($checkoutSession->items[0]->taxRate->basisPoints, $result->taxRateBasisPoints);
         self::assertSame(CheckoutSessionStatus::OPEN, $result->status);
-        self::assertSame($builder['openedAt']->format('Y-m-d H:i:s'), $result->openedAt->format('Y-m-d H:i:s'));
+        self::assertSame($checkoutSession->openedAt->format('Y-m-d H:i:s'), $result->openedAt->format('Y-m-d H:i:s'));
 
         self::assertNull($nothing);
     }
@@ -113,13 +113,12 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
     public function itFiltersByCustomer(): void
     {
         // Given
-        $other = CheckoutSessionBuilder::new()->create();
-        $builder = CheckoutSessionBuilder::new();
-        $checkoutSession = $builder->create();
+        $other = CheckoutSessionFactory::new()->create();
+        $checkoutSession = CheckoutSessionFactory::new()->create();
         $this->store($other, $checkoutSession);
 
         // When
-        $results = iterator_to_array($this->finder()->byCustomer($builder['customerId']));
+        $results = iterator_to_array($this->finder()->byCustomer($checkoutSession->customerId));
 
         // Then
         self::assertCount(1, $results);
@@ -131,8 +130,8 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $freshOpened = CheckoutSessionBuilder::new()->withOpenedAt($now->modify('+1 day'))->create();
-        $staleOpened = CheckoutSessionBuilder::new()->withOpenedAt($now->modify('-1 day'))->create();
+        $freshOpened = CheckoutSessionFactory::new()->withOpenedAt($now->modify('+1 day'))->create();
+        $staleOpened = CheckoutSessionFactory::new()->withOpenedAt($now->modify('-1 day'))->create();
         $this->store($freshOpened, $staleOpened);
 
         // When
@@ -153,7 +152,7 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
      */
     protected function seed(int $count): array
     {
-        $checkoutSessions = CheckoutSessionBuilder::new()->many($count)->create();
+        $checkoutSessions = CheckoutSessionFactory::new()->many($count)->create();
         $this->store(...$checkoutSessions);
 
         return array_map(static fn (CheckoutSession $checkoutSession): string => $checkoutSession->id->toString(), $checkoutSessions);
@@ -173,8 +172,8 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
         $smallerId = Uuid::uuid7($now)->toString();
         $largerId = Uuid::uuid7($now->modify('+1 hour'))->toString();
 
-        $first = CheckoutSessionBuilder::new()->withId($largerId)->withOpenedAt($now)->create();
-        $second = CheckoutSessionBuilder::new()->withId($smallerId)->withOpenedAt($now->modify('+1 hour'))->create();
+        $first = CheckoutSessionFactory::new()->withId($largerId)->withOpenedAt($now)->create();
+        $second = CheckoutSessionFactory::new()->withId($smallerId)->withOpenedAt($now->modify('+1 hour'))->create();
         $this->store($first, $second);
 
         return [$largerId, $smallerId];

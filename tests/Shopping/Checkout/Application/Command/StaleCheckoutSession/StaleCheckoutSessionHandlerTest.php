@@ -5,12 +5,12 @@ declare(strict_types=1);
 namespace Shopping\Tests\Checkout\Application\Command\StaleCheckoutSession;
 
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shopping\Checkout\Application\CheckoutSessionStatus;
 use Shopping\Checkout\Application\Command\StaleCheckoutSession\StaleCheckoutSession;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionFinderInterface;
 use Shopping\Checkout\Domain\Exception\CheckoutSessionNotFoundException;
-use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
+use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionFactory;
+use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionIdFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class StaleCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
@@ -28,7 +28,7 @@ final class StaleCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
     public function itStales(): void
     {
         // Given
-        $checkoutSession = CheckoutSessionBuilder::new()->create();
+        $checkoutSession = CheckoutSessionFactory::new()->create();
         $this->store($checkoutSession);
 
         // When
@@ -43,7 +43,7 @@ final class StaleCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyStaled(): void
     {
         // Given
-        $checkoutSession = CheckoutSessionBuilder::new()->staled()->create();
+        $checkoutSession = CheckoutSessionFactory::new()->staled()->create();
         $this->store($checkoutSession);
 
         // When
@@ -60,6 +60,6 @@ final class StaleCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(CheckoutSessionNotFoundException::class);
 
         // When
-        $this->dispatch(new StaleCheckoutSession(Uuid::uuid7()->toString()));
+        $this->dispatch(new StaleCheckoutSession(CheckoutSessionIdFactory::new()->create()->toString()));
     }
 }

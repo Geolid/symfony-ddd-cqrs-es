@@ -9,7 +9,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Quantity;
 use Shopping\Checkout\Infrastructure\Projection\Projector\DbalCartItemProjector;
-use Shopping\Tests\Cart\Support\Builder\CartBuilder;
+use Shopping\Tests\Cart\Support\Factory\CartFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
@@ -22,12 +22,11 @@ final class DbalCartItemProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $otherProductId = Uuid::uuid7()->toString();
-        $other = CartBuilder::new()->productAdded($otherProductId)->create();
+        $other = CartFactory::new()->productAdded($otherProductId)->create();
         $this->store($other);
 
         $productId = Uuid::uuid7()->toString();
-        $builder = CartBuilder::new()->productAdded($productId);
-        $cart = $builder->create();
+        $cart = CartFactory::new()->productAdded($productId)->create();
 
         // When
         $this->store($cart);
@@ -35,7 +34,7 @@ final class DbalCartItemProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($cart->id->toString(), $productId);
         self::assertNotFalse($row);
-        self::assertSame($builder['productAdditions'][0]['quantity']->value, $row['quantity']);
+        self::assertSame($cart->products[$productId]->value, $row['quantity']);
 
         $otherRow = $this->fetchRow($other->id->toString(), $otherProductId);
         self::assertNotFalse($otherRow);
@@ -46,7 +45,7 @@ final class DbalCartItemProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $productId = Uuid::uuid7()->toString();
-        $cart = CartBuilder::new()
+        $cart = CartFactory::new()
             ->productAdded($productId, Quantity::of(2))
             ->productAdded($productId, Quantity::of(3))
             ->create();
@@ -65,10 +64,10 @@ final class DbalCartItemProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $productId = Uuid::uuid7()->toString();
-        $other = CartBuilder::new()->productAdded($productId)->create();
+        $other = CartFactory::new()->productAdded($productId)->create();
         $this->store($other);
 
-        $cart = CartBuilder::new()->productAdded($productId)->productRemoved()->create();
+        $cart = CartFactory::new()->productAdded($productId)->productRemoved()->create();
 
         // When
         $this->store($cart);
@@ -85,10 +84,10 @@ final class DbalCartItemProjectorTest extends AbstractIntegrationTestCase
     {
         // Given
         $productId = Uuid::uuid7()->toString();
-        $other = CartBuilder::new()->productAdded($productId, $otherQuantity = Quantity::of(4))->create();
+        $other = CartFactory::new()->productAdded($productId, $otherQuantity = Quantity::of(4))->create();
         $this->store($other);
 
-        $cart = CartBuilder::new()
+        $cart = CartFactory::new()
             ->productAdded($productId, Quantity::of(2))
             ->productQuantityChanged(quantity: $newQuantity = Quantity::of(9))
             ->create();

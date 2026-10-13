@@ -13,6 +13,7 @@ use Shared\Domain\ValueObject\PostalAddress;
 use Shopping\Cart\Application\Command\PurchaseCart\PurchaseCart;
 use Shopping\Cart\Application\Policy\PurchaseCartOnCheckoutSessionCompleted;
 use Shopping\Checkout\Application\IntegrationEvent\CheckoutSessionCompleted\CheckoutSessionCompletedIntegrationEvent;
+use Shopping\Tests\Cart\Support\Factory\CartIdFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -22,7 +23,7 @@ final class PurchaseCartOnCheckoutSessionCompletedTest extends AbstractIntegrati
     public function itPurchases(): void
     {
         // Given
-        $cartId = Uuid::uuid7()->toString();
+        $cartId = CartIdFactory::new()->create()->toString();
         $commandBus = $this->createMock(CommandBusInterface::class);
         $this->replace(CommandBusInterface::class, $commandBus);
         $commandBus->expects(self::once())->method('dispatch')->with(new PurchaseCart($cartId));

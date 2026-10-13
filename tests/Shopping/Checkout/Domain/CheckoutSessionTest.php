@@ -10,15 +10,19 @@ use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\Currency;
 use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Domain\ValueObject\TaxedAmount;
+use Shared\Tests\Support\Factory\PostalAddressFactory;
 use Shopping\Checkout\Domain\CheckoutSession;
 use Shopping\Checkout\Domain\Event\CheckoutSessionCompleted;
 use Shopping\Checkout\Domain\Event\CheckoutSessionExpired;
 use Shopping\Checkout\Domain\Event\CheckoutSessionOpened;
 use Shopping\Checkout\Domain\Event\CheckoutSessionStaled;
 use Shopping\Checkout\Domain\Exception\CheckoutSessionEmptyException;
+use Shopping\Checkout\Domain\Specification\CheckoutSessionExpiredSpecification;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Checkout\Domain\ValueObject\CheckoutSessionId;
-use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
+use Shopping\Tests\Checkout\Support\Factory\CheckoutItemFactory;
+use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionIdFactory;
+use Symfony\Component\Clock\Clock;
 
 final class CheckoutSessionTest extends AggregateRootTestCase
 {
@@ -40,18 +44,19 @@ final class CheckoutSessionTest extends AggregateRootTestCase
     {
         parent::setUp();
 
-        $this->id = CheckoutSessionId::fromString(Uuid::uuid7()->toString());
-        $this->cartId = CheckoutSessionBuilder::sample('cartId');
-        $this->customerId = CheckoutSessionBuilder::sample('customerId');
-        $this->items = CheckoutSessionBuilder::sample('items');
-        $this->currency = CheckoutSessionBuilder::sample('currency');
-        $this->shippingAddress = CheckoutSessionBuilder::sample('shippingAddress');
-        $this->billingAddress = CheckoutSessionBuilder::sample('billingAddress');
-        $this->paymentId = CheckoutSessionBuilder::sample('paymentId');
-        $this->openedAt = CheckoutSessionBuilder::sample('openedAt');
-        $this->expiredAt = CheckoutSessionBuilder::sample('expiredAt');
-        $this->staledAt = CheckoutSessionBuilder::sample('staledAt');
-        $this->completedAt = CheckoutSessionBuilder::sample('completedAt');
+        $this->id = CheckoutSessionIdFactory::new()->create();
+        $this->cartId = Uuid::uuid7()->toString();
+        $this->customerId = Uuid::uuid7()->toString();
+        $this->items = CheckoutItemFactory::new()->many(2)->create();
+        $this->currency = Currency::EUR;
+        $this->shippingAddress = PostalAddressFactory::new()->create();
+        $this->billingAddress = PostalAddressFactory::new()->create();
+        $this->paymentId = Uuid::uuid7()->toString();
+        $now = Clock::get()->now();
+        $this->openedAt = $now;
+        $this->expiredAt = $now->modify(\sprintf('+%d minutes', CheckoutSessionExpiredSpecification::TTL_MINUTES + 1));
+        $this->staledAt = $now->modify('+1 minute');
+        $this->completedAt = $now->modify('+5 minutes');
     }
 
     #[Test]
@@ -104,7 +109,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
     {
         $this
             ->given($this->opened(), $this->expired())
-            ->when(static fn (CheckoutSession $checkoutSession) => $checkoutSession->expire(CheckoutSessionBuilder::sample('expiredAt')))
+            ->when(fn (CheckoutSession $checkoutSession) => $checkoutSession->expire($this->expiredAt))
             ->then();
     }
 
@@ -131,7 +136,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
     {
         $this
             ->given($this->opened(), $this->staled())
-            ->when(static fn (CheckoutSession $checkoutSession) => $checkoutSession->stale(CheckoutSessionBuilder::sample('staledAt')))
+            ->when(static fn (CheckoutSession $checkoutSession) => $checkoutSession->stale(Clock::get()->now()->modify('+1 minute')))
             ->then();
     }
 
@@ -166,7 +171,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
                 $this->shippingAddress,
                 $this->billingAddress,
                 $this->paymentId,
-                CheckoutSessionBuilder::sample('completedAt'),
+                Clock::get()->now()->modify('+5 minutes'),
             ))
             ->then();
     }
@@ -176,7 +181,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
     {
         $this
             ->given($this->opened(), $this->staled())
-            ->when(static fn (CheckoutSession $checkoutSession) => $checkoutSession->expire(CheckoutSessionBuilder::sample('expiredAt')))
+            ->when(fn (CheckoutSession $checkoutSession) => $checkoutSession->expire($this->expiredAt))
             ->then();
     }
 
@@ -185,7 +190,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
     {
         $this
             ->given($this->opened(), $this->completed())
-            ->when(static fn (CheckoutSession $checkoutSession) => $checkoutSession->stale(CheckoutSessionBuilder::sample('staledAt')))
+            ->when(static fn (CheckoutSession $checkoutSession) => $checkoutSession->stale(Clock::get()->now()->modify('+1 minute')))
             ->then();
     }
 
@@ -202,7 +207,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
                 $this->shippingAddress,
                 $this->billingAddress,
                 $this->paymentId,
-                CheckoutSessionBuilder::sample('completedAt'),
+                Clock::get()->now()->modify('+5 minutes'),
             ))
             ->then();
     }

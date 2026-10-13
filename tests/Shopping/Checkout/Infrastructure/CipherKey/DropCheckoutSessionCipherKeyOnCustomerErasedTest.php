@@ -11,7 +11,7 @@ use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shopping\Checkout\Infrastructure\CipherKey\DropCheckoutSessionCipherKeyOnCustomerErased;
-use Shopping\Tests\Checkout\Support\Builder\CheckoutSessionBuilder;
+use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -31,9 +31,9 @@ final class DropCheckoutSessionCipherKeyOnCustomerErasedTest extends AbstractInt
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $other = CheckoutSessionBuilder::new()->create();
-        $firstAttempt = CheckoutSessionBuilder::new()->withCustomerId($customerId)->staled()->create();
-        $secondAttempt = CheckoutSessionBuilder::new()->withCustomerId($customerId)->create();
+        $other = CheckoutSessionFactory::new()->create();
+        $firstAttempt = CheckoutSessionFactory::new()->withCustomerId($customerId)->staled()->create();
+        $secondAttempt = CheckoutSessionFactory::new()->withCustomerId($customerId)->create();
         $this->store($other, $firstAttempt, $secondAttempt);
         $now = Clock::get()->now();
         foreach ([$other, $firstAttempt, $secondAttempt] as $checkoutSession) {

@@ -7,7 +7,7 @@ namespace Shopping\Tests\Checkout\Infrastructure\Projection\Finder;
 use PHPUnit\Framework\Attributes\Test;
 use Shopping\Checkout\Application\Finder\Cart\CartFinderInterface;
 use Shopping\Checkout\Application\Finder\Cart\Exception\CartResultNotFoundException;
-use Shopping\Tests\Cart\Support\Builder\CartBuilder;
+use Shopping\Tests\Cart\Support\Factory\CartFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DbalCartFinderTest extends AbstractIntegrationTestCase
@@ -25,9 +25,8 @@ final class DbalCartFinderTest extends AbstractIntegrationTestCase
     public function itGets(): void
     {
         // Given
-        $other = CartBuilder::new()->create();
-        $builder = CartBuilder::new();
-        $cart = $builder->create();
+        $other = CartFactory::new()->create();
+        $cart = CartFactory::new()->create();
         $this->store($other, $cart);
 
         // When
@@ -35,8 +34,8 @@ final class DbalCartFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($cart->id->toString(), $result->id);
-        self::assertSame($builder['customerId'], $result->customerId);
-        self::assertSame($builder['startedAt']->format('Y-m-d H:i:s'), $result->startedAt->format('Y-m-d H:i:s'));
+        self::assertSame($cart->customerId, $result->customerId);
+        self::assertSame($cart->startedAt->format('Y-m-d H:i:s'), $result->startedAt->format('Y-m-d H:i:s'));
     }
 
     #[Test]
