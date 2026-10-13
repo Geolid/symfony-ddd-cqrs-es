@@ -12,7 +12,7 @@ use Iam\Authentication\Domain\PasswordCredential\Exception\PasswordResetRequeste
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -35,7 +35,7 @@ final class RequestPasswordResetHandlerTest extends AbstractIntegrationTestCase
     public function itRequests(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->confirmed()->create();
+        $identity = IdentityFactory::new()->confirmed()->create();
         $credential = PasswordCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withPasswordStrength($this->passwordStrength)
@@ -66,7 +66,7 @@ final class RequestPasswordResetHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenIdentityNotAuthenticatable(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->create();
+        $identity = IdentityFactory::new()->create();
         $credential = PasswordCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withPasswordStrength($this->passwordStrength)
@@ -85,7 +85,7 @@ final class RequestPasswordResetHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenCredentialNotFound(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->confirmed()->create();
+        $identity = IdentityFactory::new()->confirmed()->create();
         $this->store($identity);
 
         // Then

@@ -6,6 +6,7 @@
          failOnDeprecation="true"
          failOnNotice="true"
          failOnWarning="true"
+         displayDetailsOnAllIssues="true"
          bootstrap="tests/bootstrap.php"
          cacheDirectory="var/.phpunit.cache"
          executionOrder="depends,defects"
@@ -107,6 +108,10 @@
         <bootstrap class="Tools\PHPUnit\FakerSeedExtension"/>
         <bootstrap class="Tools\PHPUnit\ValkeyExtension"/>
         <bootstrap class="DAMA\DoctrineTestBundle\PHPUnit\PHPUnitExtension"/>
+        <bootstrap class="Zenstruck\Browser\Test\BrowserExtension"/>
+        <bootstrap class="Zenstruck\Foundry\PHPUnit\FoundryExtension">
+            <parameter name="enabled-auto-reset" value="true"/>
+        </bootstrap>
         <bootstrap class="Symfony\Bridge\PhpUnit\SymfonyExtension">
             <parameter name="clock-mock-namespaces" value="Faker\Provider"/>
         </bootstrap>

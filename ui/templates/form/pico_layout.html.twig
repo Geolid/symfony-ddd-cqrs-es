@@ -21,14 +21,14 @@
 {%- block form_errors -%}
     {%- if errors|length > 0 -%}
         {%- if form.parent is null -%}
-            <twig:ui:FormError id="{{ id }}_error">
+            <twig:ui:FormError id="{{ id }}_error" data-testid="{{ id }}-error">
                 {%- for error in errors -%}
                     {{- error.message -}}
                     {%- if not loop.last %}<br>{% endif -%}
                 {%- endfor -%}
             </twig:ui:FormError>
         {%- else -%}
-            <small id="{{ id }}_error">
+            <small id="{{ id }}_error" data-testid="{{ id }}-error">
                 {%- for error in errors -%}
                     {{- error.message -}}
                     {%- if not loop.last %}<br>{% endif -%}

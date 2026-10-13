@@ -9,7 +9,7 @@ proposing a structural change.
 - Branch from `main`.
 - Commits follow [Conventional Commits](https://www.conventionalcommits.org/)
   (`type(scope): description`) — enforced by a `commit-msg` git hook, install
-  it with `castor hooks` (already wired into `castor start`).
+  it with `castor setup:hooks` (already wired into `castor setup`).
 - Run `castor qa` before opening a PR — it covers linting, coding standards,
   architecture isolation (Deptrac/PHPat), tests, and mutation testing.
 - Fill in the PR template.

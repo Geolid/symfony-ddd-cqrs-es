@@ -69,6 +69,10 @@
         <source>confirm_resend_flash_already_confirmed</source>
         <target>Votre compte est déjà confirmé, vous pouvez vous identifier.</target>
       </trans-unit>
+      <trans-unit id="confirm_error_expired">
+        <source>confirm_error_expired</source>
+        <target>Cette inscription n'a pas été confirmée à temps et a été supprimée. Merci de vous réinscrire.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

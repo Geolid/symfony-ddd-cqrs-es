@@ -68,12 +68,18 @@ final class ForgotPasswordController extends AbstractController
                 return $this->redirectToRoute('storefront_registration_confirm', ['identityId' => $identity->id]);
             }
 
-            $this->resendFlow->attempt(
-                $request,
-                $identity->id,
-                self::VERIFICATION_CODE_PURPOSE,
-                fn () => $this->commandBus->dispatch(new RequestPasswordReset($identity->id)),
-            );
+            try {
+                $this->resendFlow->attempt(
+                    $request,
+                    $identity->id,
+                    self::VERIFICATION_CODE_PURPOSE,
+                    fn () => $this->commandBus->dispatch(new RequestPasswordReset($identity->id)),
+                );
+            } catch (IdentityNotAuthenticatableException) {
+                $this->addFlash('error', $this->translator->trans('reset_flash_not_authenticatable', domain: 'forgot_password'));
+
+                return $this->redirectToRoute('storefront_signin_identify');
+            }
 
             return $this->redirectToRoute('storefront_forgot_password_reset', ['identityId' => $identity->id]);
         }
@@ -137,7 +143,7 @@ final class ForgotPasswordController extends AbstractController
                 return $this->redirectToRoute('storefront_signin_identify');
             }
         } else {
-            $this->addFlash('error', $this->translator->trans('flash_failed', domain: 'verification_code'));
+            $this->addFlash('error', $this->translator->trans('flash_invalid_csrf_token', domain: 'messages'));
         }
 
         return $this->redirectToRoute('storefront_forgot_password_reset', ['identityId' => $identityId]);

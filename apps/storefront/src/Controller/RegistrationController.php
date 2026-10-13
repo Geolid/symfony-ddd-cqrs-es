@@ -10,6 +10,7 @@ use Iam\Identity\Application\Command\RegisterIdentity\Exception\IdentityEmailAlr
 use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
 use Iam\Identity\Application\Command\RequestIdentityConfirmation\RequestIdentityConfirmation;
 use Iam\Identity\Domain\Exception\IdentityAlreadyConfirmedException;
+use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -92,6 +93,10 @@ final class RegistrationController extends AbstractController
                 $this->addFlash('success', $this->translator->trans('confirm_flash_confirmed', domain: 'registration'));
 
                 return $this->redirectToRoute('storefront_signin_identify');
+            } catch (IdentityAlreadyErasedException) {
+                $this->addFlash('error', $this->translator->trans('confirm_error_expired', domain: 'registration'));
+
+                return $this->redirectToRoute('storefront_registration_register');
             } catch (ApplicationExceptionInterface|\DomainException $e) {
                 if (!$this->formExceptionMapper->map($form, $e)) {
                     throw $e;
@@ -114,7 +119,7 @@ final class RegistrationController extends AbstractController
     public function confirmResend(Request $request, string $identityId): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('confirmation_resend', (string) $request->request->get('_token'))) {
-            $this->addFlash('error', $this->translator->trans('flash_failed', domain: 'verification_code'));
+            $this->addFlash('error', $this->translator->trans('flash_invalid_csrf_token', domain: 'messages'));
 
             return $this->redirectToRoute('storefront_registration_confirm', ['identityId' => $identityId]);
         }
@@ -130,6 +135,10 @@ final class RegistrationController extends AbstractController
             $this->addFlash('success', $this->translator->trans('confirm_resend_flash_already_confirmed', domain: 'registration'));
 
             return $this->redirectToRoute('storefront_signin_identify');
+        } catch (IdentityAlreadyErasedException) {
+            $this->addFlash('error', $this->translator->trans('confirm_error_expired', domain: 'registration'));
+
+            return $this->redirectToRoute('storefront_registration_register');
         }
 
         return $this->redirectToRoute('storefront_registration_confirm', ['identityId' => $identityId]);

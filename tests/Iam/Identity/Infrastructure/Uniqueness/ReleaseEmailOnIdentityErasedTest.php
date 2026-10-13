@@ -8,9 +8,9 @@ use Iam\Identity\Application\IdentityUniqueKey;
 use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Infrastructure\Uniqueness\ReleaseEmailOnIdentityErased;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
+use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -31,8 +31,8 @@ final class ReleaseEmailOnIdentityErasedTest extends AbstractIntegrationTestCase
     public function itReleases(): void
     {
         // Given
-        $identityId = Uuid::uuid7()->toString();
-        $email = IdentityBuilder::sample('email')->value;
+        $identityId = IdentityIdFactory::new()->create()->toString();
+        $email = IdentityFactory::sample('email')->value;
         $this->uniqueness->claim(UniqueKey::for(IdentityUniqueKey::EMAIL), $email, $identityId);
 
         // When
@@ -42,7 +42,7 @@ final class ReleaseEmailOnIdentityErasedTest extends AbstractIntegrationTestCase
         ));
 
         // Then
-        $this->uniqueness->claim(UniqueKey::for(IdentityUniqueKey::EMAIL), $email, Uuid::uuid7()->toString());
+        $this->uniqueness->claim(UniqueKey::for(IdentityUniqueKey::EMAIL), $email, IdentityIdFactory::new()->create()->toString());
         self::expectNotToPerformAssertions();
     }
 }

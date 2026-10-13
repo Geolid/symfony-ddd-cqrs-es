@@ -10,9 +10,9 @@ use Iam\Identity\Application\IdentityVerificationStatus;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Exception\InvalidConfirmationCodeException;
 use Iam\Identity\Domain\ValueObject\IdentityVerificationCodePurpose;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
+use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\VerificationCodeKey;
 use Shared\Infrastructure\VerificationCode\NativeCodeChallenger;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -33,7 +33,7 @@ final class ConfirmIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itConfirms(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->create();
+        $identity = IdentityFactory::new()->create();
         $this->store($identity);
         $code = $this->codeChallenger->issue(VerificationCodeKey::for(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $identity->id->toString()), Clock::get()->now());
 
@@ -49,7 +49,7 @@ final class ConfirmIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyConfirmed(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->confirmed()->create();
+        $identity = IdentityFactory::new()->confirmed()->create();
         $this->store($identity);
         $code = $this->codeChallenger->issue(VerificationCodeKey::for(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $identity->id->toString()), Clock::get()->now());
 
@@ -67,14 +67,14 @@ final class ConfirmIdentityHandlerTest extends AbstractIntegrationTestCase
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new ConfirmIdentity(Uuid::uuid7()->toString(), '123456'));
+        $this->dispatch(new ConfirmIdentity(IdentityIdFactory::new()->create()->toString(), '123456'));
     }
 
     #[Test]
     public function itFailsWhenCodeInvalid(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->create();
+        $identity = IdentityFactory::new()->create();
         $this->store($identity);
         $this->codeChallenger->issue(VerificationCodeKey::for(IdentityVerificationCodePurpose::EMAIL_CONFIRMATION, $identity->id->toString()), Clock::get()->now());
 

@@ -11,20 +11,12 @@ function demo_seed(): void
 {
     with(static function (): void {
         db_reset();
-        demo_exec(['demo:seed']);
-    }, environment: ['APP_ENV' => 'demo']);
+        workspace_exec(['php', 'demo/console', 'demo:seed']);
+    }, context: 'demo');
 }
 
 #[AsTask(name: 'list', namespace: 'demo', description: 'List available demo commands')]
 function demo_list(): void
 {
-    with(static fn () => demo_exec(['list', 'demo']), environment: ['APP_ENV' => 'demo']);
-}
-
-/**
- * @param array<string> $args
- */
-function demo_exec(array $args): void
-{
-    compose_exec(['php', 'demo/console', ...$args]);
+    with(static fn () => workspace_exec(['php', 'demo/console', 'list', 'demo']), context: 'demo');
 }

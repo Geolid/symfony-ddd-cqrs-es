@@ -17,7 +17,7 @@ use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthS
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialVerificationCodePurpose;
 use Iam\Tests\Authentication\Support\Builder\PasswordCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\StubCompromisedPasswordGateway;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\ValueObject\VerificationCodeKey;
@@ -51,7 +51,7 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
     public function itChanges(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->confirmed()->create();
+        $identity = IdentityFactory::new()->confirmed()->create();
         $credential = PasswordCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withPasswordStrength($this->passwordStrength)
@@ -88,7 +88,7 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenIdentityNotAuthenticatable(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->create();
+        $identity = IdentityFactory::new()->create();
         $this->store($identity);
 
         $code = $this->codeChallenger->issue(VerificationCodeKey::for(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identity->id->toString()), Clock::get()->now());
@@ -106,7 +106,7 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
         // Given
         $this->replace(CompromisedPasswordGatewayInterface::class, new StubCompromisedPasswordGateway(compromised: true));
 
-        $identity = IdentityBuilder::new()->confirmed()->create();
+        $identity = IdentityFactory::new()->confirmed()->create();
         $credential = PasswordCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withPasswordStrength($this->passwordStrength)
@@ -127,7 +127,7 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenCredentialMissing(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->confirmed()->create();
+        $identity = IdentityFactory::new()->confirmed()->create();
         $this->store($identity);
 
         $code = $this->codeChallenger->issue(VerificationCodeKey::for(PasswordCredentialVerificationCodePurpose::PASSWORD_RESET, $identity->id->toString()), Clock::get()->now());
@@ -143,7 +143,7 @@ final class ResetPasswordHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenCodeInvalid(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->confirmed()->create();
+        $identity = IdentityFactory::new()->confirmed()->create();
         $credential = PasswordCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withPasswordStrength($this->passwordStrength)

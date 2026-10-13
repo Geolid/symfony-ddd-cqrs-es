@@ -4,6 +4,7 @@ includes:
     - vendor/phpstan/phpstan-phpunit/extension.neon
     - vendor/phpat/phpat/extension.neon
     - vendor/patchlevel/event-sourcing-phpstan-extension/extension.neon
+    - vendor/swisnl/phpstan-faker/extension.neon
     - phpstan.rules.neon
 
 services:

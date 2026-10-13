@@ -7,7 +7,7 @@ namespace Iam\Tests\Authentication\Application\Policy;
 use Iam\Authentication\Application\Policy\IssuePasswordResetOnPasswordCredentialResetRequested;
 use Iam\Authentication\Domain\PasswordCredential\Event\PasswordCredentialResetRequested;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Bundle\FrameworkBundle\Test\MailerAssertionsTrait;
@@ -22,8 +22,8 @@ final class IssuePasswordResetOnPasswordCredentialResetRequestedTest extends Abs
     public function itNotifies(): void
     {
         // Given
-        $builder = IdentityBuilder::new()->confirmed();
-        $identity = $builder->create();
+        $factory = IdentityFactory::new()->confirmed();
+        $identity = $factory->create();
         $this->store($identity);
 
         // When
@@ -40,7 +40,7 @@ final class IssuePasswordResetOnPasswordCredentialResetRequestedTest extends Abs
         self::assertEmailCount(1);
         $message = self::getMailerMessage();
         self::assertInstanceOf(Email::class, $message);
-        self::assertEmailAddressContains($message, 'To', $builder['email']->value);
+        self::assertEmailAddressContains($message, 'To', $identity->email->value);
         self::assertEmailSubjectContains($message, 'Reset your password');
         self::assertMatchesRegularExpression('/\d{6}/', (string) $message->getTextBody());
     }

@@ -6,10 +6,9 @@ namespace Iam\Tests\Identity\Application\Policy;
 
 use Iam\Identity\Application\Policy\IssueEmailChangeCodeOnEmailChangeRequested;
 use Iam\Identity\Domain\Event\IdentityEmailChangeRequested;
-use Iam\Identity\Domain\ValueObject\IdentityId;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
+use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Bundle\FrameworkBundle\Test\MailerAssertionsTrait;
 use Symfony\Component\Mime\Email;
@@ -22,9 +21,9 @@ final class IssueEmailChangeCodeOnEmailChangeRequestedTest extends AbstractInteg
     public function itNotifies(): void
     {
         // Given
-        $id = IdentityId::fromString(Uuid::uuid7()->toString());
-        $newEmail = IdentityBuilder::sample('email');
-        $requestedAt = IdentityBuilder::sample('emailChangeRequestedAt');
+        $id = IdentityIdFactory::new()->create();
+        $newEmail = IdentityFactory::sample('email');
+        $requestedAt = IdentityFactory::sample('emailChangeRequestedAt');
 
         // When
         $this->trigger(IssueEmailChangeCodeOnEmailChangeRequested::class, new IdentityEmailChangeRequested($id, $newEmail, $requestedAt));

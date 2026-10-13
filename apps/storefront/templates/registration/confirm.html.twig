@@ -6,15 +6,17 @@
 {% block content %}
     <p>{{ 'confirm_message_sent'|trans({'%email%': email}) }} (<a href="{{ path('storefront_signin_identify') }}">{{ 'link_modify'|trans({}, 'messages') }}</a>)</p>
 
-    {{ form_start(form) }}
+    {{ form_start(form, {attr: {'data-testid': 'confirm-form'}}) }}
         {{ form_errors(form) }}
         {{ form_widget(form) }}
-        <button type="submit">{{ 'confirm_button_submit'|trans }}</button>
+        <button type="submit" data-testid="confirm-submit">{{ 'confirm_button_submit'|trans }}</button>
     {{ form_end(form) }}
 
     <twig:ui:SubmitLink
         actionUrl="{{ path('storefront_registration_confirm_resend', {identityId: identityId}) }}"
         csrfId="confirmation_resend"
         label="{{ 'button_resend'|trans({}, 'verification_code') }}"
+        formTestId="confirm-resend-form"
+        data-testid="confirm-resend-link"
     />
 {% endblock %}

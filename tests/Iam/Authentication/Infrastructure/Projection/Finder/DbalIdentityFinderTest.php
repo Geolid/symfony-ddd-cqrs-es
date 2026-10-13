@@ -8,7 +8,7 @@ use Iam\Authentication\Application\Finder\Identity\Exception\IdentityResultNotFo
 use Iam\Authentication\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Authentication\Application\IdentityModerationStatus;
 use Iam\Authentication\Application\IdentityVerificationStatus;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -28,9 +28,9 @@ final class DbalIdentityFinderTest extends AbstractIntegrationTestCase
     public function itGetsById(): void
     {
         // Given
-        $other = IdentityBuilder::new()->create();
-        $builder = IdentityBuilder::new()->confirmed();
-        $identity = $builder->create();
+        $other = IdentityFactory::new()->create();
+        $factory = IdentityFactory::new()->confirmed();
+        $identity = $factory->create();
         $this->store($other, $identity);
 
         // When
@@ -38,8 +38,8 @@ final class DbalIdentityFinderTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame($identity->id->toString(), $result->identityId);
-        self::assertSame($builder['fullName']->value, $result->fullName);
-        self::assertSame($builder['email']->value, $result->email);
+        self::assertSame($identity->fullName->value, $result->fullName);
+        self::assertSame($identity->email->value, $result->email);
         self::assertSame(IdentityVerificationStatus::CONFIRMED, $result->verificationStatus);
         self::assertSame(IdentityModerationStatus::ACTIVE, $result->moderationStatus);
     }

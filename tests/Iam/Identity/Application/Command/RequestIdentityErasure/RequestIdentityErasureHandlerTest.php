@@ -7,9 +7,9 @@ namespace Iam\Tests\Identity\Application\Command\RequestIdentityErasure;
 use Iam\Identity\Application\Command\RequestIdentityErasure\RequestIdentityErasure;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
+use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Application\ErasureStatus;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -19,7 +19,7 @@ final class RequestIdentityErasureHandlerTest extends AbstractIntegrationTestCas
     public function itRequests(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->create();
+        $identity = IdentityFactory::new()->create();
         $this->store($identity);
 
         // When
@@ -34,7 +34,7 @@ final class RequestIdentityErasureHandlerTest extends AbstractIntegrationTestCas
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = Uuid::uuid7()->toString();
+        $id = IdentityIdFactory::new()->create()->toString();
 
         // Then
         $this->expectException(IdentityNotFoundException::class);

@@ -10,17 +10,17 @@ use function Castor\fs;
 use function Castor\io;
 use function Castor\run;
 
-#[AsTask(description: 'Build a production-optimized artifact')]
-function dist(): void
+#[AsTask(name: 'dist', namespace: 'release', description: 'Build a production-optimized artifact')]
+function release_dist(): void
 {
-    $app_env = app_env('prod');
+    $appEnv = app_env('prod');
     $distPaths = ['bin/console', 'bootstrap', 'config', 'apps', 'public', 'src', '.castor', 'ui', 'vendor', 'castor.php', 'composer.json'];
 
     io()->title('Building production artifact');
-    io()->comment("APP_ENV={$app_env}");
+    io()->comment("APP_ENV={$appEnv}");
 
     run(['rm', '-rf', 'vendor/', 'dist/']);
-    run(['composer', 'install', '--optimize-autoloader', '--classmap-authoritative', '--prefer-dist', '--no-progress', '--no-dev'], context: context()->withEnvironment(['APP_ENV' => $app_env]));
+    run(['composer', 'install', '--optimize-autoloader', '--classmap-authoritative', '--no-progress', '--no-dev'], context: context()->withEnvironment(['APP_ENV' => $appEnv]));
 
     fs()->mkdir('dist');
 

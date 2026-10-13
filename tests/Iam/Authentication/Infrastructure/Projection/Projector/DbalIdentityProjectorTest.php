@@ -8,7 +8,7 @@ use Doctrine\DBAL\Connection;
 use Iam\Authentication\Application\IdentityModerationStatus;
 use Iam\Authentication\Application\IdentityVerificationStatus;
 use Iam\Authentication\Infrastructure\Projection\Projector\DbalIdentityProjector;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -21,8 +21,8 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnIdentityRegisteredIntegrationEvent(): void
     {
         // Given
-        $builder = IdentityBuilder::new();
-        $identity = $builder->create();
+        $factory = IdentityFactory::new();
+        $identity = $factory->create();
 
         // When
         $this->store($identity);
@@ -30,8 +30,8 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($identity->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($builder['fullName']->value, $row['full_name']);
-        self::assertSame($builder['email']->value, $row['email']);
+        self::assertSame($identity->fullName->value, $row['full_name']);
+        self::assertSame($identity->email->value, $row['email']);
         self::assertSame(IdentityVerificationStatus::PENDING->value, $row['verification_status']);
         self::assertSame(IdentityModerationStatus::ACTIVE->value, $row['moderation_status']);
     }
@@ -40,8 +40,8 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnIdentityConfirmedIntegrationEvent(): void
     {
         // Given
-        $other = IdentityBuilder::new()->create();
-        $identity = IdentityBuilder::new()->confirmed()->create();
+        $other = IdentityFactory::new()->create();
+        $identity = IdentityFactory::new()->confirmed()->create();
 
         // When
         $this->store($other, $identity);
@@ -60,8 +60,8 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnIdentitySuspendedIntegrationEvent(): void
     {
         // Given
-        $other = IdentityBuilder::new()->create();
-        $identity = IdentityBuilder::new()->confirmed()->suspended()->create();
+        $other = IdentityFactory::new()->create();
+        $identity = IdentityFactory::new()->confirmed()->suspended()->create();
 
         // When
         $this->store($other, $identity);
@@ -80,8 +80,8 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnIdentityReactivatedIntegrationEvent(): void
     {
         // Given
-        $other = IdentityBuilder::new()->confirmed()->suspended()->create();
-        $identity = IdentityBuilder::new()->confirmed()->suspended()->reactivated()->create();
+        $other = IdentityFactory::new()->confirmed()->suspended()->create();
+        $identity = IdentityFactory::new()->confirmed()->suspended()->reactivated()->create();
 
         // When
         $this->store($other, $identity);
@@ -100,8 +100,8 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
     public function itRemovesOnIdentityErasedIntegrationEvent(): void
     {
         // Given
-        $other = IdentityBuilder::new()->create();
-        $identity = IdentityBuilder::new()->erasureRequested()->erased()->create();
+        $other = IdentityFactory::new()->create();
+        $identity = IdentityFactory::new()->erasureRequested()->erased()->create();
 
         // When
         $this->store($other, $identity);

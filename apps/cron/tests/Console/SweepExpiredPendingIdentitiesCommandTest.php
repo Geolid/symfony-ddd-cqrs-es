@@ -7,7 +7,7 @@ namespace Cron\Tests\Console;
 use Cron\Tests\AbstractCronTestCase;
 use Iam\Identity\Application\Finder\Identity\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\Clock\Clock;
 
@@ -27,8 +27,8 @@ final class SweepExpiredPendingIdentitiesCommandTest extends AbstractCronTestCas
     {
         // Given
         $now = Clock::get()->now();
-        $fresh = IdentityBuilder::new()->withRegisteredAt($now->modify('-1 hour'))->create();
-        $stale = IdentityBuilder::new()->withRegisteredAt($now->modify('-25 hours'))->create();
+        $fresh = IdentityFactory::new()->withRegisteredAt($now->modify('-1 hour'))->create();
+        $stale = IdentityFactory::new()->withRegisteredAt($now->modify('-25 hours'))->create();
         $this->store($fresh, $stale);
 
         // When

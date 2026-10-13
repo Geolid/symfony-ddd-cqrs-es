@@ -33,10 +33,6 @@
         <source>button_resend</source>
         <target>Resend code</target>
       </trans-unit>
-      <trans-unit id="flash_failed">
-        <source>flash_failed</source>
-        <target>Something went wrong.</target>
-      </trans-unit>
       <trans-unit id="flash_rate_limited">
         <source>flash_rate_limited</source>
         <target>Too many codes requested. Try again in %minutes% minutes.</target>

@@ -20,8 +20,14 @@ services:
         condition: service_healthy
       valkey:
         condition: service_healthy
+    environment:
+      DISPLAY: ${DISPLAY:-}
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
     volumes:
       - ./:/srv/
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - playwright-cache:/home/app/.cache/ms-playwright
     command: [ 'php-fpm' ]
 
   db:
@@ -64,3 +70,4 @@ services:
 volumes:
   db-data: ~
   valkey-data: ~
+  playwright-cache: ~

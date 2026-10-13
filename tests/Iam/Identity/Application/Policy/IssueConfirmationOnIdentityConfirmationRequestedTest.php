@@ -6,7 +6,7 @@ namespace Iam\Tests\Identity\Application\Policy;
 
 use Iam\Identity\Application\Policy\IssueConfirmationOnIdentityConfirmationRequested;
 use Iam\Identity\Domain\Event\IdentityConfirmationRequested;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Bundle\FrameworkBundle\Test\MailerAssertionsTrait;
@@ -21,8 +21,8 @@ final class IssueConfirmationOnIdentityConfirmationRequestedTest extends Abstrac
     public function itNotifies(): void
     {
         // Given
-        $builder = IdentityBuilder::new();
-        $identity = $builder->create();
+        $factory = IdentityFactory::new();
+        $identity = $factory->create();
         $this->store($identity);
 
         // When
@@ -35,7 +35,7 @@ final class IssueConfirmationOnIdentityConfirmationRequestedTest extends Abstrac
         self::assertEmailCount(1);
         $message = self::getMailerMessage();
         self::assertInstanceOf(Email::class, $message);
-        self::assertEmailAddressContains($message, 'To', $builder['email']->value);
+        self::assertEmailAddressContains($message, 'To', $identity->email->value);
         self::assertEmailSubjectContains($message, 'Confirm your email address');
         self::assertMatchesRegularExpression('/\d{6}/', (string) $message->getTextBody());
     }

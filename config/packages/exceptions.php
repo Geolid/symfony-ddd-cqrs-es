@@ -20,6 +20,7 @@ use Fulfilment\Shipping\Application\Manifesting\Exception\ManifestPostponedExcep
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
 use Iam\Authentication\Application\BreachDatabase\Exception\CompromisedPasswordException;
+use Iam\Authentication\Application\Command\EnrollTotp\Exception\TotpAlreadyEnrolledException;
 use Iam\Authentication\Application\Command\IssueApiKey\Exception\ApiKeyCredentialLabelAlreadyInUseException;
 use Iam\Authentication\Application\CredentialVerification\Exception\ApiKeyCredentialRevokedException;
 use Iam\Authentication\Application\CredentialVerification\Exception\IdentityNotAuthenticatableException;
@@ -72,6 +73,7 @@ return static function (ContainerConfigurator $container): void {
             RequestEmailChangeIdentityEmailAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
             ChangeEmailIdentityEmailAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
             IdentityNotAuthenticatableException::class => ['log_level' => 'info', 'status_code' => 409],
+            TotpAlreadyEnrolledException::class => ['log_level' => 'info', 'status_code' => 409],
             ApiKeyCredentialRevokedException::class => ['log_level' => 'info', 'status_code' => 409],
             ApiKeyCredentialOwnedByAnotherIdentityException::class => ['log_level' => 'info', 'status_code' => 403],
             ApiKeyCredentialLabelAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],

@@ -6,7 +6,7 @@ namespace Iam\Tests\Identity\Infrastructure\CipherKey;
 
 use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Infrastructure\CipherKey\DropCipherKeyOnIdentityErased;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Patchlevel\Hydrator\Extension\Cryptography\Cipher\CipherKey;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyNotExists;
 use Patchlevel\Hydrator\Extension\Cryptography\Store\CipherKeyStore;
@@ -30,7 +30,7 @@ final class DropCipherKeyOnIdentityErasedTest extends AbstractIntegrationTestCas
     public function itDrops(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->create();
+        $identity = IdentityFactory::new()->create();
         $this->store($identity);
         $identityId = $identity->id->toString();
         $now = Clock::get()->now();

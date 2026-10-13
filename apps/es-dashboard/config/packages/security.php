@@ -15,7 +15,7 @@ return static function (ContainerConfigurator $container): void {
                 'memory' => [
                     'users' => [
                         'admin' => [
-                            'password' => '%env(base64:ES_DASHBOARD_PASSWORD_HASH)%',
+                            'password' => '%env(base64:ES_DASHBOARD_PASSWORD)%',
                             'roles' => ['ROLE_ES_DASHBOARD'],
                         ],
                     ],

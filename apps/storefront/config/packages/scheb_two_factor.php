@@ -11,6 +11,7 @@ return static function (ContainerConfigurator $container): void {
             'enabled' => true,
             'lifetime' => '%iam.authentication.trusted_device_lifetime%',
             'manager' => TrustedDeviceManager::class,
+            'key' => '%env(TRUSTED_DEVICE_SECRET)%',
         ],
     ]);
 };

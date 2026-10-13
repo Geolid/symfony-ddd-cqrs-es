@@ -41,7 +41,6 @@ return static function (ContainerConfigurator $container): void {
 
     if ('test' === $container->env()) {
         $container->extension('patchlevel_event_sourcing', [
-            'store' => ['type' => 'in_memory'],
             'subscription' => [
                 'store' => ['type' => 'static_in_memory'],
                 'catch_up' => true,

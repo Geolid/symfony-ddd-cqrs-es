@@ -21,4 +21,10 @@ return static function (ContainerConfigurator $container): void {
             ],
         ]);
     }
+
+    if ('dev' === $container->env()) {
+        $container->extension('framework', [
+            'profiler' => ['only_exceptions' => false],
+        ]);
+    }
 };

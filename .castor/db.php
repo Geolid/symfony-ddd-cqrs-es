@@ -3,8 +3,7 @@
 declare(strict_types=1);
 
 use Castor\Attribute\AsTask;
-
-use function Castor\io;
+use Castor\Exception\ProblemException;
 
 #[AsTask(name: 'create', namespace: 'db', description: 'Create database and run full setup')]
 function db_create(): void
@@ -30,9 +29,7 @@ function db_reset(): void
     $env = app_env();
 
     if (!in_array($env, ['dev', 'demo'], true)) {
-        io()->error("Refused: db:reset is destructive and only allowed when APP_ENV is dev or demo (got {$env}).");
-
-        exit(1);
+        throw new ProblemException("db:reset is destructive and only allowed when APP_ENV is dev or demo (got {$env}).");
     }
 
     console(['event-sourcing:database:drop', '--force', '--if-exists', '--no-interaction']);

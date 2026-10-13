@@ -3,9 +3,9 @@
 {% block title %}{{ 'title'|trans({}, 'two_factor_challenge') }}{% endblock %}
 
 {% block content %}
-    <form method="post" action="{{ checkPathUrl ?? path(checkPathRoute) }}">
+    <form method="post" action="{{ checkPathUrl ?? path(checkPathRoute) }}" data-testid="two-factor-form">
         {% if authenticationError %}
-            <twig:ui:FormError>{{- authenticationError|trans(authenticationErrorData, 'SchebTwoFactorBundle') -}}</twig:ui:FormError>
+            <twig:ui:FormError data-testid="two-factor-error">{{- authenticationError|trans(authenticationErrorData, 'SchebTwoFactorBundle') -}}</twig:ui:FormError>
         {% endif %}
 
         {% block code_field %}{% endblock %}
@@ -19,7 +19,7 @@
             <input type="hidden" name="{{ csrfParameterName }}" value="{{ csrf_token(csrfTokenId) }}">
         {% endif %}
 
-        <button type="submit">{{ 'button_submit'|trans({}, 'two_factor_challenge') }}</button>
+        <button type="submit" data-testid="two-factor-submit">{{ 'button_submit'|trans({}, 'two_factor_challenge') }}</button>
     </form>
 
     {% for provider in availableTwoFactorProviders %}

@@ -8,7 +8,7 @@ use Doctrine\DBAL\Connection;
 use Iam\Authentication\Infrastructure\Projection\Projector\DbalBackupCodeCredentialProjector;
 use Iam\Tests\Authentication\Support\Builder\BackupCodeCredentialBuilder;
 use Iam\Tests\Authentication\Support\Double\FakeBackupCodeHasher;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -102,7 +102,7 @@ final class DbalBackupCodeCredentialProjectorTest extends AbstractIntegrationTes
         $other = $otherBuilder->create();
         $this->store($other);
 
-        $identity = IdentityBuilder::new()->erasureRequested()->erased()->create();
+        $identity = IdentityFactory::new()->erasureRequested()->erased()->create();
         $credential = BackupCodeCredentialBuilder::new()
             ->withIdentityId($identity->id->toString())
             ->withBackupCodeHasher($this->backupCodeHasher)

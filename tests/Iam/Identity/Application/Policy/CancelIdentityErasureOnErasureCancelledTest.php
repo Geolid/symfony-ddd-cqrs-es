@@ -7,7 +7,7 @@ namespace Iam\Tests\Identity\Application\Policy;
 use Compliance\Erasing\Application\IntegrationEvent\ErasureCancelled\ErasureCancelledIntegrationEvent;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\Policy\CancelIdentityErasureOnErasureCancelled;
-use Iam\Tests\Identity\Support\Builder\IdentityBuilder;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\ErasureStatus;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -19,7 +19,7 @@ final class CancelIdentityErasureOnErasureCancelledTest extends AbstractIntegrat
     public function itCancels(): void
     {
         // Given
-        $identity = IdentityBuilder::new()->erasureRequested()->create();
+        $identity = IdentityFactory::new()->erasureRequested()->create();
         $this->store($identity);
 
         // When

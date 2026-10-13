@@ -9,5 +9,5 @@
 
     <p>{{ email }} <a href="{{ path('storefront_signin_identify') }}">{{ 'link_modify'|trans({}, 'messages') }}</a></p>
 
-    <a href="{{ path('storefront_registration_register') }}" role="button">{{ 'create_account_button_create'|trans }}</a>
+    <a href="{{ path('storefront_registration_register') }}" role="button" data-testid="create-account-button">{{ 'create_account_button_create'|trans }}</a>
 {% endblock %}

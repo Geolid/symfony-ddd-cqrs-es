@@ -33,10 +33,6 @@
         <source>button_resend</source>
         <target>Renvoyer le code</target>
       </trans-unit>
-      <trans-unit id="flash_failed">
-        <source>flash_failed</source>
-        <target>Une erreur est survenue.</target>
-      </trans-unit>
       <trans-unit id="flash_rate_limited">
         <source>flash_rate_limited</source>
         <target>Trop de codes demandés. Réessayez dans %minutes% minutes.</target>
