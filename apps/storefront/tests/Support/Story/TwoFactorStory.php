@@ -45,6 +45,7 @@ final class TwoFactorStory extends AbstractAggregateStory
 
         $this->uniqueness->claim(UniqueKey::for(AuthenticationUniqueKey::TOTP_CREDENTIAL_IDENTITY), $persona->id, $totp->id->toString());
         $this->store($totp, $backupCodes);
-        $this->addState('persona', $persona->withTotpSecret($totpSecret)->withBackupCodes($plainBackupCodes));
+        $this->addState('persona', $persona->withTotpSecret($totpSecret));
+        $this->addToPool('backupCodes', $plainBackupCodes);
     }
 }

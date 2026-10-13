@@ -57,6 +57,8 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
     {
         // Given
         $persona = TwoFactorStory::persona();
+        $backupCode = TwoFactorStory::getRandom('backupCodes');
+        \assert(\is_string($backupCode));
         $browser = $this->activeBrowser();
         $browser->signInAs($persona->email, $persona->password());
 
@@ -64,7 +66,7 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
         $browser->interceptRedirects();
 
         // When
-        $browser->completeTwoFactorChallenge($persona->backupCode());
+        $browser->completeTwoFactorChallenge($backupCode);
 
         // Then
         $browser->assertRedirectedToRoute('storefront_home_show');
