@@ -218,12 +218,14 @@ final class IdentityTest extends AggregateRootTestCase
     #[Test]
     public function itCannotRequestEmailChangeTooSoon(): void
     {
+        $emailChangeRequestedAgainAt = $this->emailChangeRequestedAt->modify('+1 second');
+
         $this
             ->given(
                 $this->registered(),
                 new IdentityEmailChangeRequested($this->id, EmailFactory::new()->create(), $this->emailChangeRequestedAt),
             )
-            ->when(fn (Identity $identity) => $identity->requestEmailChange(EmailFactory::new()->create(), $this->emailChangeRequestedAt->modify('+1 second')))
+            ->when(static fn (Identity $identity) => $identity->requestEmailChange(EmailFactory::new()->create(), $emailChangeRequestedAgainAt))
             ->expectsException(EmailChangeRequestedTooRecentlyException::class)
             ->expectsExceptionMessage('requested too recently');
     }
@@ -377,12 +379,14 @@ final class IdentityTest extends AggregateRootTestCase
     #[Test]
     public function itCannotRequestConfirmationTooSoon(): void
     {
+        $confirmationRequestedAgainAt = $this->confirmationRequestedAt->modify('+1 second');
+
         $this
             ->given(
                 $this->registered(),
                 $this->confirmationRequested(),
             )
-            ->when(fn (Identity $identity) => $identity->requestConfirmation($this->confirmationRequestedAt->modify('+1 second')))
+            ->when(static fn (Identity $identity) => $identity->requestConfirmation($confirmationRequestedAgainAt))
             ->expectsException(ConfirmationRequestedTooRecentlyException::class)
             ->expectsExceptionMessage('requested too recently');
     }
@@ -390,9 +394,11 @@ final class IdentityTest extends AggregateRootTestCase
     #[Test]
     public function itCannotRequestConfirmationTooSoonAfterRegistering(): void
     {
+        $earlyConfirmationRequestedAt = $this->registeredAt->modify('+1 second');
+
         $this
             ->given($this->registered())
-            ->when(fn (Identity $identity) => $identity->requestConfirmation($this->registeredAt->modify('+1 second')))
+            ->when(static fn (Identity $identity) => $identity->requestConfirmation($earlyConfirmationRequestedAt))
             ->expectsException(ConfirmationRequestedTooRecentlyException::class);
     }
 
@@ -484,9 +490,11 @@ final class IdentityTest extends AggregateRootTestCase
     #[Test]
     public function itDoesNotErasePendingWhenNotExpired(): void
     {
+        $earlyErasedAt = $this->registeredAt->modify('+1 hour');
+
         $this
             ->given($this->registered())
-            ->when(fn (Identity $identity) => $identity->erasePending($this->registeredAt->modify('+1 hour')))
+            ->when(static fn (Identity $identity) => $identity->erasePending($earlyErasedAt))
             ->then();
     }
 

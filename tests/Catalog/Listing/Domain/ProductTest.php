@@ -62,12 +62,14 @@ final class ProductTest extends AggregateRootTestCase
     #[Test]
     public function itCannotRepriceWhenDelisted(): void
     {
+        $repricedAt = Clock::get()->now()->modify('+1 day');
+
         $this
             ->given(
                 $this->listed(),
                 $this->delisted(),
             )
-            ->when(static fn (Product $product) => $product->reprice(MoneyFactory::new()->create(), Clock::get()->now()->modify('+1 day')))
+            ->when(static fn (Product $product) => $product->reprice(MoneyFactory::new()->create(), $repricedAt))
             ->expectsException(ProductAlreadyDelistedException::class);
     }
 

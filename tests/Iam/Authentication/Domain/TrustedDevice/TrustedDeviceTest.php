@@ -79,10 +79,11 @@ final class TrustedDeviceTest extends AggregateRootTestCase
     public function itCannotRevokeWhenOwnedByAnotherIdentity(): void
     {
         $anotherIdentityId = Uuid::uuid7()->toString();
+        $revokedAt = Clock::get()->now()->modify('+1 day');
 
         $this
             ->given($this->trusted())
-            ->when(static fn (TrustedDevice $trustedDevice) => $trustedDevice->revoke($anotherIdentityId, Clock::get()->now()->modify('+1 day')))
+            ->when(static fn (TrustedDevice $trustedDevice) => $trustedDevice->revoke($anotherIdentityId, $revokedAt))
             ->expectsException(TrustedDeviceOwnedByAnotherIdentityException::class);
     }
 

@@ -49,7 +49,7 @@ final class CustomerTest extends AggregateRootTestCase
     #[Test]
     public function itDefinesShippingAddress(): void
     {
-        $definedAt = $this->requestedAt;
+        $definedAt = $this->registeredAt->modify('+1 day');
         $shippingAddress = PostalAddressFactory::new()->create();
 
         $this
@@ -66,21 +66,22 @@ final class CustomerTest extends AggregateRootTestCase
     public function itDoesNotDefineWhenIdenticalShippingAddress(): void
     {
         $shippingAddress = PostalAddressFactory::new()->create();
-        $definedAt = $this->requestedAt;
+        $definedAt = $this->registeredAt->modify('+1 day');
+        $redefinedAt = $definedAt->modify('+1 day');
 
         $this
             ->given(
                 $this->registered(),
                 new CustomerShippingAddressDefined($this->id, $shippingAddress, $definedAt),
             )
-            ->when(static fn (Customer $customer) => $customer->defineShippingAddress($shippingAddress, $definedAt->modify('+1 day')))
+            ->when(static fn (Customer $customer) => $customer->defineShippingAddress($shippingAddress, $redefinedAt))
             ->then();
     }
 
     #[Test]
     public function itDefinesBillingAddress(): void
     {
-        $definedAt = $this->requestedAt;
+        $definedAt = $this->registeredAt->modify('+1 day');
         $billingAddress = PostalAddressFactory::new()->create();
 
         $this
@@ -97,14 +98,15 @@ final class CustomerTest extends AggregateRootTestCase
     public function itDoesNotDefineWhenIdenticalBillingAddress(): void
     {
         $billingAddress = PostalAddressFactory::new()->create();
-        $definedAt = $this->requestedAt;
+        $definedAt = $this->registeredAt->modify('+1 day');
+        $redefinedAt = $definedAt->modify('+1 day');
 
         $this
             ->given(
                 $this->registered(),
                 new CustomerBillingAddressDefined($this->id, $billingAddress, $definedAt),
             )
-            ->when(static fn (Customer $customer) => $customer->defineBillingAddress($billingAddress, $definedAt->modify('+1 day')))
+            ->when(static fn (Customer $customer) => $customer->defineBillingAddress($billingAddress, $redefinedAt))
             ->then();
     }
 

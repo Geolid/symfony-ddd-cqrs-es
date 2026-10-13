@@ -83,9 +83,11 @@ final class ErasureTest extends AggregateRootTestCase
     #[Test]
     public function itDoesNotApproveWhenRetentionNotExpired(): void
     {
+        $earlyApprovedAt = $this->requestedAt->modify('+1 day');
+
         $this
             ->given($this->requested())
-            ->when(fn (Erasure $erasure) => $erasure->approve($this->requestedAt->modify('+1 day')))
+            ->when(static fn (Erasure $erasure) => $erasure->approve($earlyApprovedAt))
             ->then();
     }
 

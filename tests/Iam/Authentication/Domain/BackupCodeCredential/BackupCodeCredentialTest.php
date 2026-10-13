@@ -97,12 +97,14 @@ final class BackupCodeCredentialTest extends AggregateRootTestCase
     #[Test]
     public function itCannotConsumeWhenInvalid(): void
     {
+        $consumedAt = Clock::get()->now()->modify('+1 day');
+
         $this
             ->given($this->generated())
             ->when(fn (BackupCodeCredential $credential) => $credential->consume(
                 'INVALIDCODE',
                 $this->backupCodeHasher,
-                Clock::get()->now()->modify('+1 day'),
+                $consumedAt,
             ))
             ->expectsException(InvalidBackupCodeException::class);
     }
