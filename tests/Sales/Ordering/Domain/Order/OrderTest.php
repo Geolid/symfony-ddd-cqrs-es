@@ -67,9 +67,9 @@ final class OrderTest extends AggregateRootTestCase
         $this->preparedAt = $this->confirmedAt->modify('+1 day');
         $this->cancelledAt = $this->confirmedAt->modify('+1 day');
         $this->failedAt = $this->confirmedAt->modify('+1 day');
-        $this->dispatchedAt = $this->confirmedAt->modify('+2 day');
-        $this->deliveredAt = $this->confirmedAt->modify('+3 day');
-        $this->erasureApprovedAt = $this->confirmedAt->modify('+4 day');
+        $this->dispatchedAt = $this->preparedAt->modify('+1 day');
+        $this->deliveredAt = $this->dispatchedAt->modify('+1 day');
+        $this->erasureApprovedAt = $this->confirmedAt->modify('+1 hour');
     }
 
     #[Test]
@@ -264,6 +264,8 @@ final class OrderTest extends AggregateRootTestCase
     #[Test]
     public function itApprovesAndErasesErasureWhenAlreadyDelivered(): void
     {
+        $approvedAt = $this->deliveredAt->modify('+1 day');
+
         $this
             ->given(
                 $this->confirmed(),
@@ -271,31 +273,35 @@ final class OrderTest extends AggregateRootTestCase
                 $this->dispatched(),
                 new OrderDelivered($this->id, $this->deliveredAt),
             )
-            ->when(fn (Order $order) => $order->approveErasure($this->erasureApprovedAt))
+            ->when(static fn (Order $order) => $order->approveErasure($approvedAt))
             ->then(
-                new OrderErasureApproved($this->id, $this->erasureApprovedAt),
-                new OrderErased($this->id, $this->erasureApprovedAt),
+                new OrderErasureApproved($this->id, $approvedAt),
+                new OrderErased($this->id, $approvedAt),
             );
     }
 
     #[Test]
     public function itApprovesAndErasesErasureWhenAlreadyCancelled(): void
     {
+        $approvedAt = $this->cancelledAt->modify('+1 day');
+
         $this
             ->given($this->confirmed(), $this->cancelled())
-            ->when(fn (Order $order) => $order->approveErasure($this->erasureApprovedAt))
+            ->when(static fn (Order $order) => $order->approveErasure($approvedAt))
             ->then(
-                new OrderErasureApproved($this->id, $this->erasureApprovedAt),
-                new OrderErased($this->id, $this->erasureApprovedAt),
+                new OrderErasureApproved($this->id, $approvedAt),
+                new OrderErased($this->id, $approvedAt),
             );
     }
 
     #[Test]
     public function itDoesNotApproveErasureWhenAlreadyApproved(): void
     {
+        $approvedAgainAt = $this->erasureApprovedAt->modify('+1 hour');
+
         $this
             ->given($this->confirmed(), $this->erasureApproved())
-            ->when(fn (Order $order) => $order->approveErasure($this->erasureApprovedAt))
+            ->when(static fn (Order $order) => $order->approveErasure($approvedAgainAt))
             ->then();
     }
 
