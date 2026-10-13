@@ -76,7 +76,6 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
 
         // Then
         self::assertSame(3_994, $result->total->excludingTax->cents);
-        // 20% of each price rounds item by item (299 + 499), not on the sum (799)
         self::assertSame(798, $result->total->taxAmount->cents);
         self::assertSame(4_792, $result->total->includingTax->cents);
         self::assertNotNull($customer->shippingAddress);
