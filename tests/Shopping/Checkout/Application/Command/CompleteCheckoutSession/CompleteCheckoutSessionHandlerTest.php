@@ -92,7 +92,7 @@ final class CompleteCheckoutSessionHandlerTest extends AbstractIntegrationTestCa
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = CheckoutSessionIdFactory::new()->create()->toString();
+        $unknownId = CheckoutSessionIdFactory::new()->create()->toString();
         $cartId = Uuid::uuid7()->toString();
         $customerId = Uuid::uuid7()->toString();
         $items = array_map(CheckoutItemMapper::toArray(...), CheckoutItemFactory::new()->many(2)->create());
@@ -106,7 +106,7 @@ final class CompleteCheckoutSessionHandlerTest extends AbstractIntegrationTestCa
 
         // When
         $this->dispatch(new CompleteCheckoutSession(
-            id: $id,
+            id: $unknownId,
             cartId: $cartId,
             customerId: $customerId,
             items: $items,

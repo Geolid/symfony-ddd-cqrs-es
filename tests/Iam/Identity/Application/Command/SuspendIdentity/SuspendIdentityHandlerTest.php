@@ -86,12 +86,15 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $unknownId = IdentityIdFactory::new()->create()->toString();
+
         // Then
         $this->expectException(IdentityNotFoundException::class);
 
         // When
         $this->dispatch(new SuspendIdentity(
-            IdentityIdFactory::new()->create()->toString(),
+            $unknownId,
             ReasonFactory::new()->create()->value,
         ));
     }

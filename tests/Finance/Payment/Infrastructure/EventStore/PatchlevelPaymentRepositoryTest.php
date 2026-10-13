@@ -72,11 +72,14 @@ final class PatchlevelPaymentRepositoryTest extends AbstractIntegrationTestCase
     #[Test]
     public function itThrowsWhenNotFound(): void
     {
+        // Given
+        $unknownId = PaymentIdFactory::new()->create();
+
         // Then
         $this->expectException(PaymentNotFoundException::class);
 
         // When
-        $this->repository->load(PaymentIdFactory::new()->create());
+        $this->repository->load($unknownId);
     }
 
     #[Test]
@@ -96,8 +99,11 @@ final class PatchlevelPaymentRepositoryTest extends AbstractIntegrationTestCase
     #[Test]
     public function itHasNot(): void
     {
+        // Given
+        $unknownId = PaymentIdFactory::new()->create();
+
         // When
-        $notExists = $this->repository->has(PaymentIdFactory::new()->create());
+        $notExists = $this->repository->has($unknownId);
 
         // Then
         self::assertFalse($notExists);

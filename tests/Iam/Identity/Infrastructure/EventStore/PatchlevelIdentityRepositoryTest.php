@@ -55,11 +55,14 @@ final class PatchlevelIdentityRepositoryTest extends AbstractIntegrationTestCase
     #[Test]
     public function itThrowsWhenNotFound(): void
     {
+        // Given
+        $unknownId = IdentityIdFactory::new()->create();
+
         // Then
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->repository->load(IdentityIdFactory::new()->create());
+        $this->repository->load($unknownId);
     }
 
     #[Test]
@@ -94,8 +97,11 @@ final class PatchlevelIdentityRepositoryTest extends AbstractIntegrationTestCase
     #[Test]
     public function itHasNot(): void
     {
+        // Given
+        $unknownId = IdentityIdFactory::new()->create();
+
         // When
-        $notExists = $this->repository->has(IdentityIdFactory::new()->create());
+        $notExists = $this->repository->has($unknownId);
 
         // Then
         self::assertFalse($notExists);

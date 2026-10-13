@@ -56,14 +56,14 @@ final class RevokeTrustedDeviceHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = Uuid::uuid7()->toString();
+        $unknownId = Uuid::uuid7()->toString();
         $identityId = Uuid::uuid7()->toString();
 
         // Then
         $this->expectException(TrustedDeviceNotFoundException::class);
 
         // When
-        $this->dispatch(new RevokeTrustedDevice($id, $identityId));
+        $this->dispatch(new RevokeTrustedDevice($unknownId, $identityId));
     }
 
     #[Test]

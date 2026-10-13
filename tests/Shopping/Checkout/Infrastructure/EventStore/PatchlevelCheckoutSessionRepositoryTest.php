@@ -73,11 +73,14 @@ final class PatchlevelCheckoutSessionRepositoryTest extends AbstractIntegrationT
     #[Test]
     public function itThrowsWhenNotFound(): void
     {
+        // Given
+        $unknownId = CheckoutSessionIdFactory::new()->create();
+
         // Then
         $this->expectException(CheckoutSessionNotFoundException::class);
 
         // When
-        $this->repository->load(CheckoutSessionIdFactory::new()->create());
+        $this->repository->load($unknownId);
     }
 
     #[Test]
@@ -97,8 +100,11 @@ final class PatchlevelCheckoutSessionRepositoryTest extends AbstractIntegrationT
     #[Test]
     public function itHasNot(): void
     {
+        // Given
+        $unknownId = CheckoutSessionIdFactory::new()->create();
+
         // When
-        $notExists = $this->repository->has(CheckoutSessionIdFactory::new()->create());
+        $notExists = $this->repository->has($unknownId);
 
         // Then
         self::assertFalse($notExists);

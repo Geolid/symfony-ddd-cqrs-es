@@ -73,11 +73,14 @@ final class PatchlevelOrderRepositoryTest extends AbstractIntegrationTestCase
     #[Test]
     public function itThrowsWhenNotFound(): void
     {
+        // Given
+        $unknownId = OrderIdFactory::new()->create();
+
         // Then
         $this->expectException(OrderNotFoundException::class);
 
         // When
-        $this->repository->load(OrderIdFactory::new()->create());
+        $this->repository->load($unknownId);
     }
 
     #[Test]
@@ -97,8 +100,11 @@ final class PatchlevelOrderRepositoryTest extends AbstractIntegrationTestCase
     #[Test]
     public function itHasNot(): void
     {
+        // Given
+        $unknownId = OrderIdFactory::new()->create();
+
         // When
-        $notExists = $this->repository->has(OrderIdFactory::new()->create());
+        $notExists = $this->repository->has($unknownId);
 
         // Then
         self::assertFalse($notExists);

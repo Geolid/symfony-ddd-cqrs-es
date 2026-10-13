@@ -39,10 +39,13 @@ final class GetPaymentByReferenceHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $unknownReference = PaymentReferenceFactory::new()->create()->value;
+
         // Then
         $this->expectException(PaymentResultNotFoundException::class);
 
         // When
-        $this->ask(new GetPaymentByReference(PaymentReferenceFactory::new()->create()->value));
+        $this->ask(new GetPaymentByReference($unknownReference));
     }
 }

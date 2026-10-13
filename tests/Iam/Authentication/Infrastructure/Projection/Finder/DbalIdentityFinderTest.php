@@ -47,10 +47,13 @@ final class DbalIdentityFinderTest extends AbstractIntegrationTestCase
     #[Test]
     public function itThrowsWhenIdNotFound(): void
     {
+        // Given
+        $unknownId = Uuid::uuid7()->toString();
+
         // Then
         $this->expectException(IdentityResultNotFoundException::class);
 
         // When
-        $this->finder->ofId(Uuid::uuid7()->toString());
+        $this->finder->ofId($unknownId);
     }
 }

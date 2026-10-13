@@ -77,11 +77,14 @@ final class PatchlevelPasswordCredentialRepositoryTest extends AbstractIntegrati
     #[Test]
     public function itThrowsWhenNotFound(): void
     {
+        // Given
+        $unknownId = PasswordCredentialId::forIdentity(Uuid::uuid7()->toString());
+
         // Then
         $this->expectException(PasswordCredentialNotFoundException::class);
 
         // When
-        $this->repository->load(PasswordCredentialId::forIdentity(Uuid::uuid7()->toString()));
+        $this->repository->load($unknownId);
     }
 
     #[Test]
@@ -104,8 +107,11 @@ final class PatchlevelPasswordCredentialRepositoryTest extends AbstractIntegrati
     #[Test]
     public function itHasNot(): void
     {
+        // Given
+        $unknownId = PasswordCredentialId::forIdentity(Uuid::uuid7()->toString());
+
         // When
-        $notExists = $this->repository->has(PasswordCredentialId::forIdentity(Uuid::uuid7()->toString()));
+        $notExists = $this->repository->has($unknownId);
 
         // Then
         self::assertFalse($notExists);

@@ -70,13 +70,13 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = ShipmentFactory::new()->create()->id->toString();
+        $unknownId = ShipmentFactory::new()->create()->id->toString();
 
         // Then
         $this->expectException(ShipmentNotFoundException::class);
 
         // When
-        $this->dispatch(new ManifestShipment($id, TrackingNumberFactory::new()->create()->value));
+        $this->dispatch(new ManifestShipment($unknownId, TrackingNumberFactory::new()->create()->value));
     }
 
     #[Test]

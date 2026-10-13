@@ -65,12 +65,12 @@ final class AbandonPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = PaymentIdFactory::new()->create()->toString();
+        $unknownId = PaymentIdFactory::new()->create()->toString();
 
         // Then
         $this->expectException(PaymentNotFoundException::class);
 
         // When
-        $this->dispatch(new AbandonPayment($id));
+        $this->dispatch(new AbandonPayment($unknownId));
     }
 }

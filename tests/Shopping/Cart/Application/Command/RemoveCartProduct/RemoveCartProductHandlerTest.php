@@ -43,12 +43,12 @@ final class RemoveCartProductHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = CartIdFactory::new()->create()->toString();
+        $unknownId = CartIdFactory::new()->create()->toString();
 
         // Then
         $this->expectException(CartNotFoundException::class);
 
         // When
-        $this->dispatch(new RemoveCartProduct($id, Uuid::uuid7()->toString()));
+        $this->dispatch(new RemoveCartProduct($unknownId, Uuid::uuid7()->toString()));
     }
 }

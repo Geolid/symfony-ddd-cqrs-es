@@ -52,10 +52,13 @@ final class BackupCodeRegeneratorTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenNotGenerated(): void
     {
+        // Given
+        $unknownIdentityId = Uuid::uuid7()->toString();
+
         // Then
         $this->expectException(BackupCodeCredentialNotGeneratedException::class);
 
         // When
-        $this->regenerator->regenerateFor(Uuid::uuid7()->toString());
+        $this->regenerator->regenerateFor($unknownIdentityId);
     }
 }

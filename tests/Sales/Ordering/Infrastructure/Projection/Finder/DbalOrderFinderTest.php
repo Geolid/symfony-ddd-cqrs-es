@@ -64,11 +64,14 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
     #[Test]
     public function itThrowsWhenIdNotFound(): void
     {
+        // Given
+        $unknownId = OrderIdFactory::new()->create()->toString();
+
         // Then
         $this->expectException(OrderResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(OrderIdFactory::new()->create()->toString());
+        $this->finder()->ofId($unknownId);
     }
 
     #[Test]

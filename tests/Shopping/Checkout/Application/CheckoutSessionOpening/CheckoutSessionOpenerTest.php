@@ -90,11 +90,14 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $unknownCartId = Uuid::uuid7()->toString();
+
         // Then
         $this->expectException(CartResultNotFoundException::class);
 
         // When
-        $this->service->openFor(Uuid::uuid7()->toString());
+        $this->service->openFor($unknownCartId);
     }
 
     #[Test]

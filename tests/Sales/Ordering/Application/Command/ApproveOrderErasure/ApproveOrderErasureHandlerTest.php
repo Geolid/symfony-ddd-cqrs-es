@@ -73,12 +73,12 @@ final class ApproveOrderErasureHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = OrderIdFactory::new()->create()->toString();
+        $unknownId = OrderIdFactory::new()->create()->toString();
 
         // Then
         $this->expectException(OrderNotFoundException::class);
 
         // When
-        $this->dispatch(new ApproveOrderErasure($id));
+        $this->dispatch(new ApproveOrderErasure($unknownId));
     }
 }

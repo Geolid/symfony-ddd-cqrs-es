@@ -47,11 +47,14 @@ final class DbalProductFinderTest extends AbstractPaginatableFinderTestCase
     #[Test]
     public function itThrowsWhenIdNotFound(): void
     {
+        // Given
+        $unknownId = ProductIdFactory::new()->create()->toString();
+
         // Then
         $this->expectException(ProductResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(ProductIdFactory::new()->create()->toString());
+        $this->finder()->ofId($unknownId);
     }
 
     #[Test]

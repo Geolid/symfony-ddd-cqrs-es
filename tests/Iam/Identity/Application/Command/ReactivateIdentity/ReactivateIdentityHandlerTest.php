@@ -62,12 +62,15 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $unknownId = IdentityIdFactory::new()->create()->toString();
+
         // Then
         $this->expectException(IdentityNotFoundException::class);
 
         // When
         $this->dispatch(new ReactivateIdentity(
-            IdentityIdFactory::new()->create()->toString(),
+            $unknownId,
             ReasonFactory::new()->create()->value,
         ));
     }

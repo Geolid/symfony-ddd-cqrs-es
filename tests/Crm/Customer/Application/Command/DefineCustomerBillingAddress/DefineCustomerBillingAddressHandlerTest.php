@@ -38,12 +38,15 @@ final class DefineCustomerBillingAddressHandlerTest extends AbstractIntegrationT
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $unknownCustomerId = Uuid::uuid7()->toString();
+
         // Then
         $this->expectException(CustomerNotFoundException::class);
 
         // When
         $this->dispatch(new DefineCustomerBillingAddress(
-            Uuid::uuid7()->toString(),
+            $unknownCustomerId,
             PostalAddressMapper::toArray(PostalAddressFactory::new()->create()),
         ));
     }

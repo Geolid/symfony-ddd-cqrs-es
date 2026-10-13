@@ -72,12 +72,12 @@ final class ExpireCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = CheckoutSessionIdFactory::new()->create()->toString();
+        $unknownId = CheckoutSessionIdFactory::new()->create()->toString();
 
         // Then
         $this->expectException(CheckoutSessionNotFoundException::class);
 
         // When
-        $this->dispatch(new ExpireCheckoutSession($id));
+        $this->dispatch(new ExpireCheckoutSession($unknownId));
     }
 }

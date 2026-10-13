@@ -50,8 +50,11 @@ final class DbalBackupCodeCredentialFinderTest extends AbstractIntegrationTestCa
     #[Test]
     public function itFindsNothingWhenNotGenerated(): void
     {
+        // Given
+        $unknownIdentityId = Uuid::uuid7()->toString();
+
         // When
-        $result = $this->finder->ofIdentityOrNull(Uuid::uuid7()->toString());
+        $result = $this->finder->ofIdentityOrNull($unknownIdentityId);
 
         // Then
         self::assertNull($result);

@@ -51,11 +51,14 @@ final class PatchlevelCustomerRepositoryTest extends AbstractIntegrationTestCase
     #[Test]
     public function itThrowsWhenNotFound(): void
     {
+        // Given
+        $unknownId = CustomerIdFactory::new()->create();
+
         // Then
         $this->expectException(CustomerNotFoundException::class);
 
         // When
-        $this->repository->load(CustomerIdFactory::new()->create());
+        $this->repository->load($unknownId);
     }
 
     #[Test]
@@ -91,8 +94,11 @@ final class PatchlevelCustomerRepositoryTest extends AbstractIntegrationTestCase
     #[Test]
     public function itHasNot(): void
     {
+        // Given
+        $unknownId = CustomerIdFactory::new()->create();
+
         // When
-        $notExists = $this->repository->has(CustomerIdFactory::new()->create());
+        $notExists = $this->repository->has($unknownId);
 
         // Then
         self::assertFalse($notExists);

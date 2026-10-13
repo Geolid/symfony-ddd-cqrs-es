@@ -60,13 +60,13 @@ final class ChangeFullNameHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = IdentityIdFactory::new()->create()->toString();
+        $unknownId = IdentityIdFactory::new()->create()->toString();
 
         // Then
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new ChangeFullName($id, FullNameFactory::new()->create()->value));
+        $this->dispatch(new ChangeFullName($unknownId, FullNameFactory::new()->create()->value));
     }
 
     #[Test]

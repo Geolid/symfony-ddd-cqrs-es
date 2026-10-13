@@ -56,10 +56,10 @@ final class VoidPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenNotFound(): void
     {
         // Given
-        $id = PaymentIdFactory::new()->create()->toString();
+        $unknownId = PaymentIdFactory::new()->create()->toString();
 
         // When
-        $this->dispatch(new VoidPayment($id));
+        $this->dispatch(new VoidPayment($unknownId));
 
         // Then
         self::expectNotToPerformAssertions();

@@ -36,12 +36,15 @@ final class RepriceProductHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $unknownId = ProductIdFactory::new()->create()->toString();
+
         // Then
         $this->expectException(ProductNotFoundException::class);
 
         // When
         $this->dispatch(new RepriceProduct(
-            ProductIdFactory::new()->create()->toString(),
+            $unknownId,
             MoneyFactory::new()->create()->cents,
             'EUR',
         ));

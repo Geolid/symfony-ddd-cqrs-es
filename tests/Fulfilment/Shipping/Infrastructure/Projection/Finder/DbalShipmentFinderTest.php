@@ -51,11 +51,14 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
     #[Test]
     public function itThrowsWhenIdNotFound(): void
     {
+        // Given
+        $unknownId = ShipmentIdFactory::new()->create()->toString();
+
         // Then
         $this->expectException(ShipmentResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(ShipmentIdFactory::new()->create()->toString());
+        $this->finder()->ofId($unknownId);
     }
 
     #[Test]
@@ -82,11 +85,14 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
     #[Test]
     public function itThrowsWhenTrackingNumberNotFound(): void
     {
+        // Given
+        $unknownTrackingNumber = TrackingNumberFactory::new()->create()->value;
+
         // Then
         $this->expectException(ShipmentResultNotFoundException::class);
 
         // When
-        $this->finder()->ofTrackingNumber(TrackingNumberFactory::new()->create()->value);
+        $this->finder()->ofTrackingNumber($unknownTrackingNumber);
     }
 
     #[Test]

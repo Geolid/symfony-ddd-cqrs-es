@@ -52,10 +52,10 @@ final class DbalCustomerFinderTest extends AbstractIntegrationTestCase
     public function itFindsNothing(): void
     {
         // Given
-        $id = Uuid::uuid7()->toString();
+        $unknownId = Uuid::uuid7()->toString();
 
         // When
-        $result = $this->finder->ofIdOrNull($id);
+        $result = $this->finder->ofIdOrNull($unknownId);
 
         // Then
         self::assertNull($result);

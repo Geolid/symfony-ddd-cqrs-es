@@ -70,14 +70,14 @@ final class UnenrollTotpHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = Uuid::uuid7()->toString();
+        $unknownId = Uuid::uuid7()->toString();
         $identityId = Uuid::uuid7()->toString();
 
         // Then
         $this->expectException(TotpCredentialNotFoundException::class);
 
         // When
-        $this->dispatch(new UnenrollTotp($id, $identityId));
+        $this->dispatch(new UnenrollTotp($unknownId, $identityId));
     }
 
     #[Test]

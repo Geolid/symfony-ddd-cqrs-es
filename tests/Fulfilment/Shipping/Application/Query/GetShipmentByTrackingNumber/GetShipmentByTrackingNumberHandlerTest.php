@@ -39,10 +39,13 @@ final class GetShipmentByTrackingNumberHandlerTest extends AbstractIntegrationTe
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $unknownTrackingNumber = TrackingNumberFactory::new()->create()->value;
+
         // Then
         $this->expectException(ShipmentResultNotFoundException::class);
 
         // When
-        $this->ask(new GetShipmentByTrackingNumber(TrackingNumberFactory::new()->create()->value));
+        $this->ask(new GetShipmentByTrackingNumber($unknownTrackingNumber));
     }
 }

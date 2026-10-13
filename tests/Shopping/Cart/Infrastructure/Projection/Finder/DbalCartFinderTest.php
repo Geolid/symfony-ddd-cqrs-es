@@ -45,11 +45,14 @@ final class DbalCartFinderTest extends AbstractIterableFinderTestCase
     #[Test]
     public function itThrowsWhenIdNotFound(): void
     {
+        // Given
+        $unknownId = CartIdFactory::new()->create()->toString();
+
         // Then
         $this->expectException(CartResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(CartIdFactory::new()->create()->toString());
+        $this->finder()->ofId($unknownId);
     }
 
     #[Test]

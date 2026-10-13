@@ -70,11 +70,14 @@ final class PatchlevelErasureRepositoryTest extends AbstractIntegrationTestCase
     #[Test]
     public function itThrowsWhenNotFound(): void
     {
+        // Given
+        $unknownId = ErasureIdFactory::new()->create();
+
         // Then
         $this->expectException(ErasureNotFoundException::class);
 
         // When
-        $this->repository->load(ErasureIdFactory::new()->create());
+        $this->repository->load($unknownId);
     }
 
     #[Test]
@@ -94,8 +97,11 @@ final class PatchlevelErasureRepositoryTest extends AbstractIntegrationTestCase
     #[Test]
     public function itHasNot(): void
     {
+        // Given
+        $unknownId = ErasureIdFactory::new()->create();
+
         // When
-        $notExists = $this->repository->has(ErasureIdFactory::new()->create());
+        $notExists = $this->repository->has($unknownId);
 
         // Then
         self::assertFalse($notExists);

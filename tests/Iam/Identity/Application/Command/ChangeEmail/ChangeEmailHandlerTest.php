@@ -92,14 +92,14 @@ final class ChangeEmailHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = IdentityIdFactory::new()->create()->toString();
-        $code = $this->codeChallenger->issue(VerificationCodeKey::for(IdentityVerificationCodePurpose::EMAIL_CHANGE, $id), Clock::get()->now());
+        $unknownId = IdentityIdFactory::new()->create()->toString();
+        $code = $this->codeChallenger->issue(VerificationCodeKey::for(IdentityVerificationCodePurpose::EMAIL_CHANGE, $unknownId), Clock::get()->now());
 
         // Then
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new ChangeEmail($id, EmailFactory::new()->create()->value, $code));
+        $this->dispatch(new ChangeEmail($unknownId, EmailFactory::new()->create()->value, $code));
     }
 
     #[Test]

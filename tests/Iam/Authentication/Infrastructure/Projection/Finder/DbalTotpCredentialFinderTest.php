@@ -52,11 +52,14 @@ final class DbalTotpCredentialFinderTest extends AbstractIntegrationTestCase
     #[Test]
     public function itThrowsWhenIdNotFound(): void
     {
+        // Given
+        $unknownId = Uuid::uuid7()->toString();
+
         // Then
         $this->expectException(TotpCredentialResultNotFoundException::class);
 
         // When
-        $this->finder->ofId(Uuid::uuid7()->toString());
+        $this->finder->ofId($unknownId);
     }
 
     #[Test]
@@ -94,8 +97,11 @@ final class DbalTotpCredentialFinderTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFindsNothingWhenNotEnrolled(): void
     {
+        // Given
+        $unknownIdentityId = Uuid::uuid7()->toString();
+
         // When
-        $result = $this->finder->activeOfIdentityOrNull(Uuid::uuid7()->toString());
+        $result = $this->finder->activeOfIdentityOrNull($unknownIdentityId);
 
         // Then
         self::assertNull($result);

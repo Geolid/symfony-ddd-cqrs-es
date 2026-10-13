@@ -46,12 +46,12 @@ final class ChangeCartProductQuantityHandlerTest extends AbstractIntegrationTest
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = CartIdFactory::new()->create()->toString();
+        $unknownId = CartIdFactory::new()->create()->toString();
 
         // Then
         $this->expectException(CartNotFoundException::class);
 
         // When
-        $this->dispatch(new ChangeCartProductQuantity($id, Uuid::uuid7()->toString(), 1));
+        $this->dispatch(new ChangeCartProductQuantity($unknownId, Uuid::uuid7()->toString(), 1));
     }
 }

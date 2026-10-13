@@ -48,11 +48,14 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
     #[Test]
     public function itThrowsWhenIdNotFound(): void
     {
+        // Given
+        $unknownId = CheckoutSessionIdFactory::new()->create()->toString();
+
         // Then
         $this->expectException(CheckoutSessionResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(CheckoutSessionIdFactory::new()->create()->toString());
+        $this->finder()->ofId($unknownId);
     }
 
     #[Test]

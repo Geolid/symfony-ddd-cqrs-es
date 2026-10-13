@@ -70,12 +70,12 @@ final class ApproveErasureHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = ErasureIdFactory::new()->create()->toString();
+        $unknownId = ErasureIdFactory::new()->create()->toString();
 
         // Then
         $this->expectException(ErasureNotFoundException::class);
 
         // When
-        $this->dispatch(new ApproveErasure($id));
+        $this->dispatch(new ApproveErasure($unknownId));
     }
 }

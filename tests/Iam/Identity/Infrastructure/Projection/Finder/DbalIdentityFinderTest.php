@@ -58,11 +58,14 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
     #[Test]
     public function itThrowsWhenIdNotFound(): void
     {
+        // Given
+        $unknownId = IdentityIdFactory::new()->create()->toString();
+
         // Then
         $this->expectException(IdentityResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(IdentityIdFactory::new()->create()->toString());
+        $this->finder()->ofId($unknownId);
     }
 
     #[Test]

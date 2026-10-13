@@ -41,11 +41,14 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
     #[Test]
     public function itThrowsWhenIdNotFound(): void
     {
+        // Given
+        $unknownId = ErasureIdFactory::new()->create()->toString();
+
         // Then
         $this->expectException(ErasureResultNotFoundException::class);
 
         // When
-        $this->finder()->ofId(ErasureIdFactory::new()->create()->toString());
+        $this->finder()->ofId($unknownId);
     }
 
     #[Test]

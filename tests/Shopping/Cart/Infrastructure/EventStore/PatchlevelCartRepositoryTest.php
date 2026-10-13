@@ -66,11 +66,14 @@ final class PatchlevelCartRepositoryTest extends AbstractIntegrationTestCase
     #[Test]
     public function itThrowsWhenNotFound(): void
     {
+        // Given
+        $unknownId = CartIdFactory::new()->create();
+
         // Then
         $this->expectException(CartNotFoundException::class);
 
         // When
-        $this->repository->load(CartIdFactory::new()->create());
+        $this->repository->load($unknownId);
     }
 
     #[Test]
@@ -90,8 +93,11 @@ final class PatchlevelCartRepositoryTest extends AbstractIntegrationTestCase
     #[Test]
     public function itHasNot(): void
     {
+        // Given
+        $unknownId = CartIdFactory::new()->create();
+
         // When
-        $notExists = $this->repository->has(CartIdFactory::new()->create());
+        $notExists = $this->repository->has($unknownId);
 
         // Then
         self::assertFalse($notExists);

@@ -55,11 +55,14 @@ final class DbalApiKeyCredentialFinderTest extends AbstractIterableFinderTestCas
     #[Test]
     public function itThrowsWhenKeyIdNotFound(): void
     {
+        // Given
+        $unknownKeyId = KeyIdFactory::new()->create()->value;
+
         // Then
         $this->expectException(ApiKeyCredentialResultNotFoundException::class);
 
         // When
-        $this->finder()->ofKeyId(KeyIdFactory::new()->create()->value);
+        $this->finder()->ofKeyId($unknownKeyId);
     }
 
     #[Test]

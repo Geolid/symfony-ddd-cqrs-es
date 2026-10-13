@@ -35,12 +35,12 @@ final class GetProductHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = ProductIdFactory::new()->create()->toString();
+        $unknownId = ProductIdFactory::new()->create()->toString();
 
         // Then
         $this->expectException(ProductResultNotFoundException::class);
 
         // When
-        $this->ask(new GetProduct($id));
+        $this->ask(new GetProduct($unknownId));
     }
 }

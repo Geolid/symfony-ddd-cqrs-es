@@ -33,8 +33,11 @@ final class EraseCustomerOnErasureApprovedTest extends AbstractIntegrationTestCa
     #[Test]
     public function itIgnoresWhenNoneExist(): void
     {
+        // Given
+        $unknownIdentityId = Uuid::uuid7()->toString();
+
         // When
-        $this->trigger(EraseCustomerOnErasureApproved::class, new ErasureApprovedIntegrationEvent(Uuid::uuid7()->toString(), Clock::get()->now()));
+        $this->trigger(EraseCustomerOnErasureApproved::class, new ErasureApprovedIntegrationEvent($unknownIdentityId, Clock::get()->now()));
 
         // Then
         self::expectNotToPerformAssertions();

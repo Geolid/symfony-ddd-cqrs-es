@@ -49,12 +49,15 @@ final class RegenerateBackupCodesHandlerTest extends AbstractIntegrationTestCase
     #[Test]
     public function itFailsWhenNotFound(): void
     {
+        // Given
+        $unknownIdentityId = Uuid::uuid7()->toString();
+
         // Then
         $this->expectException(BackupCodeCredentialNotFoundException::class);
 
         // When
         $this->dispatch(new RegenerateBackupCodes(
-            Uuid::uuid7()->toString(),
+            $unknownIdentityId,
             faker()->backupCodes(),
         ));
     }

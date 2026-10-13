@@ -63,11 +63,14 @@ final class PatchlevelTotpCredentialRepositoryTest extends AbstractIntegrationTe
     #[Test]
     public function itThrowsWhenNotFound(): void
     {
+        // Given
+        $unknownId = TotpCredentialId::fromString(Uuid::uuid7()->toString());
+
         // Then
         $this->expectException(TotpCredentialNotFoundException::class);
 
         // When
-        $this->repository->load(TotpCredentialId::fromString(Uuid::uuid7()->toString()));
+        $this->repository->load($unknownId);
     }
 
     #[Test]
@@ -87,8 +90,11 @@ final class PatchlevelTotpCredentialRepositoryTest extends AbstractIntegrationTe
     #[Test]
     public function itHasNot(): void
     {
+        // Given
+        $unknownId = TotpCredentialId::fromString(Uuid::uuid7()->toString());
+
         // When
-        $notExists = $this->repository->has(TotpCredentialId::fromString(Uuid::uuid7()->toString()));
+        $notExists = $this->repository->has($unknownId);
 
         // Then
         self::assertFalse($notExists);

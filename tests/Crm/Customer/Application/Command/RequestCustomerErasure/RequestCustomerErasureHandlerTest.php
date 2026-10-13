@@ -35,12 +35,12 @@ final class RequestCustomerErasureHandlerTest extends AbstractIntegrationTestCas
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = Uuid::uuid7()->toString();
+        $unknownId = Uuid::uuid7()->toString();
 
         // Then
         $this->expectException(CustomerNotFoundException::class);
 
         // When
-        $this->dispatch(new RequestCustomerErasure($id));
+        $this->dispatch(new RequestCustomerErasure($unknownId));
     }
 }

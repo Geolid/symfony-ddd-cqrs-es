@@ -59,11 +59,14 @@ final class PatchlevelTrustedDeviceRepositoryTest extends AbstractIntegrationTes
     #[Test]
     public function itThrowsWhenNotFound(): void
     {
+        // Given
+        $unknownId = TrustedDeviceId::fromString(Uuid::uuid7()->toString());
+
         // Then
         $this->expectException(TrustedDeviceNotFoundException::class);
 
         // When
-        $this->repository->load(TrustedDeviceId::fromString(Uuid::uuid7()->toString()));
+        $this->repository->load($unknownId);
     }
 
     #[Test]
@@ -83,8 +86,11 @@ final class PatchlevelTrustedDeviceRepositoryTest extends AbstractIntegrationTes
     #[Test]
     public function itHasNot(): void
     {
+        // Given
+        $unknownId = TrustedDeviceId::fromString(Uuid::uuid7()->toString());
+
         // When
-        $notExists = $this->repository->has(TrustedDeviceId::fromString(Uuid::uuid7()->toString()));
+        $notExists = $this->repository->has($unknownId);
 
         // Then
         self::assertFalse($notExists);

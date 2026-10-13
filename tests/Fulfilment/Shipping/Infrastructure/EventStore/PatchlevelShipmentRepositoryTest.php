@@ -72,11 +72,14 @@ final class PatchlevelShipmentRepositoryTest extends AbstractIntegrationTestCase
     #[Test]
     public function itThrowsWhenNotFound(): void
     {
+        // Given
+        $unknownId = ShipmentIdFactory::new()->create();
+
         // Then
         $this->expectException(ShipmentNotFoundException::class);
 
         // When
-        $this->repository->load(ShipmentIdFactory::new()->create());
+        $this->repository->load($unknownId);
     }
 
     #[Test]
@@ -96,8 +99,11 @@ final class PatchlevelShipmentRepositoryTest extends AbstractIntegrationTestCase
     #[Test]
     public function itHasNot(): void
     {
+        // Given
+        $unknownId = ShipmentIdFactory::new()->create();
+
         // When
-        $notExists = $this->repository->has(ShipmentIdFactory::new()->create());
+        $notExists = $this->repository->has($unknownId);
 
         // Then
         self::assertFalse($notExists);

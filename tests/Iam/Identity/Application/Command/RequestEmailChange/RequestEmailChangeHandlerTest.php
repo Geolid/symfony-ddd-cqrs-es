@@ -63,13 +63,13 @@ final class RequestEmailChangeHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $id = IdentityIdFactory::new()->create()->toString();
+        $unknownId = IdentityIdFactory::new()->create()->toString();
 
         // Then
         $this->expectException(IdentityNotFoundException::class);
 
         // When
-        $this->dispatch(new RequestEmailChange($id, EmailFactory::new()->create()->value));
+        $this->dispatch(new RequestEmailChange($unknownId, EmailFactory::new()->create()->value));
     }
 
     #[Test]
