@@ -55,8 +55,8 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
     public function itOpens(): void
     {
         // Given
-        $catalogProduct = ProductFactory::new()->withUnitPriceInCents(1_001)->create();
-        $secondCatalogProduct = ProductFactory::new()->withUnitPriceInCents(1_002)->create();
+        $catalogProduct = ProductFactory::new()->withUnitPriceInCents(1_497)->create();
+        $secondCatalogProduct = ProductFactory::new()->withUnitPriceInCents(2_497)->create();
         $shippingAddress = PostalAddressFactory::new()->withAddress(AddressFactory::new()->withCountryCode('FR')->create())->create();
         $customer = CustomerFactory::new()
             ->shippingAddressDefined($shippingAddress)
@@ -75,10 +75,10 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
         $result = $this->service->openFor($cart->id->toString());
 
         // Then
-        self::assertSame(2_003, $result->total->excludingTax->cents);
-        // 20% of each price rounds item by item (200 + 200), not on the sum (401)
-        self::assertSame(400, $result->total->taxAmount->cents);
-        self::assertSame(2_403, $result->total->includingTax->cents);
+        self::assertSame(3_994, $result->total->excludingTax->cents);
+        // 20% of each price rounds item by item (299 + 499), not on the sum (799)
+        self::assertSame(798, $result->total->taxAmount->cents);
+        self::assertSame(4_792, $result->total->includingTax->cents);
         self::assertNotNull($customer->shippingAddress);
         self::assertSame(PostalAddressMapper::toArray($customer->shippingAddress), PostalAddressMapper::toArray($result->shippingAddress));
         self::assertNotNull($customer->billingAddress);
