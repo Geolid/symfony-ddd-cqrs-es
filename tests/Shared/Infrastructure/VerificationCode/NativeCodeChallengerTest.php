@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Shared\Tests\Infrastructure\VerificationCode;
 
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
@@ -18,20 +17,24 @@ use Symfony\Component\Clock\Clock;
 
 final class NativeCodeChallengerTest extends TestCase
 {
-    private const int MAX_ATTEMPTS = 5;
-    private const int EXPIRY_MINUTES = 15;
-
+    private int $maxAttempts;
+    private int $expirySeconds;
+    private int $digitCount;
     private NativeCodeChallenger $codeChallenger;
     private VerificationCodeKey $key;
 
     protected function setUp(): void
     {
+        $this->maxAttempts = 5;
+        $this->expirySeconds = 900;
+        $this->digitCount = 6;
         $this->codeChallenger = new NativeCodeChallenger(
             new FakeVerificationCodeStore(),
             new NativeNumericCodeGenerator(),
             'secret',
-            self::MAX_ATTEMPTS,
-            self::EXPIRY_MINUTES,
+            $this->maxAttempts,
+            $this->expirySeconds,
+            $this->digitCount,
         );
         $this->key = VerificationCodeKey::for(DummyVerificationCodePurpose::NAME, 'subject-1');
     }
@@ -43,7 +46,7 @@ final class NativeCodeChallengerTest extends TestCase
         $code = $this->codeChallenger->issue($this->key, Clock::get()->now());
 
         // Then
-        self::assertMatchesRegularExpression('/^\d{6}$/', $code);
+        self::assertMatchesRegularExpression(\sprintf('/^\d{%d}$/', $this->digitCount), $code);
     }
 
     #[Test]
@@ -62,29 +65,32 @@ final class NativeCodeChallengerTest extends TestCase
     }
 
     #[Test]
-    #[DataProvider('provideValidTiming')]
-    public function itAccepts(string $subjectId, \DateTimeImmutable $issuedAt, \DateTimeImmutable $verifiedAt): void
+    public function itAccepts(): void
     {
         // Given
-        $key = VerificationCodeKey::for(DummyVerificationCodePurpose::NAME, $subjectId);
-        $code = $this->codeChallenger->issue($key, $issuedAt);
+        $now = Clock::get()->now();
+        $code = $this->codeChallenger->issue($this->key, $now);
 
         // When
-        $result = $this->codeChallenger->verify($key, $code, $verifiedAt);
+        $result = $this->codeChallenger->verify($this->key, $code, $now);
 
         // Then
         self::assertTrue($result);
     }
 
-    /**
-     * @return iterable<string, array{string, \DateTimeImmutable, \DateTimeImmutable}>
-     */
-    public static function provideValidTiming(): iterable
+    #[Test]
+    public function itAcceptsWhenExpiryReached(): void
     {
+        // Given
         $now = Clock::get()->now();
+        $code = $this->codeChallenger->issue($this->key, $now);
+        $expiresAt = $now->modify(\sprintf('+%d seconds', $this->expirySeconds));
 
-        yield 'immediately' => ['subject-1', $now, $now];
-        yield 'at expiry boundary' => ['subject-2', $now, $now->modify(\sprintf('+%d minutes', self::EXPIRY_MINUTES))];
+        // When
+        $result = $this->codeChallenger->verify($this->key, $code, $expiresAt);
+
+        // Then
+        self::assertTrue($result);
     }
 
     #[Test]
@@ -132,7 +138,7 @@ final class NativeCodeChallengerTest extends TestCase
         // Given
         $now = Clock::get()->now();
         $code = $this->codeChallenger->issue($this->key, $now);
-        $afterExpiry = $now->modify(\sprintf('+%d minutes', self::EXPIRY_MINUTES + 1));
+        $afterExpiry = $now->modify(\sprintf('+%d seconds', $this->expirySeconds + 1));
 
         // Then
         $this->expectException(VerificationCodeNotFoundException::class);
@@ -147,7 +153,7 @@ final class NativeCodeChallengerTest extends TestCase
         // Given
         $now = Clock::get()->now();
         $this->codeChallenger->issue($this->key, $now);
-        for ($i = 0; $i < self::MAX_ATTEMPTS; ++$i) {
+        for ($i = 0; $i < $this->maxAttempts; ++$i) {
             $this->codeChallenger->verify($this->key, 'wrong', $now);
         }
 

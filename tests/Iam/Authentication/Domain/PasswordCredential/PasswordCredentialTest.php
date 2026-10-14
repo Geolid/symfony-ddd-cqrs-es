@@ -19,14 +19,13 @@ use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Iam\Tests\Authentication\Support\Double\FakePasswordHasher;
 use Iam\Tests\Authentication\Support\Double\StubPasswordStrengthSpecification;
-use Iam\Tests\Authentication\Support\Factory\PasswordCredentialFactory;
 use Iam\Tests\Authentication\Support\Factory\PasswordFactory;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\Service\CodeChallengerInterface;
-use Shared\Domain\Service\CooldownCalculator;
 use Shared\Tests\Support\Double\FakeCodeChallenger;
+use Shared\Tests\Support\Factory\CooldownCalculatorFactory;
 use Symfony\Component\Clock\Clock;
 
 final class PasswordCredentialTest extends AggregateRootTestCase
@@ -162,7 +161,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     {
         $this
             ->given($this->defined())
-            ->when(fn (PasswordCredential $credential) => $credential->requestReset($this->requestedAt, new CooldownCalculator(PasswordCredentialFactory::COOLDOWN_SECONDS)))
+            ->when(fn (PasswordCredential $credential) => $credential->requestReset($this->requestedAt, CooldownCalculatorFactory::new()->create()))
             ->then($this->resetRequested());
     }
 
@@ -173,7 +172,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
 
         $this
             ->given($this->defined(), $this->resetRequested())
-            ->when(static fn (PasswordCredential $credential) => $credential->requestReset($requestedAgainAt, new CooldownCalculator(PasswordCredentialFactory::COOLDOWN_SECONDS)))
+            ->when(static fn (PasswordCredential $credential) => $credential->requestReset($requestedAgainAt, CooldownCalculatorFactory::new()->create()))
             ->expectsException(PasswordResetRequestedTooRecentlyException::class)
             ->expectsExceptionMessage('requested too recently');
     }

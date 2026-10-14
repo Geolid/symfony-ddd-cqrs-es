@@ -16,7 +16,7 @@ final readonly class ListShipmentsPastReconciliationThresholdHandler
     public function __construct(
         private ShipmentFinderInterface $shipmentFinder,
         private ClockInterface $clock,
-        private int $thresholdHours,
+        private int $thresholdSeconds,
     ) {
     }
 
@@ -26,7 +26,7 @@ final readonly class ListShipmentsPastReconciliationThresholdHandler
     public function __invoke(ListShipmentsPastReconciliationThreshold $query): StreamResult
     {
         $cutoff = $this->clock->now()
-            ->sub(new \DateInterval(\sprintf('PT%dH', $this->thresholdHours)));
+            ->sub(new \DateInterval(\sprintf('PT%dS', $this->thresholdSeconds)));
 
         return new StreamResult(
             $this->shipmentFinder->stalledBefore($cutoff),

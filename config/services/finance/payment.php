@@ -13,7 +13,11 @@ use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigura
 use function Symfony\Component\DependencyInjection\Loader\Configurator\tagged_iterator;
 
 return static function (ContainerConfigurator $container): void {
-    $container->parameters()->set('finance.payment.reconciliation_threshold_minutes', 60);
+    $container->parameters()->set('finance.payment.reconciliation_threshold_seconds', 60 * 60);
+
+    // Must exceed the globex.client HTTP timeout, or a slow-but-successful
+    // gateway call could outlive the lock and let a concurrent retry race it.
+    $container->parameters()->set('finance.payment.payment_request_lock_seconds', 30);
 
     $services = $container->services();
     $services->defaults()->autowire()->autoconfigure();
@@ -22,7 +26,7 @@ return static function (ContainerConfigurator $container): void {
 
     BoundedContextServiceLoader::load($services, 'Finance\\Payment');
 
-    $services->get(ListPaymentsPastReconciliationThresholdHandler::class)->arg('$thresholdMinutes', '%finance.payment.reconciliation_threshold_minutes%');
+    $services->get(ListPaymentsPastReconciliationThresholdHandler::class)->arg('$thresholdSeconds', '%finance.payment.reconciliation_threshold_seconds%');
 
     $services->get(PaymentReconciler::class)->arg('$reconcilers', tagged_iterator('finance.payment.payment_status_reconciler'));
 

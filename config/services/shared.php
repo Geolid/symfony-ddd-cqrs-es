@@ -26,7 +26,8 @@ use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return static function (ContainerConfigurator $container): void {
     $container->parameters()->set('code_challenger.max_attempts', 3);
-    $container->parameters()->set('code_challenger.expiry_minutes', 15);
+    $container->parameters()->set('code_challenger.expiry_seconds', 15 * 60);
+    $container->parameters()->set('code_challenger.digit_count', 6);
     $container->parameters()->set('shared.cooldown_seconds', 60);
     $container->parameters()->set('valkey.key_prefix', '');
 

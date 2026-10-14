@@ -22,7 +22,7 @@ return static function (ContainerConfigurator $container): void {
             'countryCode' => '%env(FULFILMENT_WAREHOUSE_ADDRESS_COUNTRY_CODE)%',
         ],
     ]);
-    $container->parameters()->set('fulfilment.shipping.reconciliation_threshold_hours', 48);
+    $container->parameters()->set('fulfilment.shipping.reconciliation_threshold_seconds', 48 * 3600);
 
     $services = $container->services();
     $services->defaults()->autowire()->autoconfigure();
@@ -33,7 +33,7 @@ return static function (ContainerConfigurator $container): void {
 
     $services->get(ShipmentReconciler::class)->arg('$reconcilers', tagged_iterator('fulfilment.shipping.status_reconciler'));
 
-    $services->get(ListShipmentsPastReconciliationThresholdHandler::class)->arg('$thresholdHours', '%fulfilment.shipping.reconciliation_threshold_hours%');
+    $services->get(ListShipmentsPastReconciliationThresholdHandler::class)->arg('$thresholdSeconds', '%fulfilment.shipping.reconciliation_threshold_seconds%');
 
     $services->get(WarehouseAddressProvider::class)->arg('$address', '%fulfilment.warehouse_address%');
 

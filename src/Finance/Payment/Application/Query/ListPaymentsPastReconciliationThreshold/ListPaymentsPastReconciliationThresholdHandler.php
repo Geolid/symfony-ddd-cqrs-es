@@ -16,7 +16,7 @@ final readonly class ListPaymentsPastReconciliationThresholdHandler
     public function __construct(
         private PaymentFinderInterface $orderPaymentFinder,
         private ClockInterface $clock,
-        private int $thresholdMinutes,
+        private int $thresholdSeconds,
     ) {
     }
 
@@ -26,7 +26,7 @@ final readonly class ListPaymentsPastReconciliationThresholdHandler
     public function __invoke(ListPaymentsPastReconciliationThreshold $query): StreamResult
     {
         $cutoff = $this->clock->now()
-            ->sub(new \DateInterval(\sprintf('PT%dM', $this->thresholdMinutes)));
+            ->sub(new \DateInterval(\sprintf('PT%dS', $this->thresholdSeconds)));
 
         return new StreamResult(
             $this->orderPaymentFinder->stalledBefore($cutoff),
