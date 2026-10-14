@@ -78,7 +78,7 @@ final class PersonalDataController extends AbstractController
      * @throws \DomainException
      */
     #[Route(path: ['en' => '/erasure/{id}/cancel', 'fr' => '/suppression/{id}/annuler'], name: 'cancel_erasure', methods: ['POST'])]
-    public function cancelErasure(string $id, Request $request): RedirectResponse
+    public function cancelErasure(string $id, Request $request, #[CurrentUser] PasswordUser $user): RedirectResponse
     {
         if (!$this->isCsrfTokenValid('cancel_erasure_'.$id, (string) $request->request->get('_token'))) {
             $this->addFlash('error', $this->translator->trans('flash_invalid_csrf_token', domain: 'messages'));
@@ -86,7 +86,7 @@ final class PersonalDataController extends AbstractController
             return $this->redirectToRoute('storefront_account_personal_data_show');
         }
 
-        $this->commandBus->dispatch(new CancelErasure($id));
+        $this->commandBus->dispatch(new CancelErasure($id, $user->identityId()));
         $this->addFlash('success', $this->translator->trans('cancel_erasure_flash_cancelled', domain: 'account_personal_data'));
 
         return $this->redirectToRoute('storefront_account_personal_data_show');

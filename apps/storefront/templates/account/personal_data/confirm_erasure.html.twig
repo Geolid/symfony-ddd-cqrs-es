@@ -1,35 +1,34 @@
 {% extends 'account/_layout.html.twig' %}
 {% trans_default_domain 'account_personal_data' %}
+{% import 'account/personal_data/_breadcrumb.html.twig' as personal_data %}
 
-{% block title %}{{ 'request_erasure_title'|trans }}{% endblock %}
+{% block title %}{{ 'confirm_erasure_title'|trans }}{% endblock %}
 
 {% block content %}
-    <twig:ui:Breadcrumb :items="[
-        {label: 'title'|trans({}, 'account'), url: path('storefront_account_show')},
-        {label: 'show_title'|trans, url: path('storefront_account_personal_data_show')},
-        {label: 'request_erasure_title'|trans},
-    ]" />
+    {{ personal_data.trail([
+        {label: 'confirm_erasure_title'|trans},
+    ]) }}
 
-    <h1>{{ 'request_erasure_title'|trans }}</h1>
+    <h1>{{ 'confirm_erasure_title'|trans }}</h1>
 
-    <p>{{ 'request_erasure_intro'|trans }}</p>
+    <p>{{ 'confirm_erasure_intro'|trans }}</p>
 
-    <h2>{{ 'request_erasure_consequences_title'|trans }}</h2>
-    <ul data-testid="erasure-consequences">
-        <li>{{ 'request_erasure_consequence_data'|trans }}</li>
-        <li>{{ 'request_erasure_consequence_access'|trans }}</li>
-        <li>{{ 'request_erasure_consequence_orders'|trans }}</li>
-        <li>{{ 'request_erasure_consequence_checkout'|trans }}</li>
-        <li>{{ 'request_erasure_consequence_irreversible'|trans }}</li>
+    <h2>{{ 'confirm_erasure_consequences_title'|trans }}</h2>
+    <ul data-testid="confirm-erasure-consequences">
+        <li>{{ 'confirm_erasure_consequence_data'|trans }}</li>
+        <li>{{ 'confirm_erasure_consequence_access'|trans }}</li>
+        <li>{{ 'confirm_erasure_consequence_orders'|trans }}</li>
+        <li>{{ 'confirm_erasure_consequence_checkout'|trans }}</li>
+        <li>{{ 'confirm_erasure_consequence_irreversible'|trans }}</li>
     </ul>
 
-    <h2>{{ 'request_erasure_delay_title'|trans }}</h2>
-    <p>{{ 'request_erasure_delay_description'|trans({'%days%': retentionDays}) }}</p>
+    <h2>{{ 'confirm_erasure_delay_title'|trans }}</h2>
+    <p>{{ 'confirm_erasure_delay_description'|trans({'%days%': retentionDays}) }}</p>
 
-    <form method="post" action="{{ path('storefront_account_personal_data_request_erasure') }}" data-testid="request-erasure-form">
+    <form method="post" action="{{ path('storefront_account_personal_data_request_erasure') }}" data-testid="confirm-erasure-form">
         <input type="hidden" name="_token" value="{{ csrf_token('request_erasure') }}">
-        <button type="submit" class="outline pico-background-red-500" data-testid="request-erasure-submit">{{ 'request_erasure_button_submit'|trans }}</button>
+        <button type="submit" class="outline pico-background-red-500" data-testid="confirm-erasure-submit">{{ 'confirm_erasure_button_submit'|trans }}</button>
     </form>
 
-    <p><a href="{{ path('storefront_account_personal_data_show') }}" data-testid="request-erasure-back">&larr; {{ 'request_erasure_link_back'|trans }}</a></p>
+    <p><a href="{{ path('storefront_account_personal_data_show') }}" data-testid="confirm-erasure-back">&larr; {{ 'confirm_erasure_link_back'|trans }}</a></p>
 {% endblock %}

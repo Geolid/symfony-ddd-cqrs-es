@@ -27,4 +27,14 @@ final class ErasureRetentionCalculatorTest extends TestCase
         // Then
         self::assertSameDateTime($requestedAt->modify('+7 days'), $effectiveAt);
     }
+
+    #[Test]
+    public function itFailsWhenNotPositive(): void
+    {
+        // Then
+        $this->expectException(\InvalidArgumentException::class);
+
+        // When
+        new ErasureRetentionCalculator(0);
+    }
 }

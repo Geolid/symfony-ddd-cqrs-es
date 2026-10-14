@@ -8,8 +8,10 @@ use Compliance\Erasing\Domain\Erasure;
 use Compliance\Erasing\Domain\Event\ErasureApproved;
 use Compliance\Erasing\Domain\Event\ErasureCancelled;
 use Compliance\Erasing\Domain\Event\ErasureRequested;
+use Compliance\Erasing\Domain\Exception\ErasureOwnedByAnotherIdentityException;
 use Compliance\Erasing\Domain\Service\ErasureRetentionCalculator;
 use Compliance\Erasing\Domain\ValueObject\ErasureId;
+use Compliance\Tests\Erasing\Support\Factory\ErasureFactory;
 use Compliance\Tests\Erasing\Support\Factory\ErasureIdFactory;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
@@ -33,7 +35,7 @@ final class ErasureTest extends AggregateRootTestCase
         $this->identityId = Uuid::uuid7()->toString();
         $this->requestedAt = Clock::get()->now();
         $this->cancelledAt = $this->requestedAt->modify('+1 hour');
-        $this->effectiveAt = $this->requestedAt->modify('+30 days');
+        $this->effectiveAt = $this->requestedAt->modify(\sprintf('+%d days', ErasureFactory::RETENTION_DAYS));
         $this->approvedAt = $this->effectiveAt->modify('+1 day');
     }
 
@@ -42,7 +44,7 @@ final class ErasureTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Erasure => Erasure::request($this->id, $this->identityId, $this->requestedAt, new ErasureRetentionCalculator(30)))
+            ->when(fn (): Erasure => Erasure::request($this->id, $this->identityId, $this->requestedAt, new ErasureRetentionCalculator(ErasureFactory::RETENTION_DAYS)))
             ->then($this->requested());
     }
 
@@ -51,7 +53,7 @@ final class ErasureTest extends AggregateRootTestCase
     {
         $this
             ->given($this->requested())
-            ->when(fn (Erasure $erasure) => $erasure->cancel($this->cancelledAt))
+            ->when(fn (Erasure $erasure) => $erasure->cancel($this->identityId, $this->cancelledAt))
             ->then(new ErasureCancelled($this->id, $this->identityId, $this->cancelledAt));
     }
 
@@ -60,8 +62,19 @@ final class ErasureTest extends AggregateRootTestCase
     {
         $this
             ->given($this->requested(), $this->cancelled())
-            ->when(fn (Erasure $erasure) => $erasure->cancel($this->cancelledAt))
+            ->when(fn (Erasure $erasure) => $erasure->cancel($this->identityId, $this->cancelledAt))
             ->then();
+    }
+
+    #[Test]
+    public function itCannotCancelWhenOwnedByAnotherIdentity(): void
+    {
+        $anotherIdentityId = Uuid::uuid7()->toString();
+
+        $this
+            ->given($this->requested())
+            ->when(fn (Erasure $erasure) => $erasure->cancel($anotherIdentityId, $this->cancelledAt))
+            ->expectsException(ErasureOwnedByAnotherIdentityException::class);
     }
 
     #[Test]
@@ -83,13 +96,11 @@ final class ErasureTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotApproveWhenNotEffective(): void
+    public function itDoesNotApproveWhenEffectiveAtNotPassed(): void
     {
-        $earlyApprovedAt = $this->effectiveAt;
-
         $this
             ->given($this->requested())
-            ->when(static fn (Erasure $erasure) => $erasure->approve($earlyApprovedAt))
+            ->when(fn (Erasure $erasure) => $erasure->approve($this->effectiveAt))
             ->then();
     }
 

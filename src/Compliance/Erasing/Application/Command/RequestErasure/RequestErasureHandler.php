@@ -22,7 +22,7 @@ final readonly class RequestErasureHandler
     public function __construct(
         private ErasureRepositoryInterface $repository,
         private UniquenessRegistryInterface $uniqueness,
-        private ErasureRetentionCalculator $retention,
+        private ErasureRetentionCalculator $retentionCalculator,
         private ClockInterface $clock,
     ) {
     }
@@ -40,7 +40,7 @@ final readonly class RequestErasureHandler
             return;
         }
 
-        $erasure = Erasure::request($id, $command->identityId, $this->clock->now(), $this->retention);
+        $erasure = Erasure::request($id, $command->identityId, $this->clock->now(), $this->retentionCalculator);
 
         $this->repository->save($erasure);
     }

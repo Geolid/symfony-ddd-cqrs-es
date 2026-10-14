@@ -29,52 +29,52 @@
         <source>show_button_cancel_erasure</source>
         <target>Cancel the request</target>
       </trans-unit>
-      <trans-unit id="request_erasure_title">
-        <source>request_erasure_title</source>
+      <trans-unit id="confirm_erasure_title">
+        <source>confirm_erasure_title</source>
         <target>Delete my account</target>
       </trans-unit>
-      <trans-unit id="request_erasure_intro">
-        <source>request_erasure_intro</source>
+      <trans-unit id="confirm_erasure_intro">
+        <source>confirm_erasure_intro</source>
         <target>You are about to request the deletion of your account. Please read what this means before confirming.</target>
       </trans-unit>
-      <trans-unit id="request_erasure_consequences_title">
-        <source>request_erasure_consequences_title</source>
+      <trans-unit id="confirm_erasure_consequences_title">
+        <source>confirm_erasure_consequences_title</source>
         <target>What will happen</target>
       </trans-unit>
-      <trans-unit id="request_erasure_consequence_data">
-        <source>request_erasure_consequence_data</source>
+      <trans-unit id="confirm_erasure_consequence_data">
+        <source>confirm_erasure_consequence_data</source>
         <target>Your personal data (name, email address, addresses) will be erased.</target>
       </trans-unit>
-      <trans-unit id="request_erasure_consequence_access">
-        <source>request_erasure_consequence_access</source>
+      <trans-unit id="confirm_erasure_consequence_access">
+        <source>confirm_erasure_consequence_access</source>
         <target>You will no longer be able to sign in with this account.</target>
       </trans-unit>
-      <trans-unit id="request_erasure_consequence_orders">
-        <source>request_erasure_consequence_orders</source>
+      <trans-unit id="confirm_erasure_consequence_orders">
+        <source>confirm_erasure_consequence_orders</source>
         <target>Your orders are erased once they are delivered, cancelled or failed. An order still in progress is kept until then.</target>
       </trans-unit>
-      <trans-unit id="request_erasure_consequence_checkout">
-        <source>request_erasure_consequence_checkout</source>
+      <trans-unit id="confirm_erasure_consequence_checkout">
+        <source>confirm_erasure_consequence_checkout</source>
         <target>While your request is pending, you cannot place new orders.</target>
       </trans-unit>
-      <trans-unit id="request_erasure_consequence_irreversible">
-        <source>request_erasure_consequence_irreversible</source>
+      <trans-unit id="confirm_erasure_consequence_irreversible">
+        <source>confirm_erasure_consequence_irreversible</source>
         <target>Once the deletion has taken effect, it cannot be undone.</target>
       </trans-unit>
-      <trans-unit id="request_erasure_delay_title">
-        <source>request_erasure_delay_title</source>
+      <trans-unit id="confirm_erasure_delay_title">
+        <source>confirm_erasure_delay_title</source>
         <target>Delay</target>
       </trans-unit>
-      <trans-unit id="request_erasure_delay_description">
-        <source>request_erasure_delay_description</source>
+      <trans-unit id="confirm_erasure_delay_description">
+        <source>confirm_erasure_delay_description</source>
         <target>The deletion takes effect %days% days after your request. Until then, your account stays active and you can cancel the request at any time from your personal data page. We will confirm your request by email.</target>
       </trans-unit>
-      <trans-unit id="request_erasure_button_submit">
-        <source>request_erasure_button_submit</source>
+      <trans-unit id="confirm_erasure_button_submit">
+        <source>confirm_erasure_button_submit</source>
         <target>Confirm the deletion request</target>
       </trans-unit>
-      <trans-unit id="request_erasure_link_back">
-        <source>request_erasure_link_back</source>
+      <trans-unit id="confirm_erasure_link_back">
+        <source>confirm_erasure_link_back</source>
         <target>Back to personal data</target>
       </trans-unit>
       <trans-unit id="request_erasure_flash_requested">

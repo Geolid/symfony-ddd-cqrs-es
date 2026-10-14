@@ -34,7 +34,8 @@ final class ApproveErasureHandlerTest extends AbstractIntegrationTestCase
     public function itApproves(): void
     {
         // Given
-        $erasure = ErasureFactory::new()->withRequestedAt(Clock::get()->now()->modify('-31 days'))->create();
+        $requestedAt = Clock::get()->now()->modify(\sprintf('-%d days', ErasureFactory::RETENTION_DAYS + 1));
+        $erasure = ErasureFactory::new()->withRequestedAt($requestedAt)->create();
         $this->store($erasure);
         $identityKey = UniqueKey::for(ErasingUniqueKey::IDENTITY);
         $this->uniqueness->claim($identityKey, $erasure->identityId, $erasure->id->toString());
@@ -49,7 +50,7 @@ final class ApproveErasureHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresWhenNotEffective(): void
+    public function itIgnoresWhenEffectiveAtNotPassed(): void
     {
         // Given
         $erasure = ErasureFactory::new()->withRequestedAt(Clock::get()->now()->modify('-1 day'))->create();

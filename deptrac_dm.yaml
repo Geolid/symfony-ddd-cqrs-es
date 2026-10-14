@@ -44,7 +44,7 @@ deptrac:
     Cli:          [ Shopping.Checkout, Sales.Ordering, Fulfilment.Shipping, Finance.Payment, Iam.Identity, Iam.Authentication, Shared, Vendors ]
     Webhook:      [ Fulfilment.Shipping, Sales.Ordering, Finance.Payment, Shared, Vendors ]
     EsDashboard:  [ Shared, Vendors ]
-    Cron:         [ Iam.Identity, Shared, Vendors ]
+    Cron:         [ Compliance.Erasing, Iam.Identity, Shared, Vendors ]
 
     # A Twig Component is presentation-only — framework/vendor glue, never a BC.
     Ui:           [ Vendors ]

@@ -9,9 +9,11 @@ use Compliance\Erasing\Application\ErasingUniqueKey;
 use Compliance\Erasing\Application\ErasureRequestStatus;
 use Compliance\Erasing\Application\Finder\Erasure\ErasureFinderInterface;
 use Compliance\Erasing\Domain\Exception\ErasureNotFoundException;
+use Compliance\Erasing\Domain\Exception\ErasureOwnedByAnotherIdentityException;
 use Compliance\Tests\Erasing\Support\Factory\ErasureFactory;
 use Compliance\Tests\Erasing\Support\Factory\ErasureIdFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -39,7 +41,7 @@ final class CancelErasureHandlerTest extends AbstractIntegrationTestCase
         $this->uniqueness->claim($identityKey, $erasure->identityId, $erasure->id->toString());
 
         // When
-        $this->dispatch(new CancelErasure($erasure->id->toString()));
+        $this->dispatch(new CancelErasure($erasure->id->toString(), $erasure->identityId));
 
         // Then
         $result = $this->finder->ofId($erasure->id->toString());
@@ -57,7 +59,7 @@ final class CancelErasureHandlerTest extends AbstractIntegrationTestCase
         $this->uniqueness->claim($identityKey, $erasure->identityId, $erasure->id->toString());
 
         // When
-        $this->dispatch(new CancelErasure($erasure->id->toString()));
+        $this->dispatch(new CancelErasure($erasure->id->toString(), $erasure->identityId));
 
         // Then
         $result = $this->finder->ofId($erasure->id->toString());
@@ -70,11 +72,27 @@ final class CancelErasureHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $unknownId = ErasureIdFactory::new()->create()->toString();
+        $unknownIdentityId = Uuid::uuid7()->toString();
 
         // Then
         $this->expectException(ErasureNotFoundException::class);
 
         // When
-        $this->dispatch(new CancelErasure($unknownId));
+        $this->dispatch(new CancelErasure($unknownId, $unknownIdentityId));
+    }
+
+    #[Test]
+    public function itFailsWhenOwnedByAnotherIdentity(): void
+    {
+        // Given
+        $erasure = ErasureFactory::new()->create();
+        $this->store($erasure);
+        $anotherIdentityId = Uuid::uuid7()->toString();
+
+        // Then
+        $this->expectException(ErasureOwnedByAnotherIdentityException::class);
+
+        // When
+        $this->dispatch(new CancelErasure($erasure->id->toString(), $anotherIdentityId));
     }
 }

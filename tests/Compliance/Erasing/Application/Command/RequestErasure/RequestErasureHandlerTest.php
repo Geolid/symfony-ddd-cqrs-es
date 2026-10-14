@@ -8,7 +8,6 @@ use Compliance\Erasing\Application\Command\RequestErasure\RequestErasure;
 use Compliance\Erasing\Application\ErasingUniqueKey;
 use Compliance\Erasing\Application\ErasureRequestStatus;
 use Compliance\Erasing\Application\Finder\Erasure\ErasureFinderInterface;
-use Compliance\Erasing\Application\Finder\Erasure\Exception\ErasureResultNotFoundException;
 use Compliance\Tests\Erasing\Support\Factory\ErasureFactory;
 use Compliance\Tests\Erasing\Support\Factory\ErasureIdFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -16,6 +15,7 @@ use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class RequestErasureHandlerTest extends AbstractIntegrationTestCase
 {
@@ -36,6 +36,7 @@ final class RequestErasureHandlerTest extends AbstractIntegrationTestCase
         // Given
         $id = ErasureIdFactory::new()->create()->toString();
         $identityId = Uuid::uuid7()->toString();
+        $effectiveAt = Clock::get()->now()->modify(\sprintf('+%d days', ErasureFactory::RETENTION_DAYS));
 
         // When
         $this->dispatch(new RequestErasure($id, $identityId));
@@ -43,8 +44,7 @@ final class RequestErasureHandlerTest extends AbstractIntegrationTestCase
         // Then
         $result = $this->finder->ofId($id);
         self::assertSame(ErasureRequestStatus::REQUESTED, $result->status);
-        self::assertNotNull($result->requestedAt);
-        self::assertSameDateTime($result->requestedAt->modify('+30 days'), $result->effectiveAt);
+        self::assertSameDateTime($effectiveAt, $result->effectiveAt);
     }
 
     #[Test]
@@ -76,7 +76,8 @@ final class RequestErasureHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new RequestErasure($id, $erasure->identityId));
 
         // Then
-        $this->expectException(ErasureResultNotFoundException::class);
-        $this->finder->ofId($id);
+        $result = $this->finder->requestedOfIdentityOrNull($erasure->identityId);
+        self::assertNotNull($result);
+        self::assertSame($erasure->id->toString(), $result->id);
     }
 }

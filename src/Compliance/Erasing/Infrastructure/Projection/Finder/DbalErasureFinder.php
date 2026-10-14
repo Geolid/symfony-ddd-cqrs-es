@@ -53,7 +53,7 @@ final class DbalErasureFinder extends AbstractIterableDbalFinder implements Eras
 
     protected function configureBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'identity_id', 'status', 'requested_at', 'effective_at', 'cancelled_at', 'approved_at')
+        $qb->select('id', 'status', 'requested_at', 'effective_at', 'cancelled_at', 'approved_at')
             ->from(DbalErasureProjector::TABLE);
     }
 

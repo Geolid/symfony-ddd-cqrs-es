@@ -51,7 +51,7 @@ final class ErasureFactory extends AbstractAggregateFactory
     {
         return $this->with(array_filter(['cancelledAt' => $cancelledAt]))->transition(
             static function (Erasure $erasure, array $inputs): void {
-                $erasure->cancel($inputs['cancelledAt']);
+                $erasure->cancel($erasure->identityId, $inputs['cancelledAt']);
             },
         );
     }
@@ -71,7 +71,7 @@ final class ErasureFactory extends AbstractAggregateFactory
             id: $parameters['id'],
             identityId: $parameters['identityId'],
             requestedAt: $parameters['requestedAt'],
-            retention: new ErasureRetentionCalculator(self::RETENTION_DAYS),
+            retentionCalculator: new ErasureRetentionCalculator(self::RETENTION_DAYS),
         );
     }
 

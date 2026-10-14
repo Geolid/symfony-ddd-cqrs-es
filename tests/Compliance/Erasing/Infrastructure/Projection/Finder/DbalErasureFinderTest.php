@@ -33,7 +33,6 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
 
         // Then
         self::assertSame($erasure->id->toString(), $result->id);
-        self::assertSame($erasure->identityId, $result->identityId);
         self::assertSame(ErasureRequestStatus::CANCELLED, $result->status);
         self::assertSameDateTime($erasure->requestedAt, $result->requestedAt);
         self::assertSameDateTime($erasure->effectiveAt, $result->effectiveAt);
@@ -55,7 +54,7 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
     }
 
     #[Test]
-    public function itGetsRequestedOfIdentity(): void
+    public function itFindsRequestedOfIdentity(): void
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
@@ -73,7 +72,7 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
     }
 
     #[Test]
-    public function itGetsNothingRequestedOfIdentityWhenCancelled(): void
+    public function itFindsNothingRequestedOfIdentityWhenCancelled(): void
     {
         // Given
         $identityId = Uuid::uuid7()->toString();
@@ -88,14 +87,28 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
     }
 
     #[Test]
+    public function itFindsNothingRequestedOfIdentityWhenNotRequested(): void
+    {
+        // Given
+        $unknownIdentityId = Uuid::uuid7()->toString();
+
+        // When
+        $result = $this->finder()->requestedOfIdentityOrNull($unknownIdentityId);
+
+        // Then
+        self::assertNull($result);
+    }
+
+    #[Test]
     public function itFiltersByEffectiveBefore(): void
     {
         // Given
         $now = Clock::get()->now();
-        $fresh = ErasureFactory::new()->withRequestedAt($now->modify('-1 day'))->create();
-        $due = ErasureFactory::new()->withRequestedAt($now->modify('-31 days'))->create();
-        $approved = ErasureFactory::new()->withRequestedAt($now->modify('-31 days'))->approved()->create();
-        $this->store($fresh, $due, $approved);
+        $dueRequestedAt = $now->modify(\sprintf('-%d days', ErasureFactory::RETENTION_DAYS + 1));
+        $atEffectiveAt = ErasureFactory::new()->withRequestedAt($now->modify(\sprintf('-%d days', ErasureFactory::RETENTION_DAYS)))->create();
+        $due = ErasureFactory::new()->withRequestedAt($dueRequestedAt)->create();
+        $approved = ErasureFactory::new()->withRequestedAt($dueRequestedAt)->approved()->create();
+        $this->store($atEffectiveAt, $due, $approved);
 
         // When
         $results = iterator_to_array($this->finder()->effectiveBefore($now));

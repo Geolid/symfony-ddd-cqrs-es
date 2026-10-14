@@ -50,6 +50,19 @@ final class ShowTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
+    public function itRequiresAuthentication(): void
+    {
+        // Given
+        $browser = $this->activeBrowser()->interceptRedirects();
+
+        // When
+        $browser->visitRoute('storefront_account_personal_data_show');
+
+        // Then
+        $browser->assertRedirectedToRoute('storefront_signin_identify');
+    }
+
+    #[Test]
     #[WithStory(ErasureRequestedStory::class)]
     public function itCancelsErasure(): void
     {
@@ -67,19 +80,6 @@ final class ShowTest extends AbstractStorefrontTestCase
         // Then
         $browser->assertRedirectedToRoute('storefront_account_personal_data_show')
             ->assertSeeIn('[data-testid="flash-success"]', 'cancel_erasure_flash_cancelled');
-    }
-
-    #[Test]
-    public function itRequiresAuthentication(): void
-    {
-        // Given
-        $browser = $this->activeBrowser()->interceptRedirects();
-
-        // When
-        $browser->visitRoute('storefront_account_personal_data_show');
-
-        // Then
-        $browser->assertRedirectedToRoute('storefront_signin_identify');
     }
 
     #[Test]

@@ -10,7 +10,6 @@ final readonly class ErasureResult
 {
     public function __construct(
         public string $id,
-        public string $identityId,
         public ErasureRequestStatus $status,
         public ?\DateTimeImmutable $requestedAt,
         public \DateTimeImmutable $effectiveAt,

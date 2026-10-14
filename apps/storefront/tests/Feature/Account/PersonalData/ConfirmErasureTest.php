@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\Account\PersonalData;
 
+use Compliance\Tests\Erasing\Support\Factory\ErasureFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
 use Storefront\Tests\Support\Story\ConfirmedStory;
+use Storefront\Tests\Support\Story\ErasureRequestedStory;
 use Symfony\Component\BrowserKit\AbstractBrowser;
 use Symfony\Component\Clock\Clock;
 use Zenstruck\Foundry\Attribute\WithStory;
@@ -27,8 +29,20 @@ final class ConfirmErasureTest extends AbstractStorefrontTestCase
 
         // Then
         $browser->assertSuccessful()
-            ->assertSeeElement('[data-testid="erasure-consequences"]')
-            ->assertSeeElement('[data-testid="request-erasure-submit"]');
+            ->assertSeeElement('[data-testid="confirm-erasure-consequences"]');
+    }
+
+    #[Test]
+    public function itRequiresAuthentication(): void
+    {
+        // Given
+        $browser = $this->activeBrowser()->interceptRedirects();
+
+        // When
+        $browser->visitRoute('storefront_account_personal_data_confirm_erasure');
+
+        // Then
+        $browser->assertRedirectedToRoute('storefront_signin_identify');
     }
 
     #[Test]
@@ -42,9 +56,10 @@ final class ConfirmErasureTest extends AbstractStorefrontTestCase
 
         $browser->visitRoute('storefront_account_personal_data_confirm_erasure');
         $browser->interceptRedirects();
+        $effectiveDate = Clock::get()->now()->modify(\sprintf('+%d days', ErasureFactory::RETENTION_DAYS))->format('Y-m-d');
 
         // When
-        $browser->click('[data-testid="request-erasure-submit"]');
+        $browser->click('[data-testid="confirm-erasure-submit"]');
 
         // Then
         $browser->assertRedirectedToRoute('storefront_account_personal_data_show')
@@ -52,30 +67,26 @@ final class ConfirmErasureTest extends AbstractStorefrontTestCase
         $this->assertEmailSent(1, $persona->email, 'Your account deletion request');
         $body = $this->mailer()->sentEmails()->last()->getTextBody();
         self::assertIsString($body);
-        self::assertStringContainsString(Clock::get()->now()->modify('+30 days')->format('Y-m-d'), $body);
+        self::assertStringContainsString($effectiveDate, $body);
     }
 
     #[Test]
-    #[WithStory(ConfirmedStory::class)]
-    public function itIgnoresWhenErasureRequested(): void
+    #[WithStory(ErasureRequestedStory::class)]
+    public function itIgnoresWhenAlreadyRequested(): void
     {
         // Given
-        $persona = ConfirmedStory::persona();
+        $persona = ErasureRequestedStory::persona();
         $browser = $this->activeBrowser();
         $browser->signInAs($persona->email, $persona->password());
-
-        $browser->visitRoute('storefront_account_personal_data_confirm_erasure');
-        $browser->click('[data-testid="request-erasure-submit"]');
 
         $browser->visitRoute('storefront_account_personal_data_confirm_erasure');
         $browser->interceptRedirects();
 
         // When
-        $browser->click('[data-testid="request-erasure-submit"]');
+        $browser->click('[data-testid="confirm-erasure-submit"]');
 
         // Then
         $browser->assertRedirectedToRoute('storefront_account_personal_data_show');
-        $this->assertEmailSent(1, $persona->email, 'Your account deletion request');
     }
 
     #[Test]
@@ -92,7 +103,7 @@ final class ConfirmErasureTest extends AbstractStorefrontTestCase
 
         // When
         $browser->use(static function (AbstractBrowser $client): void {
-            $form = $client->getCrawler()->filter('[data-testid="request-erasure-form"]')->form(['_token' => 'invalid']);
+            $form = $client->getCrawler()->filter('[data-testid="confirm-erasure-form"]')->form(['_token' => 'invalid']);
             $client->submit($form);
         });
 

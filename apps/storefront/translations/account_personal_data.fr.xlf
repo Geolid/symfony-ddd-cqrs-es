@@ -29,52 +29,52 @@
         <source>show_button_cancel_erasure</source>
         <target>Annuler la demande</target>
       </trans-unit>
-      <trans-unit id="request_erasure_title">
-        <source>request_erasure_title</source>
+      <trans-unit id="confirm_erasure_title">
+        <source>confirm_erasure_title</source>
         <target>Supprimer mon compte</target>
       </trans-unit>
-      <trans-unit id="request_erasure_intro">
-        <source>request_erasure_intro</source>
+      <trans-unit id="confirm_erasure_intro">
+        <source>confirm_erasure_intro</source>
         <target>Vous êtes sur le point de demander la suppression de votre compte. Lisez ce que cela implique avant de confirmer.</target>
       </trans-unit>
-      <trans-unit id="request_erasure_consequences_title">
-        <source>request_erasure_consequences_title</source>
+      <trans-unit id="confirm_erasure_consequences_title">
+        <source>confirm_erasure_consequences_title</source>
         <target>Ce qui va se passer</target>
       </trans-unit>
-      <trans-unit id="request_erasure_consequence_data">
-        <source>request_erasure_consequence_data</source>
+      <trans-unit id="confirm_erasure_consequence_data">
+        <source>confirm_erasure_consequence_data</source>
         <target>Vos données personnelles (nom, adresse e-mail, adresses) seront effacées.</target>
       </trans-unit>
-      <trans-unit id="request_erasure_consequence_access">
-        <source>request_erasure_consequence_access</source>
+      <trans-unit id="confirm_erasure_consequence_access">
+        <source>confirm_erasure_consequence_access</source>
         <target>Vous ne pourrez plus vous connecter avec ce compte.</target>
       </trans-unit>
-      <trans-unit id="request_erasure_consequence_orders">
-        <source>request_erasure_consequence_orders</source>
+      <trans-unit id="confirm_erasure_consequence_orders">
+        <source>confirm_erasure_consequence_orders</source>
         <target>Vos commandes sont effacées une fois livrées, annulées ou échouées. Une commande en cours est conservée jusque-là.</target>
       </trans-unit>
-      <trans-unit id="request_erasure_consequence_checkout">
-        <source>request_erasure_consequence_checkout</source>
+      <trans-unit id="confirm_erasure_consequence_checkout">
+        <source>confirm_erasure_consequence_checkout</source>
         <target>Tant que votre demande est en cours, vous ne pouvez plus passer de nouvelle commande.</target>
       </trans-unit>
-      <trans-unit id="request_erasure_consequence_irreversible">
-        <source>request_erasure_consequence_irreversible</source>
+      <trans-unit id="confirm_erasure_consequence_irreversible">
+        <source>confirm_erasure_consequence_irreversible</source>
         <target>Une fois la suppression effective, elle est irréversible.</target>
       </trans-unit>
-      <trans-unit id="request_erasure_delay_title">
-        <source>request_erasure_delay_title</source>
+      <trans-unit id="confirm_erasure_delay_title">
+        <source>confirm_erasure_delay_title</source>
         <target>Délai</target>
       </trans-unit>
-      <trans-unit id="request_erasure_delay_description">
-        <source>request_erasure_delay_description</source>
+      <trans-unit id="confirm_erasure_delay_description">
+        <source>confirm_erasure_delay_description</source>
         <target>La suppression prend effet %days% jours après votre demande. D'ici là, votre compte reste actif et vous pouvez annuler la demande à tout moment depuis la page des données personnelles. Nous vous confirmerons votre demande par e-mail.</target>
       </trans-unit>
-      <trans-unit id="request_erasure_button_submit">
-        <source>request_erasure_button_submit</source>
+      <trans-unit id="confirm_erasure_button_submit">
+        <source>confirm_erasure_button_submit</source>
         <target>Confirmer la demande de suppression</target>
       </trans-unit>
-      <trans-unit id="request_erasure_link_back">
-        <source>request_erasure_link_back</source>
+      <trans-unit id="confirm_erasure_link_back">
+        <source>confirm_erasure_link_back</source>
         <target>Retour aux données personnelles</target>
       </trans-unit>
       <trans-unit id="request_erasure_flash_requested">

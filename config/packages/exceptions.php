@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Catalog\Listing\Application\Command\PublishProduct\Exception\ProductLabelAlreadyInUseException;
+use Compliance\Erasing\Domain\Exception\ErasureOwnedByAnotherIdentityException;
 use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentAlreadyClaimedException;
 use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentReferenceAlreadyInUseException;
 use Finance\Payment\Application\PSP\Exception\PaymentGatewayException;
@@ -28,6 +29,8 @@ use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialOwnedBy
 use Iam\Authentication\Domain\PasswordCredential\Exception\InvalidCurrentPasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
 use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
+use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialOwnedByAnotherIdentityException;
+use Iam\Authentication\Domain\TrustedDevice\Exception\TrustedDeviceOwnedByAnotherIdentityException;
 use Iam\Identity\Application\Command\ChangeEmail\Exception\IdentityEmailAlreadyInUseException as ChangeEmailIdentityEmailAlreadyInUseException;
 use Iam\Identity\Application\Command\RegisterIdentity\Exception\IdentityEmailAlreadyInUseException;
 use Iam\Identity\Application\Command\RequestEmailChange\Exception\IdentityEmailAlreadyInUseException as RequestEmailChangeIdentityEmailAlreadyInUseException;
@@ -57,6 +60,9 @@ return static function (ContainerConfigurator $container): void {
             // Catalog
             ProductLabelAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
 
+            // Compliance
+            ErasureOwnedByAnotherIdentityException::class => ['log_level' => 'info', 'status_code' => 403],
+
             // Fulfilment
             ShipmentAlreadyTrackedException::class => ['log_level' => 'info', 'status_code' => 409],
             ShipmentInvalidTransitionException::class => ['log_level' => 'info', 'status_code' => 409],
@@ -76,6 +82,8 @@ return static function (ContainerConfigurator $container): void {
             TotpAlreadyEnrolledException::class => ['log_level' => 'info', 'status_code' => 409],
             ApiKeyCredentialRevokedException::class => ['log_level' => 'info', 'status_code' => 409],
             ApiKeyCredentialOwnedByAnotherIdentityException::class => ['log_level' => 'info', 'status_code' => 403],
+            TotpCredentialOwnedByAnotherIdentityException::class => ['log_level' => 'info', 'status_code' => 403],
+            TrustedDeviceOwnedByAnotherIdentityException::class => ['log_level' => 'info', 'status_code' => 403],
             ApiKeyCredentialLabelAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
             InvalidCurrentPasswordException::class => ['log_level' => 'info', 'status_code' => 422],
             SamePasswordException::class => ['log_level' => 'info', 'status_code' => 422],
