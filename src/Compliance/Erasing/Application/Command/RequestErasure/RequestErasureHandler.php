@@ -40,8 +40,7 @@ final readonly class RequestErasureHandler
             return;
         }
 
-        $requestedAt = $this->clock->now();
-        $erasure = Erasure::request($id, $command->identityId, $requestedAt, $this->retention->effectiveAt($requestedAt));
+        $erasure = Erasure::request($id, $command->identityId, $this->clock->now(), $this->retention);
 
         $this->repository->save($erasure);
     }

@@ -7,6 +7,7 @@ namespace Compliance\Erasing\Domain;
 use Compliance\Erasing\Domain\Event\ErasureApproved;
 use Compliance\Erasing\Domain\Event\ErasureCancelled;
 use Compliance\Erasing\Domain\Event\ErasureRequested;
+use Compliance\Erasing\Domain\Service\ErasureRetentionCalculator;
 use Compliance\Erasing\Domain\ValueObject\ErasureId;
 use Compliance\Erasing\Domain\ValueObject\ErasureRequestState;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
@@ -38,14 +39,14 @@ final class Erasure implements AggregateRoot, AggregateRootMetadataAware
     public private(set) ?\DateTimeImmutable $cancelledAt = null;
     public private(set) ?\DateTimeImmutable $approvedAt = null;
 
-    public static function request(ErasureId $id, string $identityId, \DateTimeImmutable $requestedAt, \DateTimeImmutable $effectiveAt): self
+    public static function request(ErasureId $id, string $identityId, \DateTimeImmutable $requestedAt, ErasureRetentionCalculator $retention): self
     {
         $self = new self();
         $self->recordThat(new ErasureRequested(
             id: $id,
             identityId: $identityId,
             requestedAt: $requestedAt,
-            effectiveAt: $effectiveAt,
+            effectiveAt: $retention->effectiveAt($requestedAt),
         ));
 
         return $self;

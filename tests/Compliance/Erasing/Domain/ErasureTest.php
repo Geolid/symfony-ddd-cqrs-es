@@ -8,6 +8,7 @@ use Compliance\Erasing\Domain\Erasure;
 use Compliance\Erasing\Domain\Event\ErasureApproved;
 use Compliance\Erasing\Domain\Event\ErasureCancelled;
 use Compliance\Erasing\Domain\Event\ErasureRequested;
+use Compliance\Erasing\Domain\Service\ErasureRetentionCalculator;
 use Compliance\Erasing\Domain\ValueObject\ErasureId;
 use Compliance\Tests\Erasing\Support\Factory\ErasureIdFactory;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
@@ -41,7 +42,7 @@ final class ErasureTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Erasure => Erasure::request($this->id, $this->identityId, $this->requestedAt, $this->effectiveAt))
+            ->when(fn (): Erasure => Erasure::request($this->id, $this->identityId, $this->requestedAt, new ErasureRetentionCalculator(30)))
             ->then($this->requested());
     }
 

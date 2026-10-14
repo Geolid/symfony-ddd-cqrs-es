@@ -92,9 +92,9 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $fresh = ErasureFactory::new()->withEffectiveAt($now->modify('+1 day'))->create();
-        $due = ErasureFactory::new()->withEffectiveAt($now->modify('-1 day'))->create();
-        $approved = ErasureFactory::new()->withEffectiveAt($now->modify('-1 day'))->approved($now)->create();
+        $fresh = ErasureFactory::new()->withRequestedAt($now->modify('-1 day'))->create();
+        $due = ErasureFactory::new()->withRequestedAt($now->modify('-31 days'))->create();
+        $approved = ErasureFactory::new()->withRequestedAt($now->modify('-31 days'))->approved()->create();
         $this->store($fresh, $due, $approved);
 
         // When
