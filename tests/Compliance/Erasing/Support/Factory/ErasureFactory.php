@@ -83,6 +83,7 @@ final class ErasureFactory extends AbstractAggregateFactory
     protected function initialize(): static
     {
         return parent::initialize()->beforeInstantiate(static function (array $parameters): array {
+            Assert::isInstanceOf($parameters['requestedAt'], \DateTimeImmutable::class);
             Assert::integer($parameters['retentionSeconds']);
             $parameters['approvedAt'] ??= $parameters['requestedAt']->modify(\sprintf('+%d seconds', $parameters['retentionSeconds'] + 1));
 
