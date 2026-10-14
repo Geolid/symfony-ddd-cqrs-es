@@ -8,7 +8,7 @@ use Shared\Application\Command\CommandInterface;
 
 final readonly class CancelErasure implements CommandInterface
 {
-    public function __construct(public string $identityId)
+    public function __construct(public string $id)
     {
     }
 }

@@ -36,6 +36,7 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
         self::assertSame($erasure->identityId, $result->identityId);
         self::assertSame(ErasureRequestStatus::CANCELLED, $result->status);
         self::assertSameDateTime($erasure->requestedAt, $result->requestedAt);
+        self::assertSameDateTime($erasure->effectiveAt, $result->effectiveAt);
         self::assertSameDateTime($erasure->cancelledAt, $result->cancelledAt);
         self::assertNull($result->approvedAt);
     }
@@ -87,17 +88,17 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
     }
 
     #[Test]
-    public function itFiltersByRequestedBefore(): void
+    public function itFiltersByEffectiveBefore(): void
     {
         // Given
         $now = Clock::get()->now();
-        $fresh = ErasureFactory::new()->withRequestedAt($now->modify('-1 day'))->create();
-        $due = ErasureFactory::new()->withRequestedAt($now->modify('-31 days'))->create();
-        $approved = ErasureFactory::new()->withRequestedAt($now->modify('-31 days'))->approved()->create();
+        $fresh = ErasureFactory::new()->withEffectiveAt($now->modify('+1 day'))->create();
+        $due = ErasureFactory::new()->withEffectiveAt($now->modify('-1 day'))->create();
+        $approved = ErasureFactory::new()->withEffectiveAt($now->modify('-1 day'))->approved($now)->create();
         $this->store($fresh, $due, $approved);
 
         // When
-        $results = iterator_to_array($this->finder()->requestedBefore($now->modify('-30 days')));
+        $results = iterator_to_array($this->finder()->effectiveBefore($now));
 
         // Then
         self::assertCount(1, $results);

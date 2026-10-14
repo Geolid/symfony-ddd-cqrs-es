@@ -1,4 +1,4 @@
-{% extends 'account/personal_data/_layout.html.twig' %}
+{% extends 'account/_layout.html.twig' %}
 {% trans_default_domain 'account_personal_data' %}
 
 {% block title %}{{ 'show_title'|trans }}{% endblock %}
@@ -14,17 +14,17 @@
     <article class="settings-sections">
         <dl>
             <dt>{{ 'show_label_erasure'|trans }}</dt>
-            {% if pendingErasure is null %}
+            {% if erasure is null %}
                 <dd>{{ 'show_erasure_description'|trans({'%days%': retentionDays}) }}</dd>
             {% else %}
-                <dd data-testid="erasure-pending">{{ 'show_erasure_pending'|trans({'%requestedAt%': pendingErasure.requestedAt|date('d/m/Y'), '%effectiveAt%': pendingErasure.effectiveAt|date('d/m/Y')}) }}</dd>
+                <dd data-testid="erasure-pending">{{ 'show_erasure_pending'|trans({'%requestedAt%': erasure.requestedAt|date('d/m/Y'), '%effectiveAt%': erasure.effectiveAt|date('d/m/Y')}) }}</dd>
             {% endif %}
         </dl>
-        {% if pendingErasure is null %}
-            <a href="{{ path('storefront_account_personal_data_request_erasure') }}" role="button" class="outline pico-background-red-500" data-testid="request-erasure-link">{{ 'show_button_request_erasure'|trans }}</a>
+        {% if erasure is null %}
+            <a href="{{ path('storefront_account_personal_data_confirm_erasure') }}" role="button" class="outline pico-background-red-500" data-testid="request-erasure-link">{{ 'show_button_request_erasure'|trans }}</a>
         {% else %}
-            <form method="post" action="{{ path('storefront_account_personal_data_cancel_erasure') }}" data-testid="cancel-erasure-form">
-                <input type="hidden" name="_token" value="{{ csrf_token('cancel_erasure') }}">
+            <form method="post" action="{{ path('storefront_account_personal_data_cancel_erasure', {id: erasure.id}) }}" data-testid="cancel-erasure-form">
+                <input type="hidden" name="_token" value="{{ csrf_token('cancel_erasure_' ~ erasure.id) }}">
                 <button type="submit" class="outline" data-testid="cancel-erasure-submit">{{ 'show_button_cancel_erasure'|trans }}</button>
             </form>
         {% endif %}

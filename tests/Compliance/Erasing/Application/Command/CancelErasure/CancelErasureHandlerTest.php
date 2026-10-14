@@ -10,8 +10,8 @@ use Compliance\Erasing\Application\ErasureRequestStatus;
 use Compliance\Erasing\Application\Finder\Erasure\ErasureFinderInterface;
 use Compliance\Erasing\Domain\Exception\ErasureNotFoundException;
 use Compliance\Tests\Erasing\Support\Factory\ErasureFactory;
+use Compliance\Tests\Erasing\Support\Factory\ErasureIdFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -39,7 +39,7 @@ final class CancelErasureHandlerTest extends AbstractIntegrationTestCase
         $this->uniqueness->claim($identityKey, $erasure->identityId, $erasure->id->toString());
 
         // When
-        $this->dispatch(new CancelErasure($erasure->identityId));
+        $this->dispatch(new CancelErasure($erasure->id->toString()));
 
         // Then
         $result = $this->finder->ofId($erasure->id->toString());
@@ -48,29 +48,33 @@ final class CancelErasureHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenApproved(): void
+    public function itIgnoresWhenAlreadyApproved(): void
     {
         // Given
         $erasure = ErasureFactory::new()->approved()->create();
         $this->store($erasure);
-
-        // Then
-        $this->expectException(ErasureNotFoundException::class);
+        $identityKey = UniqueKey::for(ErasingUniqueKey::IDENTITY);
+        $this->uniqueness->claim($identityKey, $erasure->identityId, $erasure->id->toString());
 
         // When
-        $this->dispatch(new CancelErasure($erasure->identityId));
+        $this->dispatch(new CancelErasure($erasure->id->toString()));
+
+        // Then
+        $result = $this->finder->ofId($erasure->id->toString());
+        self::assertSame(ErasureRequestStatus::APPROVED, $result->status);
+        self::assertTrue($this->uniqueness->isClaimed($identityKey, $erasure->identityId));
     }
 
     #[Test]
     public function itFailsWhenNotFound(): void
     {
         // Given
-        $unknownIdentityId = Uuid::uuid7()->toString();
+        $unknownId = ErasureIdFactory::new()->create()->toString();
 
         // Then
         $this->expectException(ErasureNotFoundException::class);
 
         // When
-        $this->dispatch(new CancelErasure($unknownIdentityId));
+        $this->dispatch(new CancelErasure($unknownId));
     }
 }

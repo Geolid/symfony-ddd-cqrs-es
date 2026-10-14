@@ -4,11 +4,11 @@ declare(strict_types=1);
 
 namespace Compliance\Tests\Erasing\Application\Command\RequestErasure;
 
-use Compliance\Erasing\Application\Command\RequestErasure\Exception\ErasureAlreadyClaimedException;
 use Compliance\Erasing\Application\Command\RequestErasure\RequestErasure;
 use Compliance\Erasing\Application\ErasingUniqueKey;
 use Compliance\Erasing\Application\ErasureRequestStatus;
 use Compliance\Erasing\Application\Finder\Erasure\ErasureFinderInterface;
+use Compliance\Erasing\Application\Finder\Erasure\Exception\ErasureResultNotFoundException;
 use Compliance\Tests\Erasing\Support\Factory\ErasureFactory;
 use Compliance\Tests\Erasing\Support\Factory\ErasureIdFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -43,6 +43,8 @@ final class RequestErasureHandlerTest extends AbstractIntegrationTestCase
         // Then
         $result = $this->finder->ofId($id);
         self::assertSame(ErasureRequestStatus::REQUESTED, $result->status);
+        self::assertNotNull($result->requestedAt);
+        self::assertSameDateTime($result->requestedAt->modify('+30 days'), $result->effectiveAt);
     }
 
     #[Test]
@@ -62,17 +64,19 @@ final class RequestErasureHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenAlreadyClaimed(): void
+    public function itIgnoresWhenAlreadyClaimed(): void
     {
         // Given
         $erasure = ErasureFactory::new()->create();
         $this->store($erasure);
         $this->uniqueness->claim(UniqueKey::for(ErasingUniqueKey::IDENTITY), $erasure->identityId, $erasure->id->toString());
-
-        // Then
-        $this->expectException(ErasureAlreadyClaimedException::class);
+        $id = ErasureIdFactory::new()->create()->toString();
 
         // When
-        $this->dispatch(new RequestErasure(ErasureIdFactory::new()->create()->toString(), $erasure->identityId));
+        $this->dispatch(new RequestErasure($id, $erasure->identityId));
+
+        // Then
+        $this->expectException(ErasureResultNotFoundException::class);
+        $this->finder->ofId($id);
     }
 }

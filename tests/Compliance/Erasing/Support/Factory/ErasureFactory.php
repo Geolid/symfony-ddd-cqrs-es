@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Compliance\Tests\Erasing\Support\Factory;
 
 use Compliance\Erasing\Domain\Erasure;
-use Compliance\Erasing\Domain\Service\ErasureRetentionCalculator;
 use Compliance\Erasing\Domain\ValueObject\ErasureId;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Ramsey\Uuid\Uuid;
@@ -17,6 +16,7 @@ use Symfony\Component\Clock\Clock;
  *     id: ErasureId,
  *     identityId: string,
  *     requestedAt: \DateTimeImmutable,
+ *     effectiveAt: \DateTimeImmutable,
  *     cancelledAt: \DateTimeImmutable,
  *     approvedAt: \DateTimeImmutable,
  * }
@@ -25,8 +25,6 @@ use Symfony\Component\Clock\Clock;
  */
 final class ErasureFactory extends AbstractAggregateFactory
 {
-    public const int RETENTION_DAYS = 30;
-
     public static function class(): string
     {
         return Erasure::class;
@@ -47,6 +45,11 @@ final class ErasureFactory extends AbstractAggregateFactory
         return $this->with(['requestedAt' => $requestedAt]);
     }
 
+    public function withEffectiveAt(\DateTimeImmutable $effectiveAt): self
+    {
+        return $this->with(['effectiveAt' => $effectiveAt]);
+    }
+
     public function cancelled(?\DateTimeImmutable $cancelledAt = null): self
     {
         return $this->with(array_filter(['cancelledAt' => $cancelledAt]))->transition(
@@ -60,7 +63,7 @@ final class ErasureFactory extends AbstractAggregateFactory
     {
         return $this->with(array_filter(['approvedAt' => $approvedAt]))->transition(
             static function (Erasure $erasure, array $inputs): void {
-                $erasure->approve($inputs['approvedAt'], new ErasureRetentionCalculator(self::RETENTION_DAYS));
+                $erasure->approve($inputs['approvedAt']);
             },
         );
     }
@@ -71,6 +74,7 @@ final class ErasureFactory extends AbstractAggregateFactory
             id: $parameters['id'],
             identityId: $parameters['identityId'],
             requestedAt: $parameters['requestedAt'],
+            effectiveAt: $parameters['effectiveAt'],
         );
     }
 
@@ -82,8 +86,9 @@ final class ErasureFactory extends AbstractAggregateFactory
             'id' => ErasureIdFactory::new(),
             'identityId' => Uuid::uuid7()->toString(),
             'requestedAt' => $now,
+            'effectiveAt' => $now->modify('+30 days'),
             'cancelledAt' => $now->modify('+1 hour'),
-            'approvedAt' => $now->modify(\sprintf('+%d days', self::RETENTION_DAYS + 1)),
+            'approvedAt' => $now->modify('+31 days'),
         ];
     }
 }

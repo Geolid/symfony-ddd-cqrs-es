@@ -14,9 +14,4 @@ final readonly class ErasureRetentionCalculator
     {
         return $requestedAt->modify(\sprintf('+%d days', $this->days));
     }
-
-    public function cutoffAt(\DateTimeImmutable $now): \DateTimeImmutable
-    {
-        return $now->modify(\sprintf('-%d days', $this->days));
-    }
 }

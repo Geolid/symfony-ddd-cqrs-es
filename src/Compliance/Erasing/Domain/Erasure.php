@@ -7,8 +7,6 @@ namespace Compliance\Erasing\Domain;
 use Compliance\Erasing\Domain\Event\ErasureApproved;
 use Compliance\Erasing\Domain\Event\ErasureCancelled;
 use Compliance\Erasing\Domain\Event\ErasureRequested;
-use Compliance\Erasing\Domain\Service\ErasureRetentionCalculator;
-use Compliance\Erasing\Domain\Specification\ErasureRetentionExpiredSpecification;
 use Compliance\Erasing\Domain\ValueObject\ErasureId;
 use Compliance\Erasing\Domain\ValueObject\ErasureRequestState;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
@@ -36,16 +34,18 @@ final class Erasure implements AggregateRoot, AggregateRootMetadataAware
     public private(set) string $identityId;
     public private(set) ErasureRequestState $state;
     public private(set) \DateTimeImmutable $requestedAt;
+    public private(set) \DateTimeImmutable $effectiveAt;
     public private(set) ?\DateTimeImmutable $cancelledAt = null;
     public private(set) ?\DateTimeImmutable $approvedAt = null;
 
-    public static function request(ErasureId $id, string $identityId, \DateTimeImmutable $requestedAt): self
+    public static function request(ErasureId $id, string $identityId, \DateTimeImmutable $requestedAt, \DateTimeImmutable $effectiveAt): self
     {
         $self = new self();
         $self->recordThat(new ErasureRequested(
             id: $id,
             identityId: $identityId,
             requestedAt: $requestedAt,
+            effectiveAt: $effectiveAt,
         ));
 
         return $self;
@@ -64,13 +64,13 @@ final class Erasure implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    public function approve(\DateTimeImmutable $approvedAt, ErasureRetentionCalculator $retention): void
+    public function approve(\DateTimeImmutable $approvedAt): void
     {
         if (!$this->canTransitionStateTo(ErasureRequestState::APPROVED)) {
             return;
         }
 
-        if (!new ErasureRetentionExpiredSpecification($retention, $approvedAt)->isSatisfiedBy($this->requestedAt)) {
+        if ($approvedAt <= $this->effectiveAt) {
             return;
         }
 
@@ -93,6 +93,7 @@ final class Erasure implements AggregateRoot, AggregateRootMetadataAware
         $this->identityId = $event->identityId;
         $this->state = ErasureRequestState::REQUESTED;
         $this->requestedAt = $event->requestedAt;
+        $this->effectiveAt = $event->effectiveAt;
     }
 
     #[Apply]

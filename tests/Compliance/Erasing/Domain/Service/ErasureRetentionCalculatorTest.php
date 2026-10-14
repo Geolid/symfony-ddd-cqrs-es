@@ -27,18 +27,4 @@ final class ErasureRetentionCalculatorTest extends TestCase
         // Then
         self::assertSameDateTime($requestedAt->modify('+7 days'), $effectiveAt);
     }
-
-    #[Test]
-    public function itCalculatesCutoffAt(): void
-    {
-        // Given
-        $calculator = new ErasureRetentionCalculator(7);
-        $now = Clock::get()->now();
-
-        // When
-        $cutoffAt = $calculator->cutoffAt($now);
-
-        // Then
-        self::assertSameDateTime($now->modify('-7 days'), $cutoffAt);
-    }
 }

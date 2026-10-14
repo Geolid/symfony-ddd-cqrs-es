@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace Storefront\Controller\Account;
 
 use Compliance\Erasing\Application\Command\CancelErasure\CancelErasure;
-use Compliance\Erasing\Application\Command\RequestErasure\Exception\ErasureAlreadyClaimedException;
 use Compliance\Erasing\Application\Command\RequestErasure\RequestErasure;
-use Compliance\Erasing\Application\Query\GetPendingErasureByIdentity\GetPendingErasureByIdentity;
-use Compliance\Erasing\Domain\Exception\ErasureNotFoundException;
+use Compliance\Erasing\Application\Query\GetRequestedErasureByIdentity\GetRequestedErasureByIdentity;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
@@ -45,34 +43,31 @@ final class PersonalDataController extends AbstractController
     public function show(#[CurrentUser] PasswordUser $user): Response
     {
         return $this->render('account/personal_data/show.html.twig', [
-            'pendingErasure' => $this->queryBus->ask(new GetPendingErasureByIdentity($user->identityId())),
+            'erasure' => $this->queryBus->ask(new GetRequestedErasureByIdentity($user->identityId())),
             'retentionDays' => $this->retentionDays,
         ]);
+    }
+
+    #[Route(path: ['en' => '/erasure', 'fr' => '/suppression'], name: 'confirm_erasure', methods: ['GET'])]
+    public function confirmErasure(): Response
+    {
+        return $this->render('account/personal_data/confirm_erasure.html.twig', ['retentionDays' => $this->retentionDays]);
     }
 
     /**
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route(path: ['en' => '/erasure', 'fr' => '/suppression'], name: 'request_erasure', methods: ['GET', 'POST'])]
-    public function requestErasure(Request $request, #[CurrentUser] PasswordUser $user): Response
+    #[Route(path: ['en' => '/erasure', 'fr' => '/suppression'], name: 'request_erasure', methods: ['POST'])]
+    public function requestErasure(Request $request, #[CurrentUser] PasswordUser $user): RedirectResponse
     {
-        if (!$request->isMethod('POST')) {
-            return $this->render('account/personal_data/request_erasure.html.twig', ['retentionDays' => $this->retentionDays]);
-        }
-
         if (!$this->isCsrfTokenValid('request_erasure', (string) $request->request->get('_token'))) {
             $this->addFlash('error', $this->translator->trans('flash_invalid_csrf_token', domain: 'messages'));
 
-            return $this->redirectToRoute('storefront_account_personal_data_request_erasure');
+            return $this->redirectToRoute('storefront_account_personal_data_confirm_erasure');
         }
 
-        try {
-            $this->commandBus->dispatch(new RequestErasure(Uuid::uuid7()->toString(), $user->identityId()));
-        } catch (ErasureAlreadyClaimedException) {
-            return $this->redirectToRoute('storefront_account_personal_data_show');
-        }
-
+        $this->commandBus->dispatch(new RequestErasure(Uuid::uuid7()->toString(), $user->identityId()));
         $this->addFlash('success', $this->translator->trans('request_erasure_flash_requested', domain: 'account_personal_data'));
 
         return $this->redirectToRoute('storefront_account_personal_data_show');
@@ -82,20 +77,17 @@ final class PersonalDataController extends AbstractController
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Route(path: ['en' => '/erasure/cancel', 'fr' => '/suppression/annuler'], name: 'cancel_erasure', methods: ['POST'])]
-    public function cancelErasure(Request $request, #[CurrentUser] PasswordUser $user): RedirectResponse
+    #[Route(path: ['en' => '/erasure/{id}/cancel', 'fr' => '/suppression/{id}/annuler'], name: 'cancel_erasure', methods: ['POST'])]
+    public function cancelErasure(string $id, Request $request): RedirectResponse
     {
-        if (!$this->isCsrfTokenValid('cancel_erasure', (string) $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('cancel_erasure_'.$id, (string) $request->request->get('_token'))) {
             $this->addFlash('error', $this->translator->trans('flash_invalid_csrf_token', domain: 'messages'));
 
             return $this->redirectToRoute('storefront_account_personal_data_show');
         }
 
-        try {
-            $this->commandBus->dispatch(new CancelErasure($user->identityId()));
-            $this->addFlash('success', $this->translator->trans('cancel_erasure_flash_cancelled', domain: 'account_personal_data'));
-        } catch (ErasureNotFoundException) {
-        }
+        $this->commandBus->dispatch(new CancelErasure($id));
+        $this->addFlash('success', $this->translator->trans('cancel_erasure_flash_cancelled', domain: 'account_personal_data'));
 
         return $this->redirectToRoute('storefront_account_personal_data_show');
     }

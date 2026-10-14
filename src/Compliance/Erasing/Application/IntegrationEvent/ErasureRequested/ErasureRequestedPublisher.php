@@ -6,7 +6,6 @@ namespace Compliance\Erasing\Application\IntegrationEvent\ErasureRequested;
 
 use Compliance\Erasing\Domain\Erasure;
 use Compliance\Erasing\Domain\Event\ErasureRequested;
-use Compliance\Erasing\Domain\Service\ErasureRetentionCalculator;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
@@ -14,10 +13,8 @@ use Shared\Application\IntegrationEvent\Publisher;
 #[Publisher('compliance.erasing.publish_erasure_requested')]
 final readonly class ErasureRequestedPublisher
 {
-    public function __construct(
-        private IntegrationEventPublisherInterface $publisher,
-        private ErasureRetentionCalculator $retention,
-    ) {
+    public function __construct(private IntegrationEventPublisherInterface $publisher)
+    {
     }
 
     #[Subscribe(ErasureRequested::class)]
@@ -26,7 +23,7 @@ final readonly class ErasureRequestedPublisher
         $this->publisher->publish(Erasure::class, $event->id->toString(), new ErasureRequestedIntegrationEvent(
             identityId: $event->identityId,
             requestedAt: $event->requestedAt,
-            effectiveAt: $this->retention->effectiveAt($event->requestedAt),
+            effectiveAt: $event->effectiveAt,
         ));
     }
 }

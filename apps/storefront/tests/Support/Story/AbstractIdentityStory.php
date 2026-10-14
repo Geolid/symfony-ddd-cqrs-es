@@ -21,7 +21,7 @@ abstract class AbstractIdentityStory extends AbstractAggregateStory
 {
     public function __construct(
         RepositoryManager $repositories,
-        protected readonly UniquenessRegistryInterface $uniqueness,
+        private readonly UniquenessRegistryInterface $uniqueness,
         private readonly PasswordHasherInterface $hasher,
         private readonly PasswordStrengthSpecificationInterface $passwordStrength,
     ) {
