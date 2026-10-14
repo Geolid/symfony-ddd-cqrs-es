@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Support\Factory;
 
+use Iam\Authentication\Domain\TrustedDevice\Service\TrustedDeviceLifetimeCalculator;
 use Iam\Authentication\Domain\TrustedDevice\TrustedDevice;
 use Iam\Authentication\Domain\TrustedDevice\ValueObject\TrustedDeviceId;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
@@ -27,6 +28,8 @@ use function Zenstruck\Foundry\faker;
  */
 final class TrustedDeviceFactory extends AbstractAggregateFactory
 {
+    public const int LIFETIME_SECONDS = 2_592_000;
+
     public static function class(): string
     {
         return TrustedDevice::class;
@@ -64,6 +67,7 @@ final class TrustedDeviceFactory extends AbstractAggregateFactory
             userAgent: $parameters['userAgent'],
             ip: $parameters['ip'],
             trustedAt: $parameters['trustedAt'],
+            lifetime: new TrustedDeviceLifetimeCalculator(self::LIFETIME_SECONDS),
         );
     }
 

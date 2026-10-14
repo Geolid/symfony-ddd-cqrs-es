@@ -11,7 +11,6 @@ use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Tests\Support\Factory\MoneyFactory;
 use Shared\Tests\Support\Factory\PostalAddressFactory;
 use Shopping\Checkout\Domain\CheckoutSession;
-use Shopping\Checkout\Domain\Specification\CheckoutSessionExpiredSpecification;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Checkout\Domain\ValueObject\CheckoutSessionId;
 use Shopping\Checkout\Domain\ValueObject\TaxRate;
@@ -172,7 +171,7 @@ final class CheckoutSessionFactory extends AbstractAggregateFactory
             'billingAddress' => PostalAddressFactory::new(),
             'paymentId' => Uuid::uuid7()->toString(),
             'openedAt' => $now,
-            'expiredAt' => $now->modify(\sprintf('+%d minutes', CheckoutSessionExpiredSpecification::TTL_MINUTES + 1)),
+            'expiredAt' => $now->modify('+31 minutes'),
             'staledAt' => $now->modify('+1 minute'),
             'completedAt' => $now->modify('+5 minutes'),
         ];

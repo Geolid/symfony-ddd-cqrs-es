@@ -26,21 +26,19 @@ final class DbalTrustedDeviceFinder extends AbstractIterableDbalFinder implement
         #[Autowire(service: 'shared.hydration.hydrator')]
         Hydrator $hydrator,
         private readonly ClockInterface $clock,
-        #[Autowire(param: 'iam.authentication.trusted_device_lifetime')]
-        private readonly int $lifetime,
     ) {
         parent::__construct($connection, $hydrator);
     }
 
     public function activeByIdentity(string $identityId): static
     {
-        $cutoff = $this->clock->now()->modify(\sprintf('-%d seconds', $this->lifetime));
+        $now = $this->clock->now();
 
         return $this->filter(
-            static function (QueryBuilder $qb) use ($identityId, $cutoff): void {
-                $qb->andWhere('identity_id = :identityId AND revoked_at IS NULL AND trusted_at >= :cutoff')
+            static function (QueryBuilder $qb) use ($identityId, $now): void {
+                $qb->andWhere('identity_id = :identityId AND revoked_at IS NULL AND expires_at >= :now')
                     ->setParameter('identityId', $identityId)
-                    ->setParameter('cutoff', $cutoff, Types::DATETIME_IMMUTABLE);
+                    ->setParameter('now', $now, Types::DATETIME_IMMUTABLE);
             },
         );
     }

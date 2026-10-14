@@ -51,20 +51,20 @@ final class DbalCheckoutSessionFinder extends AbstractIterableDbalFinder impleme
         );
     }
 
-    public function stalledBefore(\DateTimeImmutable $cutoff): static
+    public function expiredBefore(\DateTimeImmutable $now): static
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($cutoff): void {
-                $qb->andWhere('status = :open AND opened_at < :cutoff')
+            static function (QueryBuilder $qb) use ($now): void {
+                $qb->andWhere('status = :open AND expires_at < :now')
                     ->setParameter('open', CheckoutSessionStatus::OPEN)
-                    ->setParameter('cutoff', $cutoff, Types::DATETIME_IMMUTABLE);
+                    ->setParameter('now', $now, Types::DATETIME_IMMUTABLE);
             },
         );
     }
 
     protected function configureBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'cart_id', 'customer_id', 'items', 'shipping_address', 'billing_address', 'total_excluding_tax_in_cents', 'total_tax_amount_in_cents', 'total_including_tax_in_cents', 'currency', 'tax_rate_basis_points', 'status', 'opened_at')
+        $qb->select('id', 'cart_id', 'customer_id', 'items', 'shipping_address', 'billing_address', 'total_excluding_tax_in_cents', 'total_tax_amount_in_cents', 'total_including_tax_in_cents', 'currency', 'tax_rate_basis_points', 'status', 'opened_at', 'expires_at')
             ->from(DbalCheckoutSessionProjector::TABLE);
     }
 

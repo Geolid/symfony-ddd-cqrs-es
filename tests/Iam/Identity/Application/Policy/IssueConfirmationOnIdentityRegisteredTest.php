@@ -29,7 +29,7 @@ final class IssueConfirmationOnIdentityRegisteredTest extends AbstractIntegratio
         $registeredAt = Clock::get()->now();
 
         // When
-        $this->trigger(IssueConfirmationOnIdentityRegistered::class, new IdentityRegistered($id, $fullName, $email, $registeredAt));
+        $this->trigger(IssueConfirmationOnIdentityRegistered::class, new IdentityRegistered($id, $fullName, $email, $registeredAt, $registeredAt->modify('+24 hours')));
 
         // Then
         self::assertEmailCount(1);

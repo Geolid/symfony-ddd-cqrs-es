@@ -44,20 +44,17 @@ final class DbalTrustedDeviceFinderTest extends AbstractIterableFinderTestCase
     public function itExcludesExpiredFromActiveByIdentity(): void
     {
         // Given
-        $lifetime = self::getContainer()->getParameter('iam.authentication.trusted_device_lifetime');
-        self::assertIsInt($lifetime);
-
         $now = Clock::get()->now();
         $identityId = Uuid::uuid7()->toString();
 
         $expired = TrustedDeviceFactory::new()
             ->withIdentityId($identityId)
-            ->withTrustedAt($now->modify(\sprintf('-%d seconds', $lifetime + 1)))
+            ->withTrustedAt($now->modify(\sprintf('-%d seconds', TrustedDeviceFactory::LIFETIME_SECONDS + 1)))
             ->create();
 
         $stillActive = TrustedDeviceFactory::new()
             ->withIdentityId($identityId)
-            ->withTrustedAt($now->modify(\sprintf('-%d seconds', $lifetime)))
+            ->withTrustedAt($now->modify(\sprintf('-%d seconds', TrustedDeviceFactory::LIFETIME_SECONDS)))
             ->create();
 
         $this->store($expired, $stillActive);

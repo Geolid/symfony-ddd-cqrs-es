@@ -26,6 +26,7 @@ use Shopping\Checkout\Application\Finder\Customer\CustomerFinderInterface;
 use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductFinderInterface;
 use Shopping\Checkout\Application\Tax\TaxRateResolverInterface;
 use Shopping\Checkout\Domain\Event\CheckoutSessionOpened;
+use Shopping\Checkout\Domain\Service\CheckoutSessionExpiryCalculator;
 use Shopping\Tests\Cart\Support\Factory\CartFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
@@ -48,6 +49,7 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
             $this->taxRateResolver,
             $this->service(CommandBusInterface::class),
             $this->service(ClockInterface::class),
+            new CheckoutSessionExpiryCalculator(),
         );
     }
 

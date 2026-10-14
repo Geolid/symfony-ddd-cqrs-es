@@ -21,7 +21,7 @@ use Iam\Identity\Domain\Exception\IdentityAlreadyConfirmedException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\InvalidConfirmationCodeException;
 use Iam\Identity\Domain\Exception\InvalidEmailChangeCodeException;
-use Iam\Identity\Domain\Specification\PendingIdentityExpiredSpecification;
+use Iam\Identity\Domain\Service\PendingIdentityExpiryCalculator;
 use Iam\Identity\Domain\ValueObject\Email;
 use Iam\Identity\Domain\ValueObject\FullName;
 use Iam\Identity\Domain\ValueObject\IdentityId;
@@ -64,6 +64,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     public private(set) IdentityModerationState $moderationState;
     public private(set) ErasureState $erasureState;
     public private(set) \DateTimeImmutable $registeredAt;
+    public private(set) \DateTimeImmutable $pendingExpiresAt;
     public private(set) \DateTimeImmutable $confirmationRequestedAt;
     public private(set) ?\DateTimeImmutable $confirmedAt = null;
     public private(set) ?\DateTimeImmutable $fullNameChangedAt = null;
@@ -86,6 +87,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
             fullName: $fullName,
             email: $email,
             registeredAt: $registeredAt,
+            pendingExpiresAt: new PendingIdentityExpiryCalculator()->expiresAt($registeredAt),
         ));
 
         return $self;
@@ -300,7 +302,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
             return;
         }
 
-        if (!new PendingIdentityExpiredSpecification($erasedAt)->isSatisfiedBy($this->registeredAt)) {
+        if ($erasedAt <= $this->pendingExpiresAt) {
             return;
         }
 
@@ -329,6 +331,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         $this->moderationState = IdentityModerationState::ACTIVE;
         $this->erasureState = ErasureState::RETAINED;
         $this->registeredAt = $event->registeredAt;
+        $this->pendingExpiresAt = $event->pendingExpiresAt;
         $this->confirmationRequestedAt = $event->registeredAt;
     }
 

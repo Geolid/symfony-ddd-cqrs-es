@@ -29,7 +29,7 @@ use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductFinderInterf
 use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductResult;
 use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
 use Shopping\Checkout\Application\Tax\TaxRateResolverInterface;
-use Shopping\Checkout\Domain\Specification\CheckoutSessionExpiredSpecification;
+use Shopping\Checkout\Domain\Service\CheckoutSessionExpiryCalculator;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Checkout\Domain\ValueObject\TaxRate;
 
@@ -43,6 +43,7 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
         private TaxRateResolverInterface $taxRateResolver,
         private CommandBusInterface $commandBus,
         private ClockInterface $clock,
+        private CheckoutSessionExpiryCalculator $expiry,
     ) {
     }
 
@@ -108,7 +109,7 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
             total: $total,
             shippingAddress: $shippingAddress,
             billingAddress: $billingAddress,
-            expiresAt: $now->modify(\sprintf('+%d minutes', CheckoutSessionExpiredSpecification::TTL_MINUTES)),
+            expiresAt: $this->expiry->expiresAt($now),
         );
     }
 

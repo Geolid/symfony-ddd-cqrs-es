@@ -31,8 +31,9 @@ final readonly class DbalTrustedDeviceProjector extends AbstractDbalProjector
                 'user_agent' => $event->userAgent,
                 'ip' => $event->ip,
                 'trusted_at' => $event->trustedAt,
+                'expires_at' => $event->expiresAt,
             ],
-            ['trusted_at' => Types::DATETIME_IMMUTABLE],
+            ['trusted_at' => Types::DATETIME_IMMUTABLE, 'expires_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -64,6 +65,7 @@ final readonly class DbalTrustedDeviceProjector extends AbstractDbalProjector
         $table->addColumn('user_agent', Types::STRING, ['length' => 255]);
         $table->addColumn('ip', Types::STRING, ['length' => 45]);
         $table->addColumn('trusted_at', Types::DATETIME_IMMUTABLE);
+        $table->addColumn('expires_at', Types::DATETIME_IMMUTABLE);
         $table->addColumn('revoked_at', Types::DATETIME_IMMUTABLE, ['notnull' => false]);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()

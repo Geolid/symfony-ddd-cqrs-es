@@ -7,6 +7,7 @@ namespace Iam\Tests\Authentication\Domain\TrustedDevice;
 use Iam\Authentication\Domain\TrustedDevice\Event\TrustedDeviceRevoked;
 use Iam\Authentication\Domain\TrustedDevice\Event\TrustedDeviceTrusted;
 use Iam\Authentication\Domain\TrustedDevice\Exception\TrustedDeviceOwnedByAnotherIdentityException;
+use Iam\Authentication\Domain\TrustedDevice\Service\TrustedDeviceLifetimeCalculator;
 use Iam\Authentication\Domain\TrustedDevice\TrustedDevice;
 use Iam\Authentication\Domain\TrustedDevice\ValueObject\TrustedDeviceId;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
@@ -23,6 +24,7 @@ final class TrustedDeviceTest extends AggregateRootTestCase
     private string $userAgent;
     private string $ip;
     private \DateTimeImmutable $trustedAt;
+    private \DateTimeImmutable $expiresAt;
 
     protected function setUp(): void
     {
@@ -33,6 +35,7 @@ final class TrustedDeviceTest extends AggregateRootTestCase
         $this->userAgent = faker()->userAgent();
         $this->ip = faker()->ipv4();
         $this->trustedAt = Clock::get()->now();
+        $this->expiresAt = $this->trustedAt->modify('+3600 seconds');
     }
 
     #[Test]
@@ -46,6 +49,7 @@ final class TrustedDeviceTest extends AggregateRootTestCase
                 $this->userAgent,
                 $this->ip,
                 $this->trustedAt,
+                new TrustedDeviceLifetimeCalculator(3600),
             ))
             ->then($this->trusted());
     }
@@ -100,6 +104,7 @@ final class TrustedDeviceTest extends AggregateRootTestCase
             $this->userAgent,
             $this->ip,
             $this->trustedAt,
+            $this->expiresAt,
         );
     }
 }

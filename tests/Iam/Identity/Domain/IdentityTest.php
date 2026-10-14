@@ -43,6 +43,7 @@ final class IdentityTest extends AggregateRootTestCase
     private Email $email;
     private Reason $reason;
     private \DateTimeImmutable $registeredAt;
+    private \DateTimeImmutable $pendingExpiresAt;
     private \DateTimeImmutable $confirmedAt;
     private string $confirmationCode;
     private \DateTimeImmutable $fullNameChangedAt;
@@ -65,6 +66,7 @@ final class IdentityTest extends AggregateRootTestCase
         $this->email = EmailFactory::new()->create();
         $this->reason = ReasonFactory::new()->create();
         $this->registeredAt = Clock::get()->now();
+        $this->pendingExpiresAt = $this->registeredAt->modify('+24 hours');
         $this->confirmedAt = $this->registeredAt->modify('+1 hour');
         $this->confirmationCode = FakeCodeChallenger::CODE;
         $this->fullNameChangedAt = $this->registeredAt->modify('+45 minutes');
@@ -490,7 +492,7 @@ final class IdentityTest extends AggregateRootTestCase
     #[Test]
     public function itDoesNotErasePendingWhenNotExpired(): void
     {
-        $earlyErasedAt = $this->registeredAt->modify('+1 hour');
+        $earlyErasedAt = $this->pendingExpiresAt;
 
         $this
             ->given($this->registered())
@@ -518,7 +520,7 @@ final class IdentityTest extends AggregateRootTestCase
 
     private function registered(): IdentityRegistered
     {
-        return new IdentityRegistered($this->id, $this->fullName, $this->email, $this->registeredAt);
+        return new IdentityRegistered($this->id, $this->fullName, $this->email, $this->registeredAt, $this->pendingExpiresAt);
     }
 
     private function confirmed(): IdentityConfirmed
