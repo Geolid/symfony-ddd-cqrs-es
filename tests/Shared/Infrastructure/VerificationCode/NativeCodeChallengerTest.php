@@ -132,12 +132,13 @@ final class NativeCodeChallengerTest extends TestCase
         // Given
         $now = Clock::get()->now();
         $code = $this->codeChallenger->issue($this->key, $now);
+        $afterExpiry = $now->modify(\sprintf('+%d minutes', self::EXPIRY_MINUTES + 1));
 
         // Then
         $this->expectException(VerificationCodeNotFoundException::class);
 
         // When
-        $this->codeChallenger->verify($this->key, $code, $now->modify(\sprintf('+%d minutes', self::EXPIRY_MINUTES + 1)));
+        $this->codeChallenger->verify($this->key, $code, $afterExpiry);
     }
 
     #[Test]
