@@ -103,14 +103,16 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
     public function itFiltersByEffectiveBefore(): void
     {
         // Given
-        $dueRequestedAt = Clock::get()->now()->modify('-1 day');
-        $atEffectiveAt = ErasureFactory::new()->create();
-        $due = ErasureFactory::new()->withRequestedAt($dueRequestedAt)->create();
-        $approved = ErasureFactory::new()->withRequestedAt($dueRequestedAt)->approved()->create();
+        $now = Clock::get()->now();
+        $retentionSeconds = 30 * 24 * 60 * 60;
+        $dueRequestedAt = $now->modify(\sprintf('-%d seconds', $retentionSeconds + 1));
+        $atEffectiveAt = ErasureFactory::new()->withRetentionSeconds($retentionSeconds)->withRequestedAt($now->modify(\sprintf('-%d seconds', $retentionSeconds)))->create();
+        $due = ErasureFactory::new()->withRetentionSeconds($retentionSeconds)->withRequestedAt($dueRequestedAt)->create();
+        $approved = ErasureFactory::new()->withRetentionSeconds($retentionSeconds)->withRequestedAt($dueRequestedAt)->approved()->create();
         $this->store($atEffectiveAt, $due, $approved);
 
         // When
-        $results = iterator_to_array($this->finder()->effectiveBefore($atEffectiveAt->effectiveAt));
+        $results = iterator_to_array($this->finder()->effectiveBefore($now));
 
         // Then
         self::assertCount(1, $results);

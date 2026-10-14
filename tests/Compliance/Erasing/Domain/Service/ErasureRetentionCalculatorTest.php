@@ -18,14 +18,14 @@ final class ErasureRetentionCalculatorTest extends TestCase
     public function itCalculatesEffectiveAt(): void
     {
         // Given
-        $calculator = new ErasureRetentionCalculator(604_800);
+        $calculator = new ErasureRetentionCalculator(7 * 24 * 60 * 60);
         $requestedAt = Clock::get()->now();
 
         // When
         $effectiveAt = $calculator->effectiveAt($requestedAt);
 
         // Then
-        self::assertSameDateTime($requestedAt->modify('+604800 seconds'), $effectiveAt);
+        self::assertSameDateTime($requestedAt->modify('+7 days'), $effectiveAt);
     }
 
     #[Test]

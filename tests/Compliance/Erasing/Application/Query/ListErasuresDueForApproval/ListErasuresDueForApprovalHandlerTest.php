@@ -17,10 +17,11 @@ final class ListErasuresDueForApprovalHandlerTest extends AbstractIntegrationTes
     {
         // Given
         $now = Clock::get()->now();
-        $dueRequestedAt = $now->modify('-1 day');
-        $fresh = ErasureFactory::new()->create();
-        $due = ErasureFactory::new()->withRequestedAt($dueRequestedAt)->create();
-        $cancelled = ErasureFactory::new()->withRequestedAt($dueRequestedAt)->cancelled()->create();
+        $retentionSeconds = 30 * 24 * 60 * 60;
+        $dueRequestedAt = $now->modify(\sprintf('-%d seconds', $retentionSeconds + 1));
+        $fresh = ErasureFactory::new()->withRetentionSeconds($retentionSeconds)->withRequestedAt($now->modify(\sprintf('-%d seconds', $retentionSeconds - 1)))->create();
+        $due = ErasureFactory::new()->withRetentionSeconds($retentionSeconds)->withRequestedAt($dueRequestedAt)->create();
+        $cancelled = ErasureFactory::new()->withRetentionSeconds($retentionSeconds)->withRequestedAt($dueRequestedAt)->cancelled()->create();
         $this->store($fresh, $due, $cancelled);
 
         // When

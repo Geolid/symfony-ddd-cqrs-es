@@ -18,6 +18,6 @@ final readonly class ErasureRetentionExtension
     #[AsTwigFunction(name: 'erasure_retention_days')]
     public function retentionDays(): int
     {
-        return intdiv($this->retentionSeconds, 86_400);
+        return intdiv($this->retentionSeconds, 24 * 60 * 60);
     }
 }
