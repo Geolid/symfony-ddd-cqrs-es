@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Compliance\Tests\Erasing\Domain\Specification;
 
+use Compliance\Erasing\Domain\Service\ErasureRetentionCalculator;
 use Compliance\Erasing\Domain\Specification\ErasureRetentionExpiredSpecification;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -17,7 +18,7 @@ final class ErasureRetentionExpiredSpecificationTest extends TestCase
     public function itIsSatisfiedBy(\DateTimeImmutable $requestedAt, \DateTimeImmutable $now, bool $expected): void
     {
         // Given
-        $specification = new ErasureRetentionExpiredSpecification($now);
+        $specification = new ErasureRetentionExpiredSpecification(new ErasureRetentionCalculator(30), $now);
 
         // When
         $result = $specification->isSatisfiedBy($requestedAt);

@@ -8,8 +8,9 @@ use Compliance\Erasing\Domain\Erasure;
 use Compliance\Erasing\Domain\Event\ErasureApproved;
 use Compliance\Erasing\Domain\Event\ErasureCancelled;
 use Compliance\Erasing\Domain\Event\ErasureRequested;
-use Compliance\Erasing\Domain\Specification\ErasureRetentionExpiredSpecification;
+use Compliance\Erasing\Domain\Service\ErasureRetentionCalculator;
 use Compliance\Erasing\Domain\ValueObject\ErasureId;
+use Compliance\Tests\Erasing\Support\Factory\ErasureFactory;
 use Compliance\Tests\Erasing\Support\Factory\ErasureIdFactory;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
@@ -23,6 +24,7 @@ final class ErasureTest extends AggregateRootTestCase
     private \DateTimeImmutable $requestedAt;
     private \DateTimeImmutable $cancelledAt;
     private \DateTimeImmutable $approvedAt;
+    private ErasureRetentionCalculator $retention;
 
     protected function setUp(): void
     {
@@ -32,7 +34,8 @@ final class ErasureTest extends AggregateRootTestCase
         $this->identityId = Uuid::uuid7()->toString();
         $this->requestedAt = Clock::get()->now();
         $this->cancelledAt = $this->requestedAt->modify('+1 hour');
-        $this->approvedAt = $this->requestedAt->modify(\sprintf('+%d days', ErasureRetentionExpiredSpecification::DAYS + 1));
+        $this->retention = new ErasureRetentionCalculator(ErasureFactory::RETENTION_DAYS);
+        $this->approvedAt = $this->requestedAt->modify(\sprintf('+%d days', ErasureFactory::RETENTION_DAYS + 1));
     }
 
     #[Test]
@@ -67,7 +70,7 @@ final class ErasureTest extends AggregateRootTestCase
     {
         $this
             ->given($this->requested())
-            ->when(fn (Erasure $erasure) => $erasure->approve($this->approvedAt))
+            ->when(fn (Erasure $erasure) => $erasure->approve($this->approvedAt, $this->retention))
             ->then(new ErasureApproved($this->id, $this->identityId, $this->approvedAt));
     }
 
@@ -76,7 +79,7 @@ final class ErasureTest extends AggregateRootTestCase
     {
         $this
             ->given($this->requested(), $this->cancelled())
-            ->when(fn (Erasure $erasure) => $erasure->approve($this->approvedAt))
+            ->when(fn (Erasure $erasure) => $erasure->approve($this->approvedAt, $this->retention))
             ->then();
     }
 
@@ -87,7 +90,7 @@ final class ErasureTest extends AggregateRootTestCase
 
         $this
             ->given($this->requested())
-            ->when(static fn (Erasure $erasure) => $erasure->approve($earlyApprovedAt))
+            ->when(fn (Erasure $erasure) => $erasure->approve($earlyApprovedAt, $this->retention))
             ->then();
     }
 

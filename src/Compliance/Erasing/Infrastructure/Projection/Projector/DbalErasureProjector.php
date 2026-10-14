@@ -28,6 +28,7 @@ final readonly class DbalErasureProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'id' => $event->id->toString(),
+                'identity_id' => $event->identityId,
                 'status' => ErasureRequestStatus::REQUESTED->value,
                 'requested_at' => $event->requestedAt,
             ],
@@ -70,6 +71,7 @@ final readonly class DbalErasureProjector extends AbstractDbalProjector
     {
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
+        $table->addColumn('identity_id', Types::STRING, ['length' => 36]);
         $table->addColumn('status', Types::STRING, ['length' => 10]);
         $table->addColumn('requested_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('cancelled_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
@@ -79,6 +81,7 @@ final readonly class DbalErasureProjector extends AbstractDbalProjector
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
                 ->create(),
         );
+        $table->addIndex(['identity_id', 'status'], 'compliance_erasing_erasure_identity_id_status_idx');
         $table->addIndex(['status', 'requested_at'], 'compliance_erasing_erasure_status_requested_at_idx');
     }
 }

@@ -28,6 +28,17 @@ final class DbalErasureFinder extends AbstractIterableDbalFinder implements Eras
         )->one() ?? throw ErasureResultNotFoundException::forId($id);
     }
 
+    public function requestedOfIdentityOrNull(string $identityId): ?ErasureResult
+    {
+        return $this->filter(
+            static function (QueryBuilder $qb) use ($identityId): void {
+                $qb->andWhere('identity_id = :identityId AND status = :requestedStatus')
+                    ->setParameter('identityId', $identityId)
+                    ->setParameter('requestedStatus', ErasureRequestStatus::REQUESTED->value);
+            },
+        )->one();
+    }
+
     public function requestedBefore(\DateTimeImmutable $cutoff): static
     {
         return $this->filter(
@@ -42,7 +53,7 @@ final class DbalErasureFinder extends AbstractIterableDbalFinder implements Eras
 
     protected function configureBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'status', 'requested_at', 'cancelled_at', 'approved_at')
+        $qb->select('id', 'identity_id', 'status', 'requested_at', 'cancelled_at', 'approved_at')
             ->from(DbalErasureProjector::TABLE);
     }
 

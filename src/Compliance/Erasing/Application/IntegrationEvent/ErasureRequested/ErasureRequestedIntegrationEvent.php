@@ -13,6 +13,7 @@ final readonly class ErasureRequestedIntegrationEvent implements IntegrationEven
     public function __construct(
         public string $identityId,
         public \DateTimeImmutable $requestedAt,
+        public \DateTimeImmutable $effectiveAt,
     ) {
     }
 }

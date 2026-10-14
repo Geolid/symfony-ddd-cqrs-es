@@ -17,5 +17,7 @@ interface ErasureFinderInterface extends IterableFinderInterface
      */
     public function ofId(string $id): ErasureResult;
 
+    public function requestedOfIdentityOrNull(string $identityId): ?ErasureResult;
+
     public function requestedBefore(\DateTimeImmutable $cutoff): static;
 }

@@ -11,6 +11,7 @@ use Compliance\Erasing\Domain\Erasure;
 use Compliance\Tests\Erasing\Support\Factory\ErasureFactory;
 use Compliance\Tests\Erasing\Support\Factory\ErasureIdFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -32,6 +33,7 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
 
         // Then
         self::assertSame($erasure->id->toString(), $result->id);
+        self::assertSame($erasure->identityId, $result->identityId);
         self::assertSame(ErasureRequestStatus::CANCELLED, $result->status);
         self::assertSameDateTime($erasure->requestedAt, $result->requestedAt);
         self::assertSameDateTime($erasure->cancelledAt, $result->cancelledAt);
@@ -49,6 +51,39 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
 
         // When
         $this->finder()->ofId($unknownId);
+    }
+
+    #[Test]
+    public function itGetsRequestedOfIdentity(): void
+    {
+        // Given
+        $identityId = Uuid::uuid7()->toString();
+        $other = ErasureFactory::new()->create();
+        $cancelled = ErasureFactory::new()->withIdentityId($identityId)->cancelled()->create();
+        $requested = ErasureFactory::new()->withIdentityId($identityId)->create();
+        $this->store($other, $cancelled, $requested);
+
+        // When
+        $result = $this->finder()->requestedOfIdentityOrNull($identityId);
+
+        // Then
+        self::assertNotNull($result);
+        self::assertSame($requested->id->toString(), $result->id);
+    }
+
+    #[Test]
+    public function itGetsNothingRequestedOfIdentityWhenCancelled(): void
+    {
+        // Given
+        $identityId = Uuid::uuid7()->toString();
+        $cancelled = ErasureFactory::new()->withIdentityId($identityId)->cancelled()->create();
+        $this->store($cancelled);
+
+        // When
+        $result = $this->finder()->requestedOfIdentityOrNull($identityId);
+
+        // Then
+        self::assertNull($result);
     }
 
     #[Test]

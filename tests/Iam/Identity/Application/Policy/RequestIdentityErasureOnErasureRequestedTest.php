@@ -21,9 +21,10 @@ final class RequestIdentityErasureOnErasureRequestedTest extends AbstractIntegra
         // Given
         $identity = IdentityFactory::new()->create();
         $this->store($identity);
+        $requestedAt = Clock::get()->now();
 
         // When
-        $this->trigger(RequestIdentityErasureOnErasureRequested::class, new ErasureRequestedIntegrationEvent($identity->id->toString(), Clock::get()->now()));
+        $this->trigger(RequestIdentityErasureOnErasureRequested::class, new ErasureRequestedIntegrationEvent($identity->id->toString(), $requestedAt, $requestedAt->modify('+30 days')));
 
         // Then
         $result = $this->service(IdentityFinderInterface::class)->ofId($identity->id->toString());

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Compliance\Erasing\Application\Command\CancelErasure;
 
 use Compliance\Erasing\Application\ErasingUniqueKey;
+use Compliance\Erasing\Application\Finder\Erasure\ErasureFinderInterface;
 use Compliance\Erasing\Domain\Exception\ErasureAlreadyExistsException;
 use Compliance\Erasing\Domain\Exception\ErasureNotFoundException;
 use Compliance\Erasing\Domain\Repository\ErasureRepositoryInterface;
@@ -19,6 +20,7 @@ final readonly class CancelErasureHandler
 {
     public function __construct(
         private ErasureRepositoryInterface $repository,
+        private ErasureFinderInterface $finder,
         private UniquenessRegistryInterface $uniqueness,
         private ClockInterface $clock,
     ) {
@@ -30,7 +32,8 @@ final readonly class CancelErasureHandler
      */
     public function __invoke(CancelErasure $command): void
     {
-        $erasure = $this->repository->load(ErasureId::fromString($command->id));
+        $open = $this->finder->requestedOfIdentityOrNull($command->identityId) ?? throw ErasureNotFoundException::forIdentity($command->identityId);
+        $erasure = $this->repository->load(ErasureId::fromString($open->id));
         $erasure->cancel($this->clock->now());
 
         $this->repository->save($erasure);

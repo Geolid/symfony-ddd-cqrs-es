@@ -7,6 +7,7 @@ namespace Compliance\Erasing\Domain;
 use Compliance\Erasing\Domain\Event\ErasureApproved;
 use Compliance\Erasing\Domain\Event\ErasureCancelled;
 use Compliance\Erasing\Domain\Event\ErasureRequested;
+use Compliance\Erasing\Domain\Service\ErasureRetentionCalculator;
 use Compliance\Erasing\Domain\Specification\ErasureRetentionExpiredSpecification;
 use Compliance\Erasing\Domain\ValueObject\ErasureId;
 use Compliance\Erasing\Domain\ValueObject\ErasureRequestState;
@@ -63,13 +64,13 @@ final class Erasure implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    public function approve(\DateTimeImmutable $approvedAt): void
+    public function approve(\DateTimeImmutable $approvedAt, ErasureRetentionCalculator $retention): void
     {
         if (!$this->canTransitionStateTo(ErasureRequestState::APPROVED)) {
             return;
         }
 
-        if (!new ErasureRetentionExpiredSpecification($approvedAt)->isSatisfiedBy($this->requestedAt)) {
+        if (!new ErasureRetentionExpiredSpecification($retention, $approvedAt)->isSatisfiedBy($this->requestedAt)) {
             return;
         }
 

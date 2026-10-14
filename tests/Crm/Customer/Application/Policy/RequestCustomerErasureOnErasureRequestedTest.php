@@ -23,9 +23,10 @@ final class RequestCustomerErasureOnErasureRequestedTest extends AbstractIntegra
         $identityId = Uuid::uuid7()->toString();
         $customer = CustomerFactory::new()->withIdentityId($identityId)->create();
         $this->store($customer);
+        $requestedAt = Clock::get()->now();
 
         // When
-        $this->trigger(RequestCustomerErasureOnErasureRequested::class, new ErasureRequestedIntegrationEvent($identityId, Clock::get()->now()));
+        $this->trigger(RequestCustomerErasureOnErasureRequested::class, new ErasureRequestedIntegrationEvent($identityId, $requestedAt, $requestedAt->modify('+30 days')));
 
         // Then
         $result = $this->service(CustomerFinderInterface::class)->ofIdOrNull($customer->id->toString());
@@ -38,9 +39,10 @@ final class RequestCustomerErasureOnErasureRequestedTest extends AbstractIntegra
     {
         // Given
         $unknownIdentityId = Uuid::uuid7()->toString();
+        $requestedAt = Clock::get()->now();
 
         // When
-        $this->trigger(RequestCustomerErasureOnErasureRequested::class, new ErasureRequestedIntegrationEvent($unknownIdentityId, Clock::get()->now()));
+        $this->trigger(RequestCustomerErasureOnErasureRequested::class, new ErasureRequestedIntegrationEvent($unknownIdentityId, $requestedAt, $requestedAt->modify('+30 days')));
 
         // Then
         self::expectNotToPerformAssertions();
