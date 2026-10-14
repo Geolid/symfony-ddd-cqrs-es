@@ -18,14 +18,14 @@ final class TrustedDeviceExpiryCalculatorTest extends TestCase
     public function itCalculatesExpiresAt(): void
     {
         // Given
-        $calculator = new TrustedDeviceExpiryCalculator(3600);
+        $calculator = new TrustedDeviceExpiryCalculator(24 * 60 * 60);
         $trustedAt = Clock::get()->now();
 
         // When
         $expiresAt = $calculator->expiresAt($trustedAt);
 
         // Then
-        self::assertSameDateTime($trustedAt->modify('+3600 seconds'), $expiresAt);
+        self::assertSameDateTime($trustedAt->modify('+24 hours'), $expiresAt);
     }
 
     #[Test]

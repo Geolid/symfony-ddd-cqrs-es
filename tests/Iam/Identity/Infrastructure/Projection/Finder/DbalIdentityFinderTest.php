@@ -99,14 +99,16 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
     public function itFiltersExpiresBefore(): void
     {
         // Given
-        $expiredRegisteredAt = Clock::get()->now()->modify('-1 day');
-        $atExpiresAt = IdentityFactory::new()->create();
-        $expired = IdentityFactory::new()->withRegisteredAt($expiredRegisteredAt)->create();
-        $confirmed = IdentityFactory::new()->withRegisteredAt($expiredRegisteredAt)->confirmed()->create();
+        $now = Clock::get()->now();
+        $expirySeconds = 24 * 60 * 60;
+        $expiredRegisteredAt = $now->modify(\sprintf('-%d seconds', $expirySeconds + 1));
+        $atExpiresAt = IdentityFactory::new()->withExpirySeconds($expirySeconds)->withRegisteredAt($now->modify(\sprintf('-%d seconds', $expirySeconds)))->create();
+        $expired = IdentityFactory::new()->withExpirySeconds($expirySeconds)->withRegisteredAt($expiredRegisteredAt)->create();
+        $confirmed = IdentityFactory::new()->withExpirySeconds($expirySeconds)->withRegisteredAt($expiredRegisteredAt)->confirmed()->create();
         $this->store($atExpiresAt, $expired, $confirmed);
 
         // When
-        $results = iterator_to_array($this->finder()->expiresBefore($atExpiresAt->expiresAt));
+        $results = iterator_to_array($this->finder()->expiresBefore($now));
 
         // Then
         self::assertCount(1, $results);

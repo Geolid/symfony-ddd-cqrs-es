@@ -18,14 +18,14 @@ final class PendingIdentityExpiryCalculatorTest extends TestCase
     public function itCalculatesExpiresAt(): void
     {
         // Given
-        $calculator = new PendingIdentityExpiryCalculator(43_200);
+        $calculator = new PendingIdentityExpiryCalculator(12 * 60 * 60);
         $registeredAt = Clock::get()->now();
 
         // When
         $expiresAt = $calculator->expiresAt($registeredAt);
 
         // Then
-        self::assertSameDateTime($registeredAt->modify('+43200 seconds'), $expiresAt);
+        self::assertSameDateTime($registeredAt->modify('+12 hours'), $expiresAt);
     }
 
     #[Test]

@@ -65,6 +65,11 @@ final class IdentityFactory extends AbstractAggregateFactory
         return $this->with(['registeredAt' => $registeredAt]);
     }
 
+    public function withExpirySeconds(int $expirySeconds): self
+    {
+        return $this->with(['expirySeconds' => $expirySeconds]);
+    }
+
     public function confirmed(?string $confirmationCode = null, ?\DateTimeImmutable $confirmedAt = null): self
     {
         return $this->with(array_filter(['confirmationCode' => $confirmationCode, 'confirmedAt' => $confirmedAt]))->transition(
@@ -161,7 +166,7 @@ final class IdentityFactory extends AbstractAggregateFactory
             'fullName' => FullNameFactory::new(),
             'email' => EmailFactory::new(),
             'registeredAt' => $now,
-            'expirySeconds' => 3600,
+            'expirySeconds' => 60 * 60,
             'confirmedAt' => $now->modify('+1 hour'),
             'confirmationCode' => FakeCodeChallenger::CODE,
             'confirmationRequestedAt' => $now->modify('+30 minutes'),

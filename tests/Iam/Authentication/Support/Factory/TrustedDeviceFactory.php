@@ -49,6 +49,11 @@ final class TrustedDeviceFactory extends AbstractAggregateFactory
         return $this->with(['trustedAt' => $trustedAt]);
     }
 
+    public function withExpirySeconds(int $expirySeconds): self
+    {
+        return $this->with(['expirySeconds' => $expirySeconds]);
+    }
+
     public function revoked(?\DateTimeImmutable $revokedAt = null): self
     {
         return $this->with(array_filter(['revokedAt' => $revokedAt]))->transition(
@@ -80,7 +85,7 @@ final class TrustedDeviceFactory extends AbstractAggregateFactory
             'userAgent' => faker()->userAgent(),
             'ip' => faker()->ipv4(),
             'trustedAt' => $now,
-            'expirySeconds' => 3600,
+            'expirySeconds' => 60 * 60,
             'revokedAt' => $now->modify('+1 day'),
         ];
     }

@@ -142,14 +142,16 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
     public function itFiltersExpiresBefore(): void
     {
         // Given
-        $expiredOpenedAt = Clock::get()->now()->modify('-1 day');
-        $atExpiresAt = CheckoutSessionFactory::new()->create();
-        $expired = CheckoutSessionFactory::new()->withOpenedAt($expiredOpenedAt)->create();
-        $completed = CheckoutSessionFactory::new()->withOpenedAt($expiredOpenedAt)->completed()->create();
+        $now = Clock::get()->now();
+        $expirySeconds = 30 * 60;
+        $expiredOpenedAt = $now->modify(\sprintf('-%d seconds', $expirySeconds + 1));
+        $atExpiresAt = CheckoutSessionFactory::new()->withExpirySeconds($expirySeconds)->withOpenedAt($now->modify(\sprintf('-%d seconds', $expirySeconds)))->create();
+        $expired = CheckoutSessionFactory::new()->withExpirySeconds($expirySeconds)->withOpenedAt($expiredOpenedAt)->create();
+        $completed = CheckoutSessionFactory::new()->withExpirySeconds($expirySeconds)->withOpenedAt($expiredOpenedAt)->completed()->create();
         $this->store($atExpiresAt, $expired, $completed);
 
         // When
-        $results = iterator_to_array($this->finder()->expiresBefore($atExpiresAt->expiresAt));
+        $results = iterator_to_array($this->finder()->expiresBefore($now));
 
         // Then
         self::assertCount(1, $results);

@@ -29,7 +29,11 @@ final class ExpireCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
     public function itExpires(): void
     {
         // Given
-        $checkoutSession = CheckoutSessionFactory::new()->withOpenedAt(Clock::get()->now()->modify('-1 day'))->create();
+        $expirySeconds = 30 * 60;
+        $checkoutSession = CheckoutSessionFactory::new()
+            ->withExpirySeconds($expirySeconds)
+            ->withOpenedAt(Clock::get()->now()->modify(\sprintf('-%d seconds', $expirySeconds + 1)))
+            ->create();
         $this->store($checkoutSession);
 
         // When

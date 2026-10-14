@@ -55,7 +55,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
         $this->billingAddress = PostalAddressFactory::new()->create();
         $this->paymentId = Uuid::uuid7()->toString();
         $this->openedAt = Clock::get()->now();
-        $this->expirySeconds = 3600;
+        $this->expirySeconds = 60 * 60;
         $this->expiresAt = $this->openedAt->modify(\sprintf('+%d seconds', $this->expirySeconds));
         $this->expiredAt = $this->expiresAt->modify('+1 minute');
         $this->staledAt = $this->openedAt->modify('+1 minute');

@@ -24,7 +24,7 @@ return static function (ContainerConfigurator $container): void {
 
     $container->parameters()->set('iam.authentication.backup_code_digit_count', 8);
 
-    $container->parameters()->set('iam.authentication.trusted_device_expiry_seconds', 30 * 24 * 3600);
+    $container->parameters()->set('iam.authentication.trusted_device_expiry_seconds', 30 * 24 * 60 * 60);
     $services->get(TrustedDeviceExpiryCalculator::class)->arg('$seconds', '%iam.authentication.trusted_device_expiry_seconds%');
 
     if ('test' === $container->env()) {

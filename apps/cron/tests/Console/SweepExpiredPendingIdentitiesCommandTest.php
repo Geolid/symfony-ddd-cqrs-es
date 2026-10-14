@@ -27,8 +27,9 @@ final class SweepExpiredPendingIdentitiesCommandTest extends AbstractCronTestCas
     {
         // Given
         $now = Clock::get()->now();
-        $fresh = IdentityFactory::new()->create();
-        $stale = IdentityFactory::new()->withRegisteredAt($now->modify('-1 day'))->create();
+        $expirySeconds = 24 * 60 * 60;
+        $fresh = IdentityFactory::new()->withExpirySeconds($expirySeconds)->withRegisteredAt($now->modify(\sprintf('-%d seconds', $expirySeconds - 1)))->create();
+        $stale = IdentityFactory::new()->withExpirySeconds($expirySeconds)->withRegisteredAt($now->modify(\sprintf('-%d seconds', $expirySeconds + 1)))->create();
         $this->store($fresh, $stale);
 
         // When

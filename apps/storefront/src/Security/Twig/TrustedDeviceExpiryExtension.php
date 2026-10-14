@@ -18,6 +18,6 @@ final readonly class TrustedDeviceExpiryExtension
     #[AsTwigFunction(name: 'trusted_device_expiry_days')]
     public function expiryDays(): int
     {
-        return intdiv($this->expirySeconds, 86_400);
+        return intdiv($this->expirySeconds, 24 * 60 * 60);
     }
 }

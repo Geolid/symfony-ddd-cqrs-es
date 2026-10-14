@@ -68,7 +68,7 @@ final class IdentityTest extends AggregateRootTestCase
         $this->email = EmailFactory::new()->create();
         $this->reason = ReasonFactory::new()->create();
         $this->registeredAt = Clock::get()->now();
-        $this->expirySeconds = 3600;
+        $this->expirySeconds = 60 * 60;
         $this->expiresAt = $this->registeredAt->modify(\sprintf('+%d seconds', $this->expirySeconds));
         $this->confirmedAt = $this->registeredAt->modify('+1 hour');
         $this->confirmationCode = FakeCodeChallenger::CODE;

@@ -96,6 +96,11 @@ final class CheckoutSessionFactory extends AbstractAggregateFactory
         return $this->with(['openedAt' => $openedAt]);
     }
 
+    public function withExpirySeconds(int $expirySeconds): self
+    {
+        return $this->with(['expirySeconds' => $expirySeconds]);
+    }
+
     public function expired(?\DateTimeImmutable $expiredAt = null): self
     {
         return $this->with(array_filter(['expiredAt' => $expiredAt]))->transition(
@@ -177,7 +182,7 @@ final class CheckoutSessionFactory extends AbstractAggregateFactory
             'billingAddress' => PostalAddressFactory::new(),
             'paymentId' => Uuid::uuid7()->toString(),
             'openedAt' => $now,
-            'expirySeconds' => 3600,
+            'expirySeconds' => 60 * 60,
             'staledAt' => $now->modify('+1 minute'),
             'completedAt' => $now->modify('+5 minutes'),
         ];
