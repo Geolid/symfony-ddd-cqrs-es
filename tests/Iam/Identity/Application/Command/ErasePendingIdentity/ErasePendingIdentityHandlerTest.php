@@ -14,8 +14,6 @@ use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
-use function Zenstruck\Foundry\faker;
-
 final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
 {
     private IdentityFinderInterface $identityFinder;
@@ -32,8 +30,7 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $expirySeconds = faker()->numberBetween(60, 3600);
-        $identity = IdentityFactory::new()->withExpirySeconds($expirySeconds)->withRegisteredAt($now->modify(\sprintf('-%d seconds', $expirySeconds + 1)))->create();
+        $identity = IdentityFactory::new()->withRegisteredAt($now->modify('-1 day'))->create();
         $this->store($identity);
 
         // When
@@ -50,8 +47,7 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $expirySeconds = faker()->numberBetween(60, 3600);
-        $identity = IdentityFactory::new()->withExpirySeconds($expirySeconds)->withRegisteredAt($now->modify(\sprintf('-%d seconds', $expirySeconds + 1)))->confirmed()->create();
+        $identity = IdentityFactory::new()->withRegisteredAt($now->modify('-1 day'))->confirmed()->create();
         $this->store($identity);
 
         // When
@@ -82,10 +78,8 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $expirySeconds = faker()->numberBetween(60, 3600);
         $identity = IdentityFactory::new()
-            ->withExpirySeconds($expirySeconds)
-            ->withRegisteredAt($now->modify(\sprintf('-%d seconds', $expirySeconds + 1)))
+            ->withRegisteredAt($now->modify('-1 day'))
             ->erasureRequested()
             ->erased()
             ->create();

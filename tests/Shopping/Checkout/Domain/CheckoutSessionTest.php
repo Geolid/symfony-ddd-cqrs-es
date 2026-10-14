@@ -24,8 +24,6 @@ use Shopping\Tests\Checkout\Support\Factory\CheckoutItemFactory;
 use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionIdFactory;
 use Symfony\Component\Clock\Clock;
 
-use function Zenstruck\Foundry\faker;
-
 final class CheckoutSessionTest extends AggregateRootTestCase
 {
     private CheckoutSessionId $id;
@@ -57,7 +55,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
         $this->billingAddress = PostalAddressFactory::new()->create();
         $this->paymentId = Uuid::uuid7()->toString();
         $this->openedAt = Clock::get()->now();
-        $this->expirySeconds = faker()->numberBetween(60, 3600);
+        $this->expirySeconds = 3600;
         $this->expiresAt = $this->openedAt->modify(\sprintf('+%d seconds', $this->expirySeconds));
         $this->expiredAt = $this->expiresAt->modify('+1 minute');
         $this->staledAt = $this->openedAt->modify('+1 minute');

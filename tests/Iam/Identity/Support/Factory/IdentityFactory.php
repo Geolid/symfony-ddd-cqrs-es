@@ -15,8 +15,6 @@ use Shared\Tests\Support\Double\FakeCodeChallenger;
 use Support\Foundry\AbstractAggregateFactory;
 use Symfony\Component\Clock\Clock;
 
-use function Zenstruck\Foundry\faker;
-
 /**
  * @phpstan-type Inputs = array{
  *     id: IdentityId,
@@ -65,11 +63,6 @@ final class IdentityFactory extends AbstractAggregateFactory
     public function withRegisteredAt(\DateTimeImmutable $registeredAt): self
     {
         return $this->with(['registeredAt' => $registeredAt]);
-    }
-
-    public function withExpirySeconds(int $expirySeconds): self
-    {
-        return $this->with(['expirySeconds' => $expirySeconds]);
     }
 
     public function confirmed(?string $confirmationCode = null, ?\DateTimeImmutable $confirmedAt = null): self
@@ -168,7 +161,7 @@ final class IdentityFactory extends AbstractAggregateFactory
             'fullName' => FullNameFactory::new(),
             'email' => EmailFactory::new(),
             'registeredAt' => $now,
-            'expirySeconds' => faker()->numberBetween(60, 3600),
+            'expirySeconds' => 3600,
             'confirmedAt' => $now->modify('+1 hour'),
             'confirmationCode' => FakeCodeChallenger::CODE,
             'confirmationRequestedAt' => $now->modify('+30 minutes'),

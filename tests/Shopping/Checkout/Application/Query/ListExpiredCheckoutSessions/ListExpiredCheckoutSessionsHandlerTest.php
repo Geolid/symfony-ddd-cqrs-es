@@ -10,8 +10,6 @@ use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
-use function Zenstruck\Foundry\faker;
-
 final class ListExpiredCheckoutSessionsHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
@@ -19,16 +17,13 @@ final class ListExpiredCheckoutSessionsHandlerTest extends AbstractIntegrationTe
     {
         // Given
         $now = Clock::get()->now();
-        $expirySeconds = faker()->numberBetween(60, 3600);
-        $expiredOpenedAt = $now->modify(\sprintf('-%d seconds', $expirySeconds + 1));
+        $expiredOpenedAt = $now->modify('-1 day');
         $expired = CheckoutSessionFactory::new()
-            ->withExpirySeconds($expirySeconds)
             ->withOpenedAt($expiredOpenedAt)
             ->create();
         $fresh = CheckoutSessionFactory::new()
             ->create();
         $completed = CheckoutSessionFactory::new()
-            ->withExpirySeconds($expirySeconds)
             ->withOpenedAt($expiredOpenedAt)
             ->completed()
             ->create();

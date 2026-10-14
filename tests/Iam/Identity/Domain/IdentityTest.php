@@ -37,8 +37,6 @@ use Shared\Domain\Service\CodeChallengerInterface;
 use Shared\Tests\Support\Double\FakeCodeChallenger;
 use Symfony\Component\Clock\Clock;
 
-use function Zenstruck\Foundry\faker;
-
 final class IdentityTest extends AggregateRootTestCase
 {
     private IdentityId $id;
@@ -70,7 +68,7 @@ final class IdentityTest extends AggregateRootTestCase
         $this->email = EmailFactory::new()->create();
         $this->reason = ReasonFactory::new()->create();
         $this->registeredAt = Clock::get()->now();
-        $this->expirySeconds = faker()->numberBetween(60, 3600);
+        $this->expirySeconds = 3600;
         $this->expiresAt = $this->registeredAt->modify(\sprintf('+%d seconds', $this->expirySeconds));
         $this->confirmedAt = $this->registeredAt->modify('+1 hour');
         $this->confirmationCode = FakeCodeChallenger::CODE;

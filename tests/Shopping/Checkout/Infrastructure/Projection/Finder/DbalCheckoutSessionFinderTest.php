@@ -23,8 +23,6 @@ use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionIdFactory;
 use Shopping\Tests\Checkout\Support\PostalAddressResultMapper;
 use Symfony\Component\Clock\Clock;
 
-use function Zenstruck\Foundry\faker;
-
 /**
  * @extends AbstractIterableFinderTestCase<CheckoutSessionResult>
  */
@@ -144,16 +142,14 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
     public function itFiltersExpiresBefore(): void
     {
         // Given
-        $now = Clock::get()->now();
-        $expirySeconds = faker()->numberBetween(60, 3600);
-        $expiredOpenedAt = $now->modify(\sprintf('-%d seconds', $expirySeconds + 1));
-        $atExpiresAt = CheckoutSessionFactory::new()->withExpirySeconds($expirySeconds)->withOpenedAt($now->modify(\sprintf('-%d seconds', $expirySeconds)))->create();
-        $expired = CheckoutSessionFactory::new()->withExpirySeconds($expirySeconds)->withOpenedAt($expiredOpenedAt)->create();
-        $completed = CheckoutSessionFactory::new()->withExpirySeconds($expirySeconds)->withOpenedAt($expiredOpenedAt)->completed()->create();
+        $expiredOpenedAt = Clock::get()->now()->modify('-1 day');
+        $atExpiresAt = CheckoutSessionFactory::new()->create();
+        $expired = CheckoutSessionFactory::new()->withOpenedAt($expiredOpenedAt)->create();
+        $completed = CheckoutSessionFactory::new()->withOpenedAt($expiredOpenedAt)->completed()->create();
         $this->store($atExpiresAt, $expired, $completed);
 
         // When
-        $results = iterator_to_array($this->finder()->expiresBefore($now));
+        $results = iterator_to_array($this->finder()->expiresBefore($atExpiresAt->expiresAt));
 
         // Then
         self::assertCount(1, $results);

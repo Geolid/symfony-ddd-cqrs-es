@@ -13,8 +13,6 @@ use Ramsey\Uuid\Uuid;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 use Symfony\Component\Clock\Clock;
 
-use function Zenstruck\Foundry\faker;
-
 /**
  * @extends AbstractIterableFinderTestCase<TrustedDeviceResult>
  */
@@ -47,26 +45,21 @@ final class DbalTrustedDeviceFinderTest extends AbstractIterableFinderTestCase
     public function itExcludesExpiredFromActiveByIdentity(): void
     {
         // Given
-        $now = Clock::get()->now();
         $identityId = Uuid::uuid7()->toString();
-        $expirySeconds = faker()->numberBetween(60, 3600);
 
         $expired = TrustedDeviceFactory::new()
             ->withIdentityId($identityId)
-            ->withExpirySeconds($expirySeconds)
-            ->withTrustedAt($now->modify(\sprintf('-%d seconds', $expirySeconds + 1)))
+            ->withTrustedAt(Clock::get()->now()->modify('-1 day'))
             ->create();
 
         $stillActive = TrustedDeviceFactory::new()
             ->withIdentityId($identityId)
-            ->withExpirySeconds($expirySeconds)
-            ->withTrustedAt($now->modify(\sprintf('-%d seconds', $expirySeconds)))
             ->create();
 
         $this->store($expired, $stillActive);
 
         // When
-        $results = iterator_to_array($this->finder()->activeByIdentity($identityId, $now));
+        $results = iterator_to_array($this->finder()->activeByIdentity($identityId, $stillActive->expiresAt));
 
         // Then
         self::assertCount(1, $results);

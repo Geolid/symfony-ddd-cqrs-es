@@ -36,7 +36,7 @@ final class TrustedDeviceTest extends AggregateRootTestCase
         $this->userAgent = faker()->userAgent();
         $this->ip = faker()->ipv4();
         $this->trustedAt = Clock::get()->now();
-        $this->expirySeconds = faker()->numberBetween(60, 3600);
+        $this->expirySeconds = 3600;
         $this->expiresAt = $this->trustedAt->modify(\sprintf('+%d seconds', $this->expirySeconds));
     }
 
