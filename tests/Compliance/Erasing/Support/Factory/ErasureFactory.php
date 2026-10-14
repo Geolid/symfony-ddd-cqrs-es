@@ -13,8 +13,6 @@ use Support\Foundry\AbstractAggregateFactory;
 use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
-use function Zenstruck\Foundry\faker;
-
 /**
  * @phpstan-type Inputs = array{
  *     id: ErasureId,
@@ -58,11 +56,6 @@ final class ErasureFactory extends AbstractAggregateFactory
         );
     }
 
-    public function withRetentionSeconds(int $retentionSeconds): self
-    {
-        return $this->with(['retentionSeconds' => $retentionSeconds]);
-    }
-
     public function approved(?\DateTimeImmutable $approvedAt = null): self
     {
         return $this->with(array_filter(['approvedAt' => $approvedAt]))->transition(
@@ -100,7 +93,7 @@ final class ErasureFactory extends AbstractAggregateFactory
             'id' => ErasureIdFactory::new(),
             'identityId' => Uuid::uuid7()->toString(),
             'requestedAt' => $now,
-            'retentionSeconds' => faker()->numberBetween(60, 3600),
+            'retentionSeconds' => 3600,
             'cancelledAt' => $now->modify('+1 hour'),
         ];
     }

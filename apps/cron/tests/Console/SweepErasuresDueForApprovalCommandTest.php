@@ -11,8 +11,6 @@ use Cron\Tests\AbstractCronTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\Clock\Clock;
 
-use function Zenstruck\Foundry\faker;
-
 final class SweepErasuresDueForApprovalCommandTest extends AbstractCronTestCase
 {
     private ErasureFinderInterface $erasureFinder;
@@ -29,9 +27,8 @@ final class SweepErasuresDueForApprovalCommandTest extends AbstractCronTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $retentionSeconds = faker()->numberBetween(60, 3600);
         $fresh = ErasureFactory::new()->create();
-        $due = ErasureFactory::new()->withRetentionSeconds($retentionSeconds)->withRequestedAt($now->modify(\sprintf('-%d seconds', $retentionSeconds + 1)))->create();
+        $due = ErasureFactory::new()->withRequestedAt($now->modify('-1 day'))->create();
         $this->store($fresh, $due);
 
         // When

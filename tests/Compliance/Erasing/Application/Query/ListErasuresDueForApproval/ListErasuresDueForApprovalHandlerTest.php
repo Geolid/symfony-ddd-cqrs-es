@@ -10,8 +10,6 @@ use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
-use function Zenstruck\Foundry\faker;
-
 final class ListErasuresDueForApprovalHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
@@ -19,13 +17,11 @@ final class ListErasuresDueForApprovalHandlerTest extends AbstractIntegrationTes
     {
         // Given
         $now = Clock::get()->now();
-        $retentionSeconds = faker()->numberBetween(60, 3600);
-        $dueRequestedAt = $now->modify(\sprintf('-%d seconds', $retentionSeconds + 1));
+        $dueRequestedAt = $now->modify('-1 day');
         $fresh = ErasureFactory::new()->create();
-        $atEffectiveAt = ErasureFactory::new()->withRetentionSeconds($retentionSeconds)->withRequestedAt($now->modify(\sprintf('-%d seconds', $retentionSeconds)))->create();
-        $due = ErasureFactory::new()->withRetentionSeconds($retentionSeconds)->withRequestedAt($dueRequestedAt)->create();
-        $cancelled = ErasureFactory::new()->withRetentionSeconds($retentionSeconds)->withRequestedAt($dueRequestedAt)->cancelled()->create();
-        $this->store($fresh, $atEffectiveAt, $due, $cancelled);
+        $due = ErasureFactory::new()->withRequestedAt($dueRequestedAt)->create();
+        $cancelled = ErasureFactory::new()->withRequestedAt($dueRequestedAt)->cancelled()->create();
+        $this->store($fresh, $due, $cancelled);
 
         // When
         $results = iterator_to_array($this->ask(new ListErasuresDueForApproval()), false);

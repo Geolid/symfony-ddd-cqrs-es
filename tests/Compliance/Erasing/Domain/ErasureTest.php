@@ -17,8 +17,6 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Clock\Clock;
 
-use function Zenstruck\Foundry\faker;
-
 final class ErasureTest extends AggregateRootTestCase
 {
     private ErasureId $id;
@@ -37,7 +35,7 @@ final class ErasureTest extends AggregateRootTestCase
         $this->identityId = Uuid::uuid7()->toString();
         $this->requestedAt = Clock::get()->now();
         $this->cancelledAt = $this->requestedAt->modify('+1 hour');
-        $this->retentionSeconds = faker()->numberBetween(60, 3600);
+        $this->retentionSeconds = 3600;
         $this->effectiveAt = $this->requestedAt->modify(\sprintf('+%d seconds', $this->retentionSeconds));
         $this->approvedAt = $this->effectiveAt->modify('+1 day');
     }
