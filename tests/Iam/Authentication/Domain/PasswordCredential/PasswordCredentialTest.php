@@ -24,8 +24,8 @@ use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Domain\Service\CodeChallengerInterface;
+use Shared\Domain\Service\CooldownCalculator;
 use Shared\Tests\Support\Double\FakeCodeChallenger;
-use Shared\Tests\Support\Factory\CooldownCalculatorFactory;
 use Symfony\Component\Clock\Clock;
 
 final class PasswordCredentialTest extends AggregateRootTestCase
@@ -37,6 +37,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     private CodeChallengerInterface $codeChallenger;
     private \DateTimeImmutable $definedAt;
     private \DateTimeImmutable $requestedAt;
+    private int $cooldownSeconds;
 
     protected function setUp(): void
     {
@@ -47,6 +48,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $this->password = PasswordFactory::new()->create();
         $this->definedAt = Clock::get()->now();
         $this->requestedAt = $this->definedAt->modify('+3 day');
+        $this->cooldownSeconds = 60;
         $this->hasher = new FakePasswordHasher();
         $this->codeChallenger = new FakeCodeChallenger();
     }
@@ -161,7 +163,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     {
         $this
             ->given($this->defined())
-            ->when(fn (PasswordCredential $credential) => $credential->requestReset($this->requestedAt, CooldownCalculatorFactory::new()->create()))
+            ->when(fn (PasswordCredential $credential) => $credential->requestReset($this->requestedAt, new CooldownCalculator($this->cooldownSeconds)))
             ->then($this->resetRequested());
     }
 
@@ -172,7 +174,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
 
         $this
             ->given($this->defined(), $this->resetRequested())
-            ->when(static fn (PasswordCredential $credential) => $credential->requestReset($requestedAgainAt, CooldownCalculatorFactory::new()->create()))
+            ->when(fn (PasswordCredential $credential) => $credential->requestReset($requestedAgainAt, new CooldownCalculator($this->cooldownSeconds)))
             ->expectsException(PasswordResetRequestedTooRecentlyException::class)
             ->expectsExceptionMessage('requested too recently');
     }

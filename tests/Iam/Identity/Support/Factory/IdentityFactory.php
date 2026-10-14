@@ -10,8 +10,8 @@ use Iam\Identity\Domain\ValueObject\FullName;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Reason;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
+use Shared\Domain\Service\CooldownCalculator;
 use Shared\Tests\Support\Double\FakeCodeChallenger;
-use Shared\Tests\Support\Factory\CooldownCalculatorFactory;
 use Support\Foundry\AbstractAggregateFactory;
 use Symfony\Component\Clock\Clock;
 
@@ -21,6 +21,7 @@ use Symfony\Component\Clock\Clock;
  *     fullName: FullName,
  *     email: Email,
  *     registeredAt: \DateTimeImmutable,
+ *     cooldownSeconds: int,
  *     confirmedAt: \DateTimeImmutable,
  *     confirmationCode: string,
  *     confirmationRequestedAt: \DateTimeImmutable,
@@ -81,7 +82,7 @@ final class IdentityFactory extends AbstractAggregateFactory
     public function emailChangeRequested(Email $newEmail, ?\DateTimeImmutable $requestedAt = null): self
     {
         return $this->with(array_filter(['emailChangeRequestedAt' => $requestedAt]))->transition(
-            static fn (Identity $identity, array $inputs) => $identity->requestEmailChange($newEmail, $inputs['emailChangeRequestedAt'], CooldownCalculatorFactory::new()->create()),
+            static fn (Identity $identity, array $inputs) => $identity->requestEmailChange($newEmail, $inputs['emailChangeRequestedAt'], new CooldownCalculator($inputs['cooldownSeconds'])),
         );
     }
 
@@ -115,7 +116,7 @@ final class IdentityFactory extends AbstractAggregateFactory
     public function confirmationRequested(?\DateTimeImmutable $requestedAt = null): self
     {
         return $this->with(array_filter(['confirmationRequestedAt' => $requestedAt]))->transition(
-            static fn (Identity $identity, array $inputs) => $identity->requestConfirmation($inputs['confirmationRequestedAt'], CooldownCalculatorFactory::new()->create()),
+            static fn (Identity $identity, array $inputs) => $identity->requestConfirmation($inputs['confirmationRequestedAt'], new CooldownCalculator($inputs['cooldownSeconds'])),
         );
     }
 
@@ -159,6 +160,7 @@ final class IdentityFactory extends AbstractAggregateFactory
             'fullName' => FullNameFactory::new(),
             'email' => EmailFactory::new(),
             'registeredAt' => $now,
+            'cooldownSeconds' => 60,
             'confirmedAt' => $now->modify('+1 hour'),
             'confirmationCode' => FakeCodeChallenger::CODE,
             'confirmationRequestedAt' => $now->modify('+30 minutes'),

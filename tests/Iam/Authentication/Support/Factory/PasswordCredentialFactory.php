@@ -11,8 +11,8 @@ use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Ramsey\Uuid\Uuid;
+use Shared\Domain\Service\CooldownCalculator;
 use Shared\Tests\Support\Double\FakeCodeChallenger;
-use Shared\Tests\Support\Factory\CooldownCalculatorFactory;
 use Support\Foundry\AbstractAggregateFactory;
 use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
@@ -28,6 +28,7 @@ use Webmozart\Assert\Assert;
  *     changedAt: \DateTimeImmutable,
  *     rehashedAt: \DateTimeImmutable,
  *     requestedAt: \DateTimeImmutable,
+ *     cooldownSeconds: int,
  *     resetAt: \DateTimeImmutable,
  * }
  *
@@ -85,7 +86,7 @@ final class PasswordCredentialFactory extends AbstractAggregateFactory
     public function resetRequested(?\DateTimeImmutable $requestedAt = null): self
     {
         return $this->with(array_filter(['requestedAt' => $requestedAt]))->transition(
-            static fn (PasswordCredential $credential, array $inputs) => $credential->requestReset($inputs['requestedAt'], CooldownCalculatorFactory::new()->create()),
+            static fn (PasswordCredential $credential, array $inputs) => $credential->requestReset($inputs['requestedAt'], new CooldownCalculator($inputs['cooldownSeconds'])),
         );
     }
 
@@ -147,6 +148,7 @@ final class PasswordCredentialFactory extends AbstractAggregateFactory
             'changedAt' => $now->modify('+1 day'),
             'rehashedAt' => $now->modify('+2 day'),
             'requestedAt' => $now->modify('+3 day'),
+            'cooldownSeconds' => 60,
             'resetAt' => $now->modify('+4 day'),
         ];
     }
