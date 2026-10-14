@@ -11,12 +11,13 @@ use Compliance\Erasing\Domain\Event\ErasureRequested;
 use Compliance\Erasing\Domain\Exception\ErasureOwnedByAnotherIdentityException;
 use Compliance\Erasing\Domain\Service\ErasureRetentionCalculator;
 use Compliance\Erasing\Domain\ValueObject\ErasureId;
-use Compliance\Tests\Erasing\Support\Factory\ErasureFactory;
 use Compliance\Tests\Erasing\Support\Factory\ErasureIdFactory;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Symfony\Component\Clock\Clock;
+
+use function Zenstruck\Foundry\faker;
 
 final class ErasureTest extends AggregateRootTestCase
 {
@@ -25,6 +26,7 @@ final class ErasureTest extends AggregateRootTestCase
     private \DateTimeImmutable $requestedAt;
     private \DateTimeImmutable $cancelledAt;
     private \DateTimeImmutable $approvedAt;
+    private int $retentionSeconds;
     private \DateTimeImmutable $effectiveAt;
 
     protected function setUp(): void
@@ -35,7 +37,8 @@ final class ErasureTest extends AggregateRootTestCase
         $this->identityId = Uuid::uuid7()->toString();
         $this->requestedAt = Clock::get()->now();
         $this->cancelledAt = $this->requestedAt->modify('+1 hour');
-        $this->effectiveAt = $this->requestedAt->modify(\sprintf('+%d days', ErasureFactory::RETENTION_DAYS));
+        $this->retentionSeconds = faker()->numberBetween(60, 3600);
+        $this->effectiveAt = $this->requestedAt->modify(\sprintf('+%d seconds', $this->retentionSeconds));
         $this->approvedAt = $this->effectiveAt->modify('+1 day');
     }
 
@@ -44,7 +47,7 @@ final class ErasureTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Erasure => Erasure::request($this->id, $this->identityId, $this->requestedAt, new ErasureRetentionCalculator(ErasureFactory::RETENTION_DAYS)))
+            ->when(fn (): Erasure => Erasure::request($this->id, $this->identityId, $this->requestedAt, new ErasureRetentionCalculator($this->retentionSeconds)))
             ->then($this->requested());
     }
 

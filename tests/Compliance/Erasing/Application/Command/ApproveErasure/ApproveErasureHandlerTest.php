@@ -17,6 +17,8 @@ use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
+use function Zenstruck\Foundry\faker;
+
 final class ApproveErasureHandlerTest extends AbstractIntegrationTestCase
 {
     private ErasureFinderInterface $finder;
@@ -34,8 +36,9 @@ final class ApproveErasureHandlerTest extends AbstractIntegrationTestCase
     public function itApproves(): void
     {
         // Given
-        $requestedAt = Clock::get()->now()->modify(\sprintf('-%d days', ErasureFactory::RETENTION_DAYS + 1));
-        $erasure = ErasureFactory::new()->withRequestedAt($requestedAt)->create();
+        $retentionSeconds = faker()->numberBetween(60, 3600);
+        $requestedAt = Clock::get()->now()->modify(\sprintf('-%d seconds', $retentionSeconds + 1));
+        $erasure = ErasureFactory::new()->withRetentionSeconds($retentionSeconds)->withRequestedAt($requestedAt)->create();
         $this->store($erasure);
         $identityKey = UniqueKey::for(ErasingUniqueKey::IDENTITY);
         $this->uniqueness->claim($identityKey, $erasure->identityId, $erasure->id->toString());

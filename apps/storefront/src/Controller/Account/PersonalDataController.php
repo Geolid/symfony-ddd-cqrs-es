@@ -13,7 +13,6 @@ use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Query\QueryBusInterface;
 use Storefront\Security\PasswordUser;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,8 +29,6 @@ final class PersonalDataController extends AbstractController
         private readonly QueryBusInterface $queryBus,
         private readonly CommandBusInterface $commandBus,
         private readonly TranslatorInterface $translator,
-        #[Autowire(param: 'compliance.erasing.retention_days')]
-        private readonly int $retentionDays,
     ) {
     }
 
@@ -44,14 +41,13 @@ final class PersonalDataController extends AbstractController
     {
         return $this->render('account/personal_data/show.html.twig', [
             'erasure' => $this->queryBus->ask(new GetRequestedErasureByIdentity($user->identityId())),
-            'retentionDays' => $this->retentionDays,
         ]);
     }
 
     #[Route(path: ['en' => '/erasure', 'fr' => '/suppression'], name: 'confirm_erasure', methods: ['GET'])]
     public function confirmErasure(): Response
     {
-        return $this->render('account/personal_data/confirm_erasure.html.twig', ['retentionDays' => $this->retentionDays]);
+        return $this->render('account/personal_data/confirm_erasure.html.twig');
     }
 
     /**

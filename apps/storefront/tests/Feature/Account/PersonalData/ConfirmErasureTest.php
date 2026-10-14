@@ -4,13 +4,12 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\Account\PersonalData;
 
-use Compliance\Tests\Erasing\Support\Factory\ErasureFactory;
+use Compliance\Erasing\Application\Finder\Erasure\ErasureFinderInterface;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
 use Storefront\Tests\Support\Story\ConfirmedStory;
 use Storefront\Tests\Support\Story\ErasureRequestedStory;
 use Symfony\Component\BrowserKit\AbstractBrowser;
-use Symfony\Component\Clock\Clock;
 use Zenstruck\Foundry\Attribute\WithStory;
 
 final class ConfirmErasureTest extends AbstractStorefrontTestCase
@@ -56,7 +55,6 @@ final class ConfirmErasureTest extends AbstractStorefrontTestCase
 
         $browser->visitRoute('storefront_account_personal_data_confirm_erasure');
         $browser->interceptRedirects();
-        $effectiveDate = Clock::get()->now()->modify(\sprintf('+%d days', ErasureFactory::RETENTION_DAYS))->format('Y-m-d');
 
         // When
         $browser->click('[data-testid="confirm-erasure-submit"]');
@@ -65,9 +63,11 @@ final class ConfirmErasureTest extends AbstractStorefrontTestCase
         $browser->assertRedirectedToRoute('storefront_account_personal_data_show')
             ->assertSeeIn('[data-testid="flash-success"]', 'request_erasure_flash_requested');
         $this->assertEmailSent(1, $persona->email, 'Your account deletion request');
+        $erasure = $this->service(ErasureFinderInterface::class)->requestedOfIdentityOrNull($persona->id);
+        self::assertNotNull($erasure);
         $body = $this->mailer()->sentEmails()->last()->getTextBody();
         self::assertIsString($body);
-        self::assertStringContainsString($effectiveDate, $body);
+        self::assertStringContainsString($erasure->effectiveAt->format('Y-m-d'), $body);
     }
 
     #[Test]

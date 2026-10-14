@@ -8,13 +8,13 @@ use Webmozart\Assert\Assert;
 
 final readonly class ErasureRetentionCalculator
 {
-    public function __construct(private int $days)
+    public function __construct(private int $seconds)
     {
-        Assert::positiveInteger($this->days);
+        Assert::positiveInteger($this->seconds);
     }
 
     public function effectiveAt(\DateTimeImmutable $requestedAt): \DateTimeImmutable
     {
-        return $requestedAt->modify(\sprintf('+%d days', $this->days));
+        return $requestedAt->modify(\sprintf('+%d seconds', $this->seconds));
     }
 }

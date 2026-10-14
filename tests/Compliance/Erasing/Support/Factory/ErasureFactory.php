@@ -11,12 +11,16 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Ramsey\Uuid\Uuid;
 use Support\Foundry\AbstractAggregateFactory;
 use Symfony\Component\Clock\Clock;
+use Webmozart\Assert\Assert;
+
+use function Zenstruck\Foundry\faker;
 
 /**
  * @phpstan-type Inputs = array{
  *     id: ErasureId,
  *     identityId: string,
  *     requestedAt: \DateTimeImmutable,
+ *     retentionSeconds: int,
  *     cancelledAt: \DateTimeImmutable,
  *     approvedAt: \DateTimeImmutable,
  * }
@@ -25,8 +29,6 @@ use Symfony\Component\Clock\Clock;
  */
 final class ErasureFactory extends AbstractAggregateFactory
 {
-    public const int RETENTION_DAYS = 30;
-
     public static function class(): string
     {
         return Erasure::class;
@@ -56,6 +58,11 @@ final class ErasureFactory extends AbstractAggregateFactory
         );
     }
 
+    public function withRetentionSeconds(int $retentionSeconds): self
+    {
+        return $this->with(['retentionSeconds' => $retentionSeconds]);
+    }
+
     public function approved(?\DateTimeImmutable $approvedAt = null): self
     {
         return $this->with(array_filter(['approvedAt' => $approvedAt]))->transition(
@@ -71,8 +78,18 @@ final class ErasureFactory extends AbstractAggregateFactory
             id: $parameters['id'],
             identityId: $parameters['identityId'],
             requestedAt: $parameters['requestedAt'],
-            retentionCalculator: new ErasureRetentionCalculator(self::RETENTION_DAYS),
+            retentionCalculator: new ErasureRetentionCalculator($parameters['retentionSeconds']),
         );
+    }
+
+    protected function initialize(): static
+    {
+        return parent::initialize()->beforeInstantiate(static function (array $parameters): array {
+            Assert::integer($parameters['retentionSeconds']);
+            $parameters['approvedAt'] ??= $parameters['requestedAt']->modify(\sprintf('+%d seconds', $parameters['retentionSeconds'] + 1));
+
+            return $parameters;
+        });
     }
 
     protected function defaults(): array
@@ -83,8 +100,8 @@ final class ErasureFactory extends AbstractAggregateFactory
             'id' => ErasureIdFactory::new(),
             'identityId' => Uuid::uuid7()->toString(),
             'requestedAt' => $now,
+            'retentionSeconds' => faker()->numberBetween(60, 3600),
             'cancelledAt' => $now->modify('+1 hour'),
-            'approvedAt' => $now->modify(\sprintf('+%d days', self::RETENTION_DAYS + 1)),
         ];
     }
 }

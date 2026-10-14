@@ -36,7 +36,9 @@ final class RequestErasureHandlerTest extends AbstractIntegrationTestCase
         // Given
         $id = ErasureIdFactory::new()->create()->toString();
         $identityId = Uuid::uuid7()->toString();
-        $effectiveAt = Clock::get()->now()->modify(\sprintf('+%d days', ErasureFactory::RETENTION_DAYS));
+        $retentionSeconds = self::getContainer()->getParameter('compliance.erasing.retention_seconds');
+        self::assertIsInt($retentionSeconds);
+        $effectiveAt = Clock::get()->now()->modify(\sprintf('+%d seconds', $retentionSeconds));
 
         // When
         $this->dispatch(new RequestErasure($id, $identityId));

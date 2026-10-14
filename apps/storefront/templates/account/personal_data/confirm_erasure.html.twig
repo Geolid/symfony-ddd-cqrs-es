@@ -23,7 +23,7 @@
     </ul>
 
     <h2>{{ 'confirm_erasure_delay_title'|trans }}</h2>
-    <p>{{ 'confirm_erasure_delay_description'|trans({'%days%': retentionDays}) }}</p>
+    <p>{{ 'confirm_erasure_delay_description'|trans({'%days%': erasure_retention_days()}) }}</p>
 
     <form method="post" action="{{ path('storefront_account_personal_data_request_erasure') }}" data-testid="confirm-erasure-form">
         <input type="hidden" name="_token" value="{{ csrf_token('request_erasure') }}">

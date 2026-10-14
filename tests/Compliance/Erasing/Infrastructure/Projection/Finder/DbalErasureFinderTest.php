@@ -15,6 +15,8 @@ use Ramsey\Uuid\Uuid;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 use Symfony\Component\Clock\Clock;
 
+use function Zenstruck\Foundry\faker;
+
 /**
  * @extends AbstractIterableFinderTestCase<\Compliance\Erasing\Application\Finder\Erasure\ErasureResult>
  */
@@ -104,10 +106,11 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $dueRequestedAt = $now->modify(\sprintf('-%d days', ErasureFactory::RETENTION_DAYS + 1));
-        $atEffectiveAt = ErasureFactory::new()->withRequestedAt($now->modify(\sprintf('-%d days', ErasureFactory::RETENTION_DAYS)))->create();
-        $due = ErasureFactory::new()->withRequestedAt($dueRequestedAt)->create();
-        $approved = ErasureFactory::new()->withRequestedAt($dueRequestedAt)->approved()->create();
+        $retentionSeconds = faker()->numberBetween(60, 3600);
+        $dueRequestedAt = $now->modify(\sprintf('-%d seconds', $retentionSeconds + 1));
+        $atEffectiveAt = ErasureFactory::new()->withRetentionSeconds($retentionSeconds)->withRequestedAt($now->modify(\sprintf('-%d seconds', $retentionSeconds)))->create();
+        $due = ErasureFactory::new()->withRetentionSeconds($retentionSeconds)->withRequestedAt($dueRequestedAt)->create();
+        $approved = ErasureFactory::new()->withRetentionSeconds($retentionSeconds)->withRequestedAt($dueRequestedAt)->approved()->create();
         $this->store($atEffectiveAt, $due, $approved);
 
         // When

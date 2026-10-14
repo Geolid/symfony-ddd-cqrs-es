@@ -12,6 +12,6 @@ return static function (ContainerConfigurator $container): void {
 
     BoundedContextServiceLoader::load($services, 'Compliance\\Erasing');
 
-    $container->parameters()->set('compliance.erasing.retention_days', 30);
-    $services->get(ErasureRetentionCalculator::class)->arg('$days', '%compliance.erasing.retention_days%');
+    $container->parameters()->set('compliance.erasing.retention_seconds', 30 * 24 * 3600);
+    $services->get(ErasureRetentionCalculator::class)->arg('$seconds', '%compliance.erasing.retention_seconds%');
 };
