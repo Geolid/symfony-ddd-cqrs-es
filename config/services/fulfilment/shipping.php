@@ -22,7 +22,7 @@ return static function (ContainerConfigurator $container): void {
             'countryCode' => '%env(FULFILMENT_WAREHOUSE_ADDRESS_COUNTRY_CODE)%',
         ],
     ]);
-    $container->parameters()->set('fulfilment.shipping.reconciliation_threshold_seconds', 48 * 3600);
+    $container->parameters()->set('fulfilment.shipping.reconciliation_threshold_seconds', 48 * 60 * 60);
 
     $services = $container->services();
     $services->defaults()->autowire()->autoconfigure();

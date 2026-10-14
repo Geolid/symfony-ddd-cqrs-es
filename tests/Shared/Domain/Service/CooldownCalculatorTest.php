@@ -18,14 +18,14 @@ final class CooldownCalculatorTest extends TestCase
     public function itCalculatesRetryAt(): void
     {
         // Given
-        $calculator = new CooldownCalculator(300);
+        $calculator = new CooldownCalculator(5 * 60);
         $lastRequestedAt = Clock::get()->now();
 
         // When
         $retryAt = $calculator->retryAt($lastRequestedAt);
 
         // Then
-        self::assertSameDateTime($lastRequestedAt->modify('+300 seconds'), $retryAt);
+        self::assertSameDateTime($lastRequestedAt->modify('+5 minutes'), $retryAt);
     }
 
     #[Test]

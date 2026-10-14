@@ -26,7 +26,7 @@ final class NativeCodeChallengerTest extends TestCase
     protected function setUp(): void
     {
         $this->maxAttempts = 5;
-        $this->expirySeconds = 900;
+        $this->expirySeconds = 15 * 60;
         $this->digitCount = 6;
         $this->codeChallenger = new NativeCodeChallenger(
             new FakeVerificationCodeStore(),
