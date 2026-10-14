@@ -1,0 +1,5 @@
+{% extends 'layout.html.twig' %}
+
+{% block javascripts %}
+    {% block importmap %}{{ importmap(['shared', 'account']) }}{% endblock %}
+{% endblock %}

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" target-language="en" datatype="plaintext" original="account_personal_data">
+    <header>
+      <tool tool-id="symfony" tool-name="Symfony"/>
+    </header>
+    <body>
+      <trans-unit id="show_title">
+        <source>show_title</source>
+        <target>Personal data</target>
+      </trans-unit>
+      <trans-unit id="show_label_erasure">
+        <source>show_label_erasure</source>
+        <target>Delete account</target>
+      </trans-unit>
+      <trans-unit id="show_erasure_description">
+        <source>show_erasure_description</source>
+        <target>Permanently delete your account and personal data. The deletion takes effect %days% days after your request, and you can cancel it until then.</target>
+      </trans-unit>
+      <trans-unit id="show_erasure_pending">
+        <source>show_erasure_pending</source>
+        <target>Deletion requested on %requestedAt%. Your account will be deleted on %effectiveAt%, unless you cancel the request.</target>
+      </trans-unit>
+      <trans-unit id="show_button_request_erasure">
+        <source>show_button_request_erasure</source>
+        <target>Request deletion</target>
+      </trans-unit>
+      <trans-unit id="show_button_cancel_erasure">
+        <source>show_button_cancel_erasure</source>
+        <target>Cancel the request</target>
+      </trans-unit>
+      <trans-unit id="request_erasure_title">
+        <source>request_erasure_title</source>
+        <target>Delete my account</target>
+      </trans-unit>
+      <trans-unit id="request_erasure_intro">
+        <source>request_erasure_intro</source>
+        <target>You are about to request the deletion of your account. Please read what this means before confirming.</target>
+      </trans-unit>
+      <trans-unit id="request_erasure_consequences_title">
+        <source>request_erasure_consequences_title</source>
+        <target>What will happen</target>
+      </trans-unit>
+      <trans-unit id="request_erasure_consequence_data">
+        <source>request_erasure_consequence_data</source>
+        <target>Your personal data (name, email address, addresses) will be erased.</target>
+      </trans-unit>
+      <trans-unit id="request_erasure_consequence_access">
+        <source>request_erasure_consequence_access</source>
+        <target>You will no longer be able to sign in with this account.</target>
+      </trans-unit>
+      <trans-unit id="request_erasure_consequence_orders">
+        <source>request_erasure_consequence_orders</source>
+        <target>Your orders are erased once they are delivered, cancelled or failed. An order still in progress is kept until then.</target>
+      </trans-unit>
+      <trans-unit id="request_erasure_consequence_checkout">
+        <source>request_erasure_consequence_checkout</source>
+        <target>While your request is pending, you cannot place new orders.</target>
+      </trans-unit>
+      <trans-unit id="request_erasure_consequence_irreversible">
+        <source>request_erasure_consequence_irreversible</source>
+        <target>Once the deletion has taken effect, it cannot be undone.</target>
+      </trans-unit>
+      <trans-unit id="request_erasure_delay_title">
+        <source>request_erasure_delay_title</source>
+        <target>Delay</target>
+      </trans-unit>
+      <trans-unit id="request_erasure_delay_description">
+        <source>request_erasure_delay_description</source>
+        <target>The deletion takes effect %days% days after your request. Until then, your account stays active and you can cancel the request at any time from your personal data page. We will confirm your request by email.</target>
+      </trans-unit>
+      <trans-unit id="request_erasure_button_submit">
+        <source>request_erasure_button_submit</source>
+        <target>Confirm the deletion request</target>
+      </trans-unit>
+      <trans-unit id="request_erasure_link_back">
+        <source>request_erasure_link_back</source>
+        <target>Back to personal data</target>
+      </trans-unit>
+      <trans-unit id="request_erasure_flash_requested">
+        <source>request_erasure_flash_requested</source>
+        <target>Deletion requested. We sent you a confirmation by email.</target>
+      </trans-unit>
+      <trans-unit id="cancel_erasure_flash_cancelled">
+        <source>cancel_erasure_flash_cancelled</source>
+        <target>Deletion request cancelled.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" target-language="fr" datatype="plaintext" original="account_personal_data">
+    <header>
+      <tool tool-id="symfony" tool-name="Symfony"/>
+    </header>
+    <body>
+      <trans-unit id="show_title">
+        <source>show_title</source>
+        <target>Données personnelles</target>
+      </trans-unit>
+      <trans-unit id="show_label_erasure">
+        <source>show_label_erasure</source>
+        <target>Supprimer le compte</target>
+      </trans-unit>
+      <trans-unit id="show_erasure_description">
+        <source>show_erasure_description</source>
+        <target>Supprimez définitivement votre compte et vos données personnelles. La suppression prend effet %days% jours après votre demande, et vous pouvez l'annuler d'ici là.</target>
+      </trans-unit>
+      <trans-unit id="show_erasure_pending">
+        <source>show_erasure_pending</source>
+        <target>Suppression demandée le %requestedAt%. Votre compte sera supprimé le %effectiveAt%, sauf si vous annulez la demande.</target>
+      </trans-unit>
+      <trans-unit id="show_button_request_erasure">
+        <source>show_button_request_erasure</source>
+        <target>Demander la suppression</target>
+      </trans-unit>
+      <trans-unit id="show_button_cancel_erasure">
+        <source>show_button_cancel_erasure</source>
+        <target>Annuler la demande</target>
+      </trans-unit>
+      <trans-unit id="request_erasure_title">
+        <source>request_erasure_title</source>
+        <target>Supprimer mon compte</target>
+      </trans-unit>
+      <trans-unit id="request_erasure_intro">
+        <source>request_erasure_intro</source>
+        <target>Vous êtes sur le point de demander la suppression de votre compte. Lisez ce que cela implique avant de confirmer.</target>
+      </trans-unit>
+      <trans-unit id="request_erasure_consequences_title">
+        <source>request_erasure_consequences_title</source>
+        <target>Ce qui va se passer</target>
+      </trans-unit>
+      <trans-unit id="request_erasure_consequence_data">
+        <source>request_erasure_consequence_data</source>
+        <target>Vos données personnelles (nom, adresse e-mail, adresses) seront effacées.</target>
+      </trans-unit>
+      <trans-unit id="request_erasure_consequence_access">
+        <source>request_erasure_consequence_access</source>
+        <target>Vous ne pourrez plus vous connecter avec ce compte.</target>
+      </trans-unit>
+      <trans-unit id="request_erasure_consequence_orders">
+        <source>request_erasure_consequence_orders</source>
+        <target>Vos commandes sont effacées une fois livrées, annulées ou échouées. Une commande en cours est conservée jusque-là.</target>
+      </trans-unit>
+      <trans-unit id="request_erasure_consequence_checkout">
+        <source>request_erasure_consequence_checkout</source>
+        <target>Tant que votre demande est en cours, vous ne pouvez plus passer de nouvelle commande.</target>
+      </trans-unit>
+      <trans-unit id="request_erasure_consequence_irreversible">
+        <source>request_erasure_consequence_irreversible</source>
+        <target>Une fois la suppression effective, elle est irréversible.</target>
+      </trans-unit>
+      <trans-unit id="request_erasure_delay_title">
+        <source>request_erasure_delay_title</source>
+        <target>Délai</target>
+      </trans-unit>
+      <trans-unit id="request_erasure_delay_description">
+        <source>request_erasure_delay_description</source>
+        <target>La suppression prend effet %days% jours après votre demande. D'ici là, votre compte reste actif et vous pouvez annuler la demande à tout moment depuis la page des données personnelles. Nous vous confirmerons votre demande par e-mail.</target>
+      </trans-unit>
+      <trans-unit id="request_erasure_button_submit">
+        <source>request_erasure_button_submit</source>
+        <target>Confirmer la demande de suppression</target>
+      </trans-unit>
+      <trans-unit id="request_erasure_link_back">
+        <source>request_erasure_link_back</source>
+        <target>Retour aux données personnelles</target>
+      </trans-unit>
+      <trans-unit id="request_erasure_flash_requested">
+        <source>request_erasure_flash_requested</source>
+        <target>Suppression demandée. Nous vous avons envoyé une confirmation par e-mail.</target>
+      </trans-unit>
+      <trans-unit id="cancel_erasure_flash_cancelled">
+        <source>cancel_erasure_flash_cancelled</source>
+        <target>Demande de suppression annulée.</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
