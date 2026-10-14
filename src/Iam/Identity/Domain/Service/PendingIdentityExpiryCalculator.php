@@ -8,13 +8,13 @@ use Webmozart\Assert\Assert;
 
 final readonly class PendingIdentityExpiryCalculator
 {
-    public function __construct(private int $hours)
+    public function __construct(private int $seconds)
     {
-        Assert::positiveInteger($this->hours);
+        Assert::positiveInteger($this->seconds);
     }
 
     public function expiresAt(\DateTimeImmutable $registeredAt): \DateTimeImmutable
     {
-        return $registeredAt->modify(\sprintf('+%d hours', $this->hours));
+        return $registeredAt->modify(\sprintf('+%d seconds', $this->seconds));
     }
 }

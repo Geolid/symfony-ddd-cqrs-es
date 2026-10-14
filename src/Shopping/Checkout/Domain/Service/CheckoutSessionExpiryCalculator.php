@@ -8,13 +8,13 @@ use Webmozart\Assert\Assert;
 
 final readonly class CheckoutSessionExpiryCalculator
 {
-    public function __construct(private int $minutes)
+    public function __construct(private int $seconds)
     {
-        Assert::positiveInteger($this->minutes);
+        Assert::positiveInteger($this->seconds);
     }
 
     public function expiresAt(\DateTimeImmutable $openedAt): \DateTimeImmutable
     {
-        return $openedAt->modify(\sprintf('+%d minutes', $this->minutes));
+        return $openedAt->modify(\sprintf('+%d seconds', $this->seconds));
     }
 }

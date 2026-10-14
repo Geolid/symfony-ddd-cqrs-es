@@ -14,6 +14,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
+use function Zenstruck\Foundry\faker;
+
 final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
 {
     private IdentityFinderInterface $identityFinder;
@@ -30,7 +32,8 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $identity = IdentityFactory::new()->withRegisteredAt($now->modify(\sprintf('-%d hours', IdentityFactory::PENDING_EXPIRY_HOURS + 1)))->create();
+        $expirySeconds = faker()->numberBetween(60, 3600);
+        $identity = IdentityFactory::new()->withExpirySeconds($expirySeconds)->withRegisteredAt($now->modify(\sprintf('-%d seconds', $expirySeconds + 1)))->create();
         $this->store($identity);
 
         // When
@@ -47,7 +50,8 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $identity = IdentityFactory::new()->withRegisteredAt($now->modify(\sprintf('-%d hours', IdentityFactory::PENDING_EXPIRY_HOURS + 1)))->confirmed()->create();
+        $expirySeconds = faker()->numberBetween(60, 3600);
+        $identity = IdentityFactory::new()->withExpirySeconds($expirySeconds)->withRegisteredAt($now->modify(\sprintf('-%d seconds', $expirySeconds + 1)))->confirmed()->create();
         $this->store($identity);
 
         // When
@@ -62,8 +66,7 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenNotExpired(): void
     {
         // Given
-        $now = Clock::get()->now();
-        $identity = IdentityFactory::new()->withRegisteredAt($now->modify('-1 hour'))->create();
+        $identity = IdentityFactory::new()->create();
         $this->store($identity);
 
         // When
@@ -79,8 +82,10 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
+        $expirySeconds = faker()->numberBetween(60, 3600);
         $identity = IdentityFactory::new()
-            ->withRegisteredAt($now->modify(\sprintf('-%d hours', IdentityFactory::PENDING_EXPIRY_HOURS + 1)))
+            ->withExpirySeconds($expirySeconds)
+            ->withRegisteredAt($now->modify(\sprintf('-%d seconds', $expirySeconds + 1)))
             ->erasureRequested()
             ->erased()
             ->create();

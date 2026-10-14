@@ -28,7 +28,6 @@ use Shopping\Checkout\Application\Tax\TaxRateResolverInterface;
 use Shopping\Checkout\Domain\Event\CheckoutSessionOpened;
 use Shopping\Checkout\Domain\Service\CheckoutSessionExpiryCalculator;
 use Shopping\Tests\Cart\Support\Factory\CartFactory;
-use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -72,7 +71,9 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
             productId: $otherCatalogProduct->id->toString(),
             quantity: Quantity::of(1),
         )->create();
-        $expiresAt = Clock::get()->now()->modify(\sprintf('+%d minutes', CheckoutSessionFactory::SESSION_EXPIRY_MINUTES));
+        $expirySeconds = self::getContainer()->getParameter('shopping.checkout.session_expiry_seconds');
+        self::assertIsInt($expirySeconds);
+        $expiresAt = Clock::get()->now()->modify(\sprintf('+%d seconds', $expirySeconds));
         $this->store($cart, $catalogProduct, $otherCatalogProduct, $customer);
 
         // When

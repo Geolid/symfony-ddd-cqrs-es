@@ -11,6 +11,8 @@ use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\Clock\Clock;
 
+use function Zenstruck\Foundry\faker;
+
 final class SweepExpiredPendingIdentitiesCommandTest extends AbstractCronTestCase
 {
     private IdentityFinderInterface $identityFinder;
@@ -27,8 +29,9 @@ final class SweepExpiredPendingIdentitiesCommandTest extends AbstractCronTestCas
     {
         // Given
         $now = Clock::get()->now();
-        $fresh = IdentityFactory::new()->withRegisteredAt($now->modify('-1 hour'))->create();
-        $stale = IdentityFactory::new()->withRegisteredAt($now->modify(\sprintf('-%d hours', IdentityFactory::PENDING_EXPIRY_HOURS + 1)))->create();
+        $expirySeconds = faker()->numberBetween(60, 3600);
+        $fresh = IdentityFactory::new()->create();
+        $stale = IdentityFactory::new()->withExpirySeconds($expirySeconds)->withRegisteredAt($now->modify(\sprintf('-%d seconds', $expirySeconds + 1)))->create();
         $this->store($fresh, $stale);
 
         // When

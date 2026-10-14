@@ -24,8 +24,7 @@ return static function (ContainerConfigurator $container): void {
 
     $container->parameters()->set('iam.authentication.backup_code_digit_count', 8);
 
-    // Seconds — matches scheb_two_factor.php's own trusted_device.lifetime unit.
-    $container->parameters()->set('iam.authentication.trusted_device_expiry_seconds', 2592000);
+    $container->parameters()->set('iam.authentication.trusted_device_expiry_seconds', 30 * 24 * 3600);
     $services->get(TrustedDeviceExpiryCalculator::class)->arg('$seconds', '%iam.authentication.trusted_device_expiry_seconds%');
 
     if ('test' === $container->env()) {

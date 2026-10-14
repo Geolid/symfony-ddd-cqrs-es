@@ -22,6 +22,8 @@ use Shared\Tests\Support\TestCase\AbstractPaginatableFinderTestCase;
 use Shared\Tests\Support\TestCase\RealColumnLeadsTrait;
 use Symfony\Component\Clock\Clock;
 
+use function Zenstruck\Foundry\faker;
+
 /**
  * @extends AbstractPaginatableFinderTestCase<IdentityResult>
  */
@@ -100,10 +102,11 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $expiredRegisteredAt = $now->modify(\sprintf('-%d hours', IdentityFactory::PENDING_EXPIRY_HOURS + 1));
-        $atExpiresAt = IdentityFactory::new()->withRegisteredAt($now->modify(\sprintf('-%d hours', IdentityFactory::PENDING_EXPIRY_HOURS)))->create();
-        $expired = IdentityFactory::new()->withRegisteredAt($expiredRegisteredAt)->create();
-        $confirmed = IdentityFactory::new()->withRegisteredAt($expiredRegisteredAt)->confirmed()->create();
+        $expirySeconds = faker()->numberBetween(60, 3600);
+        $expiredRegisteredAt = $now->modify(\sprintf('-%d seconds', $expirySeconds + 1));
+        $atExpiresAt = IdentityFactory::new()->withExpirySeconds($expirySeconds)->withRegisteredAt($now->modify(\sprintf('-%d seconds', $expirySeconds)))->create();
+        $expired = IdentityFactory::new()->withExpirySeconds($expirySeconds)->withRegisteredAt($expiredRegisteredAt)->create();
+        $confirmed = IdentityFactory::new()->withExpirySeconds($expirySeconds)->withRegisteredAt($expiredRegisteredAt)->confirmed()->create();
         $this->store($atExpiresAt, $expired, $confirmed);
 
         // When

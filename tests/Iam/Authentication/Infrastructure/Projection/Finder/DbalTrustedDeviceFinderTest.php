@@ -13,6 +13,8 @@ use Ramsey\Uuid\Uuid;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 use Symfony\Component\Clock\Clock;
 
+use function Zenstruck\Foundry\faker;
+
 /**
  * @extends AbstractIterableFinderTestCase<TrustedDeviceResult>
  */
@@ -47,15 +49,18 @@ final class DbalTrustedDeviceFinderTest extends AbstractIterableFinderTestCase
         // Given
         $now = Clock::get()->now();
         $identityId = Uuid::uuid7()->toString();
+        $expirySeconds = faker()->numberBetween(60, 3600);
 
         $expired = TrustedDeviceFactory::new()
             ->withIdentityId($identityId)
-            ->withTrustedAt($now->modify(\sprintf('-%d seconds', TrustedDeviceFactory::TRUSTED_DEVICE_EXPIRY_SECONDS + 1)))
+            ->withExpirySeconds($expirySeconds)
+            ->withTrustedAt($now->modify(\sprintf('-%d seconds', $expirySeconds + 1)))
             ->create();
 
         $stillActive = TrustedDeviceFactory::new()
             ->withIdentityId($identityId)
-            ->withTrustedAt($now->modify(\sprintf('-%d seconds', TrustedDeviceFactory::TRUSTED_DEVICE_EXPIRY_SECONDS)))
+            ->withExpirySeconds($expirySeconds)
+            ->withTrustedAt($now->modify(\sprintf('-%d seconds', $expirySeconds)))
             ->create();
 
         $this->store($expired, $stillActive);

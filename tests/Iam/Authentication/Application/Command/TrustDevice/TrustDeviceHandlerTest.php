@@ -7,7 +7,6 @@ namespace Iam\Tests\Authentication\Application\Command\TrustDevice;
 use Iam\Authentication\Application\Command\TrustDevice\TrustDevice;
 use Iam\Authentication\Application\Finder\TrustedDevice\TrustedDeviceFinderInterface;
 use Iam\Authentication\Domain\TrustedDevice\Event\TrustedDeviceTrusted;
-use Iam\Tests\Authentication\Support\Factory\TrustedDeviceFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -26,7 +25,9 @@ final class TrustDeviceHandlerTest extends AbstractIntegrationTestCase
         $userAgent = faker()->userAgent();
         $ip = faker()->ipv4();
         $now = Clock::get()->now();
-        $expiresAt = $now->modify(\sprintf('+%d seconds', TrustedDeviceFactory::TRUSTED_DEVICE_EXPIRY_SECONDS));
+        $expirySeconds = self::getContainer()->getParameter('iam.authentication.trusted_device_expiry_seconds');
+        self::assertIsInt($expirySeconds);
+        $expiresAt = $now->modify(\sprintf('+%d seconds', $expirySeconds));
 
         // When
         $this->dispatch(new TrustDevice($id, $identityId, $userAgent, $ip));

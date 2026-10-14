@@ -10,7 +10,6 @@ return static function (ContainerConfigurator $container): void {
         'default_path' => '%kernel.project_dir%/apps/storefront/templates',
         'paths' => ['%kernel.project_dir%/ui/templates' => 'ui'],
         'form_themes' => ['@ui/form/pico_layout.html.twig'],
-        'globals' => ['trustedDeviceExpirySeconds' => '%iam.authentication.trusted_device_expiry_seconds%'],
     ]);
 
     if ('test' === $container->env()) {

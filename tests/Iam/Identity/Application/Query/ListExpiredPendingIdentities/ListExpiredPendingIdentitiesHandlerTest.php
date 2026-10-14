@@ -10,6 +10,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
+use function Zenstruck\Foundry\faker;
+
 final class ListExpiredPendingIdentitiesHandlerTest extends AbstractIntegrationTestCase
 {
     #[Test]
@@ -17,10 +19,11 @@ final class ListExpiredPendingIdentitiesHandlerTest extends AbstractIntegrationT
     {
         // Given
         $now = Clock::get()->now();
-        $expiredRegisteredAt = $now->modify(\sprintf('-%d hours', IdentityFactory::PENDING_EXPIRY_HOURS + 1));
-        $fresh = IdentityFactory::new()->withRegisteredAt($now->modify('-1 hour'))->create();
-        $active = IdentityFactory::new()->withRegisteredAt($expiredRegisteredAt)->confirmed()->create();
-        $expired = IdentityFactory::new()->withRegisteredAt($expiredRegisteredAt)->create();
+        $expirySeconds = faker()->numberBetween(60, 3600);
+        $expiredRegisteredAt = $now->modify(\sprintf('-%d seconds', $expirySeconds + 1));
+        $fresh = IdentityFactory::new()->create();
+        $active = IdentityFactory::new()->withExpirySeconds($expirySeconds)->withRegisteredAt($expiredRegisteredAt)->confirmed()->create();
+        $expired = IdentityFactory::new()->withExpirySeconds($expirySeconds)->withRegisteredAt($expiredRegisteredAt)->create();
         $this->store($fresh, $active, $expired);
 
         // When

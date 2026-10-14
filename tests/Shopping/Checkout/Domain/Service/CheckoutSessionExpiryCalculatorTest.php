@@ -18,14 +18,14 @@ final class CheckoutSessionExpiryCalculatorTest extends TestCase
     public function itCalculatesExpiresAt(): void
     {
         // Given
-        $calculator = new CheckoutSessionExpiryCalculator(45);
+        $calculator = new CheckoutSessionExpiryCalculator(2_700);
         $openedAt = Clock::get()->now();
 
         // When
         $expiresAt = $calculator->expiresAt($openedAt);
 
         // Then
-        self::assertSameDateTime($openedAt->modify('+45 minutes'), $expiresAt);
+        self::assertSameDateTime($openedAt->modify('+2700 seconds'), $expiresAt);
     }
 
     #[Test]

@@ -12,6 +12,6 @@ return static function (ContainerConfigurator $container): void {
 
     BoundedContextServiceLoader::load($services, 'Shopping\\Checkout');
 
-    $container->parameters()->set('shopping.checkout.session_expiry_minutes', 30);
-    $services->get(CheckoutSessionExpiryCalculator::class)->arg('$minutes', '%shopping.checkout.session_expiry_minutes%');
+    $container->parameters()->set('shopping.checkout.session_expiry_seconds', 30 * 60);
+    $services->get(CheckoutSessionExpiryCalculator::class)->arg('$seconds', '%shopping.checkout.session_expiry_seconds%');
 };

@@ -12,7 +12,7 @@
 
         <label for="two-factor-trusted">
             <input type="checkbox" id="two-factor-trusted" name="_trusted" value="1">
-            {{ 'label_trust_device'|trans({'%days%': trustedDeviceExpirySeconds // 86400}, 'two_factor_challenge') }}
+            {{ 'label_trust_device'|trans({'%days%': trusted_device_expiry_days()}, 'two_factor_challenge') }}
         </label>
 
         {% if isCsrfProtectionEnabled %}

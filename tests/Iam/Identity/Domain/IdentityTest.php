@@ -29,7 +29,6 @@ use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Reason;
 use Iam\Tests\Identity\Support\Factory\EmailFactory;
 use Iam\Tests\Identity\Support\Factory\FullNameFactory;
-use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use Iam\Tests\Identity\Support\Factory\ReasonFactory;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
@@ -38,6 +37,8 @@ use Shared\Domain\Service\CodeChallengerInterface;
 use Shared\Tests\Support\Double\FakeCodeChallenger;
 use Symfony\Component\Clock\Clock;
 
+use function Zenstruck\Foundry\faker;
+
 final class IdentityTest extends AggregateRootTestCase
 {
     private IdentityId $id;
@@ -45,6 +46,7 @@ final class IdentityTest extends AggregateRootTestCase
     private Email $email;
     private Reason $reason;
     private \DateTimeImmutable $registeredAt;
+    private int $expirySeconds;
     private \DateTimeImmutable $expiresAt;
     private \DateTimeImmutable $confirmedAt;
     private string $confirmationCode;
@@ -68,7 +70,8 @@ final class IdentityTest extends AggregateRootTestCase
         $this->email = EmailFactory::new()->create();
         $this->reason = ReasonFactory::new()->create();
         $this->registeredAt = Clock::get()->now();
-        $this->expiresAt = $this->registeredAt->modify(\sprintf('+%d hours', IdentityFactory::PENDING_EXPIRY_HOURS));
+        $this->expirySeconds = faker()->numberBetween(60, 3600);
+        $this->expiresAt = $this->registeredAt->modify(\sprintf('+%d seconds', $this->expirySeconds));
         $this->confirmedAt = $this->registeredAt->modify('+1 hour');
         $this->confirmationCode = FakeCodeChallenger::CODE;
         $this->fullNameChangedAt = $this->registeredAt->modify('+45 minutes');
@@ -88,7 +91,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Identity => Identity::register($this->id, $this->fullName, $this->email, $this->registeredAt, new PendingIdentityExpiryCalculator(IdentityFactory::PENDING_EXPIRY_HOURS)))
+            ->when(fn (): Identity => Identity::register($this->id, $this->fullName, $this->email, $this->registeredAt, new PendingIdentityExpiryCalculator($this->expirySeconds)))
             ->then($this->registered());
     }
 

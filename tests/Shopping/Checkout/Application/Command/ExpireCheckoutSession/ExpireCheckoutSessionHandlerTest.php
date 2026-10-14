@@ -14,6 +14,8 @@ use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionIdFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
+use function Zenstruck\Foundry\faker;
+
 final class ExpireCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
 {
     private CheckoutSessionFinderInterface $finder;
@@ -29,8 +31,9 @@ final class ExpireCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
     public function itExpires(): void
     {
         // Given
-        $openedAt = Clock::get()->now()->modify(\sprintf('-%d minutes', CheckoutSessionFactory::SESSION_EXPIRY_MINUTES + 1));
-        $checkoutSession = CheckoutSessionFactory::new()->withOpenedAt($openedAt)->create();
+        $expirySeconds = faker()->numberBetween(60, 3600);
+        $openedAt = Clock::get()->now()->modify(\sprintf('-%d seconds', $expirySeconds + 1));
+        $checkoutSession = CheckoutSessionFactory::new()->withExpirySeconds($expirySeconds)->withOpenedAt($openedAt)->create();
         $this->store($checkoutSession);
 
         // When

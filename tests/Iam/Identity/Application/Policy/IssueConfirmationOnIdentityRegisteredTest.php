@@ -8,7 +8,6 @@ use Iam\Identity\Application\Policy\IssueConfirmationOnIdentityRegistered;
 use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Tests\Identity\Support\Factory\EmailFactory;
 use Iam\Tests\Identity\Support\Factory\FullNameFactory;
-use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -28,7 +27,7 @@ final class IssueConfirmationOnIdentityRegisteredTest extends AbstractIntegratio
         $fullName = FullNameFactory::new()->create();
         $email = EmailFactory::new()->create();
         $registeredAt = Clock::get()->now();
-        $expiresAt = $registeredAt->modify(\sprintf('+%d hours', IdentityFactory::PENDING_EXPIRY_HOURS));
+        $expiresAt = $registeredAt->modify('+1 hour');
 
         // When
         $this->trigger(IssueConfirmationOnIdentityRegistered::class, new IdentityRegistered($id, $fullName, $email, $registeredAt, $expiresAt));

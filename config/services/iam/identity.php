@@ -12,6 +12,6 @@ return static function (ContainerConfigurator $container): void {
 
     BoundedContextServiceLoader::load($services, 'Iam\\Identity');
 
-    $container->parameters()->set('iam.identity.pending_expiry_hours', 24);
-    $services->get(PendingIdentityExpiryCalculator::class)->arg('$hours', '%iam.identity.pending_expiry_hours%');
+    $container->parameters()->set('iam.identity.pending_expiry_seconds', 24 * 3600);
+    $services->get(PendingIdentityExpiryCalculator::class)->arg('$seconds', '%iam.identity.pending_expiry_seconds%');
 };
