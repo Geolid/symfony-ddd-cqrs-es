@@ -26,7 +26,6 @@ final readonly class CheckoutSessionResult
         public int $taxRateBasisPoints,
         public CheckoutSessionStatus $status,
         public \DateTimeImmutable $openedAt,
-        public \DateTimeImmutable $expiresAt,
     ) {
     }
 }

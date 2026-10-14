@@ -17,9 +17,11 @@ use Shopping\Checkout\Domain\Event\CheckoutSessionExpired;
 use Shopping\Checkout\Domain\Event\CheckoutSessionOpened;
 use Shopping\Checkout\Domain\Event\CheckoutSessionStaled;
 use Shopping\Checkout\Domain\Exception\CheckoutSessionEmptyException;
+use Shopping\Checkout\Domain\Service\CheckoutSessionExpiryCalculator;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Checkout\Domain\ValueObject\CheckoutSessionId;
 use Shopping\Tests\Checkout\Support\Factory\CheckoutItemFactory;
+use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionFactory;
 use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionIdFactory;
 use Symfony\Component\Clock\Clock;
 
@@ -53,7 +55,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
         $this->billingAddress = PostalAddressFactory::new()->create();
         $this->paymentId = Uuid::uuid7()->toString();
         $this->openedAt = Clock::get()->now();
-        $this->expiresAt = $this->openedAt->modify('+30 minutes');
+        $this->expiresAt = $this->openedAt->modify(\sprintf('+%d minutes', CheckoutSessionFactory::SESSION_EXPIRY_MINUTES));
         $this->expiredAt = $this->expiresAt->modify('+1 minute');
         $this->staledAt = $this->openedAt->modify('+1 minute');
         $this->completedAt = $this->openedAt->modify('+5 minutes');
@@ -73,6 +75,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
                 $this->shippingAddress,
                 $this->billingAddress,
                 $this->openedAt,
+                new CheckoutSessionExpiryCalculator(CheckoutSessionFactory::SESSION_EXPIRY_MINUTES),
             ))
             ->then($this->opened());
     }
@@ -91,6 +94,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
                 $this->shippingAddress,
                 $this->billingAddress,
                 $this->openedAt,
+                new CheckoutSessionExpiryCalculator(CheckoutSessionFactory::SESSION_EXPIRY_MINUTES),
             ))
             ->expectsException(CheckoutSessionEmptyException::class);
     }
@@ -114,13 +118,11 @@ final class CheckoutSessionTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotExpireWhenNotExpired(): void
+    public function itDoesNotExpireWhenExpiresAtNotPassed(): void
     {
-        $earlyExpiredAt = $this->expiresAt;
-
         $this
             ->given($this->opened())
-            ->when(static fn (CheckoutSession $checkoutSession) => $checkoutSession->expire($earlyExpiredAt))
+            ->when(fn (CheckoutSession $checkoutSession) => $checkoutSession->expire($this->expiresAt))
             ->then();
     }
 

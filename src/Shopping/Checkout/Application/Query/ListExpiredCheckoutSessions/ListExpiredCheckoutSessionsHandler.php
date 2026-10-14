@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Shopping\Checkout\Application\Query\ListCheckoutSessionsPastReconciliationThreshold;
+namespace Shopping\Checkout\Application\Query\ListExpiredCheckoutSessions;
 
 use Psr\Clock\ClockInterface;
 use Shared\Application\Query\QueryHandler;
@@ -11,7 +11,7 @@ use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionFinderIn
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionResult;
 
 #[QueryHandler]
-final readonly class ListCheckoutSessionsPastReconciliationThresholdHandler
+final readonly class ListExpiredCheckoutSessionsHandler
 {
     public function __construct(
         private CheckoutSessionFinderInterface $checkoutSessionFinder,
@@ -22,10 +22,10 @@ final readonly class ListCheckoutSessionsPastReconciliationThresholdHandler
     /**
      * @return StreamResult<CheckoutSessionResult>
      */
-    public function __invoke(ListCheckoutSessionsPastReconciliationThreshold $query): StreamResult
+    public function __invoke(ListExpiredCheckoutSessions $query): StreamResult
     {
         return new StreamResult(
-            $this->checkoutSessionFinder->expiredBefore($this->clock->now()),
+            $this->checkoutSessionFinder->expiresBefore($this->clock->now()),
         );
     }
 }

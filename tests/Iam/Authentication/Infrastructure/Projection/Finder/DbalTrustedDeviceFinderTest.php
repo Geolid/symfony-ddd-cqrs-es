@@ -22,6 +22,7 @@ final class DbalTrustedDeviceFinderTest extends AbstractIterableFinderTestCase
     public function itFiltersActiveByIdentity(): void
     {
         // Given
+        $now = Clock::get()->now();
         $trustedDevice = TrustedDeviceFactory::new()->create();
 
         $other = TrustedDeviceFactory::new()->create();
@@ -30,7 +31,7 @@ final class DbalTrustedDeviceFinderTest extends AbstractIterableFinderTestCase
         $this->store($other, $revoked, $trustedDevice);
 
         // When
-        $results = iterator_to_array($this->finder()->activeByIdentity($trustedDevice->identityId));
+        $results = iterator_to_array($this->finder()->activeByIdentity($trustedDevice->identityId, $now));
 
         // Then
         self::assertCount(1, $results);
@@ -49,18 +50,18 @@ final class DbalTrustedDeviceFinderTest extends AbstractIterableFinderTestCase
 
         $expired = TrustedDeviceFactory::new()
             ->withIdentityId($identityId)
-            ->withTrustedAt($now->modify(\sprintf('-%d seconds', TrustedDeviceFactory::LIFETIME_SECONDS + 1)))
+            ->withTrustedAt($now->modify(\sprintf('-%d seconds', TrustedDeviceFactory::TRUSTED_DEVICE_EXPIRY_SECONDS + 1)))
             ->create();
 
         $stillActive = TrustedDeviceFactory::new()
             ->withIdentityId($identityId)
-            ->withTrustedAt($now->modify(\sprintf('-%d seconds', TrustedDeviceFactory::LIFETIME_SECONDS)))
+            ->withTrustedAt($now->modify(\sprintf('-%d seconds', TrustedDeviceFactory::TRUSTED_DEVICE_EXPIRY_SECONDS)))
             ->create();
 
         $this->store($expired, $stillActive);
 
         // When
-        $results = iterator_to_array($this->finder()->activeByIdentity($identityId));
+        $results = iterator_to_array($this->finder()->activeByIdentity($identityId, $now));
 
         // Then
         self::assertCount(1, $results);

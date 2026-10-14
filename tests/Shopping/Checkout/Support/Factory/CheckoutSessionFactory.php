@@ -11,6 +11,7 @@ use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Tests\Support\Factory\MoneyFactory;
 use Shared\Tests\Support\Factory\PostalAddressFactory;
 use Shopping\Checkout\Domain\CheckoutSession;
+use Shopping\Checkout\Domain\Service\CheckoutSessionExpiryCalculator;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Checkout\Domain\ValueObject\CheckoutSessionId;
 use Shopping\Checkout\Domain\ValueObject\TaxRate;
@@ -41,6 +42,8 @@ use function Zenstruck\Foundry\faker;
  */
 final class CheckoutSessionFactory extends AbstractAggregateFactory
 {
+    public const int SESSION_EXPIRY_MINUTES = 30;
+
     public static function class(): string
     {
         return CheckoutSession::class;
@@ -141,6 +144,7 @@ final class CheckoutSessionFactory extends AbstractAggregateFactory
             shippingAddress: $parameters['shippingAddress'],
             billingAddress: $parameters['billingAddress'],
             openedAt: $parameters['openedAt'],
+            expiryCalculator: new CheckoutSessionExpiryCalculator(self::SESSION_EXPIRY_MINUTES),
         );
     }
 
@@ -148,6 +152,8 @@ final class CheckoutSessionFactory extends AbstractAggregateFactory
     {
         return parent::initialize()->beforeInstantiate(static function (array $parameters): array {
             Assert::isInstanceOf($parameters['currency'], Currency::class);
+            Assert::isInstanceOf($parameters['openedAt'], \DateTimeImmutable::class);
+            $parameters['expiredAt'] ??= $parameters['openedAt']->modify(\sprintf('+%d minutes', self::SESSION_EXPIRY_MINUTES + 1));
             $parameters['items'] ??= CheckoutItemFactory::new([
                 'unitPrice' => MoneyFactory::new(['currency' => $parameters['currency']->value]),
                 'taxRate' => $parameters['taxRate'],
@@ -171,7 +177,6 @@ final class CheckoutSessionFactory extends AbstractAggregateFactory
             'billingAddress' => PostalAddressFactory::new(),
             'paymentId' => Uuid::uuid7()->toString(),
             'openedAt' => $now,
-            'expiredAt' => $now->modify('+31 minutes'),
             'staledAt' => $now->modify('+1 minute'),
             'completedAt' => $now->modify('+5 minutes'),
         ];

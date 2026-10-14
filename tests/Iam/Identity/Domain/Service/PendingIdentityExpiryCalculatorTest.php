@@ -18,13 +18,23 @@ final class PendingIdentityExpiryCalculatorTest extends TestCase
     public function itCalculatesExpiresAt(): void
     {
         // Given
-        $calculator = new PendingIdentityExpiryCalculator();
+        $calculator = new PendingIdentityExpiryCalculator(12);
         $registeredAt = Clock::get()->now();
 
         // When
         $expiresAt = $calculator->expiresAt($registeredAt);
 
         // Then
-        self::assertSameDateTime($registeredAt->modify('+24 hours'), $expiresAt);
+        self::assertSameDateTime($registeredAt->modify('+12 hours'), $expiresAt);
+    }
+
+    #[Test]
+    public function itFailsWhenNotPositive(): void
+    {
+        // Then
+        $this->expectException(\InvalidArgumentException::class);
+
+        // When
+        new PendingIdentityExpiryCalculator(0);
     }
 }

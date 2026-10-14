@@ -139,16 +139,18 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
     }
 
     #[Test]
-    public function itFiltersExpiredBefore(): void
+    public function itFiltersExpiresBefore(): void
     {
         // Given
         $now = Clock::get()->now();
-        $fresh = CheckoutSessionFactory::new()->withOpenedAt($now->modify('+1 day'))->create();
-        $expired = CheckoutSessionFactory::new()->withOpenedAt($now->modify('-1 day'))->create();
-        $this->store($fresh, $expired);
+        $expiredOpenedAt = $now->modify(\sprintf('-%d minutes', CheckoutSessionFactory::SESSION_EXPIRY_MINUTES + 1));
+        $atExpiresAt = CheckoutSessionFactory::new()->withOpenedAt($now->modify(\sprintf('-%d minutes', CheckoutSessionFactory::SESSION_EXPIRY_MINUTES)))->create();
+        $expired = CheckoutSessionFactory::new()->withOpenedAt($expiredOpenedAt)->create();
+        $completed = CheckoutSessionFactory::new()->withOpenedAt($expiredOpenedAt)->completed()->create();
+        $this->store($atExpiresAt, $expired, $completed);
 
         // When
-        $results = iterator_to_array($this->finder()->expiredBefore($now));
+        $results = iterator_to_array($this->finder()->expiresBefore($now));
 
         // Then
         self::assertCount(1, $results);

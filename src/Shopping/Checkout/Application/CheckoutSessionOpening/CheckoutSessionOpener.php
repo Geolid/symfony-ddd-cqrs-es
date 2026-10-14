@@ -43,7 +43,7 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
         private TaxRateResolverInterface $taxRateResolver,
         private CommandBusInterface $commandBus,
         private ClockInterface $clock,
-        private CheckoutSessionExpiryCalculator $expiry,
+        private CheckoutSessionExpiryCalculator $expiryCalculator,
     ) {
     }
 
@@ -109,7 +109,7 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
             total: $total,
             shippingAddress: $shippingAddress,
             billingAddress: $billingAddress,
-            expiresAt: $this->expiry->expiresAt($now),
+            expiresAt: $this->expiryCalculator->expiresAt($now),
         );
     }
 

@@ -4,12 +4,17 @@ declare(strict_types=1);
 
 namespace Iam\Identity\Domain\Service;
 
+use Webmozart\Assert\Assert;
+
 final readonly class PendingIdentityExpiryCalculator
 {
-    private const int HOURS = 24;
+    public function __construct(private int $hours)
+    {
+        Assert::positiveInteger($this->hours);
+    }
 
     public function expiresAt(\DateTimeImmutable $registeredAt): \DateTimeImmutable
     {
-        return $registeredAt->modify(\sprintf('+%d hours', self::HOURS));
+        return $registeredAt->modify(\sprintf('+%d hours', $this->hours));
     }
 }

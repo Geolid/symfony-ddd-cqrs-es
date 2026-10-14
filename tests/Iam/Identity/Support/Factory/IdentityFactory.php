@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Support\Factory;
 
 use Iam\Identity\Domain\Identity;
+use Iam\Identity\Domain\Service\PendingIdentityExpiryCalculator;
 use Iam\Identity\Domain\ValueObject\Email;
 use Iam\Identity\Domain\ValueObject\FullName;
 use Iam\Identity\Domain\ValueObject\IdentityId;
@@ -38,6 +39,8 @@ use Symfony\Component\Clock\Clock;
  */
 final class IdentityFactory extends AbstractAggregateFactory
 {
+    public const int PENDING_EXPIRY_HOURS = 24;
+
     public static function class(): string
     {
         return Identity::class;
@@ -146,6 +149,7 @@ final class IdentityFactory extends AbstractAggregateFactory
             fullName: $parameters['fullName'],
             email: $parameters['email'],
             registeredAt: $parameters['registeredAt'],
+            expiryCalculator: new PendingIdentityExpiryCalculator(self::PENDING_EXPIRY_HOURS),
         );
     }
 

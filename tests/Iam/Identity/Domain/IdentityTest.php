@@ -22,12 +22,14 @@ use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\InvalidConfirmationCodeException;
 use Iam\Identity\Domain\Exception\InvalidEmailChangeCodeException;
 use Iam\Identity\Domain\Identity;
+use Iam\Identity\Domain\Service\PendingIdentityExpiryCalculator;
 use Iam\Identity\Domain\ValueObject\Email;
 use Iam\Identity\Domain\ValueObject\FullName;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Reason;
 use Iam\Tests\Identity\Support\Factory\EmailFactory;
 use Iam\Tests\Identity\Support\Factory\FullNameFactory;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use Iam\Tests\Identity\Support\Factory\ReasonFactory;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
@@ -43,7 +45,7 @@ final class IdentityTest extends AggregateRootTestCase
     private Email $email;
     private Reason $reason;
     private \DateTimeImmutable $registeredAt;
-    private \DateTimeImmutable $pendingExpiresAt;
+    private \DateTimeImmutable $expiresAt;
     private \DateTimeImmutable $confirmedAt;
     private string $confirmationCode;
     private \DateTimeImmutable $fullNameChangedAt;
@@ -66,7 +68,7 @@ final class IdentityTest extends AggregateRootTestCase
         $this->email = EmailFactory::new()->create();
         $this->reason = ReasonFactory::new()->create();
         $this->registeredAt = Clock::get()->now();
-        $this->pendingExpiresAt = $this->registeredAt->modify('+24 hours');
+        $this->expiresAt = $this->registeredAt->modify(\sprintf('+%d hours', IdentityFactory::PENDING_EXPIRY_HOURS));
         $this->confirmedAt = $this->registeredAt->modify('+1 hour');
         $this->confirmationCode = FakeCodeChallenger::CODE;
         $this->fullNameChangedAt = $this->registeredAt->modify('+45 minutes');
@@ -86,7 +88,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Identity => Identity::register($this->id, $this->fullName, $this->email, $this->registeredAt))
+            ->when(fn (): Identity => Identity::register($this->id, $this->fullName, $this->email, $this->registeredAt, new PendingIdentityExpiryCalculator(IdentityFactory::PENDING_EXPIRY_HOURS)))
             ->then($this->registered());
     }
 
@@ -490,13 +492,11 @@ final class IdentityTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotErasePendingWhenNotExpired(): void
+    public function itDoesNotErasePendingWhenExpiresAtNotPassed(): void
     {
-        $earlyErasedAt = $this->pendingExpiresAt;
-
         $this
             ->given($this->registered())
-            ->when(static fn (Identity $identity) => $identity->erasePending($earlyErasedAt))
+            ->when(fn (Identity $identity) => $identity->erasePending($this->expiresAt))
             ->then();
     }
 
@@ -520,7 +520,7 @@ final class IdentityTest extends AggregateRootTestCase
 
     private function registered(): IdentityRegistered
     {
-        return new IdentityRegistered($this->id, $this->fullName, $this->email, $this->registeredAt, $this->pendingExpiresAt);
+        return new IdentityRegistered($this->id, $this->fullName, $this->email, $this->registeredAt, $this->expiresAt);
     }
 
     private function confirmed(): IdentityConfirmed

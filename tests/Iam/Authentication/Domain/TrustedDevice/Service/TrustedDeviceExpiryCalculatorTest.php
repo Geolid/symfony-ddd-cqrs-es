@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Domain\TrustedDevice\Service;
 
-use Iam\Authentication\Domain\TrustedDevice\Service\TrustedDeviceLifetimeCalculator;
+use Iam\Authentication\Domain\TrustedDevice\Service\TrustedDeviceExpiryCalculator;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Support\TestCase\AssertionTrait;
 use Symfony\Component\Clock\Clock;
 
-final class TrustedDeviceLifetimeCalculatorTest extends TestCase
+final class TrustedDeviceExpiryCalculatorTest extends TestCase
 {
     use AssertionTrait;
 
@@ -18,7 +18,7 @@ final class TrustedDeviceLifetimeCalculatorTest extends TestCase
     public function itCalculatesExpiresAt(): void
     {
         // Given
-        $calculator = new TrustedDeviceLifetimeCalculator(3600);
+        $calculator = new TrustedDeviceExpiryCalculator(3600);
         $trustedAt = Clock::get()->now();
 
         // When
@@ -26,5 +26,15 @@ final class TrustedDeviceLifetimeCalculatorTest extends TestCase
 
         // Then
         self::assertSameDateTime($trustedAt->modify('+3600 seconds'), $expiresAt);
+    }
+
+    #[Test]
+    public function itFailsWhenNotPositive(): void
+    {
+        // Then
+        $this->expectException(\InvalidArgumentException::class);
+
+        // When
+        new TrustedDeviceExpiryCalculator(0);
     }
 }

@@ -17,7 +17,7 @@ use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{cart_id: string, customer_id: string, items: string, shipping_address: string, billing_address: string, total_excluding_tax_in_cents: int|string, total_tax_amount_in_cents: int|string, total_including_tax_in_cents: int|string, currency: string, tax_rate_basis_points: int|string, status: string}
+ * @phpstan-type Row array{cart_id: string, customer_id: string, items: string, shipping_address: string, billing_address: string, total_excluding_tax_in_cents: int|string, total_tax_amount_in_cents: int|string, total_including_tax_in_cents: int|string, currency: string, tax_rate_basis_points: int|string, status: string, expires_at: string}
  */
 final class DbalCheckoutSessionProjectorTest extends AbstractIntegrationTestCase
 {
@@ -35,6 +35,7 @@ final class DbalCheckoutSessionProjectorTest extends AbstractIntegrationTestCase
         $row = $this->fetchRow($checkoutSession->id->toString());
         self::assertNotFalse($row);
         self::assertSame($checkoutSession->cartId, $row['cart_id']);
+        self::assertSame($checkoutSession->expiresAt->format('Y-m-d H:i:s'), $row['expires_at']);
         self::assertSame($checkoutSession->customerId, $row['customer_id']);
         self::assertSame(
             array_map(
@@ -139,7 +140,7 @@ final class DbalCheckoutSessionProjectorTest extends AbstractIntegrationTestCase
 
         /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT cart_id, customer_id, items, shipping_address, billing_address, total_excluding_tax_in_cents, total_tax_amount_in_cents, total_including_tax_in_cents, currency, tax_rate_basis_points, status FROM %s WHERE id = :id', DbalCheckoutSessionProjector::TABLE),
+            \sprintf('SELECT cart_id, customer_id, items, shipping_address, billing_address, total_excluding_tax_in_cents, total_tax_amount_in_cents, total_including_tax_in_cents, currency, tax_rate_basis_points, status, expires_at FROM %s WHERE id = :id', DbalCheckoutSessionProjector::TABLE),
             ['id' => $id],
         );
     }

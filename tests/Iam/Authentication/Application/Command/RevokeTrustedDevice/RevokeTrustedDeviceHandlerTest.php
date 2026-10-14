@@ -12,6 +12,7 @@ use Iam\Tests\Authentication\Support\Factory\TrustedDeviceFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class RevokeTrustedDeviceHandlerTest extends AbstractIntegrationTestCase
 {
@@ -29,13 +30,15 @@ final class RevokeTrustedDeviceHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $trustedDevice = TrustedDeviceFactory::new()->create();
+        $now = Clock::get()->now();
         $this->store($trustedDevice);
 
         // When
         $this->dispatch(new RevokeTrustedDevice($trustedDevice->id->toString(), $trustedDevice->identityId));
 
         // Then
-        self::assertCount(0, $this->finder->activeByIdentity($trustedDevice->identityId));
+        $results = iterator_to_array($this->finder->activeByIdentity($trustedDevice->identityId, $now));
+        self::assertCount(0, $results);
     }
 
     #[Test]

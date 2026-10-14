@@ -19,5 +19,5 @@ interface IdentityFinderInterface extends PaginatableFinderInterface
 
     public function ofEmailOrNull(string $email): ?IdentityResult;
 
-    public function pendingExpiredBefore(\DateTimeImmutable $now): static;
+    public function expiresBefore(\DateTimeImmutable $now): static;
 }

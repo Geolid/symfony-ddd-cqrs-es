@@ -8,8 +8,10 @@ use Iam\Identity\Application\Command\RegisterIdentity\Exception\IdentityEmailAlr
 use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\IdentityVerificationStatus;
+use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Tests\Identity\Support\Factory\EmailFactory;
 use Iam\Tests\Identity\Support\Factory\FullNameFactory;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -25,6 +27,7 @@ final class RegisterIdentityHandlerTest extends AbstractIntegrationTestCase
         $fullName = FullNameFactory::new()->create()->value;
         $email = EmailFactory::new()->create()->value;
         $now = Clock::get()->now();
+        $expiresAt = $now->modify(\sprintf('+%d hours', IdentityFactory::PENDING_EXPIRY_HOURS));
 
         // When
         $this->dispatch(new RegisterIdentity($id, $fullName, $email));
@@ -39,6 +42,8 @@ final class RegisterIdentityHandlerTest extends AbstractIntegrationTestCase
         self::assertSameDateTime($now, $result->registeredAt);
         self::assertNull($result->suspendedAt);
         self::assertNull($result->reactivatedAt);
+        $event = $this->publishedEventOf(IdentityRegistered::class);
+        self::assertSameDateTime($expiresAt, $event->expiresAt);
     }
 
     #[Test]

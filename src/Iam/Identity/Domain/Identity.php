@@ -64,7 +64,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     public private(set) IdentityModerationState $moderationState;
     public private(set) ErasureState $erasureState;
     public private(set) \DateTimeImmutable $registeredAt;
-    public private(set) \DateTimeImmutable $pendingExpiresAt;
+    public private(set) \DateTimeImmutable $expiresAt;
     public private(set) \DateTimeImmutable $confirmationRequestedAt;
     public private(set) ?\DateTimeImmutable $confirmedAt = null;
     public private(set) ?\DateTimeImmutable $fullNameChangedAt = null;
@@ -79,7 +79,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     public private(set) ?\DateTimeImmutable $erasureCancelledAt = null;
     public private(set) ?\DateTimeImmutable $erasedAt = null;
 
-    public static function register(IdentityId $id, FullName $fullName, Email $email, \DateTimeImmutable $registeredAt): self
+    public static function register(IdentityId $id, FullName $fullName, Email $email, \DateTimeImmutable $registeredAt, PendingIdentityExpiryCalculator $expiryCalculator): self
     {
         $self = new self();
         $self->recordThat(new IdentityRegistered(
@@ -87,7 +87,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
             fullName: $fullName,
             email: $email,
             registeredAt: $registeredAt,
-            pendingExpiresAt: new PendingIdentityExpiryCalculator()->expiresAt($registeredAt),
+            expiresAt: $expiryCalculator->expiresAt($registeredAt),
         ));
 
         return $self;
@@ -302,7 +302,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
             return;
         }
 
-        if ($erasedAt <= $this->pendingExpiresAt) {
+        if ($erasedAt <= $this->expiresAt) {
             return;
         }
 
@@ -331,7 +331,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         $this->moderationState = IdentityModerationState::ACTIVE;
         $this->erasureState = ErasureState::RETAINED;
         $this->registeredAt = $event->registeredAt;
-        $this->pendingExpiresAt = $event->pendingExpiresAt;
+        $this->expiresAt = $event->expiresAt;
         $this->confirmationRequestedAt = $event->registeredAt;
     }
 

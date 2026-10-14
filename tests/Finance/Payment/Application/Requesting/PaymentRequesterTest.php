@@ -104,6 +104,24 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itRequestsWhenExpiresAtNotPassed(): void
+    {
+        // Given
+        $checkoutSessionId = Uuid::uuid7()->toString();
+        $reference = PaymentReferenceFactory::new()->create()->value;
+        $hostedPageUrl = 'https://checkout.globex.test/pay/'.faker()->regexify('[A-Z0-9]{8}');
+        $expiresAt = Clock::get()->now();
+        $this->paymentGateway->expects(self::once())->method('requestPayment')
+            ->willReturn(new PaymentSession($reference, $hostedPageUrl));
+
+        // When
+        $result = $this->service->requestFor($checkoutSessionId, 'EUR', $this->lines(), 'https://web.test/sales/orders', 'https://web.test/sales/cart', $expiresAt);
+
+        // Then
+        self::assertSame($hostedPageUrl, $result);
+    }
+
+    #[Test]
     public function itFailsWhenNoLine(): void
     {
         // Given
@@ -150,12 +168,13 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
     {
         // Given
         $this->paymentGateway->expects(self::never())->method('requestPayment');
+        $expiredAt = Clock::get()->now()->modify('-1 second');
 
         // Then
         $this->expectException(PaymentRequestAlreadyExpiredException::class);
 
         // When
-        $this->service->requestFor(Uuid::uuid7()->toString(), 'EUR', $this->lines(), 'https://web.test/sales/orders', 'https://web.test/sales/cart', Clock::get()->now());
+        $this->service->requestFor(Uuid::uuid7()->toString(), 'EUR', $this->lines(), 'https://web.test/sales/orders', 'https://web.test/sales/cart', $expiredAt);
     }
 
     /**

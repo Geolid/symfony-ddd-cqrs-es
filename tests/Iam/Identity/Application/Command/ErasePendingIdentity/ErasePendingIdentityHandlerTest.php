@@ -30,7 +30,7 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $identity = IdentityFactory::new()->withRegisteredAt($now->modify('-25 hours'))->create();
+        $identity = IdentityFactory::new()->withRegisteredAt($now->modify(\sprintf('-%d hours', IdentityFactory::PENDING_EXPIRY_HOURS + 1)))->create();
         $this->store($identity);
 
         // When
@@ -47,7 +47,7 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $identity = IdentityFactory::new()->withRegisteredAt($now->modify('-25 hours'))->confirmed()->create();
+        $identity = IdentityFactory::new()->withRegisteredAt($now->modify(\sprintf('-%d hours', IdentityFactory::PENDING_EXPIRY_HOURS + 1)))->confirmed()->create();
         $this->store($identity);
 
         // When
@@ -80,7 +80,7 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
         // Given
         $now = Clock::get()->now();
         $identity = IdentityFactory::new()
-            ->withRegisteredAt($now->modify('-25 hours'))
+            ->withRegisteredAt($now->modify(\sprintf('-%d hours', IdentityFactory::PENDING_EXPIRY_HOURS + 1)))
             ->erasureRequested()
             ->erased()
             ->create();

@@ -28,6 +28,7 @@ use Shopping\Checkout\Application\Tax\TaxRateResolverInterface;
 use Shopping\Checkout\Domain\Event\CheckoutSessionOpened;
 use Shopping\Checkout\Domain\Service\CheckoutSessionExpiryCalculator;
 use Shopping\Tests\Cart\Support\Factory\CartFactory;
+use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -49,7 +50,7 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
             $this->taxRateResolver,
             $this->service(CommandBusInterface::class),
             $this->service(ClockInterface::class),
-            new CheckoutSessionExpiryCalculator(),
+            $this->service(CheckoutSessionExpiryCalculator::class),
         );
     }
 
@@ -71,6 +72,7 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
             productId: $otherCatalogProduct->id->toString(),
             quantity: Quantity::of(1),
         )->create();
+        $expiresAt = Clock::get()->now()->modify(\sprintf('+%d minutes', CheckoutSessionFactory::SESSION_EXPIRY_MINUTES));
         $this->store($cart, $catalogProduct, $otherCatalogProduct, $customer);
 
         // When
@@ -84,9 +86,10 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
         self::assertSame(PostalAddressMapper::toArray($customer->shippingAddress), PostalAddressMapper::toArray($result->shippingAddress));
         self::assertNotNull($customer->billingAddress);
         self::assertSame(PostalAddressMapper::toArray($customer->billingAddress), PostalAddressMapper::toArray($result->billingAddress));
-        self::assertSameDateTime(Clock::get()->now()->modify('+30 minutes'), $result->expiresAt);
+        self::assertSameDateTime($expiresAt, $result->expiresAt);
         $event = $this->publishedEventOf(CheckoutSessionOpened::class);
         self::assertSame($result->checkoutSessionId, $event->id);
+        self::assertSameDateTime($expiresAt, $event->expiresAt);
     }
 
     #[Test]

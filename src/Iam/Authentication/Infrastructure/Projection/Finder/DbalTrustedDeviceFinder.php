@@ -11,7 +11,6 @@ use Iam\Authentication\Application\Finder\TrustedDevice\TrustedDeviceFinderInter
 use Iam\Authentication\Application\Finder\TrustedDevice\TrustedDeviceResult;
 use Iam\Authentication\Infrastructure\Projection\Projector\DbalTrustedDeviceProjector;
 use Patchlevel\Hydrator\Hydrator;
-use Psr\Clock\ClockInterface;
 use Shared\Application\Finder\SortDirection;
 use Shared\Infrastructure\Projection\Finder\AbstractIterableDbalFinder;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
@@ -25,15 +24,12 @@ final class DbalTrustedDeviceFinder extends AbstractIterableDbalFinder implement
         Connection $connection,
         #[Autowire(service: 'shared.hydration.hydrator')]
         Hydrator $hydrator,
-        private readonly ClockInterface $clock,
     ) {
         parent::__construct($connection, $hydrator);
     }
 
-    public function activeByIdentity(string $identityId): static
+    public function activeByIdentity(string $identityId, \DateTimeImmutable $now): static
     {
-        $now = $this->clock->now();
-
         return $this->filter(
             static function (QueryBuilder $qb) use ($identityId, $now): void {
                 $qb->andWhere('identity_id = :identityId AND revoked_at IS NULL AND expires_at >= :now')

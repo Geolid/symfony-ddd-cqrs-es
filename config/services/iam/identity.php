@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 use Bootstrap\DependencyInjection\BoundedContextServiceLoader;
+use Iam\Identity\Domain\Service\PendingIdentityExpiryCalculator;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
 return static function (ContainerConfigurator $container): void {
@@ -10,4 +11,7 @@ return static function (ContainerConfigurator $container): void {
     $services->defaults()->autowire()->autoconfigure();
 
     BoundedContextServiceLoader::load($services, 'Iam\\Identity');
+
+    $container->parameters()->set('iam.identity.pending_expiry_hours', 24);
+    $services->get(PendingIdentityExpiryCalculator::class)->arg('$hours', '%iam.identity.pending_expiry_hours%');
 };

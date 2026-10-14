@@ -44,11 +44,11 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
                 'verification_status' => IdentityVerificationStatus::PENDING->value,
                 'moderation_status' => IdentityModerationStatus::ACTIVE->value,
                 'registered_at' => $event->registeredAt,
-                'pending_expires_at' => $event->pendingExpiresAt,
+                'expires_at' => $event->expiresAt,
                 'confirmation_requested_at' => $event->registeredAt,
                 'erasure_status' => ErasureStatus::RETAINED->value,
             ],
-            ['registered_at' => Types::DATETIME_IMMUTABLE, 'pending_expires_at' => Types::DATETIME_IMMUTABLE, 'confirmation_requested_at' => Types::DATETIME_IMMUTABLE],
+            ['registered_at' => Types::DATETIME_IMMUTABLE, 'expires_at' => Types::DATETIME_IMMUTABLE, 'confirmation_requested_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -164,7 +164,7 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
         $table->addColumn('moderation_status', Types::STRING, ['length' => 20]);
         $table->addColumn('reason', Types::STRING, ['length' => Reason::MAX_LENGTH, 'notnull' => false]);
         $table->addColumn('registered_at', Types::DATETIME_IMMUTABLE);
-        $table->addColumn('pending_expires_at', Types::DATETIME_IMMUTABLE);
+        $table->addColumn('expires_at', Types::DATETIME_IMMUTABLE);
         $table->addColumn('confirmation_requested_at', Types::DATETIME_IMMUTABLE);
         $table->addColumn('suspended_at', Types::DATETIME_IMMUTABLE, ['notnull' => false]);
         $table->addColumn('reactivated_at', Types::DATETIME_IMMUTABLE, ['notnull' => false]);
@@ -175,6 +175,6 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
                 ->create(),
         );
         $table->addIndex(['email'], 'iam_identity_identity_email_idx');
-        $table->addIndex(['verification_status', 'pending_expires_at'], 'iam_identity_identity_verification_status_pending_expires_at_idx');
+        $table->addIndex(['verification_status', 'expires_at'], 'iam_identity_identity_verification_status_expires_at_idx');
     }
 }

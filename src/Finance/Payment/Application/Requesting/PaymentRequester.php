@@ -58,7 +58,7 @@ final readonly class PaymentRequester implements PaymentRequesterInterface
             throw PaymentRequestInvalidUrlException::forCheckoutSession($checkoutSessionId);
         }
 
-        if ($expiresAt <= $this->clock->now()) {
+        if ($expiresAt < $this->clock->now()) {
             throw PaymentRequestAlreadyExpiredException::forCheckoutSession($checkoutSessionId);
         }
 

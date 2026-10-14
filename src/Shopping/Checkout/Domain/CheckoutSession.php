@@ -68,6 +68,7 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
         PostalAddress $shippingAddress,
         PostalAddress $billingAddress,
         \DateTimeImmutable $openedAt,
+        CheckoutSessionExpiryCalculator $expiryCalculator,
     ): self {
         if ([] === $items) {
             throw CheckoutSessionEmptyException::forId($id);
@@ -83,7 +84,7 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
             billingAddress: $billingAddress,
             total: self::totalOf($items, $currency),
             openedAt: $openedAt,
-            expiresAt: new CheckoutSessionExpiryCalculator()->expiresAt($openedAt),
+            expiresAt: $expiryCalculator->expiresAt($openedAt),
         ));
 
         return $self;
