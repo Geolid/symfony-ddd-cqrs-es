@@ -31,7 +31,7 @@ final class NativeCodeChallengerTest extends TestCase
             new NativeNumericCodeGenerator(),
             'secret',
             self::MAX_ATTEMPTS,
-            \sprintf('+%d minutes', self::EXPIRY_MINUTES),
+            self::EXPIRY_MINUTES,
         );
         $this->key = VerificationCodeKey::for(DummyVerificationCodePurpose::NAME, 'subject-1');
     }

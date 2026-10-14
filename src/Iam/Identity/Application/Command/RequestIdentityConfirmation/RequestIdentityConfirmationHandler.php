@@ -13,12 +13,14 @@ use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
+use Shared\Domain\Service\CooldownCalculator;
 
 #[CommandHandler]
 final readonly class RequestIdentityConfirmationHandler
 {
     public function __construct(
         private IdentityRepositoryInterface $repository,
+        private CooldownCalculator $cooldownCalculator,
         private ClockInterface $clock,
     ) {
     }
@@ -33,7 +35,7 @@ final readonly class RequestIdentityConfirmationHandler
     public function __invoke(RequestIdentityConfirmation $command): void
     {
         $identity = $this->repository->load(IdentityId::fromString($command->id));
-        $identity->requestConfirmation($this->clock->now());
+        $identity->requestConfirmation($this->clock->now(), $this->cooldownCalculator);
 
         $this->repository->save($identity);
     }

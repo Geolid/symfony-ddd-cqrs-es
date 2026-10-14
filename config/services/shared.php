@@ -12,6 +12,7 @@ use Sentry\State\HubInterface;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\Query\QueryBusInterface;
+use Shared\Domain\Service\CooldownCalculator;
 use Shared\Infrastructure\EventStore\PatchlevelIntegrationEventPublisher;
 use Shared\Infrastructure\Messaging\SymfonyCommandBus;
 use Shared\Infrastructure\Messaging\SymfonyQueryBus;
@@ -25,13 +26,16 @@ use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return static function (ContainerConfigurator $container): void {
     $container->parameters()->set('code_challenger.max_attempts', 3);
-    $container->parameters()->set('code_challenger.expiry', '+15 minutes');
+    $container->parameters()->set('code_challenger.expiry_minutes', 15);
+    $container->parameters()->set('shared.cooldown_seconds', 60);
     $container->parameters()->set('valkey.key_prefix', '');
 
     $services = $container->services();
     $services->defaults()->autowire()->autoconfigure();
 
     BoundedContextServiceLoader::load($services, 'Shared');
+
+    $services->get(CooldownCalculator::class)->arg('$seconds', '%shared.cooldown_seconds%');
 
     // Always constructed directly with per-call closures, never resolved via the container.
     $services->remove(DbalPaginator::class);

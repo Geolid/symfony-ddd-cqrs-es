@@ -17,6 +17,7 @@ use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
+use Shared\Domain\Service\CooldownCalculator;
 
 #[CommandHandler]
 final readonly class RequestEmailChangeHandler
@@ -24,6 +25,7 @@ final readonly class RequestEmailChangeHandler
     public function __construct(
         private IdentityRepositoryInterface $repository,
         private UniquenessRegistryInterface $uniqueness,
+        private CooldownCalculator $cooldownCalculator,
         private ClockInterface $clock,
     ) {
     }
@@ -44,7 +46,7 @@ final readonly class RequestEmailChangeHandler
         }
 
         $identity = $this->repository->load(IdentityId::fromString($command->id));
-        $identity->requestEmailChange($newEmail, $this->clock->now());
+        $identity->requestEmailChange($newEmail, $this->clock->now(), $this->cooldownCalculator);
 
         $this->repository->save($identity);
     }

@@ -28,11 +28,13 @@ use Iam\Identity\Domain\ValueObject\IdentityId;
 use Iam\Identity\Domain\ValueObject\Reason;
 use Iam\Tests\Identity\Support\Factory\EmailFactory;
 use Iam\Tests\Identity\Support\Factory\FullNameFactory;
+use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use Iam\Tests\Identity\Support\Factory\ReasonFactory;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Domain\Service\CodeChallengerInterface;
+use Shared\Domain\Service\CooldownCalculator;
 use Shared\Tests\Support\Double\FakeCodeChallenger;
 use Symfony\Component\Clock\Clock;
 
@@ -177,7 +179,7 @@ final class IdentityTest extends AggregateRootTestCase
 
         $this
             ->given($this->registered())
-            ->when(fn (Identity $identity) => $identity->requestEmailChange($newEmail, $this->emailChangeRequestedAt))
+            ->when(fn (Identity $identity) => $identity->requestEmailChange($newEmail, $this->emailChangeRequestedAt, new CooldownCalculator(IdentityFactory::COOLDOWN_SECONDS)))
             ->then(new IdentityEmailChangeRequested($this->id, $newEmail, $this->emailChangeRequestedAt));
     }
 
@@ -189,7 +191,7 @@ final class IdentityTest extends AggregateRootTestCase
 
         $this
             ->given($this->registered())
-            ->when(static fn (Identity $identity) => $identity->requestEmailChange($newEmail, $requestedAt))
+            ->when(static fn (Identity $identity) => $identity->requestEmailChange($newEmail, $requestedAt, new CooldownCalculator(IdentityFactory::COOLDOWN_SECONDS)))
             ->then(new IdentityEmailChangeRequested($this->id, $newEmail, $requestedAt));
     }
 
@@ -198,7 +200,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered())
-            ->when(fn (Identity $identity) => $identity->requestEmailChange($this->email, $this->emailChangeRequestedAt))
+            ->when(fn (Identity $identity) => $identity->requestEmailChange($this->email, $this->emailChangeRequestedAt, new CooldownCalculator(IdentityFactory::COOLDOWN_SECONDS)))
             ->then();
     }
 
@@ -211,7 +213,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->erasureRequested(),
                 $this->erased(),
             )
-            ->when(fn (Identity $identity) => $identity->requestEmailChange(EmailFactory::new()->create(), $this->emailChangeRequestedAt))
+            ->when(fn (Identity $identity) => $identity->requestEmailChange(EmailFactory::new()->create(), $this->emailChangeRequestedAt, new CooldownCalculator(IdentityFactory::COOLDOWN_SECONDS)))
             ->expectsException(IdentityAlreadyErasedException::class);
     }
 
@@ -225,7 +227,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->registered(),
                 new IdentityEmailChangeRequested($this->id, EmailFactory::new()->create(), $this->emailChangeRequestedAt),
             )
-            ->when(static fn (Identity $identity) => $identity->requestEmailChange(EmailFactory::new()->create(), $emailChangeRequestedAgainAt))
+            ->when(static fn (Identity $identity) => $identity->requestEmailChange(EmailFactory::new()->create(), $emailChangeRequestedAgainAt, new CooldownCalculator(IdentityFactory::COOLDOWN_SECONDS)))
             ->expectsException(EmailChangeRequestedTooRecentlyException::class)
             ->expectsExceptionMessage('requested too recently');
     }
@@ -360,7 +362,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered())
-            ->when(fn (Identity $identity) => $identity->requestConfirmation($this->confirmationRequestedAt))
+            ->when(fn (Identity $identity) => $identity->requestConfirmation($this->confirmationRequestedAt, new CooldownCalculator(IdentityFactory::COOLDOWN_SECONDS)))
             ->then($this->confirmationRequested());
     }
 
@@ -372,7 +374,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->registered(),
                 $this->confirmed(),
             )
-            ->when(fn (Identity $identity) => $identity->requestConfirmation($this->confirmationRequestedAt))
+            ->when(fn (Identity $identity) => $identity->requestConfirmation($this->confirmationRequestedAt, new CooldownCalculator(IdentityFactory::COOLDOWN_SECONDS)))
             ->expectsException(IdentityAlreadyConfirmedException::class);
     }
 
@@ -386,7 +388,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->registered(),
                 $this->confirmationRequested(),
             )
-            ->when(static fn (Identity $identity) => $identity->requestConfirmation($confirmationRequestedAgainAt))
+            ->when(static fn (Identity $identity) => $identity->requestConfirmation($confirmationRequestedAgainAt, new CooldownCalculator(IdentityFactory::COOLDOWN_SECONDS)))
             ->expectsException(ConfirmationRequestedTooRecentlyException::class)
             ->expectsExceptionMessage('requested too recently');
     }
@@ -398,7 +400,7 @@ final class IdentityTest extends AggregateRootTestCase
 
         $this
             ->given($this->registered())
-            ->when(static fn (Identity $identity) => $identity->requestConfirmation($earlyConfirmationRequestedAt))
+            ->when(static fn (Identity $identity) => $identity->requestConfirmation($earlyConfirmationRequestedAt, new CooldownCalculator(IdentityFactory::COOLDOWN_SECONDS)))
             ->expectsException(ConfirmationRequestedTooRecentlyException::class);
     }
 

@@ -18,7 +18,7 @@ final class CooldownElapsedSpecificationTest extends TestCase
     public function itIsSatisfiedBy(?\DateTimeImmutable $lastRequestedAt, \DateTimeImmutable $now, bool $expected): void
     {
         // Given
-        $specification = new CooldownElapsedSpecification(new CooldownCalculator(), $now);
+        $specification = new CooldownElapsedSpecification(new CooldownCalculator(60), $now);
 
         // When
         $result = $specification->isSatisfiedBy($lastRequestedAt);

@@ -25,18 +25,18 @@ final readonly class NativeCodeChallenger implements CodeChallengerInterface
         private string $secret,
         #[Autowire(param: 'code_challenger.max_attempts')]
         private int $maxAttempts,
-        #[Autowire(param: 'code_challenger.expiry')]
-        private string $expiry,
+        #[Autowire(param: 'code_challenger.expiry_minutes')]
+        private int $expiryMinutes,
     ) {
         Assert::positiveInteger($this->maxAttempts);
-        Assert::stringNotEmpty($this->expiry);
+        Assert::positiveInteger($this->expiryMinutes);
     }
 
     public function issue(VerificationCodeKey $key, \DateTimeImmutable $now): string
     {
         $code = $this->numericCodeGenerator->generate(self::DIGITS);
 
-        $this->store->save($key, $this->hash($code), $now->modify($this->expiry));
+        $this->store->save($key, $this->hash($code), $now->modify(\sprintf('+%d minutes', $this->expiryMinutes)));
 
         return $code;
     }
