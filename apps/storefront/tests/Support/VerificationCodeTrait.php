@@ -15,7 +15,7 @@ trait VerificationCodeTrait
         $body = $this->mailer()->sentEmails()->last()->getTextBody();
         \assert(\is_string($body));
 
-        $matched = preg_match('/(\d{6})/', $body, $matches);
+        $matched = preg_match('/code is: (\d+)/', $body, $matches);
         \assert(1 === $matched);
 
         return $matches[1];

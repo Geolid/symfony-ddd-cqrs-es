@@ -73,7 +73,7 @@ final class IdentityTest extends AggregateRootTestCase
         $this->emailChangeRequestedAt = $this->registeredAt->modify('+50 minutes');
         $this->emailChangedAt = $this->registeredAt->modify('+55 minutes');
         $this->codeChallenger = new FakeCodeChallenger();
-        $this->cooldownSeconds = 60;
+        $this->cooldownSeconds = 5 * 60;
         $this->suspendedAt = $this->registeredAt->modify('+1 day');
         $this->reactivatedAt = $this->registeredAt->modify('+2 day');
         $this->requestedAt = $this->registeredAt->modify('+3 day');

@@ -148,7 +148,7 @@ final class PasswordCredentialFactory extends AbstractAggregateFactory
             'changedAt' => $now->modify('+1 day'),
             'rehashedAt' => $now->modify('+2 day'),
             'requestedAt' => $now->modify('+3 day'),
-            'cooldownSeconds' => 60,
+            'cooldownSeconds' => 5 * 60,
             'resetAt' => $now->modify('+4 day'),
         ];
     }

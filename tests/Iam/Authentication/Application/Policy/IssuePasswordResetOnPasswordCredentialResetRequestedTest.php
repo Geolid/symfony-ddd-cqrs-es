@@ -42,6 +42,6 @@ final class IssuePasswordResetOnPasswordCredentialResetRequestedTest extends Abs
         self::assertInstanceOf(Email::class, $message);
         self::assertEmailAddressContains($message, 'To', $identity->email->value);
         self::assertEmailSubjectContains($message, 'Reset your password');
-        self::assertMatchesRegularExpression('/\d{6}/', (string) $message->getTextBody());
+        self::assertMatchesRegularExpression('/code is: \d+$/', (string) $message->getTextBody());
     }
 }

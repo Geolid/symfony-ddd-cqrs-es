@@ -32,7 +32,7 @@ final class LockingPaymentRequesterTest extends TestCase
         $this->lockFactory = $this->createMock(LockFactory::class);
         $this->lockSeconds = 45;
         $this->requester = new LockingPaymentRequester($this->inner, $this->lockFactory, $this->lockSeconds);
-        $this->expiresAt = Clock::get()->now()->modify('+30 minutes');
+        $this->expiresAt = Clock::get()->now()->modify('+1 hour');
     }
 
     #[Test]

@@ -114,7 +114,6 @@ final class ConfirmTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser();
 
         $browser->visitRoute('storefront_registration_confirm', ['identityId' => $persona->id]);
-        $this->advanceClock('+2 minutes');
 
         // When
         $browser->use(static function (ConfirmForm $confirm): void {
@@ -122,7 +121,7 @@ final class ConfirmTest extends AbstractStorefrontTestCase
         });
 
         // Then
-        $this->assertEmailSent(2, $persona->email, 'Confirm your email address');
+        $this->assertEmailSent(3, $persona->email, 'Confirm your email address');
     }
 
     #[Test]

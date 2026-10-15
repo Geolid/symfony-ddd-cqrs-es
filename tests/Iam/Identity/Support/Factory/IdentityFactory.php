@@ -160,7 +160,7 @@ final class IdentityFactory extends AbstractAggregateFactory
             'fullName' => FullNameFactory::new(),
             'email' => EmailFactory::new(),
             'registeredAt' => $now,
-            'cooldownSeconds' => 60,
+            'cooldownSeconds' => 5 * 60,
             'confirmedAt' => $now->modify('+1 hour'),
             'confirmationCode' => FakeCodeChallenger::CODE,
             'confirmationRequestedAt' => $now->modify('+30 minutes'),

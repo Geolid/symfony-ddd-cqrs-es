@@ -56,7 +56,7 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
             $this->service(CommandBusInterface::class),
             $this->service(ClockInterface::class),
         );
-        $this->expiresAt = Clock::get()->now()->modify('+30 minutes');
+        $this->expiresAt = Clock::get()->now()->modify('+1 hour');
     }
 
     #[Test]

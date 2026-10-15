@@ -6,6 +6,7 @@ namespace Storefront\Security\Provider;
 
 use Iam\Authentication\Application\CredentialVerification\TotpCredentialVerifierInterface;
 use Iam\Authentication\Application\Query\GetTotpCredentialByIdentity\GetTotpCredentialByIdentity;
+use Iam\Authentication\Application\Validation\ValidTotpCode;
 use Scheb\TwoFactorBundle\Security\TwoFactor\AuthenticationContextInterface;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\DefaultTwoFactorFormRenderer;
 use Scheb\TwoFactorBundle\Security\TwoFactor\Provider\TwoFactorFormRendererInterface;
@@ -54,6 +55,10 @@ final readonly class TotpTwoFactorProvider implements TwoFactorProviderInterface
 
     public function getFormRenderer(): TwoFactorFormRendererInterface
     {
-        return new DefaultTwoFactorFormRenderer($this->twig, 'two_factor/challenge_totp.html.twig');
+        return new DefaultTwoFactorFormRenderer(
+            $this->twig,
+            'two_factor/challenge_totp.html.twig',
+            ['pattern' => \sprintf('\d{%d}', ValidTotpCode::LENGTH)],
+        );
     }
 }

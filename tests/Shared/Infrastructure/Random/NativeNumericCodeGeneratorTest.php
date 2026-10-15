@@ -20,10 +20,13 @@ final class NativeNumericCodeGeneratorTest extends TestCase
     #[Test]
     public function itGenerates(): void
     {
+        // Given
+        $digitCount = 8;
+
         // When
-        $code = $this->generator->generate(8);
+        $code = $this->generator->generate($digitCount);
 
         // Then
-        self::assertMatchesRegularExpression('/^\d{8}$/', $code);
+        self::assertMatchesRegularExpression(\sprintf('/^\d{%d}$/', $digitCount), $code);
     }
 }

@@ -17,7 +17,6 @@ use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\Clock;
 
 final class RequestEmailChangeHandlerTest extends AbstractIntegrationTestCase
 {
@@ -25,8 +24,7 @@ final class RequestEmailChangeHandlerTest extends AbstractIntegrationTestCase
     public function itRequests(): void
     {
         // Given
-        $now = Clock::get()->now();
-        $identity = IdentityFactory::new()->withRegisteredAt($now->modify('-1 hour'))->create();
+        $identity = IdentityFactory::new()->create();
         $this->store($identity);
 
         // When

@@ -37,6 +37,6 @@ final class IssueConfirmationOnIdentityRegisteredTest extends AbstractIntegratio
         self::assertInstanceOf(Email::class, $message);
         self::assertEmailAddressContains($message, 'To', $email->value);
         self::assertEmailSubjectContains($message, 'Confirm your email address');
-        self::assertMatchesRegularExpression('/\d{6}/', (string) $message->getTextBody());
+        self::assertMatchesRegularExpression('/code is: \d+$/', (string) $message->getTextBody());
     }
 }

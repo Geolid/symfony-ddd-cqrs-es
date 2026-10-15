@@ -5,14 +5,19 @@ declare(strict_types=1);
 namespace Iam\Tests\Authentication\Application\TotpEnrollment;
 
 use Iam\Authentication\Application\CredentialVerification\BackupCodeCredentialVerifierInterface;
+use Iam\Authentication\Application\Finder\BackupCodeCredential\BackupCodeCredentialFinderInterface;
 use Iam\Authentication\Application\Finder\TotpCredential\TotpCredentialFinderInterface;
+use Iam\Authentication\Application\TotpEnrollment\TotpEnroller;
 use Iam\Authentication\Application\TotpEnrollment\TotpEnrollerInterface;
+use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeGeneratorInterface;
 use Iam\Authentication\Domain\BackupCodeCredential\Service\BackupCodeHasherInterface;
 use Iam\Authentication\Domain\TotpCredential\Exception\InvalidTotpCodeException;
+use Iam\Authentication\Domain\TotpCredential\Service\TotpVerifierInterface;
 use Iam\Tests\Authentication\Support\Factory\BackupCodeCredentialFactory;
 use OTPHP\TOTP;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Shared\Application\Command\CommandBusInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -41,8 +46,17 @@ final class TotpEnrollerTest extends AbstractIntegrationTestCase
         $secret = faker()->totpSecret();
         $code = TOTP::createFromSecret($secret, Clock::get())->now();
 
+        $backupCodeCount = 3;
+        $enroller = new TotpEnroller(
+            $this->service(TotpVerifierInterface::class),
+            $this->service(BackupCodeCredentialFinderInterface::class),
+            $this->service(BackupCodeGeneratorInterface::class),
+            $this->service(CommandBusInterface::class),
+            $backupCodeCount,
+        );
+
         // When
-        $backupCodes = $this->enroller->enrollFor($identityId, $secret, $code);
+        $backupCodes = $enroller->enrollFor($identityId, $secret, $code);
 
         // Then
         $result = $this->finder->activeOfIdentityOrNull($identityId);
@@ -50,8 +64,6 @@ final class TotpEnrollerTest extends AbstractIntegrationTestCase
         self::assertSame($identityId, $result->identityId);
         self::assertFalse($result->unenrolled);
 
-        $backupCodeCount = self::getContainer()->getParameter('iam.authentication.backup_code_count');
-        self::assertIsInt($backupCodeCount);
         self::assertNotNull($backupCodes);
         self::assertCount($backupCodeCount, $backupCodes);
 

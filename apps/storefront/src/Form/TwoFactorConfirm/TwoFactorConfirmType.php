@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Storefront\Form\TwoFactorConfirm;
 
+use Iam\Authentication\Application\Validation\ValidTotpCode;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -20,7 +21,7 @@ final class TwoFactorConfirmType extends AbstractType
             'attr' => [
                 'class' => 'totp-code-input',
                 'inputmode' => 'numeric',
-                'pattern' => '\d{6}',
+                'pattern' => \sprintf('\d{%d}', ValidTotpCode::LENGTH),
                 'autocomplete' => 'one-time-code',
             ],
         ]);

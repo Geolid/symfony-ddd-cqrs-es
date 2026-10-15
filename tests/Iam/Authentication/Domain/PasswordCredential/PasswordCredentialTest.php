@@ -48,7 +48,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $this->password = PasswordFactory::new()->create();
         $this->definedAt = Clock::get()->now();
         $this->requestedAt = $this->definedAt->modify('+3 day');
-        $this->cooldownSeconds = 60;
+        $this->cooldownSeconds = 5 * 60;
         $this->hasher = new FakePasswordHasher();
         $this->codeChallenger = new FakeCodeChallenger();
     }
