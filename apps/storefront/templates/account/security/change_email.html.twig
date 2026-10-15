@@ -21,11 +21,12 @@
         <button type="submit" data-testid="change-email-submit">{{ 'change_email_confirm_button_submit'|trans }}</button>
     {{ form_end(form) }}
 
-    <twig:ui:SubmitLink
+    <twig:ui:ActionForm
         actionUrl="{{ path('storefront_account_security_change_email_resend') }}"
         csrfId="change_email_resend"
         label="{{ 'button_resend'|trans({}, 'verification_code') }}"
         formTestId="change-email-resend-form"
+        class="u-link"
         data-testid="change-email-resend-link"
     />
 {% endblock %}

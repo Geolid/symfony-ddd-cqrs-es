@@ -29,10 +29,14 @@
                             <small>{{ trustedDevice.trustedAt|date('d/m/Y H:i') }}</small>
                         </div>
                     </div>
-                    <form method="post" action="{{ path('storefront_account_security_revoke_trusted_device', {id: trustedDevice.id}) }}" data-testid="revoke-trusted-device-form">
-                        <input type="hidden" name="_token" value="{{ csrf_token('revoke_trusted_device_' ~ trustedDevice.id) }}">
-                        <button type="submit" class="outline pico-background-red-500" data-testid="revoke-trusted-device-submit">{{ 'trusted_devices_button_revoke'|trans }}</button>
-                    </form>
+                    <twig:ui:ActionForm
+                        actionUrl="{{ path('storefront_account_security_revoke_trusted_device', {id: trustedDevice.id}) }}"
+                        csrfId="revoke_trusted_device_{{ trustedDevice.id }}"
+                        label="{{ 'trusted_devices_button_revoke'|trans }}"
+                        formTestId="revoke-trusted-device-form"
+                        class="outline pico-background-red-500"
+                        data-testid="revoke-trusted-device-submit"
+                    />
                 </article>
             {% endfor %}
         </div>
@@ -43,10 +47,14 @@
             <div>
                 <p class="icon-text"><twig:ux:icon name="warning" class="icon icon-warning" /> {{ 'trusted_devices_section_revoke_all_instructions'|trans }}</p>
             </div>
-            <form method="post" action="{{ path('storefront_account_security_revoke_trusted_devices') }}" data-testid="revoke-trusted-devices-form">
-                <input type="hidden" name="_token" value="{{ csrf_token('revoke_trusted_devices') }}">
-                <button type="submit" class="outline pico-background-red-500" data-testid="revoke-trusted-devices-submit">{{ 'trusted_devices_button_revoke_all'|trans }}</button>
-            </form>
+            <twig:ui:ActionForm
+                actionUrl="{{ path('storefront_account_security_revoke_trusted_devices') }}"
+                csrfId="revoke_trusted_devices"
+                label="{{ 'trusted_devices_button_revoke_all'|trans }}"
+                formTestId="revoke-trusted-devices-form"
+                class="outline pico-background-red-500"
+                data-testid="revoke-trusted-devices-submit"
+            />
         </article>
     {% endif %}
 

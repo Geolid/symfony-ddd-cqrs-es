@@ -23,10 +23,14 @@
         {% if erasure is null %}
             <a href="{{ path('storefront_account_personal_data_confirm_erasure') }}" role="button" class="outline pico-background-red-500" data-testid="request-erasure-link">{{ 'show_button_request_erasure'|trans }}</a>
         {% else %}
-            <form method="post" action="{{ path('storefront_account_personal_data_cancel_erasure', {id: erasure.id}) }}" data-testid="cancel-erasure-form">
-                <input type="hidden" name="_token" value="{{ csrf_token('cancel_erasure_' ~ erasure.id) }}">
-                <button type="submit" class="outline" data-testid="cancel-erasure-submit">{{ 'show_button_cancel_erasure'|trans }}</button>
-            </form>
+            <twig:ui:ActionForm
+                actionUrl="{{ path('storefront_account_personal_data_cancel_erasure', {id: erasure.id}) }}"
+                csrfId="cancel_erasure_{{ erasure.id }}"
+                label="{{ 'show_button_cancel_erasure'|trans }}"
+                formTestId="cancel-erasure-form"
+                class="outline"
+                data-testid="cancel-erasure-submit"
+            />
         {% endif %}
     </article>
 {% endblock %}

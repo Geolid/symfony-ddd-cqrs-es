@@ -32,19 +32,6 @@ final class ConfirmErasureTest extends AbstractStorefrontTestCase
     }
 
     #[Test]
-    public function itRequiresAuthentication(): void
-    {
-        // Given
-        $browser = $this->activeBrowser()->interceptRedirects();
-
-        // When
-        $browser->visitRoute('storefront_account_personal_data_confirm_erasure');
-
-        // Then
-        $browser->assertRedirectedToRoute('storefront_signin_identify');
-    }
-
-    #[Test]
     #[WithStory(ConfirmedStory::class)]
     public function itRequests(): void
     {
@@ -89,6 +76,19 @@ final class ConfirmErasureTest extends AbstractStorefrontTestCase
 
         // Then
         $browser->assertRedirectedToRoute('storefront_account_personal_data_show');
+    }
+
+    #[Test]
+    public function itRequiresAuthentication(): void
+    {
+        // Given
+        $browser = $this->activeBrowser()->interceptRedirects();
+
+        // When
+        $browser->visitRoute('storefront_account_personal_data_confirm_erasure');
+
+        // Then
+        $browser->assertRedirectedToRoute('storefront_signin_identify');
     }
 
     #[Test]

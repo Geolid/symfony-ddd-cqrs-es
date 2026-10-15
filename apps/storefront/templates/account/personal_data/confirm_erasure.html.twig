@@ -26,10 +26,14 @@
     <h2>{{ 'confirm_erasure_delay_title'|trans }}</h2>
     <p>{{ 'confirm_erasure_delay_description'|trans({'%days%': erasure_retention_days()}) }}</p>
 
-    <form method="post" action="{{ path('storefront_account_personal_data_request_erasure') }}" data-testid="confirm-erasure-form">
-        <input type="hidden" name="_token" value="{{ csrf_token('request_erasure') }}">
-        <button type="submit" class="outline pico-background-red-500" data-testid="confirm-erasure-submit">{{ 'confirm_erasure_button_submit'|trans }}</button>
-    </form>
+    <twig:ui:ActionForm
+        actionUrl="{{ path('storefront_account_personal_data_request_erasure') }}"
+        csrfId="request_erasure"
+        label="{{ 'confirm_erasure_button_submit'|trans }}"
+        formTestId="confirm-erasure-form"
+        class="outline pico-background-red-500"
+        data-testid="confirm-erasure-submit"
+    />
 
     <p><a href="{{ path('storefront_account_personal_data_show') }}" data-testid="confirm-erasure-back">&larr; {{ 'confirm_erasure_link_back'|trans }}</a></p>
 {% endblock %}
