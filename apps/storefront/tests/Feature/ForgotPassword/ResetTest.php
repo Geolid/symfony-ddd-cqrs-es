@@ -172,7 +172,7 @@ final class ResetTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser();
 
         $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $persona->id]);
-        $this->advanceClock('+4 days');
+        $this->advanceClock('+2 minutes');
 
         // When
         $browser->use(static function (ResetForm $reset): void {

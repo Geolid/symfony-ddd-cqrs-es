@@ -5,11 +5,14 @@ declare(strict_types=1);
 namespace Shared\Infrastructure\Random;
 
 use Shared\Domain\Service\NumericCodeGeneratorInterface;
+use Webmozart\Assert\Assert;
 
 final readonly class NativeNumericCodeGenerator implements NumericCodeGeneratorInterface
 {
     public function generate(int $digits): string
     {
+        Assert::range($digits, 1, 18);
+
         /*
          * A one-off shift of either bound can only be observed by a test if the draw happens
          * to land on that exact edge value — no test can force that deterministically.
