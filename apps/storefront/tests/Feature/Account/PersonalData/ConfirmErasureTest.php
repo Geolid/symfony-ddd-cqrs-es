@@ -61,7 +61,9 @@ final class ConfirmErasureTest extends AbstractStorefrontTestCase
 
         // Then
         $browser->assertRedirectedToRoute('storefront_account_personal_data_show')
-            ->assertSeeIn('[data-testid="flash-success"]', 'request_erasure_flash_requested');
+            ->assertSeeIn('[data-testid="flash-success"]', 'request_erasure_flash_requested')
+            ->assertSeeElement('[data-testid="erasure-pending"]')
+            ->assertNotSeeElement('[data-testid="request-erasure-link"]');
         $this->assertEmailSent(1, $persona->email, 'Your account deletion request');
         $erasure = $this->service(ErasureFinderInterface::class)->requestedOfIdentityOrNull($persona->id);
         self::assertNotNull($erasure);

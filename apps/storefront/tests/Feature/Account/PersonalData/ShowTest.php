@@ -79,7 +79,9 @@ final class ShowTest extends AbstractStorefrontTestCase
 
         // Then
         $browser->assertRedirectedToRoute('storefront_account_personal_data_show')
-            ->assertSeeIn('[data-testid="flash-success"]', 'cancel_erasure_flash_cancelled');
+            ->assertSeeIn('[data-testid="flash-success"]', 'cancel_erasure_flash_cancelled')
+            ->assertSeeElement('[data-testid="request-erasure-link"]')
+            ->assertNotSeeElement('[data-testid="erasure-pending"]');
     }
 
     #[Test]
