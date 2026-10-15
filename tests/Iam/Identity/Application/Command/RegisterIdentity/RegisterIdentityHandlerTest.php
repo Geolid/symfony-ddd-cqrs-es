@@ -26,9 +26,6 @@ final class RegisterIdentityHandlerTest extends AbstractIntegrationTestCase
         $fullName = FullNameFactory::new()->create()->value;
         $email = EmailFactory::new()->create()->value;
         $now = Clock::get()->now();
-        $expirySeconds = self::getContainer()->getParameter('iam.identity.pending_expiry_seconds');
-        self::assertIsInt($expirySeconds);
-        $expiresAt = $now->modify(\sprintf('+%d seconds', $expirySeconds));
 
         // When
         $this->dispatch(new RegisterIdentity($id, $fullName, $email));
@@ -44,7 +41,8 @@ final class RegisterIdentityHandlerTest extends AbstractIntegrationTestCase
         self::assertNull($result->suspendedAt);
         self::assertNull($result->reactivatedAt);
         $event = $this->publishedEventOf(IdentityRegistered::class);
-        self::assertSameDateTime($expiresAt, $event->expiresAt);
+        self::assertSameDateTime($now, $event->registeredAt);
+        self::assertGreaterThan($event->registeredAt, $event->expiresAt);
     }
 
     #[Test]

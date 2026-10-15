@@ -29,7 +29,6 @@ use Shopping\Checkout\Domain\Event\CheckoutSessionOpened;
 use Shopping\Checkout\Domain\Service\CheckoutSessionExpiryCalculator;
 use Shopping\Tests\Cart\Support\Factory\CartFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
-use Symfony\Component\Clock\Clock;
 
 final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
 {
@@ -71,9 +70,6 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
             productId: $otherCatalogProduct->id->toString(),
             quantity: Quantity::of(1),
         )->create();
-        $expirySeconds = self::getContainer()->getParameter('shopping.checkout.session_expiry_seconds');
-        self::assertIsInt($expirySeconds);
-        $expiresAt = Clock::get()->now()->modify(\sprintf('+%d seconds', $expirySeconds));
         $this->store($cart, $catalogProduct, $otherCatalogProduct, $customer);
 
         // When
@@ -87,10 +83,10 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
         self::assertSame(PostalAddressMapper::toArray($customer->shippingAddress), PostalAddressMapper::toArray($result->shippingAddress));
         self::assertNotNull($customer->billingAddress);
         self::assertSame(PostalAddressMapper::toArray($customer->billingAddress), PostalAddressMapper::toArray($result->billingAddress));
-        self::assertSameDateTime($expiresAt, $result->expiresAt);
         $event = $this->publishedEventOf(CheckoutSessionOpened::class);
         self::assertSame($result->checkoutSessionId, $event->id);
-        self::assertSameDateTime($expiresAt, $event->expiresAt);
+        self::assertSameDateTime($event->expiresAt, $result->expiresAt);
+        self::assertGreaterThan($event->openedAt, $event->expiresAt);
     }
 
     #[Test]

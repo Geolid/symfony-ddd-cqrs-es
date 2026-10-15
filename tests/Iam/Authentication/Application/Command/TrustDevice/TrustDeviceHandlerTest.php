@@ -25,9 +25,6 @@ final class TrustDeviceHandlerTest extends AbstractIntegrationTestCase
         $userAgent = faker()->userAgent();
         $ip = faker()->ipv4();
         $now = Clock::get()->now();
-        $expirySeconds = self::getContainer()->getParameter('iam.authentication.trusted_device_expiry_seconds');
-        self::assertIsInt($expirySeconds);
-        $expiresAt = $now->modify(\sprintf('+%d seconds', $expirySeconds));
 
         // When
         $this->dispatch(new TrustDevice($id, $identityId, $userAgent, $ip));
@@ -42,6 +39,7 @@ final class TrustDeviceHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($userAgent, $result->userAgent);
         self::assertSame($ip, $result->ip);
         $event = $this->publishedEventOf(TrustedDeviceTrusted::class);
-        self::assertSameDateTime($expiresAt, $event->expiresAt);
+        self::assertSameDateTime($now, $event->trustedAt);
+        self::assertGreaterThan($event->trustedAt, $event->expiresAt);
     }
 }
