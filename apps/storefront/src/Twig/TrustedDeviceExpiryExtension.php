@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Storefront\Security\Twig;
+namespace Storefront\Twig;
 
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Twig\Attribute\AsTwigFunction;
