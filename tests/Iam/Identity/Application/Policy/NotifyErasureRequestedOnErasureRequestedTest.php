@@ -24,7 +24,7 @@ final class NotifyErasureRequestedOnErasureRequestedTest extends AbstractIntegra
         $identity = IdentityFactory::new()->create();
         $this->store($identity);
         $requestedAt = Clock::get()->now();
-        $effectiveAt = $requestedAt->modify('+30 days');
+        $effectiveAt = $requestedAt->modify('+7 days');
 
         // When
         $this->trigger(NotifyErasureRequestedOnErasureRequested::class, new ErasureRequestedIntegrationEvent($identity->id->toString(), $requestedAt, $effectiveAt));

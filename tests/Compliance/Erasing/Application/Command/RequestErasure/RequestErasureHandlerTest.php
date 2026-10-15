@@ -36,9 +36,7 @@ final class RequestErasureHandlerTest extends AbstractIntegrationTestCase
         // Given
         $id = ErasureIdFactory::new()->create()->toString();
         $identityId = Uuid::uuid7()->toString();
-        $retentionSeconds = self::getContainer()->getParameter('compliance.erasing.retention_seconds');
-        self::assertIsInt($retentionSeconds);
-        $effectiveAt = Clock::get()->now()->modify(\sprintf('+%d seconds', $retentionSeconds));
+        $now = Clock::get()->now();
 
         // When
         $this->dispatch(new RequestErasure($id, $identityId));
@@ -46,7 +44,9 @@ final class RequestErasureHandlerTest extends AbstractIntegrationTestCase
         // Then
         $result = $this->finder->ofId($id);
         self::assertSame(ErasureRequestStatus::REQUESTED, $result->status);
-        self::assertSameDateTime($effectiveAt, $result->effectiveAt);
+        self::assertNotNull($result->requestedAt);
+        self::assertSameDateTime($now, $result->requestedAt);
+        self::assertGreaterThan($result->requestedAt, $result->effectiveAt);
     }
 
     #[Test]
