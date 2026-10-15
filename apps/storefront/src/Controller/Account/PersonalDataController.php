@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Storefront\Controller\Account;
 
 use Compliance\Erasing\Application\Command\CancelErasure\CancelErasure;
+use Compliance\Erasing\Application\Command\RequestErasure\Exception\ErasureAlreadyClaimedException;
 use Compliance\Erasing\Application\Command\RequestErasure\RequestErasure;
 use Compliance\Erasing\Application\Query\GetRequestedErasureByIdentity\GetRequestedErasureByIdentity;
 use Ramsey\Uuid\Uuid;
@@ -63,7 +64,12 @@ final class PersonalDataController extends AbstractController
             return $this->redirectToRoute('storefront_account_personal_data_confirm_erasure');
         }
 
-        $this->commandBus->dispatch(new RequestErasure(Uuid::uuid7()->toString(), $user->identityId()));
+        try {
+            $this->commandBus->dispatch(new RequestErasure(Uuid::uuid7()->toString(), $user->identityId()));
+        } catch (ErasureAlreadyClaimedException) {
+            return $this->redirectToRoute('storefront_account_personal_data_show');
+        }
+
         $this->addFlash('success', $this->translator->trans('request_erasure_flash_requested', domain: 'account_personal_data'));
 
         return $this->redirectToRoute('storefront_account_personal_data_show');

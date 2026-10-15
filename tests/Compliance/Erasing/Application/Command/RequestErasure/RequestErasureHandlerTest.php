@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Compliance\Tests\Erasing\Application\Command\RequestErasure;
 
+use Compliance\Erasing\Application\Command\RequestErasure\Exception\ErasureAlreadyClaimedException;
 use Compliance\Erasing\Application\Command\RequestErasure\RequestErasure;
 use Compliance\Erasing\Application\ErasingUniqueKey;
 use Compliance\Erasing\Application\ErasureRequestStatus;
@@ -66,7 +67,7 @@ final class RequestErasureHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresWhenAlreadyClaimed(): void
+    public function itFailsWhenAlreadyClaimed(): void
     {
         // Given
         $erasure = ErasureFactory::new()->create();
@@ -74,12 +75,10 @@ final class RequestErasureHandlerTest extends AbstractIntegrationTestCase
         $this->uniqueness->claim(UniqueKey::for(ErasingUniqueKey::IDENTITY), $erasure->identityId, $erasure->id->toString());
         $id = ErasureIdFactory::new()->create()->toString();
 
+        // Then
+        $this->expectException(ErasureAlreadyClaimedException::class);
+
         // When
         $this->dispatch(new RequestErasure($id, $erasure->identityId));
-
-        // Then
-        $result = $this->finder->requestedOfIdentityOrNull($erasure->identityId);
-        self::assertNotNull($result);
-        self::assertSame($erasure->id->toString(), $result->id);
     }
 }

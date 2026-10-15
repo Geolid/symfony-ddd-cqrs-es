@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Compliance\Erasing\Application\Command\RequestErasure;
 
+use Compliance\Erasing\Application\Command\RequestErasure\Exception\ErasureAlreadyClaimedException;
 use Compliance\Erasing\Application\ErasingUniqueKey;
 use Compliance\Erasing\Domain\Erasure;
 use Compliance\Erasing\Domain\Exception\ErasureAlreadyExistsException;
@@ -28,6 +29,7 @@ final readonly class RequestErasureHandler
     }
 
     /**
+     * @throws ErasureAlreadyClaimedException
      * @throws ErasureAlreadyExistsException
      */
     public function __invoke(RequestErasure $command): void
@@ -36,8 +38,8 @@ final readonly class RequestErasureHandler
 
         try {
             $this->uniqueness->claim(UniqueKey::for(ErasingUniqueKey::IDENTITY), $command->identityId, $id->toString());
-        } catch (UniquenessViolatedException) {
-            return;
+        } catch (UniquenessViolatedException $e) {
+            throw ErasureAlreadyClaimedException::forIdentity($command->identityId, $e);
         }
 
         $erasure = Erasure::request($id, $command->identityId, $this->clock->now(), $this->retentionCalculator);

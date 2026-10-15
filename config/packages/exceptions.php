@@ -3,6 +3,8 @@
 declare(strict_types=1);
 
 use Catalog\Listing\Application\Command\PublishProduct\Exception\ProductLabelAlreadyInUseException;
+use Catalog\Listing\Domain\Exception\ProductAlreadyDelistedException;
+use Compliance\Erasing\Application\Command\RequestErasure\Exception\ErasureAlreadyClaimedException;
 use Compliance\Erasing\Domain\Exception\ErasureOwnedByAnotherIdentityException;
 use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentAlreadyClaimedException;
 use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentReferenceAlreadyInUseException;
@@ -20,15 +22,13 @@ use Fulfilment\Shipping\Application\Manifesting\Exception\ManifestDeniedExceptio
 use Fulfilment\Shipping\Application\Manifesting\Exception\ManifestPostponedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
+use Iam\Authentication\Application\BackupCodeRegeneration\Exception\BackupCodeCredentialNotGeneratedException;
 use Iam\Authentication\Application\BreachDatabase\Exception\CompromisedPasswordException;
 use Iam\Authentication\Application\Command\EnrollTotp\Exception\TotpAlreadyEnrolledException;
 use Iam\Authentication\Application\Command\IssueApiKey\Exception\ApiKeyCredentialLabelAlreadyInUseException;
 use Iam\Authentication\Application\CredentialVerification\Exception\ApiKeyCredentialRevokedException;
 use Iam\Authentication\Application\CredentialVerification\Exception\IdentityNotAuthenticatableException;
 use Iam\Authentication\Domain\ApiKeyCredential\Exception\ApiKeyCredentialOwnedByAnotherIdentityException;
-use Iam\Authentication\Domain\PasswordCredential\Exception\InvalidCurrentPasswordException;
-use Iam\Authentication\Domain\PasswordCredential\Exception\SamePasswordException;
-use Iam\Authentication\Domain\PasswordCredential\Exception\WeakPasswordException;
 use Iam\Authentication\Domain\TotpCredential\Exception\TotpCredentialOwnedByAnotherIdentityException;
 use Iam\Authentication\Domain\TrustedDevice\Exception\TrustedDeviceOwnedByAnotherIdentityException;
 use Iam\Identity\Application\Command\ChangeEmail\Exception\IdentityEmailAlreadyInUseException as ChangeEmailIdentityEmailAlreadyInUseException;
@@ -38,7 +38,6 @@ use Iam\Identity\Domain\Exception\IdentityAlreadyConfirmedException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
-use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Finder\Exception\ResultNotFoundException;
 use Shared\Application\Mailer\Exception\MailerException;
@@ -48,9 +47,14 @@ use Shared\Domain\Exception\AggregateNotFoundException;
 use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
 use Shared\Domain\Exception\VerificationCodeNotFoundException;
 use Shared\Domain\Exception\VerificationCodeRequestedTooRecentlyException;
+use Shopping\Cart\Application\Command\AddCartProduct\Exception\ProductNotListedException as CartProductNotListedException;
+use Shopping\Cart\Application\Command\StartCart\Exception\CartAlreadyActiveException;
+use Shopping\Cart\Domain\Exception\CartAlreadyPurchasedException;
+use Shopping\Cart\Domain\Exception\CartProductNotFoundException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerAddressesNotCompletedException as CheckoutCustomerAddressesNotCompletedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerErasureRequestedException as CheckoutCustomerErasureRequestedException;
 use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\CustomerNotRegisteredException as CheckoutCustomerNotRegisteredException;
+use Shopping\Checkout\Application\CheckoutSessionOpening\Exception\ProductNotListedException as CheckoutProductNotListedException;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Webmozart\Assert\InvalidArgumentException;
 
@@ -58,9 +62,11 @@ return static function (ContainerConfigurator $container): void {
     $container->extension('framework', [
         'exceptions' => [
             // Catalog
+            ProductAlreadyDelistedException::class => ['log_level' => 'info', 'status_code' => 409],
             ProductLabelAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
 
             // Compliance
+            ErasureAlreadyClaimedException::class => ['log_level' => 'info', 'status_code' => 409],
             ErasureOwnedByAnotherIdentityException::class => ['log_level' => 'info', 'status_code' => 403],
 
             // Fulfilment
@@ -73,6 +79,7 @@ return static function (ContainerConfigurator $container): void {
             CarrierGatewayException::class => ['log_level' => 'error', 'status_code' => 502],
 
             // Iam
+            BackupCodeCredentialNotGeneratedException::class => ['log_level' => 'info', 'status_code' => 409],
             IdentityAlreadyErasedException::class => ['log_level' => 'info', 'status_code' => 409],
             IdentityAlreadyConfirmedException::class => ['log_level' => 'info', 'status_code' => 409],
             IdentityEmailAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
@@ -85,18 +92,19 @@ return static function (ContainerConfigurator $container): void {
             TotpCredentialOwnedByAnotherIdentityException::class => ['log_level' => 'info', 'status_code' => 403],
             TrustedDeviceOwnedByAnotherIdentityException::class => ['log_level' => 'info', 'status_code' => 403],
             ApiKeyCredentialLabelAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
-            InvalidCurrentPasswordException::class => ['log_level' => 'info', 'status_code' => 422],
-            SamePasswordException::class => ['log_level' => 'info', 'status_code' => 422],
-            WeakPasswordException::class => ['log_level' => 'info', 'status_code' => 422],
             CompromisedPasswordException::class => ['log_level' => 'info', 'status_code' => 422],
 
             // Sales
+            CartAlreadyActiveException::class => ['log_level' => 'info', 'status_code' => 409],
+            CartAlreadyPurchasedException::class => ['log_level' => 'info', 'status_code' => 409],
+            CartProductNotFoundException::class => ['log_level' => 'info', 'status_code' => 404],
+            CartProductNotListedException::class => ['log_level' => 'info', 'status_code' => 422],
+            CheckoutProductNotListedException::class => ['log_level' => 'info', 'status_code' => 422],
             CheckoutCustomerNotRegisteredException::class => ['log_level' => 'info', 'status_code' => 422],
             CheckoutCustomerAddressesNotCompletedException::class => ['log_level' => 'info', 'status_code' => 422],
             CheckoutCustomerErasureRequestedException::class => ['log_level' => 'info', 'status_code' => 422],
             OrderBelongsToAnotherCustomerException::class => ['log_level' => 'info', 'status_code' => 403],
             OrderNotCancellableException::class => ['log_level' => 'info', 'status_code' => 409],
-            OrderWithoutLineException::class => ['log_level' => 'info', 'status_code' => 422],
 
             // Finance
             PaymentRequestInProgressException::class => ['log_level' => 'info', 'status_code' => 503],

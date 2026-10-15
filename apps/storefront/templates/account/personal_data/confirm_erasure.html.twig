@@ -1,13 +1,14 @@
 {% extends 'account/_layout.html.twig' %}
 {% trans_default_domain 'account_personal_data' %}
-{% import 'account/personal_data/_breadcrumb.html.twig' as personal_data %}
 
 {% block title %}{{ 'confirm_erasure_title'|trans }}{% endblock %}
 
 {% block content %}
-    {{ personal_data.trail([
+    <twig:ui:Breadcrumb :items="[
+        {label: 'title'|trans({}, 'account'), url: path('storefront_account_show')},
+        {label: 'show_title'|trans, url: path('storefront_account_personal_data_show')},
         {label: 'confirm_erasure_title'|trans},
-    ]) }}
+    ]" />
 
     <h1>{{ 'confirm_erasure_title'|trans }}</h1>
 
