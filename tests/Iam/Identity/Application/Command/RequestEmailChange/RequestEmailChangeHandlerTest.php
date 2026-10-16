@@ -6,6 +6,7 @@ namespace Iam\Tests\Identity\Application\Command\RequestEmailChange;
 
 use Iam\Identity\Application\Command\RequestEmailChange\Exception\IdentityEmailAlreadyInUseException;
 use Iam\Identity\Application\Command\RequestEmailChange\RequestEmailChange;
+use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\IdentityUniqueKey;
 use Iam\Identity\Domain\Exception\EmailChangeRequestedTooRecentlyException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
@@ -32,9 +33,8 @@ final class RequestEmailChangeHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new RequestEmailChange($identity->id->toString(), EmailFactory::new()->create()->value));
 
         // Then
-        $this->expectException(EmailChangeRequestedTooRecentlyException::class);
-
-        $this->dispatch(new RequestEmailChange($identity->id->toString(), EmailFactory::new()->create()->value));
+        $result = $this->service(IdentityFinderInterface::class)->ofId($identity->id->toString());
+        self::assertSameDateTime(Clock::get()->now(), $result->emailChangeRequestedAt);
     }
 
     #[Test]
