@@ -17,9 +17,11 @@ final class ListExpiredPendingIdentitiesHandlerTest extends AbstractIntegrationT
     {
         // Given
         $now = Clock::get()->now();
-        $fresh = IdentityFactory::new()->withRegisteredAt($now->modify('-1 hour'))->create();
-        $active = IdentityFactory::new()->withRegisteredAt($now->modify('-25 hours'))->confirmed()->create();
-        $expired = IdentityFactory::new()->withRegisteredAt($now->modify('-25 hours'))->create();
+        $expiry = '24 hours';
+        $expiredRegisteredAt = $now->modify(\sprintf('-%s -1 second', $expiry));
+        $fresh = IdentityFactory::new()->withExpiry($expiry)->withRegisteredAt($now->modify(\sprintf('-%s +1 second', $expiry)))->create();
+        $active = IdentityFactory::new()->withExpiry($expiry)->withRegisteredAt($expiredRegisteredAt)->confirmed()->create();
+        $expired = IdentityFactory::new()->withExpiry($expiry)->withRegisteredAt($expiredRegisteredAt)->create();
         $this->store($fresh, $active, $expired);
 
         // When

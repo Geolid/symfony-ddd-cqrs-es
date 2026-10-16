@@ -7,6 +7,7 @@ namespace Iam\Authentication\Domain\TrustedDevice;
 use Iam\Authentication\Domain\TrustedDevice\Event\TrustedDeviceRevoked;
 use Iam\Authentication\Domain\TrustedDevice\Event\TrustedDeviceTrusted;
 use Iam\Authentication\Domain\TrustedDevice\Exception\TrustedDeviceOwnedByAnotherIdentityException;
+use Iam\Authentication\Domain\TrustedDevice\Service\TrustedDeviceExpiryCalculator;
 use Iam\Authentication\Domain\TrustedDevice\ValueObject\TrustedDeviceId;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootAttributeBehaviour;
@@ -26,6 +27,7 @@ final class TrustedDevice implements AggregateRoot, AggregateRootMetadataAware
     public private(set) string $userAgent;
     public private(set) string $ip;
     public private(set) \DateTimeImmutable $trustedAt;
+    public private(set) \DateTimeImmutable $expiresAt;
     public private(set) bool $revoked;
     public private(set) ?\DateTimeImmutable $revokedAt = null;
 
@@ -35,6 +37,7 @@ final class TrustedDevice implements AggregateRoot, AggregateRootMetadataAware
         string $userAgent,
         string $ip,
         \DateTimeImmutable $trustedAt,
+        TrustedDeviceExpiryCalculator $expiryCalculator,
     ): self {
         $self = new self();
         $self->recordThat(new TrustedDeviceTrusted(
@@ -43,6 +46,7 @@ final class TrustedDevice implements AggregateRoot, AggregateRootMetadataAware
             userAgent: $userAgent,
             ip: $ip,
             trustedAt: $trustedAt,
+            expiresAt: $expiryCalculator->expiresAt($trustedAt),
         ));
 
         return $self;
@@ -75,6 +79,7 @@ final class TrustedDevice implements AggregateRoot, AggregateRootMetadataAware
         $this->userAgent = $event->userAgent;
         $this->ip = $event->ip;
         $this->trustedAt = $event->trustedAt;
+        $this->expiresAt = $event->expiresAt;
         $this->revoked = false;
     }
 

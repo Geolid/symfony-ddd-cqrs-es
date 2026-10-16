@@ -29,8 +29,10 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itErases(): void
     {
         // Given
-        $now = Clock::get()->now();
-        $identity = IdentityFactory::new()->withRegisteredAt($now->modify('-25 hours'))->create();
+        $identity = IdentityFactory::new()
+            ->withExpiry('24 hours')
+            ->withRegisteredAt(Clock::get()->now()->modify('-24 hours -1 second'))
+            ->create();
         $this->store($identity);
 
         // When
@@ -47,7 +49,12 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $identity = IdentityFactory::new()->withRegisteredAt($now->modify('-25 hours'))->confirmed()->create();
+        $expiry = '24 hours';
+        $identity = IdentityFactory::new()
+            ->withExpiry($expiry)
+            ->withRegisteredAt($now->modify(\sprintf('-%s -1 second', $expiry)))
+            ->confirmed()
+            ->create();
         $this->store($identity);
 
         // When
@@ -62,8 +69,10 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenNotExpired(): void
     {
         // Given
-        $now = Clock::get()->now();
-        $identity = IdentityFactory::new()->withRegisteredAt($now->modify('-1 hour'))->create();
+        $identity = IdentityFactory::new()
+            ->withExpiry('24 hours')
+            ->withRegisteredAt(Clock::get()->now()->modify('-24 hours +1 second'))
+            ->create();
         $this->store($identity);
 
         // When
@@ -79,8 +88,10 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
+        $expiry = '24 hours';
         $identity = IdentityFactory::new()
-            ->withRegisteredAt($now->modify('-25 hours'))
+            ->withExpiry($expiry)
+            ->withRegisteredAt($now->modify(\sprintf('-%s -1 second', $expiry)))
             ->erasureRequested()
             ->erased()
             ->create();

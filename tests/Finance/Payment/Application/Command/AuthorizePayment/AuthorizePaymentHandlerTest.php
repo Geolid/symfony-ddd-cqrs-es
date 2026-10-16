@@ -19,14 +19,14 @@ final class AuthorizePaymentHandlerTest extends AbstractIntegrationTestCase
     public function itAuthorizesWhenRequested(): void
     {
         // Given
-        $orderPayment = PaymentFactory::new()->create();
-        $this->store($orderPayment);
+        $payment = PaymentFactory::new()->create();
+        $this->store($payment);
 
         // When
-        $this->dispatch(new AuthorizePayment($orderPayment->id->toString()));
+        $this->dispatch(new AuthorizePayment($payment->id->toString()));
 
         // Then
-        $result = $this->service(PaymentFinderInterface::class)->ofReference($orderPayment->reference->value);
+        $result = $this->service(PaymentFinderInterface::class)->ofReference($payment->reference->value);
         self::assertSame(PaymentStatus::AUTHORIZED, $result->status);
     }
 
@@ -34,11 +34,11 @@ final class AuthorizePaymentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyAuthorized(): void
     {
         // Given
-        $orderPayment = PaymentFactory::new()->authorized()->create();
-        $this->store($orderPayment);
+        $payment = PaymentFactory::new()->authorized()->create();
+        $this->store($payment);
 
         // When
-        $this->dispatch(new AuthorizePayment($orderPayment->id->toString()));
+        $this->dispatch(new AuthorizePayment($payment->id->toString()));
 
         // Then
         self::expectNotToPerformAssertions();

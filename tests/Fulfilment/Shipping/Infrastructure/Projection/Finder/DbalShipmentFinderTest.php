@@ -148,13 +148,19 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
         $now = Clock::get()->now();
         $freshManifested = ShipmentFactory::new()->prepared()->manifested(manifestedAt: $now->modify('+1 day'))->create();
         $notManifested = ShipmentFactory::new()->prepared()->create();
+        $manifestedAtCutoff = ShipmentFactory::new()->prepared()->manifested(manifestedAt: $now)->create();
+        $dispatchedAtCutoff = ShipmentFactory::new()
+            ->prepared()
+            ->manifested(manifestedAt: $now->modify('-2 days'))
+            ->dispatched($now)
+            ->create();
         $staleManifested = ShipmentFactory::new()->prepared()->manifested(manifestedAt: $now->modify('-1 day'))->create();
         $staleDispatched = ShipmentFactory::new()
             ->prepared()
             ->manifested(manifestedAt: $now->modify('-2 days'))
             ->dispatched($now->modify('-1 day'))
             ->create();
-        $this->store($freshManifested, $notManifested, $staleManifested, $staleDispatched);
+        $this->store($freshManifested, $notManifested, $manifestedAtCutoff, $dispatchedAtCutoff, $staleManifested, $staleDispatched);
 
         // When
         $results = iterator_to_array($this->finder()->stalledBefore($now));

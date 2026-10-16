@@ -86,11 +86,11 @@ final class PatchlevelPaymentRepositoryTest extends AbstractIntegrationTestCase
     public function itHas(): void
     {
         // Given
-        $orderPayment = PaymentFactory::new()->create();
-        $this->store($orderPayment);
+        $payment = PaymentFactory::new()->create();
+        $this->store($payment);
 
         // When
-        $exists = $this->repository->has($orderPayment->id);
+        $exists = $this->repository->has($payment->id);
 
         // Then
         self::assertTrue($exists);

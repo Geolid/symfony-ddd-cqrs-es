@@ -15,7 +15,7 @@
       </trans-unit>
       <trans-unit id="show_erasure_description">
         <source>show_erasure_description</source>
-        <target>Supprimez définitivement votre compte et vos données personnelles. La suppression prend effet %days% jours après votre demande, et vous pouvez l'annuler d'ici là.</target>
+        <target>Supprimez définitivement votre compte et vos données personnelles. La suppression prend effet %duration% après votre demande, et vous pouvez l'annuler d'ici là.</target>
       </trans-unit>
       <trans-unit id="show_erasure_pending">
         <source>show_erasure_pending</source>
@@ -67,7 +67,7 @@
       </trans-unit>
       <trans-unit id="confirm_erasure_delay_description">
         <source>confirm_erasure_delay_description</source>
-        <target>La suppression prend effet %days% jours après votre demande. D'ici là, votre compte reste actif et vous pouvez annuler la demande à tout moment depuis la page des données personnelles. Nous vous confirmerons votre demande par e-mail.</target>
+        <target>La suppression prend effet %duration% après votre demande. D'ici là, votre compte reste actif et vous pouvez annuler la demande à tout moment depuis la page des données personnelles. Nous vous confirmerons votre demande par e-mail.</target>
       </trans-unit>
       <trans-unit id="confirm_erasure_button_submit">
         <source>confirm_erasure_button_submit</source>

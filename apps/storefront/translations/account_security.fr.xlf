@@ -219,7 +219,7 @@
       </trans-unit>
       <trans-unit id="trusted_devices_instructions">
         <source>trusted_devices_instructions</source>
-        <target>Voici les appareils sur lesquels l'authentification à deux facteurs (2FA) est ignorée pour les %days% prochains jours. Vous pouvez révoquer l'accès d'un appareil que vous ne reconnaissez pas.</target>
+        <target>Voici les appareils sur lesquels l'authentification à deux facteurs (2FA) est ignorée pendant les %duration% à venir. Vous pouvez révoquer l'accès d'un appareil que vous ne reconnaissez pas.</target>
       </trans-unit>
       <trans-unit id="trusted_devices_empty">
         <source>trusted_devices_empty</source>

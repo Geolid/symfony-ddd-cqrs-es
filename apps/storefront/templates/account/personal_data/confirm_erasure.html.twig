@@ -24,7 +24,7 @@
     </ul>
 
     <h2>{{ 'confirm_erasure_delay_title'|trans }}</h2>
-    <p>{{ 'confirm_erasure_delay_description'|trans({'%days%': erasure_retention_days()}) }}</p>
+    <p>{{ 'confirm_erasure_delay_description'|trans({'%duration%': erasure_retention()|duration}) }}</p>
 
     <twig:ui:ActionForm
         actionUrl="{{ path('storefront_account_personal_data_request_erasure') }}"

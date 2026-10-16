@@ -39,12 +39,12 @@ final readonly class PatchlevelPaymentRepository implements PaymentRepositoryInt
         }
     }
 
-    public function save(Payment $orderPayment): void
+    public function save(Payment $payment): void
     {
         try {
-            $this->repository->save($orderPayment);
+            $this->repository->save($payment);
         } catch (AggregateAlreadyExists) {
-            throw PaymentAlreadyExistsException::forId($orderPayment->id->toString());
+            throw PaymentAlreadyExistsException::forId($payment->id->toString());
         }
     }
 }

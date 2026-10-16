@@ -16,6 +16,7 @@ final readonly class TrustedDeviceTrusted
         public string $userAgent,
         public string $ip,
         public \DateTimeImmutable $trustedAt,
+        public \DateTimeImmutable $expiresAt,
     ) {
     }
 }

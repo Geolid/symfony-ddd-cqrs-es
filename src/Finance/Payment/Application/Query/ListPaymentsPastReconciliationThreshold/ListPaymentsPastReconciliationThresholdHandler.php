@@ -14,7 +14,7 @@ use Shared\Application\Query\Result\StreamResult;
 final readonly class ListPaymentsPastReconciliationThresholdHandler
 {
     public function __construct(
-        private PaymentFinderInterface $orderPaymentFinder,
+        private PaymentFinderInterface $paymentFinder,
         private ClockInterface $clock,
         private int $thresholdMinutes,
     ) {
@@ -29,7 +29,7 @@ final readonly class ListPaymentsPastReconciliationThresholdHandler
             ->sub(new \DateInterval(\sprintf('PT%dM', $this->thresholdMinutes)));
 
         return new StreamResult(
-            $this->orderPaymentFinder->stalledBefore($cutoff),
+            $this->paymentFinder->stalledBefore($cutoff),
         );
     }
 }

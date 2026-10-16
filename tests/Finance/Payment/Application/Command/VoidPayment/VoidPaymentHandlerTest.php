@@ -27,14 +27,14 @@ final class VoidPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itVoidsWhenAuthorized(): void
     {
         // Given
-        $orderPayment = PaymentFactory::new()->authorized()->create();
-        $this->store($orderPayment);
+        $payment = PaymentFactory::new()->authorized()->create();
+        $this->store($payment);
 
         // When
-        $this->dispatch(new VoidPayment($orderPayment->id->toString()));
+        $this->dispatch(new VoidPayment($payment->id->toString()));
 
         // Then
-        $result = $this->finder->ofReference($orderPayment->reference->value);
+        $result = $this->finder->ofReference($payment->reference->value);
         self::assertSame(PaymentStatus::VOIDED, $result->status);
     }
 
@@ -42,14 +42,15 @@ final class VoidPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenRequested(): void
     {
         // Given
-        $orderPayment = PaymentFactory::new()->create();
-        $this->store($orderPayment);
+        $payment = PaymentFactory::new()->create();
+        $this->store($payment);
 
         // When
-        $this->dispatch(new VoidPayment($orderPayment->id->toString()));
+        $this->dispatch(new VoidPayment($payment->id->toString()));
 
         // Then
-        self::expectNotToPerformAssertions();
+        $result = $this->finder->ofReference($payment->reference->value);
+        self::assertSame(PaymentStatus::REQUESTED, $result->status);
     }
 
     #[Test]

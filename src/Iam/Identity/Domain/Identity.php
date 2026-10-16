@@ -21,7 +21,7 @@ use Iam\Identity\Domain\Exception\IdentityAlreadyConfirmedException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\InvalidConfirmationCodeException;
 use Iam\Identity\Domain\Exception\InvalidEmailChangeCodeException;
-use Iam\Identity\Domain\Specification\PendingIdentityExpiredSpecification;
+use Iam\Identity\Domain\Service\PendingIdentityExpiryCalculator;
 use Iam\Identity\Domain\ValueObject\Email;
 use Iam\Identity\Domain\ValueObject\FullName;
 use Iam\Identity\Domain\ValueObject\IdentityId;
@@ -64,6 +64,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     public private(set) IdentityModerationState $moderationState;
     public private(set) ErasureState $erasureState;
     public private(set) \DateTimeImmutable $registeredAt;
+    public private(set) \DateTimeImmutable $expiresAt;
     public private(set) \DateTimeImmutable $confirmationRequestedAt;
     public private(set) ?\DateTimeImmutable $confirmedAt = null;
     public private(set) ?\DateTimeImmutable $fullNameChangedAt = null;
@@ -78,7 +79,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     public private(set) ?\DateTimeImmutable $erasureCancelledAt = null;
     public private(set) ?\DateTimeImmutable $erasedAt = null;
 
-    public static function register(IdentityId $id, FullName $fullName, Email $email, \DateTimeImmutable $registeredAt): self
+    public static function register(IdentityId $id, FullName $fullName, Email $email, \DateTimeImmutable $registeredAt, PendingIdentityExpiryCalculator $expiryCalculator): self
     {
         $self = new self();
         $self->recordThat(new IdentityRegistered(
@@ -86,6 +87,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
             fullName: $fullName,
             email: $email,
             registeredAt: $registeredAt,
+            expiresAt: $expiryCalculator->expiresAt($registeredAt),
         ));
 
         return $self;
@@ -300,7 +302,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
             return;
         }
 
-        if (!new PendingIdentityExpiredSpecification($erasedAt)->isSatisfiedBy($this->registeredAt)) {
+        if ($erasedAt <= $this->expiresAt) {
             return;
         }
 
@@ -329,6 +331,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         $this->moderationState = IdentityModerationState::ACTIVE;
         $this->erasureState = ErasureState::RETAINED;
         $this->registeredAt = $event->registeredAt;
+        $this->expiresAt = $event->expiresAt;
         $this->confirmationRequestedAt = $event->registeredAt;
     }
 

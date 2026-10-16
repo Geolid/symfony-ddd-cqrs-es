@@ -42,7 +42,6 @@ final class ReleaseEmailOnIdentityErasedTest extends AbstractIntegrationTestCase
         ));
 
         // Then
-        $this->uniqueness->claim(UniqueKey::for(IdentityUniqueKey::EMAIL), $email, IdentityIdFactory::new()->create()->toString());
-        self::expectNotToPerformAssertions();
+        self::assertFalse($this->uniqueness->isClaimed(UniqueKey::for(IdentityUniqueKey::EMAIL), $email));
     }
 }

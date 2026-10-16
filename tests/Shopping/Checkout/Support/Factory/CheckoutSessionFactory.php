@@ -11,7 +11,7 @@ use Shared\Domain\ValueObject\PostalAddress;
 use Shared\Tests\Support\Factory\MoneyFactory;
 use Shared\Tests\Support\Factory\PostalAddressFactory;
 use Shopping\Checkout\Domain\CheckoutSession;
-use Shopping\Checkout\Domain\Specification\CheckoutSessionExpiredSpecification;
+use Shopping\Checkout\Domain\Service\CheckoutSessionExpiryCalculator;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Checkout\Domain\ValueObject\CheckoutSessionId;
 use Shopping\Checkout\Domain\ValueObject\TaxRate;
@@ -33,6 +33,7 @@ use function Zenstruck\Foundry\faker;
  *     billingAddress: PostalAddress,
  *     paymentId: string,
  *     openedAt: \DateTimeImmutable,
+ *     expiry: string,
  *     expiredAt: \DateTimeImmutable,
  *     staledAt: \DateTimeImmutable,
  *     completedAt: \DateTimeImmutable,
@@ -95,6 +96,11 @@ final class CheckoutSessionFactory extends AbstractAggregateFactory
         return $this->with(['openedAt' => $openedAt]);
     }
 
+    public function withExpiry(string $expiry): self
+    {
+        return $this->with(['expiry' => $expiry]);
+    }
+
     public function expired(?\DateTimeImmutable $expiredAt = null): self
     {
         return $this->with(array_filter(['expiredAt' => $expiredAt]))->transition(
@@ -142,6 +148,7 @@ final class CheckoutSessionFactory extends AbstractAggregateFactory
             shippingAddress: $parameters['shippingAddress'],
             billingAddress: $parameters['billingAddress'],
             openedAt: $parameters['openedAt'],
+            expiryCalculator: new CheckoutSessionExpiryCalculator(\DateInterval::createFromDateString($parameters['expiry'])),
         );
     }
 
@@ -149,6 +156,9 @@ final class CheckoutSessionFactory extends AbstractAggregateFactory
     {
         return parent::initialize()->beforeInstantiate(static function (array $parameters): array {
             Assert::isInstanceOf($parameters['currency'], Currency::class);
+            Assert::isInstanceOf($parameters['openedAt'], \DateTimeImmutable::class);
+            Assert::string($parameters['expiry']);
+            $parameters['expiredAt'] ??= $parameters['openedAt']->modify(\sprintf('+%s +1 second', $parameters['expiry']));
             $parameters['items'] ??= CheckoutItemFactory::new([
                 'unitPrice' => MoneyFactory::new(['currency' => $parameters['currency']->value]),
                 'taxRate' => $parameters['taxRate'],
@@ -172,7 +182,7 @@ final class CheckoutSessionFactory extends AbstractAggregateFactory
             'billingAddress' => PostalAddressFactory::new(),
             'paymentId' => Uuid::uuid7()->toString(),
             'openedAt' => $now,
-            'expiredAt' => $now->modify(\sprintf('+%d minutes', CheckoutSessionExpiredSpecification::TTL_MINUTES + 1)),
+            'expiry' => '1 hour',
             'staledAt' => $now->modify('+1 minute'),
             'completedAt' => $now->modify('+5 minutes'),
         ];

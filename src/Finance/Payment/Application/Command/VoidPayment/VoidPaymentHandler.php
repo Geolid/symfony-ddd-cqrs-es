@@ -32,8 +32,8 @@ final readonly class VoidPaymentHandler
             return;
         }
 
-        $orderPayment = $this->repository->load($id);
-        $orderPayment->void($this->clock->now());
-        $this->repository->save($orderPayment);
+        $payment = $this->repository->load($id);
+        $payment->void($this->clock->now());
+        $this->repository->save($payment);
     }
 }

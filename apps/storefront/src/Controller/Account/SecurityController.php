@@ -39,7 +39,6 @@ use Storefront\Form\TwoFactorConfirm\TwoFactorConfirmType;
 use Storefront\Security\PasswordUser;
 use Storefront\Security\RateLimiter\VerificationCodeResendFlow;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Form\FormInterface;
 use Symfony\Component\HttpFoundation\RedirectResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -66,8 +65,6 @@ final class SecurityController extends AbstractController
         private readonly FormExceptionMapper $formExceptionMapper,
         private readonly TranslatorInterface $translator,
         private readonly VerificationCodeResendFlow $resendFlow,
-        #[Autowire(param: 'iam.authentication.trusted_device_lifetime')]
-        private readonly int $trustedDeviceLifetime,
     ) {
     }
 
@@ -265,7 +262,6 @@ final class SecurityController extends AbstractController
 
         return $this->render('account/security/trusted_devices.html.twig', [
             'trustedDevices' => $trustedDevices,
-            'trustedDeviceLifetimeDays' => intdiv($this->trustedDeviceLifetime, 86400),
         ]);
     }
 

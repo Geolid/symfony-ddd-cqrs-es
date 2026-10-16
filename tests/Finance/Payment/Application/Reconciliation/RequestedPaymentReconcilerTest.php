@@ -17,7 +17,7 @@ use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RequestedPaymentReconcilerTest extends AbstractIntegrationTestCase
 {
-    private PaymentFinderInterface $orderPaymentFinder;
+    private PaymentFinderInterface $paymentFinder;
 
     private CommandBusInterface $commandBus;
 
@@ -25,7 +25,7 @@ final class RequestedPaymentReconcilerTest extends AbstractIntegrationTestCase
     {
         parent::setUp();
 
-        $this->orderPaymentFinder = $this->service(PaymentFinderInterface::class);
+        $this->paymentFinder = $this->service(PaymentFinderInterface::class);
         $this->commandBus = $this->service(CommandBusInterface::class);
     }
 
@@ -33,16 +33,16 @@ final class RequestedPaymentReconcilerTest extends AbstractIntegrationTestCase
     public function itReconcilesWhenAuthorized(): void
     {
         // Given
-        $orderPayment = PaymentFactory::new()->create();
-        $this->store($orderPayment);
+        $payment = PaymentFactory::new()->create();
+        $this->store($payment);
         $reconciler = new RequestedPaymentReconciler($this->paymentGatewayReturning(PaymentGatewayStatus::AUTHORIZED), $this->commandBus);
 
         // When
-        $reconciled = $reconciler->reconcile($orderPayment->id->toString(), $orderPayment->reference->value);
+        $reconciled = $reconciler->reconcile($payment->id->toString(), $payment->reference->value);
 
         // Then
         self::assertTrue($reconciled);
-        $result = $this->orderPaymentFinder->ofReference($orderPayment->reference->value);
+        $result = $this->paymentFinder->ofReference($payment->reference->value);
         self::assertSame(PaymentStatus::AUTHORIZED, $result->status);
     }
 
@@ -51,16 +51,16 @@ final class RequestedPaymentReconcilerTest extends AbstractIntegrationTestCase
     public function itAbandonsWhenNotAuthorized(PaymentGatewayStatus $gatewayStatus): void
     {
         // Given
-        $orderPayment = PaymentFactory::new()->create();
-        $this->store($orderPayment);
+        $payment = PaymentFactory::new()->create();
+        $this->store($payment);
         $reconciler = new RequestedPaymentReconciler($this->paymentGatewayReturning($gatewayStatus), $this->commandBus);
 
         // When
-        $reconciled = $reconciler->reconcile($orderPayment->id->toString(), $orderPayment->reference->value);
+        $reconciled = $reconciler->reconcile($payment->id->toString(), $payment->reference->value);
 
         // Then
         self::assertTrue($reconciled);
-        $result = $this->orderPaymentFinder->ofReference($orderPayment->reference->value);
+        $result = $this->paymentFinder->ofReference($payment->reference->value);
         self::assertSame(PaymentStatus::ABANDONED, $result->status);
     }
 

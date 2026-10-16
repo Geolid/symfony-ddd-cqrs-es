@@ -18,6 +18,15 @@ use Symfony\Component\Clock\Clock;
 
 final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
 {
+    private IdentityFinderInterface $identityFinder;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->identityFinder = $this->service(IdentityFinderInterface::class);
+    }
+
     #[Test]
     public function itReactivates(): void
     {
@@ -33,7 +42,7 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new ReactivateIdentity($identity->id->toString(), $reason));
 
         // Then
-        $result = $this->service(IdentityFinderInterface::class)->ofId($identity->id->toString());
+        $result = $this->identityFinder->ofId($identity->id->toString());
         self::assertSame($identity->id->toString(), $result->id);
         self::assertSame(IdentityModerationStatus::ACTIVE, $result->moderationStatus);
         self::assertSame($reason, $result->reason);
@@ -56,7 +65,10 @@ final class ReactivateIdentityHandlerTest extends AbstractIntegrationTestCase
         ));
 
         // Then
-        self::expectNotToPerformAssertions();
+        $result = $this->identityFinder->ofId($identity->id->toString());
+        self::assertSame(IdentityModerationStatus::ACTIVE, $result->moderationStatus);
+        self::assertNull($result->reactivatedAt);
+        self::assertNull($result->reason);
     }
 
     #[Test]

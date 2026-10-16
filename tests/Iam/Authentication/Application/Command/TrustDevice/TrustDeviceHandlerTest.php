@@ -6,9 +6,11 @@ namespace Iam\Tests\Authentication\Application\Command\TrustDevice;
 
 use Iam\Authentication\Application\Command\TrustDevice\TrustDevice;
 use Iam\Authentication\Application\Finder\TrustedDevice\TrustedDeviceFinderInterface;
+use Iam\Authentication\Domain\TrustedDevice\Event\TrustedDeviceTrusted;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 use function Zenstruck\Foundry\faker;
 
@@ -22,12 +24,13 @@ final class TrustDeviceHandlerTest extends AbstractIntegrationTestCase
         $identityId = Uuid::uuid7()->toString();
         $userAgent = faker()->userAgent();
         $ip = faker()->ipv4();
+        $now = Clock::get()->now();
 
         // When
         $this->dispatch(new TrustDevice($id, $identityId, $userAgent, $ip));
 
         // Then
-        $results = iterator_to_array($this->service(TrustedDeviceFinderInterface::class)->activeByIdentity($identityId), false);
+        $results = iterator_to_array($this->service(TrustedDeviceFinderInterface::class)->activeByIdentity($identityId, $now), false);
         self::assertCount(1, $results);
 
         $result = $results[0];
@@ -35,5 +38,8 @@ final class TrustDeviceHandlerTest extends AbstractIntegrationTestCase
         self::assertSame($identityId, $result->identityId);
         self::assertSame($userAgent, $result->userAgent);
         self::assertSame($ip, $result->ip);
+        $event = $this->publishedEventOf(TrustedDeviceTrusted::class);
+        self::assertSameDateTime($now, $event->trustedAt);
+        self::assertGreaterThan($event->trustedAt, $event->expiresAt);
     }
 }

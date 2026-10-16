@@ -6,6 +6,7 @@ namespace Iam\Authentication\Application\Command\TrustDevice;
 
 use Iam\Authentication\Domain\TrustedDevice\Exception\TrustedDeviceAlreadyExistsException;
 use Iam\Authentication\Domain\TrustedDevice\Repository\TrustedDeviceRepositoryInterface;
+use Iam\Authentication\Domain\TrustedDevice\Service\TrustedDeviceExpiryCalculator;
 use Iam\Authentication\Domain\TrustedDevice\TrustedDevice;
 use Iam\Authentication\Domain\TrustedDevice\ValueObject\TrustedDeviceId;
 use Psr\Clock\ClockInterface;
@@ -16,6 +17,7 @@ final readonly class TrustDeviceHandler
 {
     public function __construct(
         private TrustedDeviceRepositoryInterface $repository,
+        private TrustedDeviceExpiryCalculator $expiryCalculator,
         private ClockInterface $clock,
     ) {
     }
@@ -31,6 +33,7 @@ final readonly class TrustDeviceHandler
             userAgent: $command->userAgent,
             ip: $command->ip,
             trustedAt: $this->clock->now(),
+            expiryCalculator: $this->expiryCalculator,
         );
 
         $this->repository->save($trustedDevice);

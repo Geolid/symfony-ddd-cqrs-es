@@ -33,29 +33,29 @@ final class AbandonPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itAbandonsWhenRequested(): void
     {
         // Given
-        $orderPayment = PaymentFactory::new()->create();
-        $this->store($orderPayment);
+        $payment = PaymentFactory::new()->create();
+        $this->store($payment);
         $checkoutSessionKey = UniqueKey::for(PaymentUniqueKey::CHECKOUT_SESSION);
-        $this->uniqueness->claim($checkoutSessionKey, $orderPayment->checkoutSessionId, $orderPayment->id->toString());
+        $this->uniqueness->claim($checkoutSessionKey, $payment->checkoutSessionId, $payment->id->toString());
 
         // When
-        $this->dispatch(new AbandonPayment($orderPayment->id->toString()));
+        $this->dispatch(new AbandonPayment($payment->id->toString()));
 
         // Then
-        $result = $this->finder->ofReference($orderPayment->reference->value);
+        $result = $this->finder->ofReference($payment->reference->value);
         self::assertSame(PaymentStatus::ABANDONED, $result->status);
-        self::assertFalse($this->uniqueness->isClaimed($checkoutSessionKey, $orderPayment->checkoutSessionId));
+        self::assertFalse($this->uniqueness->isClaimed($checkoutSessionKey, $payment->checkoutSessionId));
     }
 
     #[Test]
     public function itIgnoresWhenAlreadyAbandoned(): void
     {
         // Given
-        $orderPayment = PaymentFactory::new()->abandoned()->create();
-        $this->store($orderPayment);
+        $payment = PaymentFactory::new()->abandoned()->create();
+        $this->store($payment);
 
         // When
-        $this->dispatch(new AbandonPayment($orderPayment->id->toString()));
+        $this->dispatch(new AbandonPayment($payment->id->toString()));
 
         // Then
         self::expectNotToPerformAssertions();

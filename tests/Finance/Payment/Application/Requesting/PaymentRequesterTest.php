@@ -18,6 +18,7 @@ use Finance\Payment\Application\Requesting\PaymentRequester;
 use Finance\Payment\Domain\ValueObject\PaymentId;
 use Finance\Tests\Payment\Support\Factory\PaymentFactory;
 use Finance\Tests\Payment\Support\Factory\PaymentReferenceFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
 use Psr\Clock\ClockInterface;
@@ -30,8 +31,6 @@ use Shared\Domain\ValueObject\Money;
 use Shared\Domain\ValueObject\Quantity;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
-
-use function Zenstruck\Foundry\faker;
 
 final class PaymentRequesterTest extends AbstractIntegrationTestCase
 {
@@ -60,20 +59,21 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itRequests(): void
+    #[DataProvider('provideExpiry')]
+    public function itRequests(\DateTimeImmutable $expiresAt): void
     {
         // Given
         $checkoutSessionId = Uuid::uuid7()->toString();
         $paymentId = PaymentId::forCheckoutSession($checkoutSessionId)->toString();
         $reference = PaymentReferenceFactory::new()->create()->value;
-        $hostedPageUrl = 'https://checkout.globex.test/pay/'.faker()->regexify('[A-Z0-9]{8}');
+        $hostedPageUrl = \sprintf('https://checkout.globex.test/pay/%s', $reference);
         $lines = $this->lines();
         $this->paymentGateway->expects(self::once())->method('requestPayment')
-            ->with($paymentId, $checkoutSessionId, $lines, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt)
+            ->with($paymentId, $checkoutSessionId, $lines, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $expiresAt)
             ->willReturn(new PaymentSession($reference, $hostedPageUrl));
 
         // When
-        $result = $this->service->requestFor($checkoutSessionId, 'EUR', $lines, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt);
+        $result = $this->service->requestFor($checkoutSessionId, 'EUR', $lines, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $expiresAt);
 
         // Then
         self::assertSame($hostedPageUrl, $result);
@@ -81,6 +81,17 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
         self::assertSame($reference, $payment->reference);
         self::assertSame(4_200, $payment->amountInCents);
         self::assertSame(PaymentStatus::REQUESTED, $payment->status);
+    }
+
+    /**
+     * @return iterable<string, array{\DateTimeImmutable}>
+     */
+    public static function provideExpiry(): iterable
+    {
+        $now = Clock::get()->now();
+
+        yield 'before expiry' => [$now->modify('+30 minutes')];
+        yield 'at expiry' => [$now];
     }
 
     #[Test]
@@ -150,12 +161,13 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
     {
         // Given
         $this->paymentGateway->expects(self::never())->method('requestPayment');
+        $expiredAt = Clock::get()->now()->modify('-1 second');
 
         // Then
         $this->expectException(PaymentRequestAlreadyExpiredException::class);
 
         // When
-        $this->service->requestFor(Uuid::uuid7()->toString(), 'EUR', $this->lines(), 'https://web.test/sales/orders', 'https://web.test/sales/cart', Clock::get()->now());
+        $this->service->requestFor(Uuid::uuid7()->toString(), 'EUR', $this->lines(), 'https://web.test/sales/orders', 'https://web.test/sales/cart', $expiredAt);
     }
 
     /**

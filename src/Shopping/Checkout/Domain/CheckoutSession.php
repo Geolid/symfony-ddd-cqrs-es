@@ -19,7 +19,7 @@ use Shopping\Checkout\Domain\Event\CheckoutSessionExpired;
 use Shopping\Checkout\Domain\Event\CheckoutSessionOpened;
 use Shopping\Checkout\Domain\Event\CheckoutSessionStaled;
 use Shopping\Checkout\Domain\Exception\CheckoutSessionEmptyException;
-use Shopping\Checkout\Domain\Specification\CheckoutSessionExpiredSpecification;
+use Shopping\Checkout\Domain\Service\CheckoutSessionExpiryCalculator;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Checkout\Domain\ValueObject\CheckoutSessionId;
 use Shopping\Checkout\Domain\ValueObject\CheckoutSessionState;
@@ -48,6 +48,7 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
     public private(set) TaxedAmount $total;
     public private(set) CheckoutSessionState $operationalState;
     public private(set) \DateTimeImmutable $openedAt;
+    public private(set) \DateTimeImmutable $expiresAt;
     public private(set) ?\DateTimeImmutable $expiredAt = null;
     public private(set) ?\DateTimeImmutable $staledAt = null;
     public private(set) ?string $paymentId = null;
@@ -67,6 +68,7 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
         PostalAddress $shippingAddress,
         PostalAddress $billingAddress,
         \DateTimeImmutable $openedAt,
+        CheckoutSessionExpiryCalculator $expiryCalculator,
     ): self {
         if ([] === $items) {
             throw CheckoutSessionEmptyException::forId($id);
@@ -82,6 +84,7 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
             billingAddress: $billingAddress,
             total: self::totalOf($items, $currency),
             openedAt: $openedAt,
+            expiresAt: $expiryCalculator->expiresAt($openedAt),
         ));
 
         return $self;
@@ -93,7 +96,7 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
             return;
         }
 
-        if (!new CheckoutSessionExpiredSpecification($expiredAt)->isSatisfiedBy($this->openedAt)) {
+        if ($expiredAt <= $this->expiresAt) {
             return;
         }
 
@@ -174,6 +177,7 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
         $this->total = $event->total;
         $this->operationalState = CheckoutSessionState::OPEN;
         $this->openedAt = $event->openedAt;
+        $this->expiresAt = $event->expiresAt;
     }
 
     #[Apply]

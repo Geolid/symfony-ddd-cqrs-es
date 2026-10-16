@@ -14,19 +14,28 @@ use Support\TestCase\AbstractIntegrationTestCase;
 
 final class CapturePaymentHandlerTest extends AbstractIntegrationTestCase
 {
+    private PaymentFinderInterface $finder;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->finder = $this->service(PaymentFinderInterface::class);
+    }
+
     #[Test]
     public function itCapturesWhenAuthorized(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
-        $orderPayment = PaymentFactory::new()->authorized()->create();
-        $this->store($orderPayment);
+        $payment = PaymentFactory::new()->authorized()->create();
+        $this->store($payment);
 
         // When
-        $this->dispatch(new CapturePayment($orderPayment->id->toString(), $orderId));
+        $this->dispatch(new CapturePayment($payment->id->toString(), $orderId));
 
         // Then
-        $result = $this->service(PaymentFinderInterface::class)->ofReference($orderPayment->reference->value);
+        $result = $this->finder->ofReference($payment->reference->value);
         self::assertSame(PaymentStatus::CAPTURED, $result->status);
         self::assertSame($orderId, $result->orderId);
     }
@@ -35,13 +44,16 @@ final class CapturePaymentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenAlreadyCaptured(): void
     {
         // Given
-        $orderPayment = PaymentFactory::new()->authorized()->captured()->create();
-        $this->store($orderPayment);
+        $orderId = Uuid::uuid7()->toString();
+        $payment = PaymentFactory::new()->authorized()->captured()->create();
+        $this->store($payment);
 
         // When
-        $this->dispatch(new CapturePayment($orderPayment->id->toString(), Uuid::uuid7()->toString()));
+        $this->dispatch(new CapturePayment($payment->id->toString(), $orderId));
 
         // Then
-        self::expectNotToPerformAssertions();
+        $result = $this->finder->ofReference($payment->reference->value);
+        self::assertSame(PaymentStatus::CAPTURED, $result->status);
+        self::assertNotSame($orderId, $result->orderId);
     }
 }

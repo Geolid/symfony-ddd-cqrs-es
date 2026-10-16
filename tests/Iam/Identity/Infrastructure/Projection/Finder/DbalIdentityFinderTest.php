@@ -96,6 +96,26 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
     }
 
     #[Test]
+    public function itFiltersExpiredBefore(): void
+    {
+        // Given
+        $now = Clock::get()->now();
+        $expiry = '24 hours';
+        $expiredRegisteredAt = $now->modify(\sprintf('-%s -1 second', $expiry));
+        $atExpiresAt = IdentityFactory::new()->withExpiry($expiry)->withRegisteredAt($now->modify(\sprintf('-%s', $expiry)))->create();
+        $expired = IdentityFactory::new()->withExpiry($expiry)->withRegisteredAt($expiredRegisteredAt)->create();
+        $confirmed = IdentityFactory::new()->withExpiry($expiry)->withRegisteredAt($expiredRegisteredAt)->confirmed()->create();
+        $this->store($atExpiresAt, $expired, $confirmed);
+
+        // When
+        $results = iterator_to_array($this->finder()->expiredBefore($now));
+
+        // Then
+        self::assertCount(1, $results);
+        self::assertSame($expired->id->toString(), $results[0]->id);
+    }
+
+    #[Test]
     public function itPaginates(): void
     {
         // Given

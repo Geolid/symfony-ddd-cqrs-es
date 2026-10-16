@@ -139,20 +139,23 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
     }
 
     #[Test]
-    public function itFiltersStalledBefore(): void
+    public function itFiltersExpiredBefore(): void
     {
         // Given
         $now = Clock::get()->now();
-        $freshOpened = CheckoutSessionFactory::new()->withOpenedAt($now->modify('+1 day'))->create();
-        $staleOpened = CheckoutSessionFactory::new()->withOpenedAt($now->modify('-1 day'))->create();
-        $this->store($freshOpened, $staleOpened);
+        $expiry = '30 minutes';
+        $expiredOpenedAt = $now->modify(\sprintf('-%s -1 second', $expiry));
+        $atExpiresAt = CheckoutSessionFactory::new()->withExpiry($expiry)->withOpenedAt($now->modify(\sprintf('-%s', $expiry)))->create();
+        $expired = CheckoutSessionFactory::new()->withExpiry($expiry)->withOpenedAt($expiredOpenedAt)->create();
+        $completed = CheckoutSessionFactory::new()->withExpiry($expiry)->withOpenedAt($expiredOpenedAt)->completed()->create();
+        $this->store($atExpiresAt, $expired, $completed);
 
         // When
-        $results = iterator_to_array($this->finder()->stalledBefore($now));
+        $results = iterator_to_array($this->finder()->expiredBefore($now));
 
         // Then
         self::assertCount(1, $results);
-        self::assertSame($staleOpened->id->toString(), $results[0]->id);
+        self::assertSame($expired->id->toString(), $results[0]->id);
     }
 
     protected function finder(): CheckoutSessionFinderInterface

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Support\Factory;
 
 use Iam\Identity\Domain\Identity;
+use Iam\Identity\Domain\Service\PendingIdentityExpiryCalculator;
 use Iam\Identity\Domain\ValueObject\Email;
 use Iam\Identity\Domain\ValueObject\FullName;
 use Iam\Identity\Domain\ValueObject\IdentityId;
@@ -20,6 +21,7 @@ use Symfony\Component\Clock\Clock;
  *     fullName: FullName,
  *     email: Email,
  *     registeredAt: \DateTimeImmutable,
+ *     expiry: string,
  *     confirmedAt: \DateTimeImmutable,
  *     confirmationCode: string,
  *     confirmationRequestedAt: \DateTimeImmutable,
@@ -61,6 +63,11 @@ final class IdentityFactory extends AbstractAggregateFactory
     public function withRegisteredAt(\DateTimeImmutable $registeredAt): self
     {
         return $this->with(['registeredAt' => $registeredAt]);
+    }
+
+    public function withExpiry(string $expiry): self
+    {
+        return $this->with(['expiry' => $expiry]);
     }
 
     public function confirmed(?string $confirmationCode = null, ?\DateTimeImmutable $confirmedAt = null): self
@@ -146,6 +153,7 @@ final class IdentityFactory extends AbstractAggregateFactory
             fullName: $parameters['fullName'],
             email: $parameters['email'],
             registeredAt: $parameters['registeredAt'],
+            expiryCalculator: new PendingIdentityExpiryCalculator(\DateInterval::createFromDateString($parameters['expiry'])),
         );
     }
 
@@ -158,6 +166,7 @@ final class IdentityFactory extends AbstractAggregateFactory
             'fullName' => FullNameFactory::new(),
             'email' => EmailFactory::new(),
             'registeredAt' => $now,
+            'expiry' => '1 hour',
             'confirmedAt' => $now->modify('+1 hour'),
             'confirmationCode' => FakeCodeChallenger::CODE,
             'confirmationRequestedAt' => $now->modify('+30 minutes'),

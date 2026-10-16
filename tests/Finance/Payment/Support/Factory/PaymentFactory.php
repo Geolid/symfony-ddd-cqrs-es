@@ -15,8 +15,6 @@ use Support\Foundry\AbstractAggregateFactory;
 use Symfony\Component\Clock\Clock;
 use Webmozart\Assert\Assert;
 
-use function Zenstruck\Foundry\faker;
-
 /**
  * @phpstan-type Inputs = array{
  *     id: PaymentId,
@@ -137,13 +135,14 @@ final class PaymentFactory extends AbstractAggregateFactory
     protected function defaults(): array
     {
         $now = Clock::get()->now();
+        $reference = PaymentReferenceFactory::new()->create();
 
         return [
             'checkoutSessionId' => Uuid::uuid7()->toString(),
             'orderId' => Uuid::uuid7()->toString(),
             'amount' => MoneyFactory::new(),
-            'reference' => PaymentReferenceFactory::new(),
-            'hostedPageUrl' => 'https://checkout.globex.test/pay/'.faker()->regexify('[A-Z0-9]{8}'),
+            'reference' => $reference,
+            'hostedPageUrl' => \sprintf('https://checkout.globex.test/pay/%s', $reference->value),
             'requestedAt' => $now,
             'authorizedAt' => $now->modify('+1 day'),
             'failedAt' => $now->modify('+1 day'),

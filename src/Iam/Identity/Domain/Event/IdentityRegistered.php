@@ -24,6 +24,7 @@ final readonly class IdentityRegistered
         #[SensitiveData(fallbackCallable: new ErasedEmail())]
         public Email $email,
         public \DateTimeImmutable $registeredAt,
+        public \DateTimeImmutable $expiresAt,
     ) {
     }
 }

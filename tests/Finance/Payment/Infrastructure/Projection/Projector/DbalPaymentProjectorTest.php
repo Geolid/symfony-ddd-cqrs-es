@@ -22,19 +22,19 @@ final class DbalPaymentProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnPaymentRequested(): void
     {
         // Given
-        $orderPayment = PaymentFactory::new()->create();
+        $payment = PaymentFactory::new()->create();
 
         // When
-        $this->store($orderPayment);
+        $this->store($payment);
 
         // Then
-        $row = $this->fetchRow($orderPayment->id->toString());
+        $row = $this->fetchRow($payment->id->toString());
         self::assertNotFalse($row);
-        self::assertSame($orderPayment->checkoutSessionId, $row['checkout_session_id']);
+        self::assertSame($payment->checkoutSessionId, $row['checkout_session_id']);
         self::assertNull($row['order_id']);
-        self::assertSame($orderPayment->amount->cents, (int) $row['amount_in_cents']);
-        self::assertSame($orderPayment->reference->value, $row['reference']);
-        self::assertSame($orderPayment->hostedPageUrl, $row['hosted_page_url']);
+        self::assertSame($payment->amount->cents, (int) $row['amount_in_cents']);
+        self::assertSame($payment->reference->value, $row['reference']);
+        self::assertSame($payment->hostedPageUrl, $row['hosted_page_url']);
         self::assertSame(PaymentStatus::REQUESTED->value, $row['status']);
         self::assertNull($row['authorized_at']);
         self::assertNull($row['captured_at']);
@@ -49,13 +49,13 @@ final class DbalPaymentProjectorTest extends AbstractIntegrationTestCase
         // Given
         $other = PaymentFactory::new()->create();
         $this->store($other);
-        $orderPayment = PaymentFactory::new()->authorized()->create();
+        $payment = PaymentFactory::new()->authorized()->create();
 
         // When
-        $this->store($orderPayment);
+        $this->store($payment);
 
         // Then
-        $row = $this->fetchRow($orderPayment->id->toString());
+        $row = $this->fetchRow($payment->id->toString());
         self::assertNotFalse($row);
         self::assertSame(PaymentStatus::AUTHORIZED->value, $row['status']);
         self::assertNotNull($row['authorized_at']);
@@ -72,13 +72,13 @@ final class DbalPaymentProjectorTest extends AbstractIntegrationTestCase
         $order = OrderFactory::new()->create();
         $other = PaymentFactory::new()->create();
         $this->store($order, $other);
-        $orderPayment = PaymentFactory::new()->authorized()->captured($order->id->toString())->create();
+        $payment = PaymentFactory::new()->authorized()->captured($order->id->toString())->create();
 
         // When
-        $this->store($orderPayment);
+        $this->store($payment);
 
         // Then
-        $row = $this->fetchRow($orderPayment->id->toString());
+        $row = $this->fetchRow($payment->id->toString());
         self::assertNotFalse($row);
         self::assertSame($order->id->toString(), $row['order_id']);
         self::assertSame(PaymentStatus::CAPTURED->value, $row['status']);
@@ -96,13 +96,13 @@ final class DbalPaymentProjectorTest extends AbstractIntegrationTestCase
         $order = OrderFactory::new()->create();
         $other = PaymentFactory::new()->create();
         $this->store($order, $other);
-        $orderPayment = PaymentFactory::new()->authorized()->failed($order->id->toString())->create();
+        $payment = PaymentFactory::new()->authorized()->failed($order->id->toString())->create();
 
         // When
-        $this->store($orderPayment);
+        $this->store($payment);
 
         // Then
-        $row = $this->fetchRow($orderPayment->id->toString());
+        $row = $this->fetchRow($payment->id->toString());
         self::assertNotFalse($row);
         self::assertSame($order->id->toString(), $row['order_id']);
         self::assertSame(PaymentStatus::FAILED->value, $row['status']);
@@ -119,13 +119,13 @@ final class DbalPaymentProjectorTest extends AbstractIntegrationTestCase
         // Given
         $other = PaymentFactory::new()->create();
         $this->store($other);
-        $orderPayment = PaymentFactory::new()->abandoned()->create();
+        $payment = PaymentFactory::new()->abandoned()->create();
 
         // When
-        $this->store($orderPayment);
+        $this->store($payment);
 
         // Then
-        $row = $this->fetchRow($orderPayment->id->toString());
+        $row = $this->fetchRow($payment->id->toString());
         self::assertNotFalse($row);
         self::assertSame(PaymentStatus::ABANDONED->value, $row['status']);
         self::assertNotNull($row['abandoned_at']);
@@ -164,13 +164,13 @@ final class DbalPaymentProjectorTest extends AbstractIntegrationTestCase
         // Given
         $other = PaymentFactory::new()->authorized()->create();
         $this->store($other);
-        $orderPayment = PaymentFactory::new()->authorized()->voided()->create();
+        $payment = PaymentFactory::new()->authorized()->voided()->create();
 
         // When
-        $this->store($orderPayment);
+        $this->store($payment);
 
         // Then
-        $row = $this->fetchRow($orderPayment->id->toString());
+        $row = $this->fetchRow($payment->id->toString());
         self::assertNotFalse($row);
         self::assertSame(PaymentStatus::VOIDED->value, $row['status']);
         self::assertNotNull($row['voided_at']);

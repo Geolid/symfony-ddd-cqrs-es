@@ -26,8 +26,8 @@ final readonly class AuthorizePaymentHandler
      */
     public function __invoke(AuthorizePayment $command): void
     {
-        $orderPayment = $this->repository->load(PaymentId::fromString($command->id));
-        $orderPayment->authorize($this->clock->now());
-        $this->repository->save($orderPayment);
+        $payment = $this->repository->load(PaymentId::fromString($command->id));
+        $payment->authorize($this->clock->now());
+        $this->repository->save($payment);
     }
 }

@@ -8,6 +8,7 @@ use Iam\Identity\Application\Command\RegisterIdentity\Exception\IdentityEmailAlr
 use Iam\Identity\Application\Command\RegisterIdentity\RegisterIdentity;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Application\IdentityVerificationStatus;
+use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Tests\Identity\Support\Factory\EmailFactory;
 use Iam\Tests\Identity\Support\Factory\FullNameFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
@@ -39,6 +40,9 @@ final class RegisterIdentityHandlerTest extends AbstractIntegrationTestCase
         self::assertSameDateTime($now, $result->registeredAt);
         self::assertNull($result->suspendedAt);
         self::assertNull($result->reactivatedAt);
+        $event = $this->publishedEventOf(IdentityRegistered::class);
+        self::assertSameDateTime($now, $event->registeredAt);
+        self::assertGreaterThan($event->registeredAt, $event->expiresAt);
     }
 
     #[Test]

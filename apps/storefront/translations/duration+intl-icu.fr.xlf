@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file source-language="en" target-language="fr" datatype="plaintext" original="duration">
+    <header>
+      <tool tool-id="symfony" tool-name="Symfony"/>
+    </header>
+    <body>
+      <trans-unit id="years">
+        <source>years</source>
+        <target>{count, plural, one {# an} other {# ans}}</target>
+      </trans-unit>
+      <trans-unit id="months">
+        <source>months</source>
+        <target>{count, plural, one {# mois} other {# mois}}</target>
+      </trans-unit>
+      <trans-unit id="days">
+        <source>days</source>
+        <target>{count, plural, one {# jour} other {# jours}}</target>
+      </trans-unit>
+      <trans-unit id="hours">
+        <source>hours</source>
+        <target>{count, plural, one {# heure} other {# heures}}</target>
+      </trans-unit>
+      <trans-unit id="minutes">
+        <source>minutes</source>
+        <target>{count, plural, one {# minute} other {# minutes}}</target>
+      </trans-unit>
+      <trans-unit id="seconds">
+        <source>seconds</source>
+        <target>{count, plural, one {# seconde} other {# secondes}}</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>

@@ -22,6 +22,7 @@ final class DbalTrustedDeviceFinderTest extends AbstractIterableFinderTestCase
     public function itFiltersActiveByIdentity(): void
     {
         // Given
+        $now = Clock::get()->now();
         $trustedDevice = TrustedDeviceFactory::new()->create();
 
         $other = TrustedDeviceFactory::new()->create();
@@ -30,7 +31,7 @@ final class DbalTrustedDeviceFinderTest extends AbstractIterableFinderTestCase
         $this->store($other, $revoked, $trustedDevice);
 
         // When
-        $results = iterator_to_array($this->finder()->activeByIdentity($trustedDevice->identityId));
+        $results = iterator_to_array($this->finder()->activeByIdentity($trustedDevice->identityId, $now));
 
         // Then
         self::assertCount(1, $results);
@@ -44,26 +45,26 @@ final class DbalTrustedDeviceFinderTest extends AbstractIterableFinderTestCase
     public function itExcludesExpiredFromActiveByIdentity(): void
     {
         // Given
-        $lifetime = self::getContainer()->getParameter('iam.authentication.trusted_device_lifetime');
-        self::assertIsInt($lifetime);
-
         $now = Clock::get()->now();
         $identityId = Uuid::uuid7()->toString();
+        $expiry = '30 days';
 
         $expired = TrustedDeviceFactory::new()
             ->withIdentityId($identityId)
-            ->withTrustedAt($now->modify(\sprintf('-%d seconds', $lifetime + 1)))
+            ->withExpiry($expiry)
+            ->withTrustedAt($now->modify(\sprintf('-%s -1 second', $expiry)))
             ->create();
 
         $stillActive = TrustedDeviceFactory::new()
             ->withIdentityId($identityId)
-            ->withTrustedAt($now->modify(\sprintf('-%d seconds', $lifetime)))
+            ->withExpiry($expiry)
+            ->withTrustedAt($now->modify(\sprintf('-%s', $expiry)))
             ->create();
 
         $this->store($expired, $stillActive);
 
         // When
-        $results = iterator_to_array($this->finder()->activeByIdentity($identityId));
+        $results = iterator_to_array($this->finder()->activeByIdentity($identityId, $now));
 
         // Then
         self::assertCount(1, $results);
