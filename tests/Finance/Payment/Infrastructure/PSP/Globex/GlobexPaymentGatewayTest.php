@@ -275,7 +275,7 @@ final class GlobexPaymentGatewayTest extends TestCase
 
     private function expiresAt(): \DateTimeImmutable
     {
-        return Clock::get()->now()->modify('+1 hour');
+        return Clock::get()->now()->modify('+30 minutes');
     }
 
     /**
