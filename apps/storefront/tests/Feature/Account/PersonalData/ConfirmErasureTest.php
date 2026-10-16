@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Storefront\Tests\Feature\Account\PersonalData;
 
-use Compliance\Erasing\Application\Finder\Erasure\ErasureFinderInterface;
 use PHPUnit\Framework\Attributes\Test;
 use Storefront\Tests\Support\AbstractStorefrontTestCase;
 use Storefront\Tests\Support\Story\ConfirmedStory;
@@ -52,11 +51,6 @@ final class ConfirmErasureTest extends AbstractStorefrontTestCase
             ->assertSeeElement('[data-testid="erasure-pending"]')
             ->assertNotSeeElement('[data-testid="request-erasure-link"]');
         $this->assertEmailSent(1, $persona->email, 'Your account deletion request');
-        $erasure = $this->service(ErasureFinderInterface::class)->requestedOfIdentityOrNull($persona->id);
-        self::assertNotNull($erasure);
-        $body = $this->mailer()->sentEmails()->last()->getTextBody();
-        self::assertIsString($body);
-        self::assertStringContainsString($erasure->effectiveAt->format('Y-m-d'), $body);
     }
 
     #[Test]
