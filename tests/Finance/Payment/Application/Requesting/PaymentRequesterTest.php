@@ -60,10 +60,10 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
 
     #[Test]
     #[DataProvider('provideExpiry')]
-    public function itRequests(string $offset): void
+    public function itRequests(string $expiresAtOffset): void
     {
         // Given
-        $expiresAt = Clock::get()->now()->modify($offset);
+        $expiresAt = Clock::get()->now()->modify($expiresAtOffset);
         $checkoutSessionId = Uuid::uuid7()->toString();
         $paymentId = PaymentId::forCheckoutSession($checkoutSessionId)->toString();
         $reference = PaymentReferenceFactory::new()->create()->value;

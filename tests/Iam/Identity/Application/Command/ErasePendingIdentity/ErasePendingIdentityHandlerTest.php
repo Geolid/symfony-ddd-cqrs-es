@@ -27,13 +27,12 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
 
     #[Test]
     #[DataProvider('provideExpiry')]
-    public function itErases(string $offset, bool $retained): void
+    public function itErases(string $expiry, string $registeredAtOffset, bool $retained): void
     {
         // Given
-        $expiry = '24 hours';
         $identity = IdentityFactory::new()
             ->withExpiry($expiry)
-            ->withRegisteredAt(Clock::get()->now()->modify(\sprintf('-%s %s', $expiry, $offset)))
+            ->withRegisteredAt(Clock::get()->now()->modify($registeredAtOffset))
             ->create();
         $this->store($identity);
 
@@ -101,11 +100,11 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
     }
 
     /**
-     * @return iterable<string, array{string, bool}>
+     * @return iterable<string, array{string, string, bool}>
      */
     public static function provideExpiry(): iterable
     {
-        yield 'before expiry' => ['+1 second', true];
-        yield 'after expiry' => ['-1 second', false];
+        yield 'before expiry' => ['24 hours', '-24 hours +1 second', true];
+        yield 'after expiry' => ['24 hours', '-24 hours -1 second', false];
     }
 }

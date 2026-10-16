@@ -33,13 +33,12 @@ final class ApproveErasureHandlerTest extends AbstractIntegrationTestCase
 
     #[Test]
     #[DataProvider('provideRetention')]
-    public function itApproves(string $offset, ErasureRequestStatus $expectedStatus): void
+    public function itApproves(string $retention, string $requestedAtOffset, ErasureRequestStatus $expectedStatus): void
     {
         // Given
-        $retention = '30 days';
         $erasure = ErasureFactory::new()
             ->withRetention($retention)
-            ->withRequestedAt(Clock::get()->now()->modify(\sprintf('-%s %s', $retention, $offset)))
+            ->withRequestedAt(Clock::get()->now()->modify($requestedAtOffset))
             ->create();
         $this->store($erasure);
         $identityKey = UniqueKey::for(ErasingUniqueKey::IDENTITY);
@@ -68,11 +67,11 @@ final class ApproveErasureHandlerTest extends AbstractIntegrationTestCase
     }
 
     /**
-     * @return iterable<string, array{string, ErasureRequestStatus}>
+     * @return iterable<string, array{string, string, ErasureRequestStatus}>
      */
     public static function provideRetention(): iterable
     {
-        yield 'before effective date' => ['+1 second', ErasureRequestStatus::REQUESTED];
-        yield 'after effective date' => ['-1 second', ErasureRequestStatus::APPROVED];
+        yield 'before effective date' => ['30 days', '-30 days +1 second', ErasureRequestStatus::REQUESTED];
+        yield 'after effective date' => ['30 days', '-30 days -1 second', ErasureRequestStatus::APPROVED];
     }
 }
