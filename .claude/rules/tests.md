@@ -37,7 +37,7 @@ paths:
 ## Conventions
 
 ### Naming
-- Method names: `it{Verb}*` — bare, no implementation detail. The verb is always active, mirroring the method it exercises (`itDelivers`, `itCancels`) — never passive (`itIsDelivered`). A predicate — a Specification's `isSatisfiedBy`, a state's `isX` — is named for the business situation and its verdict, `itIsSatisfiedWhen<Condition>` / `itIsNotSatisfiedWhen<Condition>`, one test per verdict.
+- Method names: `it{Verb}*` — bare, no implementation detail. The verb is always active, mirroring the method it exercises (`itDelivers`, `itCancels`) — never passive (`itIsDelivered`). A Specification's `isSatisfiedBy` is exercised as the Specification accepting or refusing its candidate, `itAcceptsWhen<Condition>` / `itRefusesWhen<Condition>`, one test per verdict.
 - The test class already fixes the subject under test — a method name never repeats it as a noun. The same holds for a condition: a class already named after the one scenario its single test exercises doesn't restate that scenario in the method name either — it reduces to the bare verb.
 - "On" names a reaction to an already-recorded fact (a Policy/Processor/Projector's own shape) — never reused elsewhere for an unrelated meaning (e.g. a gateway's own failure condition), since out of that context it misreads as the same reactive shape.
 - An article ("a", "an", "the") is dropped wherever it precedes a noun. It stays only where dropping it would leave an adjective or relative clause with no noun left to attach to — reword instead of leaving it dangling.

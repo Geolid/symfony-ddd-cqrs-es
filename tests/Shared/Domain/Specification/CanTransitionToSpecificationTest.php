@@ -23,7 +23,7 @@ final class CanTransitionToSpecificationTest extends TestCase
 
     #[Test]
     #[DataProvider('provideAllowedTransitions')]
-    public function itIsSatisfiedWhenTransitionAllowed(DummyState $candidate, DummyState $target): void
+    public function itAcceptsWhenTransitionAllowed(DummyState $candidate, DummyState $target): void
     {
         // Given
         $specification = new CanTransitionToSpecification(self::TRANSITIONS, $target);
@@ -47,7 +47,7 @@ final class CanTransitionToSpecificationTest extends TestCase
 
     #[Test]
     #[DataProvider('provideForbiddenTransitions')]
-    public function itIsNotSatisfiedWhenTransitionForbidden(DummyState $candidate, DummyState $target): void
+    public function itRefusesWhenTransitionForbidden(DummyState $candidate, DummyState $target): void
     {
         // Given
         $specification = new CanTransitionToSpecification(self::TRANSITIONS, $target);

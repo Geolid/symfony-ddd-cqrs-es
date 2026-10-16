@@ -15,7 +15,7 @@ final class CooldownElapsedSpecificationTest extends TestCase
 {
     #[Test]
     #[DataProvider('provideElapsedCooldowns')]
-    public function itIsSatisfiedWhenCooldownElapsed(?\DateTimeImmutable $lastRequestedAt, \DateTimeImmutable $now): void
+    public function itAcceptsWhenCooldownElapsed(?\DateTimeImmutable $lastRequestedAt, \DateTimeImmutable $now): void
     {
         // Given
         $specification = new CooldownElapsedSpecification(new CooldownCalculator(\DateInterval::createFromDateString('1 minute')), $now);
@@ -41,7 +41,7 @@ final class CooldownElapsedSpecificationTest extends TestCase
 
     #[Test]
     #[DataProvider('provideRunningCooldowns')]
-    public function itIsNotSatisfiedWhenCooldownRunning(\DateTimeImmutable $lastRequestedAt, \DateTimeImmutable $now): void
+    public function itRefusesWhenCooldownRunning(\DateTimeImmutable $lastRequestedAt, \DateTimeImmutable $now): void
     {
         // Given
         $specification = new CooldownElapsedSpecification(new CooldownCalculator(\DateInterval::createFromDateString('1 minute')), $now);

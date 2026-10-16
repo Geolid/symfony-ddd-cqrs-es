@@ -22,7 +22,7 @@ final class SymfonyPasswordStrengthSpecificationTest extends TestCase
     }
 
     #[Test]
-    public function itIsSatisfiedWhenPasswordStrong(): void
+    public function itAcceptsWhenPasswordStrong(): void
     {
         // When
         $result = $this->passwordStrength->isSatisfiedBy(Password::fromString('Marmoset-42-Zephyr!'));
@@ -32,7 +32,7 @@ final class SymfonyPasswordStrengthSpecificationTest extends TestCase
     }
 
     #[Test]
-    public function itIsNotSatisfiedWhenPasswordWeak(): void
+    public function itRefusesWhenPasswordWeak(): void
     {
         // When
         $result = $this->passwordStrength->isSatisfiedBy(Password::fromString(str_repeat('a', Password::MIN_LENGTH)));

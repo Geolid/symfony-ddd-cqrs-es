@@ -23,7 +23,7 @@ final class HasReachedSpecificationTest extends TestCase
 
     #[Test]
     #[DataProvider('provideReachedTargets')]
-    public function itIsSatisfiedWhenTargetReached(DummyState $candidate, DummyState $target): void
+    public function itAcceptsWhenTargetReached(DummyState $candidate, DummyState $target): void
     {
         // Given
         $specification = new HasReachedSpecification(self::TRANSITIONS, $target);
@@ -48,7 +48,7 @@ final class HasReachedSpecificationTest extends TestCase
 
     #[Test]
     #[DataProvider('provideUnreachedTargets')]
-    public function itIsNotSatisfiedWhenTargetNotReached(DummyState $candidate, DummyState $target): void
+    public function itRefusesWhenTargetNotReached(DummyState $candidate, DummyState $target): void
     {
         // Given
         $specification = new HasReachedSpecification(self::TRANSITIONS, $target);
@@ -104,7 +104,7 @@ final class HasReachedSpecificationTest extends TestCase
     }
 
     #[Test]
-    public function itIsSatisfiedWhenIntBackedTargetReached(): void
+    public function itAcceptsWhenIntBackedTargetReached(): void
     {
         // Given
         /** @var array<string, list<DummyIntState>> $transitions */
