@@ -23,18 +23,20 @@ final class LockingPaymentRequesterTest extends TestCase
     private PaymentRequesterInterface&MockObject $inner;
     private LockFactory&MockObject $lockFactory;
     private LockingPaymentRequester $requester;
+    private int $lockTtl;
     private \DateTimeImmutable $expiresAt;
 
     protected function setUp(): void
     {
         $this->inner = $this->createMock(PaymentRequesterInterface::class);
         $this->lockFactory = $this->createMock(LockFactory::class);
-        $this->requester = new LockingPaymentRequester($this->inner, $this->lockFactory);
+        $this->lockTtl = 45;
+        $this->requester = new LockingPaymentRequester($this->inner, $this->lockFactory, $this->lockTtl);
         $this->expiresAt = Clock::get()->now()->modify('+30 minutes');
     }
 
     #[Test]
-    public function itDelegatesToInnerRequester(): void
+    public function itDelegates(): void
     {
         // Given
         $lock = $this->createStub(SharedLockInterface::class);
@@ -42,7 +44,7 @@ final class LockingPaymentRequesterTest extends TestCase
         $lines = $this->lines();
 
         $this->lockFactory->expects($this->once())->method('createLock')
-            ->with('finance.payment.payment_request.checkout-session-id', 30.0)
+            ->with('finance.payment.payment_request.checkout-session-id', (float) $this->lockTtl)
             ->willReturn($lock);
 
         $this->inner->expects($this->once())->method('requestFor')
@@ -64,7 +66,7 @@ final class LockingPaymentRequesterTest extends TestCase
         $lock->method('acquire')->willReturn(false);
 
         $this->lockFactory->expects($this->once())->method('createLock')
-            ->with('finance.payment.payment_request.checkout-session-id', 30.0)
+            ->with('finance.payment.payment_request.checkout-session-id', (float) $this->lockTtl)
             ->willReturn($lock);
         $this->inner->expects($this->never())->method('requestFor');
 

@@ -6,14 +6,12 @@ namespace Shared\Domain\Service;
 
 final readonly class CooldownCalculator
 {
-    public const string DEFAULT_COOLDOWN = '+60 seconds';
-
-    public function __construct(private string $cooldown = self::DEFAULT_COOLDOWN)
+    public function __construct(private \DateInterval $cooldown)
     {
     }
 
     public function retryAt(\DateTimeImmutable $lastRequestedAt): \DateTimeImmutable
     {
-        return $lastRequestedAt->modify($this->cooldown);
+        return $lastRequestedAt->add($this->cooldown);
     }
 }

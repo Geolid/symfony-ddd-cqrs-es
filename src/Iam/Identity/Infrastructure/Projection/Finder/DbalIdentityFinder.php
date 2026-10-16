@@ -37,7 +37,7 @@ final class DbalIdentityFinder extends AbstractPaginatableDbalFinder implements 
         )->one();
     }
 
-    public function expiredBefore(\DateTimeImmutable $cutoff): static
+    public function expiredPendingBefore(\DateTimeImmutable $cutoff): static
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($cutoff): void {
@@ -51,7 +51,7 @@ final class DbalIdentityFinder extends AbstractPaginatableDbalFinder implements 
 
     protected function configureBaseQuery(QueryBuilder $qb): void
     {
-        $qb->select('id', 'full_name', 'email', 'verification_status', 'moderation_status', 'reason', 'registered_at', 'confirmation_requested_at', 'suspended_at', 'reactivated_at', 'erasure_status')
+        $qb->select('id', 'full_name', 'email', 'verification_status', 'moderation_status', 'reason', 'registered_at', 'confirmation_requested_at', 'email_change_requested_at', 'suspended_at', 'reactivated_at', 'erasure_status')
             ->from(DbalIdentityProjector::TABLE);
     }
 

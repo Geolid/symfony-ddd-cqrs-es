@@ -7,6 +7,7 @@ namespace Storefront\Tests\Support\Story;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Shared\Application\Uniqueness\Exception\UniquenessViolatedException;
 use Storefront\Tests\Support\Persona;
+use Symfony\Component\Clock\Clock;
 
 /**
  * @method static Persona persona()
@@ -18,6 +19,12 @@ final class PendingStory extends AbstractIdentityStory
      */
     public function build(): void
     {
-        $this->addState('persona', $this->personaOf(IdentityFactory::new()->confirmationRequested()->create()));
+        $now = Clock::get()->now();
+        $identity = IdentityFactory::new()
+            ->withRegisteredAt($now->modify('-45 minutes'))
+            ->confirmationRequested($now->modify('-30 minutes'))
+            ->create();
+
+        $this->addState('persona', $this->personaOf($identity));
     }
 }

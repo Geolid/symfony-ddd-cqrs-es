@@ -16,7 +16,7 @@ final class ValidVerificationCode extends Compound
             new Assert\Sequentially([
                 new Assert\NotBlank(normalizer: 'trim'),
                 new Assert\Type('string'),
-                new Assert\Regex('/^\d{6}$/'),
+                new Assert\Regex('/^\d+$/'),
             ]),
         ];
     }

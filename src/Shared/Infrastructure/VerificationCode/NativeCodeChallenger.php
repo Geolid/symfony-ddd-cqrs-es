@@ -15,8 +15,6 @@ use Webmozart\Assert\Assert;
 
 final readonly class NativeCodeChallenger implements CodeChallengerInterface
 {
-    private const int DIGITS = 6;
-
     public function __construct(
         private VerificationCodeStoreInterface $store,
         private NumericCodeGeneratorInterface $numericCodeGenerator,
@@ -25,18 +23,19 @@ final readonly class NativeCodeChallenger implements CodeChallengerInterface
         private string $secret,
         #[Autowire(param: 'code_challenger.max_attempts')]
         private int $maxAttempts,
-        #[Autowire(param: 'code_challenger.expiry')]
-        private string $expiry,
+        private \DateInterval $expiry,
+        #[Autowire(param: 'code_challenger.digit_count')]
+        private int $digitCount,
     ) {
         Assert::positiveInteger($this->maxAttempts);
-        Assert::stringNotEmpty($this->expiry);
+        Assert::positiveInteger($this->digitCount);
     }
 
     public function issue(VerificationCodeKey $key, \DateTimeImmutable $now): string
     {
-        $code = $this->numericCodeGenerator->generate(self::DIGITS);
+        $code = $this->numericCodeGenerator->generate($this->digitCount);
 
-        $this->store->save($key, $this->hash($code), $now->modify($this->expiry));
+        $this->store->save($key, $this->hash($code), $now->add($this->expiry));
 
         return $code;
     }

@@ -25,7 +25,7 @@ final readonly class ListExpiredPendingIdentitiesHandler
     public function __invoke(ListExpiredPendingIdentities $query): StreamResult
     {
         return new StreamResult(
-            $this->identityFinder->expiredBefore($this->clock->now()),
+            $this->identityFinder->expiredPendingBefore($this->clock->now()),
         );
     }
 }

@@ -18,20 +18,22 @@ use Symfony\Component\Clock\Clock;
 
 final class NativeCodeChallengerTest extends TestCase
 {
-    private const int MAX_ATTEMPTS = 5;
-    private const int EXPIRY_MINUTES = 15;
-
+    private int $maxAttempts;
+    private int $digitCount;
     private NativeCodeChallenger $codeChallenger;
     private VerificationCodeKey $key;
 
     protected function setUp(): void
     {
+        $this->maxAttempts = 5;
+        $this->digitCount = 6;
         $this->codeChallenger = new NativeCodeChallenger(
             new FakeVerificationCodeStore(),
             new NativeNumericCodeGenerator(),
             'secret',
-            self::MAX_ATTEMPTS,
-            \sprintf('+%d minutes', self::EXPIRY_MINUTES),
+            $this->maxAttempts,
+            \DateInterval::createFromDateString('15 minutes'),
+            $this->digitCount,
         );
         $this->key = VerificationCodeKey::for(DummyVerificationCodePurpose::NAME, 'subject-1');
     }
@@ -43,7 +45,7 @@ final class NativeCodeChallengerTest extends TestCase
         $code = $this->codeChallenger->issue($this->key, Clock::get()->now());
 
         // Then
-        self::assertMatchesRegularExpression('/^\d{6}$/', $code);
+        self::assertMatchesRegularExpression(\sprintf('/^\d{%d}$/', $this->digitCount), $code);
     }
 
     #[Test]
@@ -63,28 +65,26 @@ final class NativeCodeChallengerTest extends TestCase
 
     #[Test]
     #[DataProvider('provideValidTiming')]
-    public function itAccepts(string $subjectId, \DateTimeImmutable $issuedAt, \DateTimeImmutable $verifiedAt): void
+    public function itAccepts(string $modifier): void
     {
         // Given
-        $key = VerificationCodeKey::for(DummyVerificationCodePurpose::NAME, $subjectId);
-        $code = $this->codeChallenger->issue($key, $issuedAt);
+        $now = Clock::get()->now();
+        $code = $this->codeChallenger->issue($this->key, $now);
 
         // When
-        $result = $this->codeChallenger->verify($key, $code, $verifiedAt);
+        $result = $this->codeChallenger->verify($this->key, $code, $now->modify($modifier));
 
         // Then
         self::assertTrue($result);
     }
 
     /**
-     * @return iterable<string, array{string, \DateTimeImmutable, \DateTimeImmutable}>
+     * @return iterable<string, array{string}>
      */
     public static function provideValidTiming(): iterable
     {
-        $now = Clock::get()->now();
-
-        yield 'immediately' => ['subject-1', $now, $now];
-        yield 'at expiry boundary' => ['subject-2', $now, $now->modify(\sprintf('+%d minutes', self::EXPIRY_MINUTES))];
+        yield 'immediately' => ['+0 seconds'];
+        yield 'at expiry boundary' => ['+15 minutes'];
     }
 
     #[Test]
@@ -132,12 +132,13 @@ final class NativeCodeChallengerTest extends TestCase
         // Given
         $now = Clock::get()->now();
         $code = $this->codeChallenger->issue($this->key, $now);
+        $afterExpiry = $now->modify('+15 minutes +1 second');
 
         // Then
         $this->expectException(VerificationCodeNotFoundException::class);
 
         // When
-        $this->codeChallenger->verify($this->key, $code, $now->modify(\sprintf('+%d minutes', self::EXPIRY_MINUTES + 1)));
+        $this->codeChallenger->verify($this->key, $code, $afterExpiry);
     }
 
     #[Test]
@@ -146,7 +147,7 @@ final class NativeCodeChallengerTest extends TestCase
         // Given
         $now = Clock::get()->now();
         $this->codeChallenger->issue($this->key, $now);
-        for ($i = 0; $i < self::MAX_ATTEMPTS; ++$i) {
+        for ($i = 0; $i < $this->maxAttempts; ++$i) {
             $this->codeChallenger->verify($this->key, 'wrong', $now);
         }
 

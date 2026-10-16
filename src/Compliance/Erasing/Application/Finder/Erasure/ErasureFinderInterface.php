@@ -19,5 +19,5 @@ interface ErasureFinderInterface extends IterableFinderInterface
 
     public function requestedOfIdentityOrNull(string $identityId): ?ErasureResult;
 
-    public function effectiveBefore(\DateTimeImmutable $cutoff): static;
+    public function dueForApprovalBefore(\DateTimeImmutable $cutoff): static;
 }

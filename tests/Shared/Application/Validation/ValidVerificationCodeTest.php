@@ -45,9 +45,7 @@ final class ValidVerificationCodeTest extends CompoundConstraintTestCase
         yield 'empty string' => ['', new Assert\NotBlank(normalizer: 'trim')];
         yield 'whitespace only' => ['   ', new Assert\NotBlank(normalizer: 'trim')];
         yield 'not a string' => [123456, new Assert\Type('string')];
-        yield 'too short' => ['12345', new Assert\Regex('/^\d{6}$/')];
-        yield 'too long' => ['1234567', new Assert\Regex('/^\d{6}$/')];
-        yield 'non-digit characters' => ['12a456', new Assert\Regex('/^\d{6}$/')];
+        yield 'non-digit characters' => ['12a456', new Assert\Regex('/^\d+$/')];
     }
 
     protected function createCompound(): ValidVerificationCode

@@ -16,7 +16,7 @@ use Shared\Application\ErasureStatus;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{id: string, full_name: string, email: string, verification_status: string, moderation_status: string, reason: string|null, registered_at: string, expires_at: string, confirmation_requested_at: string, suspended_at: string|null, reactivated_at: string|null, erasure_status: string}
+ * @phpstan-type Row array{id: string, full_name: string, email: string, verification_status: string, moderation_status: string, reason: string|null, registered_at: string, expires_at: string, confirmation_requested_at: string, email_change_requested_at: string|null, suspended_at: string|null, reactivated_at: string|null, erasure_status: string}
  */
 final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
 {
@@ -43,6 +43,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         self::assertSame($identity->registeredAt->format(self::DATE_FORMAT), $row['registered_at']);
         self::assertSame($identity->expiresAt->format(self::DATE_FORMAT), $row['expires_at']);
         self::assertSame($identity->registeredAt->format(self::DATE_FORMAT), $row['confirmation_requested_at']);
+        self::assertNull($row['email_change_requested_at']);
         self::assertNull($row['suspended_at']);
         self::assertNull($row['reactivated_at']);
         self::assertSame(ErasureStatus::RETAINED->value, $row['erasure_status']);
@@ -72,6 +73,27 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
         self::assertSame($otherRow['registered_at'], $otherRow['confirmation_requested_at']);
+    }
+
+    #[Test]
+    public function itProjectsOnIdentityEmailChangeRequested(): void
+    {
+        // Given
+        $other = IdentityFactory::new()->create();
+        $identity = IdentityFactory::new()->emailChangeRequested(EmailFactory::new()->create())->create();
+
+        // When
+        $this->store($other, $identity);
+
+        // Then
+        $row = $this->fetchRow($identity->id->toString());
+        self::assertNotFalse($row);
+        self::assertNotNull($identity->emailChangeRequestedAt);
+        self::assertSame($identity->emailChangeRequestedAt->format(self::DATE_FORMAT), $row['email_change_requested_at']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertNull($otherRow['email_change_requested_at']);
     }
 
     #[Test]
@@ -270,7 +292,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
 
         /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT id, full_name, email, verification_status, moderation_status, reason, registered_at, expires_at, confirmation_requested_at, suspended_at, reactivated_at, erasure_status FROM %s WHERE id = :id', DbalIdentityProjector::TABLE),
+            \sprintf('SELECT id, full_name, email, verification_status, moderation_status, reason, registered_at, expires_at, confirmation_requested_at, email_change_requested_at, suspended_at, reactivated_at, erasure_status FROM %s WHERE id = :id', DbalIdentityProjector::TABLE),
             ['id' => $id],
         );
     }

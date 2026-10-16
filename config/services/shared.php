@@ -12,26 +12,34 @@ use Sentry\State\HubInterface;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\Query\QueryBusInterface;
+use Shared\Domain\Service\CooldownCalculator;
 use Shared\Infrastructure\EventStore\PatchlevelIntegrationEventPublisher;
 use Shared\Infrastructure\Messaging\SymfonyCommandBus;
 use Shared\Infrastructure\Messaging\SymfonyQueryBus;
 use Shared\Infrastructure\Patchlevel\Hydrator\HydratorFactory;
 use Shared\Infrastructure\Projection\Finder\DbalPaginator;
 use Shared\Infrastructure\Sentry\AppIdTagger;
+use Shared\Infrastructure\VerificationCode\NativeCodeChallenger;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\Lock\LockFactory;
 
+use function Symfony\Component\DependencyInjection\Loader\Configurator\inline_service;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\service;
 
 return static function (ContainerConfigurator $container): void {
     $container->parameters()->set('code_challenger.max_attempts', 3);
-    $container->parameters()->set('code_challenger.expiry', '+15 minutes');
+    $container->parameters()->set('code_challenger.expiry', '15 minutes');
+    $container->parameters()->set('code_challenger.digit_count', 6);
+    $container->parameters()->set('shared.cooldown', '1 minute');
     $container->parameters()->set('valkey.key_prefix', '');
 
     $services = $container->services();
     $services->defaults()->autowire()->autoconfigure();
 
     BoundedContextServiceLoader::load($services, 'Shared');
+
+    $services->get(CooldownCalculator::class)->arg('$cooldown', inline_service(DateInterval::class)->factory([DateInterval::class, 'createFromDateString'])->args(['%shared.cooldown%']));
+    $services->get(NativeCodeChallenger::class)->arg('$expiry', inline_service(DateInterval::class)->factory([DateInterval::class, 'createFromDateString'])->args(['%code_challenger.expiry%']));
 
     // Always constructed directly with per-call closures, never resolved via the container.
     $services->remove(DbalPaginator::class);

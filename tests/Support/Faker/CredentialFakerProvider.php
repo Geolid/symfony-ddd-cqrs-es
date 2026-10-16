@@ -39,12 +39,12 @@ final class CredentialFakerProvider extends Base
      *
      * @return list<non-empty-string>
      */
-    public function backupCodes(int $count = 2, int $length = 10): array
+    public function backupCodes(int $count = 2, int $length = 8): array
     {
         $codes = [];
 
         while (\count($codes) < $count) {
-            Assert::string($code = $this->generator->regexify(\sprintf('[a-f0-9]{%d}', $length)));
+            Assert::string($code = $this->generator->regexify(\sprintf('[0-9]{%d}', $length)));
             Assert::stringNotEmpty($code);
             $codes[$code] = $code;
         }

@@ -13,6 +13,7 @@ use Iam\Identity\Application\IdentityVerificationStatus;
 use Iam\Identity\Domain\Event\IdentityConfirmationRequested;
 use Iam\Identity\Domain\Event\IdentityConfirmed;
 use Iam\Identity\Domain\Event\IdentityEmailChanged;
+use Iam\Identity\Domain\Event\IdentityEmailChangeRequested;
 use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\Event\IdentityErasureCancelled;
 use Iam\Identity\Domain\Event\IdentityErasureRequested;
@@ -79,6 +80,17 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
             self::TABLE,
             ['email' => $event->email->value],
             ['id' => $event->id->toString()],
+        );
+    }
+
+    #[Subscribe(IdentityEmailChangeRequested::class)]
+    public function onIdentityEmailChangeRequested(IdentityEmailChangeRequested $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            ['email_change_requested_at' => $event->requestedAt],
+            ['id' => $event->id->toString()],
+            ['email_change_requested_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -166,6 +178,7 @@ final readonly class DbalIdentityProjector extends AbstractDbalProjector
         $table->addColumn('registered_at', Types::DATETIME_IMMUTABLE);
         $table->addColumn('expires_at', Types::DATETIME_IMMUTABLE);
         $table->addColumn('confirmation_requested_at', Types::DATETIME_IMMUTABLE);
+        $table->addColumn('email_change_requested_at', Types::DATETIME_IMMUTABLE, ['notnull' => false]);
         $table->addColumn('suspended_at', Types::DATETIME_IMMUTABLE, ['notnull' => false]);
         $table->addColumn('reactivated_at', Types::DATETIME_IMMUTABLE, ['notnull' => false]);
         $table->addColumn('erasure_status', Types::STRING, ['length' => 20]);

@@ -21,5 +21,5 @@ interface CheckoutSessionFinderInterface extends IterableFinderInterface
 
     public function byCustomer(string $customerId): static;
 
-    public function expiredBefore(\DateTimeImmutable $cutoff): static;
+    public function dueForExpiryBefore(\DateTimeImmutable $cutoff): static;
 }

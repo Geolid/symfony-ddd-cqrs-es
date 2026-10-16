@@ -11,6 +11,7 @@ use Finance\Payment\Application\Requesting\PaymentRequesterInterface;
 use Shared\Infrastructure\Locking\Exception\LockNotAcquiredException;
 use Shared\Infrastructure\Locking\LockingTrait;
 use Symfony\Component\DependencyInjection\Attribute\AsDecorator;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\DependencyInjection\Attribute\AutowireDecorated;
 use Symfony\Component\Lock\LockFactory;
 
@@ -19,14 +20,12 @@ final readonly class LockingPaymentRequester implements PaymentRequesterInterfac
 {
     use LockingTrait;
 
-    // Must exceed the globex.client HTTP timeout, or a slow-but-successful
-    // gateway call could outlive the lock and let a concurrent retry race it.
-    private const float LOCK_TTL_SECONDS = 30.0;
-
     public function __construct(
         #[AutowireDecorated]
         private PaymentRequesterInterface $inner,
         private LockFactory $lockFactory,
+        #[Autowire(param: 'finance.payment.payment_request_lock_ttl')]
+        private int $lockTtl,
     ) {
     }
 
@@ -40,7 +39,7 @@ final readonly class LockingPaymentRequester implements PaymentRequesterInterfac
         try {
             return $this->withLock(
                 \sprintf('finance.payment.payment_request.%s', $checkoutSessionId),
-                self::LOCK_TTL_SECONDS,
+                (float) $this->lockTtl,
                 fn (): string => $this->inner->requestFor($checkoutSessionId, $currency, $lines, $successUrl, $cancelUrl, $expiresAt),
             );
         } catch (LockNotAcquiredException $e) {

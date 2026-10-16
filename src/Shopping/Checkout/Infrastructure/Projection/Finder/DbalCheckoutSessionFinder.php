@@ -51,7 +51,7 @@ final class DbalCheckoutSessionFinder extends AbstractIterableDbalFinder impleme
         );
     }
 
-    public function expiredBefore(\DateTimeImmutable $cutoff): static
+    public function dueForExpiryBefore(\DateTimeImmutable $cutoff): static
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($cutoff): void {

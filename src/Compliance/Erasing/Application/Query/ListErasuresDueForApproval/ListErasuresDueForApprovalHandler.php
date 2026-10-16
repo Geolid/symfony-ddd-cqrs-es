@@ -25,7 +25,7 @@ final readonly class ListErasuresDueForApprovalHandler
     public function __invoke(ListErasuresDueForApproval $query): StreamResult
     {
         return new StreamResult(
-            $this->erasureFinder->effectiveBefore($this->clock->now()),
+            $this->erasureFinder->dueForApprovalBefore($this->clock->now()),
         );
     }
 }

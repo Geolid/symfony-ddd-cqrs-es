@@ -161,17 +161,18 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
     }
 
     #[Test]
-    public function itFiltersStalledBefore(): void
+    public function itFiltersUnreconciledBefore(): void
     {
         // Given
         $now = Clock::get()->now();
         $freshRequested = PaymentFactory::new()->withRequestedAt($now->modify('+1 day'))->create();
         $requestedAtCutoff = PaymentFactory::new()->withRequestedAt($now)->create();
+        $authorizedStale = PaymentFactory::new()->withRequestedAt($now->modify('-1 day'))->authorized()->create();
         $staleRequested = PaymentFactory::new()->withRequestedAt($now->modify('-1 day'))->create();
-        $this->store($freshRequested, $requestedAtCutoff, $staleRequested);
+        $this->store($freshRequested, $requestedAtCutoff, $authorizedStale, $staleRequested);
 
         // When
-        $results = iterator_to_array($this->finder()->stalledBefore($now));
+        $results = iterator_to_array($this->finder()->unreconciledBefore($now));
 
         // Then
         self::assertCount(1, $results);

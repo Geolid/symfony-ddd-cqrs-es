@@ -8,6 +8,7 @@ use Iam\Tests\Authentication\Support\Factory\PasswordCredentialFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Shared\Application\Uniqueness\Exception\UniquenessViolatedException;
 use Storefront\Tests\Support\Persona;
+use Symfony\Component\Clock\Clock;
 
 /**
  * @method static Persona persona()
@@ -23,7 +24,7 @@ final class SuspendedResetRequestedStory extends AbstractIdentityStory
 
         $this->addState('persona', $this->personaOf(
             $identity,
-            static fn (PasswordCredentialFactory $credential): PasswordCredentialFactory => $credential->resetRequested(),
+            static fn (PasswordCredentialFactory $credential): PasswordCredentialFactory => $credential->resetRequested(Clock::get()->now()->modify('-30 minutes')),
         ));
     }
 }

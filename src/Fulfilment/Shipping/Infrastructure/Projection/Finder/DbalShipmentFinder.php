@@ -56,7 +56,7 @@ final class DbalShipmentFinder extends AbstractIterableDbalFinder implements Shi
         );
     }
 
-    public function stalledBefore(\DateTimeImmutable $cutoff): static
+    public function unreconciledBefore(\DateTimeImmutable $cutoff): static
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($cutoff): void {

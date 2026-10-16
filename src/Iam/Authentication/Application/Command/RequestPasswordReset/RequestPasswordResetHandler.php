@@ -14,6 +14,7 @@ use Iam\Authentication\Domain\PasswordCredential\Repository\PasswordCredentialRe
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\PasswordCredentialId;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
+use Shared\Domain\Service\CooldownCalculator;
 
 #[CommandHandler]
 final readonly class RequestPasswordResetHandler
@@ -21,6 +22,7 @@ final readonly class RequestPasswordResetHandler
     public function __construct(
         private IdentityFinderInterface $identityFinder,
         private PasswordCredentialRepositoryInterface $repository,
+        private CooldownCalculator $cooldownCalculator,
         private ClockInterface $clock,
     ) {
     }
@@ -41,7 +43,7 @@ final readonly class RequestPasswordResetHandler
         }
 
         $credential = $this->repository->load(PasswordCredentialId::forIdentity($command->identityId));
-        $credential->requestReset($this->clock->now());
+        $credential->requestReset($this->clock->now(), $this->cooldownCalculator);
 
         $this->repository->save($credential);
     }

@@ -77,7 +77,7 @@ final class ResetTest extends AbstractStorefrontTestCase
 
     #[Test]
     #[WithStory(SuspendedResetRequestedStory::class)]
-    public function itRejectsSuspendedAccount(): void
+    public function itRefusesWhenSuspended(): void
     {
         // Given
         $persona = SuspendedResetRequestedStory::persona();
@@ -117,7 +117,7 @@ final class ResetTest extends AbstractStorefrontTestCase
 
     #[Test]
     #[WithStory(ResetRequestedStory::class)]
-    public function itRefusesAfterTooManyAttempts(): void
+    public function itRefusesWhenAttemptsExceeded(): void
     {
         // Given
         $persona = ResetRequestedStory::persona();
@@ -172,7 +172,7 @@ final class ResetTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser();
 
         $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $persona->id]);
-        $this->advanceClock('+4 days');
+        $expectedCount = $this->sentEmailCount($persona->email, 'Reset your password') + 1;
 
         // When
         $browser->use(static function (ResetForm $reset): void {
@@ -180,7 +180,7 @@ final class ResetTest extends AbstractStorefrontTestCase
         });
 
         // Then
-        $this->assertEmailSent(2, $persona->email, 'Reset your password');
+        $this->assertEmailSent($expectedCount, $persona->email, 'Reset your password');
     }
 
     #[Test]

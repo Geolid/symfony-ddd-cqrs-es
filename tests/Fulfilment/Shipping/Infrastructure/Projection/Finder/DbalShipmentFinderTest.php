@@ -142,7 +142,7 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
     }
 
     #[Test]
-    public function itFiltersStalledBefore(): void
+    public function itFiltersUnreconciledBefore(): void
     {
         // Given
         $now = Clock::get()->now();
@@ -154,16 +154,22 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
             ->manifested(manifestedAt: $now->modify('-2 days'))
             ->dispatched($now)
             ->create();
+        $deliveredStale = ShipmentFactory::new()
+            ->prepared()
+            ->manifested(manifestedAt: $now->modify('-3 days'))
+            ->dispatched($now->modify('-2 days'))
+            ->delivered($now->modify('-1 day'))
+            ->create();
         $staleManifested = ShipmentFactory::new()->prepared()->manifested(manifestedAt: $now->modify('-1 day'))->create();
         $staleDispatched = ShipmentFactory::new()
             ->prepared()
             ->manifested(manifestedAt: $now->modify('-2 days'))
             ->dispatched($now->modify('-1 day'))
             ->create();
-        $this->store($freshManifested, $notManifested, $manifestedAtCutoff, $dispatchedAtCutoff, $staleManifested, $staleDispatched);
+        $this->store($freshManifested, $notManifested, $manifestedAtCutoff, $dispatchedAtCutoff, $deliveredStale, $staleManifested, $staleDispatched);
 
         // When
-        $results = iterator_to_array($this->finder()->stalledBefore($now));
+        $results = iterator_to_array($this->finder()->unreconciledBefore($now));
 
         // Then
         self::assertCount(2, $results);

@@ -19,6 +19,7 @@ final readonly class IdentityResult
         public ?string $reason,
         public \DateTimeImmutable $registeredAt,
         public \DateTimeImmutable $confirmationRequestedAt,
+        public ?\DateTimeImmutable $emailChangeRequestedAt,
         public ?\DateTimeImmutable $suspendedAt,
         public ?\DateTimeImmutable $reactivatedAt,
         public ErasureStatus $erasureStatus,

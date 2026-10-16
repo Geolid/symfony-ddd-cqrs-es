@@ -26,5 +26,5 @@ interface ShipmentFinderInterface extends IterableFinderInterface
 
     public function byCustomer(string $customerId): static;
 
-    public function stalledBefore(\DateTimeImmutable $cutoff): static;
+    public function unreconciledBefore(\DateTimeImmutable $cutoff): static;
 }

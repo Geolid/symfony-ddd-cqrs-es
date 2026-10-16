@@ -143,7 +143,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
      * @throws IdentityAlreadyErasedException
      * @throws EmailChangeRequestedTooRecentlyException
      */
-    public function requestEmailChange(Email $newEmail, \DateTimeImmutable $requestedAt): void
+    public function requestEmailChange(Email $newEmail, \DateTimeImmutable $requestedAt, CooldownCalculator $cooldownCalculator): void
     {
         if ($this->erasureState->isErased()) {
             throw IdentityAlreadyErasedException::forId($this->id);
@@ -153,7 +153,6 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
             return;
         }
 
-        $cooldownCalculator = new CooldownCalculator();
         if (!new CooldownElapsedSpecification($cooldownCalculator, $requestedAt)->isSatisfiedBy($this->emailChangeRequestedAt)) {
             \assert(null !== $this->emailChangeRequestedAt);
 
@@ -239,7 +238,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
      * @throws IdentityAlreadyConfirmedException
      * @throws ConfirmationRequestedTooRecentlyException
      */
-    public function requestConfirmation(\DateTimeImmutable $requestedAt): void
+    public function requestConfirmation(\DateTimeImmutable $requestedAt, CooldownCalculator $cooldownCalculator): void
     {
         if ($this->erasureState->isErased()) {
             throw IdentityAlreadyErasedException::forId($this->id);
@@ -249,7 +248,6 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
             throw IdentityAlreadyConfirmedException::forId($this->id);
         }
 
-        $cooldownCalculator = new CooldownCalculator();
         if (!new CooldownElapsedSpecification($cooldownCalculator, $requestedAt)->isSatisfiedBy($this->confirmationRequestedAt)) {
             throw ConfirmationRequestedTooRecentlyException::forId($this->id, $cooldownCalculator->retryAt($this->confirmationRequestedAt));
         }

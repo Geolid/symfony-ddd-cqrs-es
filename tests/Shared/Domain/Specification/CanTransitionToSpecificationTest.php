@@ -22,8 +22,8 @@ final class CanTransitionToSpecificationTest extends TestCase
     ];
 
     #[Test]
-    #[DataProvider('provideTransitions')]
-    public function itIsSatisfiedBy(DummyState $candidate, DummyState $target, bool $expected): void
+    #[DataProvider('provideAllowedTransitions')]
+    public function itAcceptsWhenTransitionAllowed(DummyState $candidate, DummyState $target): void
     {
         // Given
         $specification = new CanTransitionToSpecification(self::TRANSITIONS, $target);
@@ -32,20 +32,41 @@ final class CanTransitionToSpecificationTest extends TestCase
         $result = $specification->isSatisfiedBy($candidate);
 
         // Then
-        self::assertSame($expected, $result);
+        self::assertTrue($result);
     }
 
     /**
-     * @return iterable<string, array{DummyState, DummyState, bool}>
+     * @return iterable<string, array{DummyState, DummyState}>
      */
-    public static function provideTransitions(): iterable
+    public static function provideAllowedTransitions(): iterable
     {
-        yield 'direct hop' => [DummyState::PENDING, DummyState::PROCESSING, true];
-        yield 'first branch' => [DummyState::INIT, DummyState::PENDING, true];
-        yield 'second branch' => [DummyState::INIT, DummyState::FAILED, true];
-        yield 'two hops away' => [DummyState::INIT, DummyState::PROCESSING, false];
-        yield 'backward' => [DummyState::PROCESSING, DummyState::PENDING, false];
-        yield 'dead end' => [DummyState::FAILED, DummyState::PENDING, false];
-        yield 'same state' => [DummyState::INIT, DummyState::INIT, false];
+        yield 'direct hop' => [DummyState::PENDING, DummyState::PROCESSING];
+        yield 'first branch' => [DummyState::INIT, DummyState::PENDING];
+        yield 'second branch' => [DummyState::INIT, DummyState::FAILED];
+    }
+
+    #[Test]
+    #[DataProvider('provideForbiddenTransitions')]
+    public function itRefusesWhenTransitionForbidden(DummyState $candidate, DummyState $target): void
+    {
+        // Given
+        $specification = new CanTransitionToSpecification(self::TRANSITIONS, $target);
+
+        // When
+        $result = $specification->isSatisfiedBy($candidate);
+
+        // Then
+        self::assertFalse($result);
+    }
+
+    /**
+     * @return iterable<string, array{DummyState, DummyState}>
+     */
+    public static function provideForbiddenTransitions(): iterable
+    {
+        yield 'two hops away' => [DummyState::INIT, DummyState::PROCESSING];
+        yield 'backward' => [DummyState::PROCESSING, DummyState::PENDING];
+        yield 'dead end' => [DummyState::FAILED, DummyState::PENDING];
+        yield 'same state' => [DummyState::INIT, DummyState::INIT];
     }
 }

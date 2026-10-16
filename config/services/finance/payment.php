@@ -10,10 +10,15 @@ use Finance\Payment\Application\Requesting\PaymentRequester;
 use Finance\Payment\Application\Requesting\PaymentRequesterInterface;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
+use function Symfony\Component\DependencyInjection\Loader\Configurator\inline_service;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\tagged_iterator;
 
 return static function (ContainerConfigurator $container): void {
-    $container->parameters()->set('finance.payment.reconciliation_threshold_minutes', 60);
+    $container->parameters()->set('finance.payment.reconciliation_threshold', '1 hour');
+
+    // Must exceed the globex.client HTTP timeout, or a slow-but-successful
+    // gateway call could outlive the lock and let a concurrent retry race it.
+    $container->parameters()->set('finance.payment.payment_request_lock_ttl', 30); // 30 seconds
 
     $services = $container->services();
     $services->defaults()->autowire()->autoconfigure();
@@ -22,7 +27,7 @@ return static function (ContainerConfigurator $container): void {
 
     BoundedContextServiceLoader::load($services, 'Finance\\Payment');
 
-    $services->get(ListPaymentsPastReconciliationThresholdHandler::class)->arg('$thresholdMinutes', '%finance.payment.reconciliation_threshold_minutes%');
+    $services->get(ListPaymentsPastReconciliationThresholdHandler::class)->arg('$threshold', inline_service(DateInterval::class)->factory([DateInterval::class, 'createFromDateString'])->args(['%finance.payment.reconciliation_threshold%']));
 
     $services->get(PaymentReconciler::class)->arg('$reconcilers', tagged_iterator('finance.payment.payment_status_reconciler'));
 

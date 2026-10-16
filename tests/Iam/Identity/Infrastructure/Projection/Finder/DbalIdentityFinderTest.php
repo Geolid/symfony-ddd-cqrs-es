@@ -50,6 +50,7 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
         self::assertNull($result->reason);
         self::assertSameDateTime($identity->registeredAt, $result->registeredAt);
         self::assertSameDateTime($confirmationRequestedAt, $result->confirmationRequestedAt);
+        self::assertNull($result->emailChangeRequestedAt);
         self::assertNull($result->suspendedAt);
         self::assertNull($result->reactivatedAt);
         self::assertSame(ErasureStatus::RETAINED, $result->erasureStatus);
@@ -96,7 +97,7 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
     }
 
     #[Test]
-    public function itFiltersExpiredBefore(): void
+    public function itFiltersExpiredPendingBefore(): void
     {
         // Given
         $now = Clock::get()->now();
@@ -105,10 +106,10 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
         $atExpiresAt = IdentityFactory::new()->withExpiry($expiry)->withRegisteredAt($now->modify(\sprintf('-%s', $expiry)))->create();
         $expired = IdentityFactory::new()->withExpiry($expiry)->withRegisteredAt($expiredRegisteredAt)->create();
         $confirmed = IdentityFactory::new()->withExpiry($expiry)->withRegisteredAt($expiredRegisteredAt)->confirmed()->create();
-        $this->store($atExpiresAt, $expired, $confirmed);
+        $this->store($atExpiresAt, $confirmed, $expired);
 
         // When
-        $results = iterator_to_array($this->finder()->expiredBefore($now));
+        $results = iterator_to_array($this->finder()->expiredPendingBefore($now));
 
         // Then
         self::assertCount(1, $results);
