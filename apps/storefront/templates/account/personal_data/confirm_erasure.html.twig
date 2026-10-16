@@ -1,0 +1,39 @@
+{% extends 'account/_layout.html.twig' %}
+{% trans_default_domain 'account_personal_data' %}
+
+{% block title %}{{ 'confirm_erasure_title'|trans }}{% endblock %}
+
+{% block content %}
+    <twig:ui:Breadcrumb :items="[
+        {label: 'title'|trans({}, 'account'), url: path('storefront_account_show')},
+        {label: 'show_title'|trans, url: path('storefront_account_personal_data_show')},
+        {label: 'confirm_erasure_title'|trans},
+    ]" />
+
+    <h1>{{ 'confirm_erasure_title'|trans }}</h1>
+
+    <p>{{ 'confirm_erasure_intro'|trans }}</p>
+
+    <h2>{{ 'confirm_erasure_consequences_title'|trans }}</h2>
+    <ul data-testid="confirm-erasure-consequences">
+        <li>{{ 'confirm_erasure_consequence_data'|trans }}</li>
+        <li>{{ 'confirm_erasure_consequence_access'|trans }}</li>
+        <li>{{ 'confirm_erasure_consequence_orders'|trans }}</li>
+        <li>{{ 'confirm_erasure_consequence_checkout'|trans }}</li>
+        <li>{{ 'confirm_erasure_consequence_irreversible'|trans }}</li>
+    </ul>
+
+    <h2>{{ 'confirm_erasure_delay_title'|trans }}</h2>
+    <p>{{ 'confirm_erasure_delay_description'|trans({'%days%': erasure_retention_days()}) }}</p>
+
+    <twig:ui:ActionForm
+        actionUrl="{{ path('storefront_account_personal_data_request_erasure') }}"
+        csrfId="request_erasure"
+        label="{{ 'confirm_erasure_button_submit'|trans }}"
+        formTestId="confirm-erasure-form"
+        class="outline pico-background-red-500"
+        data-testid="confirm-erasure-submit"
+    />
+
+    <p><a href="{{ path('storefront_account_personal_data_show') }}" data-testid="confirm-erasure-back">&larr; {{ 'confirm_erasure_link_back'|trans }}</a></p>
+{% endblock %}

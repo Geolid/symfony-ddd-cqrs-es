@@ -12,7 +12,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{status: string, requested_at: string|null, cancelled_at: string|null, approved_at: string|null}
+ * @phpstan-type Row array{identity_id: string, status: string, requested_at: string|null, effective_at: string, cancelled_at: string|null, approved_at: string|null}
  */
 final class DbalErasureProjectorTest extends AbstractIntegrationTestCase
 {
@@ -31,8 +31,10 @@ final class DbalErasureProjectorTest extends AbstractIntegrationTestCase
         // Then
         $row = $this->fetchRow($erasure->id->toString());
         self::assertNotFalse($row);
+        self::assertSame($erasure->identityId, $row['identity_id']);
         self::assertSame(ErasureRequestStatus::REQUESTED->value, $row['status']);
         self::assertSame($erasure->requestedAt->format(self::DATE_FORMAT), $row['requested_at']);
+        self::assertSame($erasure->effectiveAt->format(self::DATE_FORMAT), $row['effective_at']);
 
         $otherRow = $this->fetchRow($other->id->toString());
         self::assertNotFalse($otherRow);
@@ -90,7 +92,7 @@ final class DbalErasureProjectorTest extends AbstractIntegrationTestCase
 
         /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT status, requested_at, cancelled_at, approved_at FROM %s WHERE id = :id', DbalErasureProjector::TABLE),
+            \sprintf('SELECT identity_id, status, requested_at, effective_at, cancelled_at, approved_at FROM %s WHERE id = :id', DbalErasureProjector::TABLE),
             ['id' => $id],
         );
     }

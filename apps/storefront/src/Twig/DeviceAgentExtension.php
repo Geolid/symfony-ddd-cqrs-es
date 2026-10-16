@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Storefront\Security\Twig;
+namespace Storefront\Twig;
 
 use DeviceDetector\DeviceDetector;
 use Symfony\Contracts\Translation\TranslatorInterface;

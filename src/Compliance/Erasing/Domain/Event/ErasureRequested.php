@@ -14,6 +14,7 @@ final readonly class ErasureRequested
         public ErasureId $id,
         public string $identityId,
         public \DateTimeImmutable $requestedAt,
+        public \DateTimeImmutable $effectiveAt,
     ) {
     }
 }

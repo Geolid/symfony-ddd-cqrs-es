@@ -2,5 +2,5 @@
 
 <form method="post" action="{{ actionUrl }}" data-testid="{{ formTestId }}">
     <input type="hidden" name="_token" value="{{ csrf_token(csrfId) }}">
-    <button type="submit" class="u-link" role="link" {{ attributes }}>{{ label }}</button>
+    <button type="submit" {{ attributes }}>{{ label }}</button>
 </form>

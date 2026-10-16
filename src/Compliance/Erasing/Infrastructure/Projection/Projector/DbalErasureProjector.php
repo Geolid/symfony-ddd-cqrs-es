@@ -28,10 +28,12 @@ final readonly class DbalErasureProjector extends AbstractDbalProjector
             self::TABLE,
             [
                 'id' => $event->id->toString(),
+                'identity_id' => $event->identityId,
                 'status' => ErasureRequestStatus::REQUESTED->value,
                 'requested_at' => $event->requestedAt,
+                'effective_at' => $event->effectiveAt,
             ],
-            ['requested_at' => Types::DATETIME_IMMUTABLE],
+            ['requested_at' => Types::DATETIME_IMMUTABLE, 'effective_at' => Types::DATETIME_IMMUTABLE],
         );
     }
 
@@ -70,8 +72,10 @@ final readonly class DbalErasureProjector extends AbstractDbalProjector
     {
         $table = $schema->createTable(self::TABLE);
         $table->addColumn('id', Types::STRING, ['length' => 36]);
+        $table->addColumn('identity_id', Types::STRING, ['length' => 36]);
         $table->addColumn('status', Types::STRING, ['length' => 10]);
         $table->addColumn('requested_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('effective_at', Types::DATETIME_IMMUTABLE);
         $table->addColumn('cancelled_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('approved_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addPrimaryKeyConstraint(
@@ -79,6 +83,7 @@ final readonly class DbalErasureProjector extends AbstractDbalProjector
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
                 ->create(),
         );
-        $table->addIndex(['status', 'requested_at'], 'compliance_erasing_erasure_status_requested_at_idx');
+        $table->addIndex(['identity_id', 'status'], 'compliance_erasing_erasure_identity_id_status_idx');
+        $table->addIndex(['status', 'effective_at'], 'compliance_erasing_erasure_status_effective_at_idx');
     }
 }
