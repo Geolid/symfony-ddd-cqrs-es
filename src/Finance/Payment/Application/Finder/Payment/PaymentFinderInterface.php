@@ -32,5 +32,5 @@ interface PaymentFinderInterface extends IterableFinderInterface
      */
     public function ofOrderId(string $orderId): PaymentResult;
 
-    public function stalledBefore(\DateTimeImmutable $cutoff): static;
+    public function unreconciledBefore(\DateTimeImmutable $cutoff): static;
 }

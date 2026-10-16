@@ -39,7 +39,7 @@ final class DbalErasureFinder extends AbstractIterableDbalFinder implements Eras
         )->one();
     }
 
-    public function effectiveBefore(\DateTimeImmutable $cutoff): static
+    public function dueForApprovalBefore(\DateTimeImmutable $cutoff): static
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($cutoff): void {

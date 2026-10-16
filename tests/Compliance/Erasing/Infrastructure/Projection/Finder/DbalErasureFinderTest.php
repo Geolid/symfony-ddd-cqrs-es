@@ -100,7 +100,7 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
     }
 
     #[Test]
-    public function itFiltersEffectiveBefore(): void
+    public function itFiltersDueForApprovalBefore(): void
     {
         // Given
         $now = Clock::get()->now();
@@ -112,7 +112,7 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
         $this->store($atEffectiveAt, $due, $approved);
 
         // When
-        $results = iterator_to_array($this->finder()->effectiveBefore($now));
+        $results = iterator_to_array($this->finder()->dueForApprovalBefore($now));
 
         // Then
         self::assertCount(1, $results);

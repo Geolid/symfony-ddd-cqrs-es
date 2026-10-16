@@ -90,7 +90,7 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
     {
         $now = Clock::get()->now();
 
-        yield 'before expiry' => [$now->modify('+30 minutes')];
+        yield 'before expiry' => [$now->modify('+1 hour')];
         yield 'at expiry' => [$now];
     }
 

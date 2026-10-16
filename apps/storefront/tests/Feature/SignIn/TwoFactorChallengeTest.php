@@ -73,7 +73,7 @@ final class TwoFactorChallengeTest extends AbstractStorefrontTestCase
 
     #[Test]
     #[WithStory(TwoFactorStory::class)]
-    public function itRefusesAfterTooManyAttempts(): void
+    public function itRefusesWhenAttemptsExceeded(): void
     {
         // Given
         $persona = TwoFactorStory::persona();

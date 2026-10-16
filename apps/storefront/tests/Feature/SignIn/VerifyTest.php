@@ -121,7 +121,7 @@ final class VerifyTest extends AbstractStorefrontTestCase
 
     #[Test]
     #[WithStory(ConfirmedStory::class)]
-    public function itRefusesAfterTooManyAttempts(): void
+    public function itRefusesWhenAttemptsExceeded(): void
     {
         // Given
         $persona = ConfirmedStory::persona();

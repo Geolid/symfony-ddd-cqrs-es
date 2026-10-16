@@ -28,7 +28,7 @@ final readonly class ListShipmentsPastReconciliationThresholdHandler
         $cutoff = $this->clock->now()->sub($this->threshold);
 
         return new StreamResult(
-            $this->shipmentFinder->stalledBefore($cutoff),
+            $this->shipmentFinder->unreconciledBefore($cutoff),
         );
     }
 }

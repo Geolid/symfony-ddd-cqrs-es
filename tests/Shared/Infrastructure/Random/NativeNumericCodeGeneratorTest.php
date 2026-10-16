@@ -19,21 +19,8 @@ final class NativeNumericCodeGeneratorTest extends TestCase
     }
 
     #[Test]
-    public function itGenerates(): void
-    {
-        // Given
-        $digitCount = 8;
-
-        // When
-        $code = $this->generator->generate($digitCount);
-
-        // Then
-        self::assertMatchesRegularExpression(\sprintf('/^\d{%d}$/', $digitCount), $code);
-    }
-
-    #[Test]
-    #[DataProvider('provideDigitCountsAtBounds')]
-    public function itGeneratesAtBounds(int $digitCount): void
+    #[DataProvider('provideDigitCounts')]
+    public function itGenerates(int $digitCount): void
     {
         // When
         $code = $this->generator->generate($digitCount);
@@ -45,15 +32,16 @@ final class NativeNumericCodeGeneratorTest extends TestCase
     /**
      * @return iterable<string, array{int}>
      */
-    public static function provideDigitCountsAtBounds(): iterable
+    public static function provideDigitCounts(): iterable
     {
-        yield 'minimum' => [1];
-        yield 'maximum' => [18];
+        yield 'minimum digit count' => [1];
+        yield 'typical digit count' => [8];
+        yield 'maximum digit count' => [18];
     }
 
     #[Test]
     #[DataProvider('provideDigitCountsOutOfBounds')]
-    public function itFailsWhenDigitCountOutOfBounds(int $digitCount): void
+    public function itFailsWithDigitCountOutOfBounds(int $digitCount): void
     {
         // Then
         $this->expectException(\InvalidArgumentException::class);
@@ -67,7 +55,7 @@ final class NativeNumericCodeGeneratorTest extends TestCase
      */
     public static function provideDigitCountsOutOfBounds(): iterable
     {
-        yield 'zero' => [0];
-        yield 'above maximum' => [19];
+        yield 'below minimum digit count' => [0];
+        yield 'above maximum digit count' => [19];
     }
 }

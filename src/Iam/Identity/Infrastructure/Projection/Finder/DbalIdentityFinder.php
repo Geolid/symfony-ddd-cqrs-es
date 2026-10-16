@@ -37,7 +37,7 @@ final class DbalIdentityFinder extends AbstractPaginatableDbalFinder implements 
         )->one();
     }
 
-    public function expiredBefore(\DateTimeImmutable $cutoff): static
+    public function pendingExpiredBefore(\DateTimeImmutable $cutoff): static
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($cutoff): void {

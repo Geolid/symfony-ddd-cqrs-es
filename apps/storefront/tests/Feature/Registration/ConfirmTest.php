@@ -80,7 +80,7 @@ final class ConfirmTest extends AbstractStorefrontTestCase
 
     #[Test]
     #[WithStory(PendingStory::class)]
-    public function itRefusesAfterTooManyAttempts(): void
+    public function itRefusesWhenAttemptsExceeded(): void
     {
         // Given
         $persona = PendingStory::persona();
@@ -114,7 +114,7 @@ final class ConfirmTest extends AbstractStorefrontTestCase
         $browser = $this->activeBrowser();
 
         $browser->visitRoute('storefront_registration_confirm', ['identityId' => $persona->id]);
-        $sent = $this->sentEmailCount($persona->email, 'Confirm your email address');
+        $expectedCount = $this->sentEmailCount($persona->email, 'Confirm your email address') + 1;
 
         // When
         $browser->use(static function (ConfirmForm $confirm): void {
@@ -122,7 +122,7 @@ final class ConfirmTest extends AbstractStorefrontTestCase
         });
 
         // Then
-        $this->assertEmailSent($sent + 1, $persona->email, 'Confirm your email address');
+        $this->assertEmailSent($expectedCount, $persona->email, 'Confirm your email address');
     }
 
     #[Test]

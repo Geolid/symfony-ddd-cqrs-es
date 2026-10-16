@@ -28,8 +28,8 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
         $cartId = Uuid::uuid7()->toString();
         $checkoutSessionId = Uuid::uuid7()->toString();
         $destinationData = PostalAddressMapper::toArray(PostalAddressFactory::new()->create());
-        $warehouseAddress = PostalAddressFactory::new()->create();
-        $this->replace(WarehouseAddressProvider::class, new WarehouseAddressProvider(PostalAddressMapper::toArray($warehouseAddress)));
+        $originData = PostalAddressMapper::toArray(PostalAddressFactory::new()->create());
+        $this->replace(WarehouseAddressProvider::class, new WarehouseAddressProvider($originData));
 
         $dispatched = null;
         $commandBus = $this->createMock(CommandBusInterface::class);
@@ -52,10 +52,9 @@ final class RequestShipmentOnOrderConfirmedTest extends AbstractIntegrationTestC
         // Then
         self::assertInstanceOf(RequestShipment::class, $dispatched);
         self::assertTrue(Uuid::isValid($dispatched->id));
-        $originAddress = PostalAddressMapper::toArray($warehouseAddress);
         self::assertSame($orderId, $dispatched->orderId);
         self::assertSame($customerId, $dispatched->customerId);
-        self::assertSame($originAddress, $dispatched->origin);
+        self::assertSame($originData, $dispatched->origin);
         self::assertSame($destinationData, $dispatched->destination);
     }
 }

@@ -88,7 +88,7 @@ final class RequestTest extends AbstractStorefrontTestCase
 
     #[Test]
     #[WithStory(SuspendedStory::class)]
-    public function itRejectsSuspendedAccount(): void
+    public function itRefusesWhenSuspended(): void
     {
         // Given
         $persona = SuspendedStory::persona();

@@ -36,7 +36,7 @@ final class LockingPaymentRequesterTest extends TestCase
     }
 
     #[Test]
-    public function itDelegatesToInnerRequester(): void
+    public function itDelegates(): void
     {
         // Given
         $lock = $this->createStub(SharedLockInterface::class);

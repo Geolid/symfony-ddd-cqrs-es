@@ -142,7 +142,7 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
     }
 
     #[Test]
-    public function itFiltersStalledBefore(): void
+    public function itFiltersUnreconciledBefore(): void
     {
         // Given
         $now = Clock::get()->now();
@@ -163,7 +163,7 @@ final class DbalShipmentFinderTest extends AbstractIterableFinderTestCase
         $this->store($freshManifested, $notManifested, $manifestedAtCutoff, $dispatchedAtCutoff, $staleManifested, $staleDispatched);
 
         // When
-        $results = iterator_to_array($this->finder()->stalledBefore($now));
+        $results = iterator_to_array($this->finder()->unreconciledBefore($now));
 
         // Then
         self::assertCount(2, $results);

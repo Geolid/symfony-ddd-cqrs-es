@@ -59,7 +59,7 @@ final class TotpEnrollerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itEnrollsWithoutNewBackupCodesWhenAlreadyEnrolled(): void
+    public function itEnrollsWhenBackupCodesAlreadyGenerated(): void
     {
         // Given
         $backupCodeCredential = BackupCodeCredentialFactory::new()->withBackupCodeHasher($this->service(BackupCodeHasherInterface::class))->create();
@@ -76,7 +76,7 @@ final class TotpEnrollerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenCodeIsInvalid(): void
+    public function itFailsWhenCodeInvalid(): void
     {
         // Given
         $identityId = Uuid::uuid7()->toString();

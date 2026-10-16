@@ -28,7 +28,7 @@ final readonly class ListPaymentsPastReconciliationThresholdHandler
         $cutoff = $this->clock->now()->sub($this->threshold);
 
         return new StreamResult(
-            $this->paymentFinder->stalledBefore($cutoff),
+            $this->paymentFinder->unreconciledBefore($cutoff),
         );
     }
 }

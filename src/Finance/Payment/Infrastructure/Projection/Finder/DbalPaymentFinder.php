@@ -55,7 +55,7 @@ final class DbalPaymentFinder extends AbstractIterableDbalFinder implements Paym
         )->one() ?? throw PaymentResultNotFoundException::forOrderId($orderId);
     }
 
-    public function stalledBefore(\DateTimeImmutable $cutoff): static
+    public function unreconciledBefore(\DateTimeImmutable $cutoff): static
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($cutoff): void {

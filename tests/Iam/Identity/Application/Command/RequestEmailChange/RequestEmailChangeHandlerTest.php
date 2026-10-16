@@ -17,6 +17,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class RequestEmailChangeHandlerTest extends AbstractIntegrationTestCase
 {
@@ -88,7 +89,7 @@ final class RequestEmailChangeHandlerTest extends AbstractIntegrationTestCase
     public function itFailsWhenTooRecent(): void
     {
         // Given
-        $identity = IdentityFactory::new()->emailChangeRequested(EmailFactory::new()->create())->create();
+        $identity = IdentityFactory::new()->emailChangeRequested(EmailFactory::new()->create(), Clock::get()->now())->create();
         $this->store($identity);
 
         // Then
