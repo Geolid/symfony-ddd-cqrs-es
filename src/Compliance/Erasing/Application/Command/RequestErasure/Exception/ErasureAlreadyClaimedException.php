@@ -11,7 +11,7 @@ final class ErasureAlreadyClaimedException extends \RuntimeException implements 
     public static function forIdentity(string $identityId, \Throwable $previous): self
     {
         return new self(
-            message: \sprintf('An erasure has already been requested for identity "%s".', $identityId),
+            message: \sprintf('Identity "%s" already has an active erasure request.', $identityId),
             previous: $previous,
         );
     }
