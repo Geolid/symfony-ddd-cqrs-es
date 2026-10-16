@@ -59,7 +59,7 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    #[DataProvider('provideExpiresAtBoundary')]
+    #[DataProvider('provideExpiry')]
     public function itRequests(string $offset): void
     {
         // Given
@@ -163,10 +163,10 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
     /**
      * @return iterable<string, array{string}>
      */
-    public static function provideExpiresAtBoundary(): iterable
+    public static function provideExpiry(): iterable
     {
-        yield 'expiresAt not passed' => ['+30 minutes'];
-        yield 'expiresAt reached' => ['+0 seconds'];
+        yield 'before expiry' => ['+30 minutes'];
+        yield 'at expiry' => ['+0 seconds'];
     }
 
     /**

@@ -26,7 +26,7 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    #[DataProvider('provideExpiresAtBoundary')]
+    #[DataProvider('provideExpiry')]
     public function itErases(string $offset, bool $retained): void
     {
         // Given
@@ -103,9 +103,9 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
     /**
      * @return iterable<string, array{string, bool}>
      */
-    public static function provideExpiresAtBoundary(): iterable
+    public static function provideExpiry(): iterable
     {
-        yield 'expiresAt not passed' => ['+1 second', true];
-        yield 'expiresAt passed' => ['-1 second', false];
+        yield 'before expiry' => ['+1 second', true];
+        yield 'after expiry' => ['-1 second', false];
     }
 }

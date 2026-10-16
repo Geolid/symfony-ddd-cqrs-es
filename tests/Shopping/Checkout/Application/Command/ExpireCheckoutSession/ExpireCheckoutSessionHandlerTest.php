@@ -27,7 +27,7 @@ final class ExpireCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    #[DataProvider('provideExpiresAtBoundary')]
+    #[DataProvider('provideExpiry')]
     public function itExpires(string $offset, CheckoutSessionStatus $expectedStatus): void
     {
         // Given
@@ -76,9 +76,9 @@ final class ExpireCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
     /**
      * @return iterable<string, array{string, CheckoutSessionStatus}>
      */
-    public static function provideExpiresAtBoundary(): iterable
+    public static function provideExpiry(): iterable
     {
-        yield 'expiresAt not passed' => ['+1 second', CheckoutSessionStatus::OPEN];
-        yield 'expiresAt passed' => ['-1 second', CheckoutSessionStatus::EXPIRED];
+        yield 'before expiry' => ['+1 second', CheckoutSessionStatus::OPEN];
+        yield 'after expiry' => ['-1 second', CheckoutSessionStatus::EXPIRED];
     }
 }

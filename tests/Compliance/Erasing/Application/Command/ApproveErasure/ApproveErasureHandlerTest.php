@@ -32,7 +32,7 @@ final class ApproveErasureHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    #[DataProvider('provideEffectiveAtBoundary')]
+    #[DataProvider('provideRetention')]
     public function itApproves(string $offset, ErasureRequestStatus $expectedStatus): void
     {
         // Given
@@ -70,9 +70,9 @@ final class ApproveErasureHandlerTest extends AbstractIntegrationTestCase
     /**
      * @return iterable<string, array{string, ErasureRequestStatus}>
      */
-    public static function provideEffectiveAtBoundary(): iterable
+    public static function provideRetention(): iterable
     {
-        yield 'effectiveAt not passed' => ['+1 second', ErasureRequestStatus::REQUESTED];
-        yield 'effectiveAt passed' => ['-1 second', ErasureRequestStatus::APPROVED];
+        yield 'before effective date' => ['+1 second', ErasureRequestStatus::REQUESTED];
+        yield 'after effective date' => ['-1 second', ErasureRequestStatus::APPROVED];
     }
 }
