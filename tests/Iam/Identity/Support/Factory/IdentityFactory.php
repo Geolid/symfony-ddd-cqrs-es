@@ -89,7 +89,7 @@ final class IdentityFactory extends AbstractAggregateFactory
     public function emailChangeRequested(Email $newEmail, ?\DateTimeImmutable $requestedAt = null): self
     {
         return $this->with(array_filter(['emailChangeRequestedAt' => $requestedAt]))->transition(
-            static fn (Identity $identity, array $inputs) => $identity->requestEmailChange($newEmail, $inputs['emailChangeRequestedAt'], new CooldownCalculator($inputs['cooldownSeconds'])),
+            static fn (Identity $identity, array $inputs) => $identity->requestEmailChange($newEmail, $inputs['emailChangeRequestedAt'], new CooldownCalculator(\DateInterval::createFromDateString($inputs['cooldown']))),
         );
     }
 
@@ -123,7 +123,7 @@ final class IdentityFactory extends AbstractAggregateFactory
     public function confirmationRequested(?\DateTimeImmutable $requestedAt = null): self
     {
         return $this->with(array_filter(['confirmationRequestedAt' => $requestedAt]))->transition(
-            static fn (Identity $identity, array $inputs) => $identity->requestConfirmation($inputs['confirmationRequestedAt'], new CooldownCalculator($inputs['cooldownSeconds'])),
+            static fn (Identity $identity, array $inputs) => $identity->requestConfirmation($inputs['confirmationRequestedAt'], new CooldownCalculator(\DateInterval::createFromDateString($inputs['cooldown']))),
         );
     }
 

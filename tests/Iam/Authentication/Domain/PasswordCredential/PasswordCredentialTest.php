@@ -37,7 +37,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     private CodeChallengerInterface $codeChallenger;
     private \DateTimeImmutable $definedAt;
     private \DateTimeImmutable $requestedAt;
-    private int $cooldownSeconds;
+    private string $cooldown;
 
     protected function setUp(): void
     {
@@ -48,7 +48,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
         $this->password = PasswordFactory::new()->create();
         $this->definedAt = Clock::get()->now();
         $this->requestedAt = $this->definedAt->modify('+3 day');
-        $this->cooldownSeconds = 5 * 60;
+        $this->cooldown = '5 minutes';
         $this->hasher = new FakePasswordHasher();
         $this->codeChallenger = new FakeCodeChallenger();
     }
@@ -163,7 +163,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
     {
         $this
             ->given($this->defined())
-            ->when(fn (PasswordCredential $credential) => $credential->requestReset($this->requestedAt, new CooldownCalculator($this->cooldownSeconds)))
+            ->when(fn (PasswordCredential $credential) => $credential->requestReset($this->requestedAt, new CooldownCalculator(\DateInterval::createFromDateString($this->cooldown))))
             ->then($this->resetRequested());
     }
 
@@ -174,7 +174,7 @@ final class PasswordCredentialTest extends AggregateRootTestCase
 
         $this
             ->given($this->defined(), $this->resetRequested())
-            ->when(fn (PasswordCredential $credential) => $credential->requestReset($requestedAgainAt, new CooldownCalculator($this->cooldownSeconds)))
+            ->when(fn (PasswordCredential $credential) => $credential->requestReset($requestedAgainAt, new CooldownCalculator(\DateInterval::createFromDateString($this->cooldown))))
             ->expectsException(PasswordResetRequestedTooRecentlyException::class)
             ->expectsExceptionMessage('requested too recently');
     }

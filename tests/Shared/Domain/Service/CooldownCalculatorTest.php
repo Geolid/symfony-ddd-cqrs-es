@@ -18,7 +18,7 @@ final class CooldownCalculatorTest extends TestCase
     public function itCalculatesRetryAt(): void
     {
         // Given
-        $calculator = new CooldownCalculator(5 * 60);
+        $calculator = new CooldownCalculator(\DateInterval::createFromDateString('5 minutes'));
         $lastRequestedAt = Clock::get()->now();
 
         // When
@@ -26,15 +26,5 @@ final class CooldownCalculatorTest extends TestCase
 
         // Then
         self::assertSameDateTime($lastRequestedAt->modify('+5 minutes'), $retryAt);
-    }
-
-    #[Test]
-    public function itFailsWhenNotPositive(): void
-    {
-        // Then
-        $this->expectException(\InvalidArgumentException::class);
-
-        // When
-        new CooldownCalculator(0);
     }
 }

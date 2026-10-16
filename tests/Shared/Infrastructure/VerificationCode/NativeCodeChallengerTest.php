@@ -18,7 +18,7 @@ use Symfony\Component\Clock\Clock;
 final class NativeCodeChallengerTest extends TestCase
 {
     private int $maxAttempts;
-    private int $expirySeconds;
+    private string $expiry;
     private int $digitCount;
     private NativeCodeChallenger $codeChallenger;
     private VerificationCodeKey $key;
@@ -26,14 +26,14 @@ final class NativeCodeChallengerTest extends TestCase
     protected function setUp(): void
     {
         $this->maxAttempts = 5;
-        $this->expirySeconds = 15 * 60;
+        $this->expiry = '15 minutes';
         $this->digitCount = 6;
         $this->codeChallenger = new NativeCodeChallenger(
             new FakeVerificationCodeStore(),
             new NativeNumericCodeGenerator(),
             'secret',
             $this->maxAttempts,
-            $this->expirySeconds,
+            \DateInterval::createFromDateString($this->expiry),
             $this->digitCount,
         );
         $this->key = VerificationCodeKey::for(DummyVerificationCodePurpose::NAME, 'subject-1');
@@ -84,7 +84,7 @@ final class NativeCodeChallengerTest extends TestCase
         // Given
         $now = Clock::get()->now();
         $code = $this->codeChallenger->issue($this->key, $now);
-        $expiresAt = $now->modify(\sprintf('+%d seconds', $this->expirySeconds));
+        $expiresAt = $now->modify('+15 minutes');
 
         // When
         $result = $this->codeChallenger->verify($this->key, $code, $expiresAt);
@@ -138,7 +138,7 @@ final class NativeCodeChallengerTest extends TestCase
         // Given
         $now = Clock::get()->now();
         $code = $this->codeChallenger->issue($this->key, $now);
-        $afterExpiry = $now->modify(\sprintf('+%d seconds', $this->expirySeconds + 1));
+        $afterExpiry = $now->modify('+15 minutes +1 second');
 
         // Then
         $this->expectException(VerificationCodeNotFoundException::class);

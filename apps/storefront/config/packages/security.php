@@ -28,7 +28,7 @@ return static function (ContainerConfigurator $container): void {
                 ],
                 'remember_me' => [
                     'secret' => '%kernel.secret%',
-                    'lifetime' => 604800,
+                    'lifetime' => 604800, // 7 days
                     'path' => '/',
                     'always_remember_me' => true,
                     'signature_properties' => ['passwordChangedAt'],

@@ -23,13 +23,11 @@ final readonly class NativeCodeChallenger implements CodeChallengerInterface
         private string $secret,
         #[Autowire(param: 'code_challenger.max_attempts')]
         private int $maxAttempts,
-        #[Autowire(param: 'code_challenger.expiry_seconds')]
-        private int $expirySeconds,
+        private \DateInterval $expiry,
         #[Autowire(param: 'code_challenger.digit_count')]
         private int $digitCount,
     ) {
         Assert::positiveInteger($this->maxAttempts);
-        Assert::positiveInteger($this->expirySeconds);
         Assert::positiveInteger($this->digitCount);
     }
 
@@ -37,7 +35,7 @@ final readonly class NativeCodeChallenger implements CodeChallengerInterface
     {
         $code = $this->numericCodeGenerator->generate($this->digitCount);
 
-        $this->store->save($key, $this->hash($code), $now->modify(\sprintf('+%d seconds', $this->expirySeconds)));
+        $this->store->save($key, $this->hash($code), $now->add($this->expiry));
 
         return $code;
     }

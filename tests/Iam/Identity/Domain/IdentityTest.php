@@ -59,7 +59,7 @@ final class IdentityTest extends AggregateRootTestCase
     private \DateTimeImmutable $cancelledAt;
     private \DateTimeImmutable $erasedAt;
     private \DateTimeImmutable $confirmationRequestedAt;
-    private int $cooldownSeconds;
+    private string $cooldown;
 
     protected function setUp(): void
     {
@@ -78,7 +78,7 @@ final class IdentityTest extends AggregateRootTestCase
         $this->emailChangeRequestedAt = $this->registeredAt->modify('+50 minutes');
         $this->emailChangedAt = $this->registeredAt->modify('+55 minutes');
         $this->codeChallenger = new FakeCodeChallenger();
-        $this->cooldownSeconds = 5 * 60;
+        $this->cooldown = '5 minutes';
         $this->suspendedAt = $this->registeredAt->modify('+1 day');
         $this->reactivatedAt = $this->registeredAt->modify('+2 day');
         $this->requestedAt = $this->registeredAt->modify('+3 day');
@@ -185,7 +185,7 @@ final class IdentityTest extends AggregateRootTestCase
 
         $this
             ->given($this->registered())
-            ->when(fn (Identity $identity) => $identity->requestEmailChange($newEmail, $this->emailChangeRequestedAt, new CooldownCalculator($this->cooldownSeconds)))
+            ->when(fn (Identity $identity) => $identity->requestEmailChange($newEmail, $this->emailChangeRequestedAt, new CooldownCalculator(\DateInterval::createFromDateString($this->cooldown))))
             ->then(new IdentityEmailChangeRequested($this->id, $newEmail, $this->emailChangeRequestedAt));
     }
 
@@ -197,7 +197,7 @@ final class IdentityTest extends AggregateRootTestCase
 
         $this
             ->given($this->registered())
-            ->when(fn (Identity $identity) => $identity->requestEmailChange($newEmail, $requestedAt, new CooldownCalculator($this->cooldownSeconds)))
+            ->when(fn (Identity $identity) => $identity->requestEmailChange($newEmail, $requestedAt, new CooldownCalculator(\DateInterval::createFromDateString($this->cooldown))))
             ->then(new IdentityEmailChangeRequested($this->id, $newEmail, $requestedAt));
     }
 
@@ -206,7 +206,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered())
-            ->when(fn (Identity $identity) => $identity->requestEmailChange($this->email, $this->emailChangeRequestedAt, new CooldownCalculator($this->cooldownSeconds)))
+            ->when(fn (Identity $identity) => $identity->requestEmailChange($this->email, $this->emailChangeRequestedAt, new CooldownCalculator(\DateInterval::createFromDateString($this->cooldown))))
             ->then();
     }
 
@@ -219,7 +219,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->erasureRequested(),
                 $this->erased(),
             )
-            ->when(fn (Identity $identity) => $identity->requestEmailChange(EmailFactory::new()->create(), $this->emailChangeRequestedAt, new CooldownCalculator($this->cooldownSeconds)))
+            ->when(fn (Identity $identity) => $identity->requestEmailChange(EmailFactory::new()->create(), $this->emailChangeRequestedAt, new CooldownCalculator(\DateInterval::createFromDateString($this->cooldown))))
             ->expectsException(IdentityAlreadyErasedException::class);
     }
 
@@ -233,7 +233,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->registered(),
                 new IdentityEmailChangeRequested($this->id, EmailFactory::new()->create(), $this->emailChangeRequestedAt),
             )
-            ->when(fn (Identity $identity) => $identity->requestEmailChange(EmailFactory::new()->create(), $emailChangeRequestedAgainAt, new CooldownCalculator($this->cooldownSeconds)))
+            ->when(fn (Identity $identity) => $identity->requestEmailChange(EmailFactory::new()->create(), $emailChangeRequestedAgainAt, new CooldownCalculator(\DateInterval::createFromDateString($this->cooldown))))
             ->expectsException(EmailChangeRequestedTooRecentlyException::class)
             ->expectsExceptionMessage('requested too recently');
     }
@@ -368,7 +368,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given($this->registered())
-            ->when(fn (Identity $identity) => $identity->requestConfirmation($this->confirmationRequestedAt, new CooldownCalculator($this->cooldownSeconds)))
+            ->when(fn (Identity $identity) => $identity->requestConfirmation($this->confirmationRequestedAt, new CooldownCalculator(\DateInterval::createFromDateString($this->cooldown))))
             ->then($this->confirmationRequested());
     }
 
@@ -380,7 +380,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->registered(),
                 $this->confirmed(),
             )
-            ->when(fn (Identity $identity) => $identity->requestConfirmation($this->confirmationRequestedAt, new CooldownCalculator($this->cooldownSeconds)))
+            ->when(fn (Identity $identity) => $identity->requestConfirmation($this->confirmationRequestedAt, new CooldownCalculator(\DateInterval::createFromDateString($this->cooldown))))
             ->expectsException(IdentityAlreadyConfirmedException::class);
     }
 
@@ -394,7 +394,7 @@ final class IdentityTest extends AggregateRootTestCase
                 $this->registered(),
                 $this->confirmationRequested(),
             )
-            ->when(fn (Identity $identity) => $identity->requestConfirmation($confirmationRequestedAgainAt, new CooldownCalculator($this->cooldownSeconds)))
+            ->when(fn (Identity $identity) => $identity->requestConfirmation($confirmationRequestedAgainAt, new CooldownCalculator(\DateInterval::createFromDateString($this->cooldown))))
             ->expectsException(ConfirmationRequestedTooRecentlyException::class)
             ->expectsExceptionMessage('requested too recently');
     }
@@ -406,7 +406,7 @@ final class IdentityTest extends AggregateRootTestCase
 
         $this
             ->given($this->registered())
-            ->when(fn (Identity $identity) => $identity->requestConfirmation($earlyConfirmationRequestedAt, new CooldownCalculator($this->cooldownSeconds)))
+            ->when(fn (Identity $identity) => $identity->requestConfirmation($earlyConfirmationRequestedAt, new CooldownCalculator(\DateInterval::createFromDateString($this->cooldown))))
             ->expectsException(ConfirmationRequestedTooRecentlyException::class);
     }
 

@@ -28,7 +28,7 @@ use Webmozart\Assert\Assert;
  *     changedAt: \DateTimeImmutable,
  *     rehashedAt: \DateTimeImmutable,
  *     requestedAt: \DateTimeImmutable,
- *     cooldownSeconds: int,
+ *     cooldown: string,
  *     resetAt: \DateTimeImmutable,
  * }
  *
@@ -86,7 +86,7 @@ final class PasswordCredentialFactory extends AbstractAggregateFactory
     public function resetRequested(?\DateTimeImmutable $requestedAt = null): self
     {
         return $this->with(array_filter(['requestedAt' => $requestedAt]))->transition(
-            static fn (PasswordCredential $credential, array $inputs) => $credential->requestReset($inputs['requestedAt'], new CooldownCalculator($inputs['cooldownSeconds'])),
+            static fn (PasswordCredential $credential, array $inputs) => $credential->requestReset($inputs['requestedAt'], new CooldownCalculator(\DateInterval::createFromDateString($inputs['cooldown']))),
         );
     }
 
@@ -148,7 +148,7 @@ final class PasswordCredentialFactory extends AbstractAggregateFactory
             'changedAt' => $now->modify('+1 day'),
             'rehashedAt' => $now->modify('+2 day'),
             'requestedAt' => $now->modify('+3 day'),
-            'cooldownSeconds' => 5 * 60,
+            'cooldown' => '5 minutes',
             'resetAt' => $now->modify('+4 day'),
         ];
     }

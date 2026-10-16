@@ -10,6 +10,7 @@ use Fulfilment\Shipping\Application\Reconciliation\ShipmentStatusReconcilerInter
 use Fulfilment\Shipping\Application\Warehouse\WarehouseAddressProvider;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 
+use function Symfony\Component\DependencyInjection\Loader\Configurator\inline_service;
 use function Symfony\Component\DependencyInjection\Loader\Configurator\tagged_iterator;
 
 return static function (ContainerConfigurator $container): void {
@@ -22,7 +23,7 @@ return static function (ContainerConfigurator $container): void {
             'countryCode' => '%env(FULFILMENT_WAREHOUSE_ADDRESS_COUNTRY_CODE)%',
         ],
     ]);
-    $container->parameters()->set('fulfilment.shipping.reconciliation_threshold_seconds', 48 * 60 * 60);
+    $container->parameters()->set('fulfilment.shipping.reconciliation_threshold', '48 hours');
 
     $services = $container->services();
     $services->defaults()->autowire()->autoconfigure();
@@ -33,7 +34,7 @@ return static function (ContainerConfigurator $container): void {
 
     $services->get(ShipmentReconciler::class)->arg('$reconcilers', tagged_iterator('fulfilment.shipping.status_reconciler'));
 
-    $services->get(ListShipmentsPastReconciliationThresholdHandler::class)->arg('$thresholdSeconds', '%fulfilment.shipping.reconciliation_threshold_seconds%');
+    $services->get(ListShipmentsPastReconciliationThresholdHandler::class)->arg('$threshold', inline_service(DateInterval::class)->factory([DateInterval::class, 'createFromDateString'])->args(['%fulfilment.shipping.reconciliation_threshold%']));
 
     $services->get(WarehouseAddressProvider::class)->arg('$address', '%fulfilment.warehouse_address%');
 

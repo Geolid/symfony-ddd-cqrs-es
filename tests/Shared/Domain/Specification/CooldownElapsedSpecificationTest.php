@@ -18,7 +18,7 @@ final class CooldownElapsedSpecificationTest extends TestCase
     public function itIsSatisfiedBy(?\DateTimeImmutable $lastRequestedAt, \DateTimeImmutable $now, bool $expected): void
     {
         // Given
-        $specification = new CooldownElapsedSpecification(new CooldownCalculator(60), $now);
+        $specification = new CooldownElapsedSpecification(new CooldownCalculator(\DateInterval::createFromDateString('1 minute')), $now);
 
         // When
         $result = $specification->isSatisfiedBy($lastRequestedAt);
@@ -36,7 +36,7 @@ final class CooldownElapsedSpecificationTest extends TestCase
 
         yield 'no prior request' => [null, $now, true];
         yield 'within cooldown' => [$now->modify('-30 seconds'), $now, false];
-        yield 'at cooldown boundary' => [$now->modify('-60 seconds'), $now, true];
+        yield 'at cooldown boundary' => [$now->modify('-1 minute'), $now, true];
         yield 'past cooldown' => [$now->modify('-90 seconds'), $now, true];
     }
 }

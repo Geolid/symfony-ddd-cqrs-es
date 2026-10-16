@@ -24,8 +24,8 @@ final readonly class LockingPaymentRequester implements PaymentRequesterInterfac
         #[AutowireDecorated]
         private PaymentRequesterInterface $inner,
         private LockFactory $lockFactory,
-        #[Autowire(param: 'finance.payment.payment_request_lock_seconds')]
-        private int $lockSeconds,
+        #[Autowire(param: 'finance.payment.payment_request_lock_ttl')]
+        private int $lockTtl,
     ) {
     }
 
@@ -39,7 +39,7 @@ final readonly class LockingPaymentRequester implements PaymentRequesterInterfac
         try {
             return $this->withLock(
                 \sprintf('finance.payment.payment_request.%s', $checkoutSessionId),
-                (float) $this->lockSeconds,
+                (float) $this->lockTtl,
                 fn (): string => $this->inner->requestFor($checkoutSessionId, $currency, $lines, $successUrl, $cancelUrl, $expiresAt),
             );
         } catch (LockNotAcquiredException $e) {

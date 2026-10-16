@@ -54,7 +54,7 @@ final class PredisVerificationCodeStoreTest extends AbstractIntegrationTestCase
      */
     public static function provideExpiry(): iterable
     {
-        yield 'normal' => [\sprintf('+%d seconds', 15 * 60), 15 * 60];
+        yield 'normal' => ['+15 minutes', 15 * 60];
         yield 'at boundary, floored to one second' => ['+0 seconds', 1];
     }
 
