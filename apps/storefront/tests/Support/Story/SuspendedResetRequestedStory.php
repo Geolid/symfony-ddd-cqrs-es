@@ -24,7 +24,7 @@ final class SuspendedResetRequestedStory extends AbstractIdentityStory
 
         $this->addState('persona', $this->personaOf(
             $identity,
-            static fn (PasswordCredentialFactory $credential): PasswordCredentialFactory => $credential->resetRequested(Clock::get()->now()->modify('-2 minutes')),
+            static fn (PasswordCredentialFactory $credential): PasswordCredentialFactory => $credential->resetRequested(Clock::get()->now()->modify('-30 minutes')),
         ));
     }
 }

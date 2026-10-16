@@ -148,7 +148,7 @@ final class DbalCheckoutSessionFinderTest extends AbstractIterableFinderTestCase
         $atExpiresAt = CheckoutSessionFactory::new()->withExpiry($expiry)->withOpenedAt($now->modify(\sprintf('-%s', $expiry)))->create();
         $expired = CheckoutSessionFactory::new()->withExpiry($expiry)->withOpenedAt($expiredOpenedAt)->create();
         $completed = CheckoutSessionFactory::new()->withExpiry($expiry)->withOpenedAt($expiredOpenedAt)->completed()->create();
-        $this->store($atExpiresAt, $expired, $completed);
+        $this->store($atExpiresAt, $completed, $expired);
 
         // When
         $results = iterator_to_array($this->finder()->dueForExpiryBefore($now));

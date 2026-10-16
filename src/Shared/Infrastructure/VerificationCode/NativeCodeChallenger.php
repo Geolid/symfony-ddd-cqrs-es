@@ -10,6 +10,7 @@ use Shared\Domain\Exception\VerificationCodeNotFoundException;
 use Shared\Domain\Service\CodeChallengerInterface;
 use Shared\Domain\Service\NumericCodeGeneratorInterface;
 use Shared\Domain\ValueObject\VerificationCodeKey;
+use Shared\Infrastructure\Random\NativeNumericCodeGenerator;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Webmozart\Assert\Assert;
 
@@ -28,7 +29,7 @@ final readonly class NativeCodeChallenger implements CodeChallengerInterface
         private int $digitCount,
     ) {
         Assert::positiveInteger($this->maxAttempts);
-        Assert::positiveInteger($this->digitCount);
+        Assert::range($this->digitCount, NativeNumericCodeGenerator::MIN_DIGITS, NativeNumericCodeGenerator::MAX_DIGITS);
     }
 
     public function issue(VerificationCodeKey $key, \DateTimeImmutable $now): string

@@ -54,7 +54,7 @@ final class PredisVerificationCodeStoreTest extends AbstractIntegrationTestCase
      */
     public static function provideExpiry(): iterable
     {
-        yield 'normal' => ['+15 minutes', 15 * 60];
+        yield 'normal' => ['+15 minutes', 900];
         yield 'at boundary, floored to one second' => ['+0 seconds', 1];
     }
 
@@ -93,9 +93,9 @@ final class PredisVerificationCodeStoreTest extends AbstractIntegrationTestCase
         $this->store->save($this->key, 'hash-1', $now->modify('+15 minutes'));
         $this->store->incrementAttempts($this->key);
         $this->store->save($this->otherKey, 'other-hash', $now->modify('+15 minutes'));
-        $newExpiresAt = $now->modify('+30 minutes');
 
         // When
+        $newExpiresAt = $now->modify('+30 minutes');
         $this->store->save($this->key, 'hash-2', $newExpiresAt);
 
         // Then

@@ -13,12 +13,19 @@ use Symfony\Component\Clock\Clock;
 
 final class CooldownElapsedSpecificationTest extends TestCase
 {
+    private CooldownCalculator $calculator;
+
+    protected function setUp(): void
+    {
+        $this->calculator = new CooldownCalculator(\DateInterval::createFromDateString('1 minute'));
+    }
+
     #[Test]
     #[DataProvider('provideElapsedCooldowns')]
     public function itAcceptsWhenCooldownElapsed(?\DateTimeImmutable $lastRequestedAt, \DateTimeImmutable $now): void
     {
         // Given
-        $specification = new CooldownElapsedSpecification(new CooldownCalculator(\DateInterval::createFromDateString('1 minute')), $now);
+        $specification = new CooldownElapsedSpecification($this->calculator, $now);
 
         // When
         $result = $specification->isSatisfiedBy($lastRequestedAt);
@@ -44,7 +51,7 @@ final class CooldownElapsedSpecificationTest extends TestCase
     public function itRefusesWhenCooldownRunning(\DateTimeImmutable $lastRequestedAt, \DateTimeImmutable $now): void
     {
         // Given
-        $specification = new CooldownElapsedSpecification(new CooldownCalculator(\DateInterval::createFromDateString('1 minute')), $now);
+        $specification = new CooldownElapsedSpecification($this->calculator, $now);
 
         // When
         $result = $specification->isSatisfiedBy($lastRequestedAt);

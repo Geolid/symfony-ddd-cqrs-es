@@ -157,4 +157,24 @@ final class NativeCodeChallengerTest extends TestCase
         // When
         $this->codeChallenger->verify($this->key, 'wrong', $now);
     }
+
+    #[Test]
+    #[DataProvider('provideDigitCountsOutOfBounds')]
+    public function itFailsWithDigitCountOutOfBounds(int $digitCount): void
+    {
+        // Then
+        $this->expectException(\InvalidArgumentException::class);
+
+        // When
+        new NativeCodeChallenger(new FakeVerificationCodeStore(), new NativeNumericCodeGenerator(), 'secret', 5, \DateInterval::createFromDateString('15 minutes'), $digitCount);
+    }
+
+    /**
+     * @return iterable<string, array{int}>
+     */
+    public static function provideDigitCountsOutOfBounds(): iterable
+    {
+        yield 'below minimum digit count' => [0];
+        yield 'above maximum digit count' => [19];
+    }
 }

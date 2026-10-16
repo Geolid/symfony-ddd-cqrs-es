@@ -16,7 +16,7 @@ final class CredentialFakerProvider extends Base
      */
     public function apiKeySecret(int $length = 64): string
     {
-        Assert::string($secret = $this->generator->regexify(\sprintf('[0-9]{%d}', $length)));
+        Assert::string($secret = $this->generator->regexify(\sprintf('[a-f0-9]{%d}', $length)));
         Assert::stringNotEmpty($secret);
 
         return $secret;

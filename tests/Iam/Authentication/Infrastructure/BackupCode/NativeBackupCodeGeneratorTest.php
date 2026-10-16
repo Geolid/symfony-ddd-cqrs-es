@@ -11,13 +11,11 @@ use Shared\Infrastructure\Random\NativeNumericCodeGenerator;
 
 final class NativeBackupCodeGeneratorTest extends TestCase
 {
-    private int $digitCount;
     private NativeBackupCodeGenerator $generator;
 
     protected function setUp(): void
     {
-        $this->digitCount = 8;
-        $this->generator = new NativeBackupCodeGenerator(new NativeNumericCodeGenerator(), $this->digitCount);
+        $this->generator = new NativeBackupCodeGenerator(new NativeNumericCodeGenerator(), 8);
     }
 
     #[Test]
@@ -31,7 +29,7 @@ final class NativeBackupCodeGeneratorTest extends TestCase
         self::assertCount(5, array_unique($codes));
 
         foreach ($codes as $code) {
-            self::assertMatchesRegularExpression(\sprintf('/^\d{%d}$/', $this->digitCount), $code);
+            self::assertMatchesRegularExpression('/^\d{8}$/', $code);
         }
     }
 }

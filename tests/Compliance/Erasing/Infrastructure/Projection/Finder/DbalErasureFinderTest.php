@@ -109,7 +109,7 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
         $atEffectiveAt = ErasureFactory::new()->withRetention($retention)->withRequestedAt($now->modify(\sprintf('-%s', $retention)))->create();
         $due = ErasureFactory::new()->withRetention($retention)->withRequestedAt($dueRequestedAt)->create();
         $approved = ErasureFactory::new()->withRetention($retention)->withRequestedAt($dueRequestedAt)->approved()->create();
-        $this->store($atEffectiveAt, $due, $approved);
+        $this->store($atEffectiveAt, $approved, $due);
 
         // When
         $results = iterator_to_array($this->finder()->dueForApprovalBefore($now));

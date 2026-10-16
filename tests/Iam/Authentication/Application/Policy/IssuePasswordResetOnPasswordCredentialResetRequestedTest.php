@@ -22,7 +22,8 @@ final class IssuePasswordResetOnPasswordCredentialResetRequestedTest extends Abs
     public function itNotifies(): void
     {
         // Given
-        $identity = IdentityFactory::new()->confirmed()->create();
+        $factory = IdentityFactory::new()->confirmed();
+        $identity = $factory->create();
         $this->store($identity);
 
         // When

@@ -21,7 +21,8 @@ final class IssueConfirmationOnIdentityConfirmationRequestedTest extends Abstrac
     public function itNotifies(): void
     {
         // Given
-        $identity = IdentityFactory::new()->create();
+        $factory = IdentityFactory::new();
+        $identity = $factory->create();
         $this->store($identity);
 
         // When

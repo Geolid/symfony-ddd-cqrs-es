@@ -9,9 +9,12 @@ use Webmozart\Assert\Assert;
 
 final readonly class NativeNumericCodeGenerator implements NumericCodeGeneratorInterface
 {
+    public const int MIN_DIGITS = 1;
+    public const int MAX_DIGITS = 18;
+
     public function generate(int $digits): string
     {
-        Assert::range($digits, 1, 18);
+        Assert::range($digits, self::MIN_DIGITS, self::MAX_DIGITS);
 
         /*
          * A one-off shift of either bound can only be observed by a test if the draw happens

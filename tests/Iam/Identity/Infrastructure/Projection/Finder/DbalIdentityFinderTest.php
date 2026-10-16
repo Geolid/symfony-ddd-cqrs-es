@@ -96,7 +96,7 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
     }
 
     #[Test]
-    public function itFiltersPendingExpiredBefore(): void
+    public function itFiltersExpiredPendingBefore(): void
     {
         // Given
         $now = Clock::get()->now();
@@ -105,10 +105,10 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
         $atExpiresAt = IdentityFactory::new()->withExpiry($expiry)->withRegisteredAt($now->modify(\sprintf('-%s', $expiry)))->create();
         $expired = IdentityFactory::new()->withExpiry($expiry)->withRegisteredAt($expiredRegisteredAt)->create();
         $confirmed = IdentityFactory::new()->withExpiry($expiry)->withRegisteredAt($expiredRegisteredAt)->confirmed()->create();
-        $this->store($atExpiresAt, $expired, $confirmed);
+        $this->store($atExpiresAt, $confirmed, $expired);
 
         // When
-        $results = iterator_to_array($this->finder()->pendingExpiredBefore($now));
+        $results = iterator_to_array($this->finder()->expiredPendingBefore($now));
 
         // Then
         self::assertCount(1, $results);
