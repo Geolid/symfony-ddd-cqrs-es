@@ -166,8 +166,9 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
         // Given
         $now = Clock::get()->now();
         $freshRequested = PaymentFactory::new()->withRequestedAt($now->modify('+1 day'))->create();
+        $requestedAtCutoff = PaymentFactory::new()->withRequestedAt($now)->create();
         $staleRequested = PaymentFactory::new()->withRequestedAt($now->modify('-1 day'))->create();
-        $this->store($freshRequested, $staleRequested);
+        $this->store($freshRequested, $requestedAtCutoff, $staleRequested);
 
         // When
         $results = iterator_to_array($this->finder()->stalledBefore($now));

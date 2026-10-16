@@ -11,6 +11,7 @@ use Compliance\Erasing\Application\Finder\Erasure\ErasureFinderInterface;
 use Compliance\Erasing\Domain\Exception\ErasureNotFoundException;
 use Compliance\Tests\Erasing\Support\Factory\ErasureFactory;
 use Compliance\Tests\Erasing\Support\Factory\ErasureIdFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
@@ -31,13 +32,14 @@ final class ApproveErasureHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itApproves(): void
+    #[DataProvider('provideEffectiveAtBoundary')]
+    public function itApproves(string $offset, ErasureRequestStatus $expectedStatus): void
     {
         // Given
         $retention = '30 days';
         $erasure = ErasureFactory::new()
             ->withRetention($retention)
-            ->withRequestedAt(Clock::get()->now()->modify(\sprintf('-%s -1 second', $retention)))
+            ->withRequestedAt(Clock::get()->now()->modify(\sprintf('-%s %s', $retention, $offset)))
             ->create();
         $this->store($erasure);
         $identityKey = UniqueKey::for(ErasingUniqueKey::IDENTITY);
@@ -48,29 +50,7 @@ final class ApproveErasureHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         $result = $this->finder->ofId($erasure->id->toString());
-        self::assertSame(ErasureRequestStatus::APPROVED, $result->status);
-        self::assertTrue($this->uniqueness->isClaimed($identityKey, $erasure->identityId));
-    }
-
-    #[Test]
-    public function itIgnoresWhenNotEffective(): void
-    {
-        // Given
-        $retention = '30 days';
-        $erasure = ErasureFactory::new()
-            ->withRetention($retention)
-            ->withRequestedAt(Clock::get()->now()->modify(\sprintf('-%s +1 second', $retention)))
-            ->create();
-        $this->store($erasure);
-        $identityKey = UniqueKey::for(ErasingUniqueKey::IDENTITY);
-        $this->uniqueness->claim($identityKey, $erasure->identityId, $erasure->id->toString());
-
-        // When
-        $this->dispatch(new ApproveErasure($erasure->id->toString()));
-
-        // Then
-        $result = $this->finder->ofId($erasure->id->toString());
-        self::assertSame(ErasureRequestStatus::REQUESTED, $result->status);
+        self::assertSame($expectedStatus, $result->status);
         self::assertTrue($this->uniqueness->isClaimed($identityKey, $erasure->identityId));
     }
 
@@ -85,5 +65,14 @@ final class ApproveErasureHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new ApproveErasure($unknownId));
+    }
+
+    /**
+     * @return iterable<string, array{string, ErasureRequestStatus}>
+     */
+    public static function provideEffectiveAtBoundary(): iterable
+    {
+        yield 'effectiveAt not passed' => ['+1 second', ErasureRequestStatus::REQUESTED];
+        yield 'effectiveAt passed' => ['-1 second', ErasureRequestStatus::APPROVED];
     }
 }

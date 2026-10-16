@@ -119,7 +119,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotExpireWhenNotExpired(): void
+    public function itDoesNotExpireWhenExpiresAtNotPassed(): void
     {
         $this
             ->given($this->opened())

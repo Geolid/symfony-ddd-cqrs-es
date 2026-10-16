@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Iam\Tests\Identity\Application\Command\ErasePendingIdentity;
 
 use Iam\Identity\Application\Command\ErasePendingIdentity\ErasePendingIdentity;
-use Iam\Identity\Application\Finder\Identity\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
@@ -26,14 +26,14 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itErases(): void
+    #[DataProvider('provideExpiresAtBoundary')]
+    public function itErases(string $offset, bool $retained): void
     {
         // Given
-        $now = Clock::get()->now();
         $expiry = '24 hours';
         $identity = IdentityFactory::new()
             ->withExpiry($expiry)
-            ->withRegisteredAt($now->modify(\sprintf('-%s -1 second', $expiry)))
+            ->withRegisteredAt(Clock::get()->now()->modify(\sprintf('-%s %s', $expiry, $offset)))
             ->create();
         $this->store($identity);
 
@@ -41,9 +41,8 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new ErasePendingIdentity($identity->id->toString()));
 
         // Then
-        $this->expectException(IdentityResultNotFoundException::class);
-
-        $this->identityFinder->ofId($identity->id->toString());
+        $result = $this->identityFinder->ofEmailOrNull($identity->email->value);
+        self::assertSame($retained, null !== $result);
     }
 
     #[Test]
@@ -56,26 +55,6 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
             ->withExpiry($expiry)
             ->withRegisteredAt($now->modify(\sprintf('-%s -1 second', $expiry)))
             ->confirmed()
-            ->create();
-        $this->store($identity);
-
-        // When
-        $this->dispatch(new ErasePendingIdentity($identity->id->toString()));
-
-        // Then
-        $result = $this->identityFinder->ofId($identity->id->toString());
-        self::assertSame($identity->id->toString(), $result->id);
-    }
-
-    #[Test]
-    public function itIgnoresWhenNotExpired(): void
-    {
-        // Given
-        $now = Clock::get()->now();
-        $expiry = '24 hours';
-        $identity = IdentityFactory::new()
-            ->withExpiry($expiry)
-            ->withRegisteredAt($now->modify(\sprintf('-%s +1 second', $expiry)))
             ->create();
         $this->store($identity);
 
@@ -119,5 +98,14 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new ErasePendingIdentity($unknownId));
+    }
+
+    /**
+     * @return iterable<string, array{string, bool}>
+     */
+    public static function provideExpiresAtBoundary(): iterable
+    {
+        yield 'expiresAt not passed' => ['+1 second', true];
+        yield 'expiresAt passed' => ['-1 second', false];
     }
 }

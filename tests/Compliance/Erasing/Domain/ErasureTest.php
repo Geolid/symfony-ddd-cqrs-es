@@ -97,7 +97,7 @@ final class ErasureTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotApproveWhenNotEffective(): void
+    public function itDoesNotApproveWhenEffectiveAtNotPassed(): void
     {
         $this
             ->given($this->requested())

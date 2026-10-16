@@ -59,7 +59,7 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
     public function openFor(string $cartId): OpenedCheckoutSession
     {
         $cart = $this->cartFinder->ofId($cartId);
-        $cartItems = iterator_to_array($this->cartItemFinder->byCart($cartId));
+        $cartItems = [...$this->cartItemFinder->byCart($cartId)];
 
         $customer = $this->customerFinder->ofIdOrNull($cart->customerId)
             ?? throw CustomerNotRegisteredException::forId($cart->customerId);
@@ -114,7 +114,7 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
     }
 
     /**
-     * @param array<CartItemResult> $cartItems
+     * @param list<CartItemResult> $cartItems
      *
      * @return list<CheckoutItem>
      *
