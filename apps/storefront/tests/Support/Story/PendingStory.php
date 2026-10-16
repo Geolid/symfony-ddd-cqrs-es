@@ -21,7 +21,7 @@ final class PendingStory extends AbstractIdentityStory
     {
         $now = Clock::get()->now();
         $identity = IdentityFactory::new()
-            ->withRegisteredAt($now->modify('-1 hour'))
+            ->withRegisteredAt($now->modify('-45 minutes'))
             ->confirmationRequested($now->modify('-30 minutes'))
             ->create();
 

@@ -173,6 +173,7 @@ final class ResetTest extends AbstractStorefrontTestCase
 
         $browser->visitRoute('storefront_forgot_password_reset', ['identityId' => $persona->id]);
         $this->advanceClock('+2 minutes');
+        $sent = $this->sentEmailCount($persona->email, 'Reset your password');
 
         // When
         $browser->use(static function (ResetForm $reset): void {
@@ -180,7 +181,7 @@ final class ResetTest extends AbstractStorefrontTestCase
         });
 
         // Then
-        $this->assertEmailSent(2, $persona->email, 'Reset your password');
+        $this->assertEmailSent($sent + 1, $persona->email, 'Reset your password');
     }
 
     #[Test]

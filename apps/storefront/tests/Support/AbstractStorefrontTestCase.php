@@ -72,6 +72,13 @@ abstract class AbstractStorefrontTestCase extends WebTestCase
             ->assertCount($count);
     }
 
+    protected function sentEmailCount(string $recipient, string $subject): int
+    {
+        return $this->mailer()
+            ->sentEmails()->whereTo($recipient)->whereSubject($subject)
+            ->count();
+    }
+
     protected function advanceClock(string $modifier): void
     {
         Clock::set(new MockClock(Clock::get()->now()->modify($modifier)));
