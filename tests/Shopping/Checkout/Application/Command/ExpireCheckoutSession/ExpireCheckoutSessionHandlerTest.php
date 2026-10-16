@@ -28,12 +28,12 @@ final class ExpireCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
 
     #[Test]
     #[DataProvider('provideExpiry')]
-    public function itExpires(string $expiry, string $openedAtOffset, CheckoutSessionStatus $expectedStatus): void
+    public function itExpires(string $expiry, \DateTimeImmutable $openedAt, CheckoutSessionStatus $expectedStatus): void
     {
         // Given
         $checkoutSession = CheckoutSessionFactory::new()
             ->withExpiry($expiry)
-            ->withOpenedAt(Clock::get()->now()->modify($openedAtOffset))
+            ->withOpenedAt($openedAt)
             ->create();
         $this->store($checkoutSession);
 
@@ -73,11 +73,13 @@ final class ExpireCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
     }
 
     /**
-     * @return iterable<string, array{string, string, CheckoutSessionStatus}>
+     * @return iterable<string, array{string, \DateTimeImmutable, CheckoutSessionStatus}>
      */
     public static function provideExpiry(): iterable
     {
-        yield 'before expiry' => ['30 minutes', '-30 minutes +1 second', CheckoutSessionStatus::OPEN];
-        yield 'after expiry' => ['30 minutes', '-30 minutes -1 second', CheckoutSessionStatus::EXPIRED];
+        $now = Clock::get()->now();
+
+        yield 'before expiry' => ['30 minutes', $now->modify('-30 minutes +1 second'), CheckoutSessionStatus::OPEN];
+        yield 'after expiry' => ['30 minutes', $now->modify('-30 minutes -1 second'), CheckoutSessionStatus::EXPIRED];
     }
 }

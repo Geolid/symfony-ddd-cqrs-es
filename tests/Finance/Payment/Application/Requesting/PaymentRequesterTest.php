@@ -60,10 +60,9 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
 
     #[Test]
     #[DataProvider('provideExpiry')]
-    public function itRequests(string $expiresAtOffset): void
+    public function itRequests(\DateTimeImmutable $expiresAt): void
     {
         // Given
-        $expiresAt = Clock::get()->now()->modify($expiresAtOffset);
         $checkoutSessionId = Uuid::uuid7()->toString();
         $paymentId = PaymentId::forCheckoutSession($checkoutSessionId)->toString();
         $reference = PaymentReferenceFactory::new()->create()->value;
@@ -161,12 +160,14 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
     }
 
     /**
-     * @return iterable<string, array{string}>
+     * @return iterable<string, array{\DateTimeImmutable}>
      */
     public static function provideExpiry(): iterable
     {
-        yield 'before expiry' => ['+30 minutes'];
-        yield 'at expiry' => ['+0 seconds'];
+        $now = Clock::get()->now();
+
+        yield 'before expiry' => [$now->modify('+30 minutes')];
+        yield 'at expiry' => [$now];
     }
 
     /**
