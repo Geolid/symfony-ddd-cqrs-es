@@ -34,14 +34,14 @@ final class NativeNumericCodeGeneratorTest extends TestCase
      */
     public static function provideDigitCounts(): iterable
     {
-        yield 'minimum digit count' => [1];
+        yield 'single digit' => [1];
         yield 'typical digit count' => [8];
-        yield 'maximum digit count' => [18];
+        yield 'beyond the integer range' => [40];
     }
 
     #[Test]
-    #[DataProvider('provideDigitCountsOutOfBounds')]
-    public function itFailsWithDigitCountOutOfBounds(int $digitCount): void
+    #[DataProvider('provideDigitCountsBelowOne')]
+    public function itFailsWithDigitCountBelowOne(int $digitCount): void
     {
         // Then
         $this->expectException(\InvalidArgumentException::class);
@@ -53,9 +53,9 @@ final class NativeNumericCodeGeneratorTest extends TestCase
     /**
      * @return iterable<string, array{int}>
      */
-    public static function provideDigitCountsOutOfBounds(): iterable
+    public static function provideDigitCountsBelowOne(): iterable
     {
-        yield 'below minimum digit count' => [0];
-        yield 'above maximum digit count' => [19];
+        yield 'zero' => [0];
+        yield 'negative' => [-1];
     }
 }

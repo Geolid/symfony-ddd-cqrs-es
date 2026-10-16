@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Infrastructure\Totp;
 
-use Iam\Authentication\Application\Validation\ValidTotpCode;
 use Iam\Authentication\Infrastructure\Totp\OtphpTotpVerifier;
 use OTPHP\TOTP;
 use PHPUnit\Framework\Attributes\Test;
@@ -35,13 +34,6 @@ final class OtphpTotpVerifierTest extends TestCase
 
         // Then
         self::assertTrue($verified);
-    }
-
-    #[Test]
-    public function itVerifiesCodesOfTheValidatedLength(): void
-    {
-        // Then
-        self::assertSame(ValidTotpCode::LENGTH, \strlen($this->validCode));
     }
 
     #[Test]
