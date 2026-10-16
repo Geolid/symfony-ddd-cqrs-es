@@ -83,6 +83,17 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
         self::assertSame(PaymentStatus::REQUESTED, $payment->status);
     }
 
+    /**
+     * @return iterable<string, array{\DateTimeImmutable}>
+     */
+    public static function provideExpiry(): iterable
+    {
+        $now = Clock::get()->now();
+
+        yield 'before expiry' => [$now->modify('+30 minutes')];
+        yield 'at expiry' => [$now];
+    }
+
     #[Test]
     public function itReturnsExistingWhenAlreadyClaimed(): void
     {
@@ -157,17 +168,6 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
 
         // When
         $this->service->requestFor(Uuid::uuid7()->toString(), 'EUR', $this->lines(), 'https://web.test/sales/orders', 'https://web.test/sales/cart', $expiredAt);
-    }
-
-    /**
-     * @return iterable<string, array{\DateTimeImmutable}>
-     */
-    public static function provideExpiry(): iterable
-    {
-        $now = Clock::get()->now();
-
-        yield 'before expiry' => [$now->modify('+30 minutes')];
-        yield 'at expiry' => [$now];
     }
 
     /**

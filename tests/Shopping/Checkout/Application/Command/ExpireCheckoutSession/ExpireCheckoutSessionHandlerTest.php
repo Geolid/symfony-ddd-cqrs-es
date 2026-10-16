@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Shopping\Tests\Checkout\Application\Command\ExpireCheckoutSession;
 
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use Shopping\Checkout\Application\CheckoutSessionStatus;
 use Shopping\Checkout\Application\Command\ExpireCheckoutSession\ExpireCheckoutSession;
@@ -27,13 +26,12 @@ final class ExpireCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    #[DataProvider('provideExpiry')]
-    public function itExpires(string $expiry, \DateTimeImmutable $openedAt, CheckoutSessionStatus $expectedStatus): void
+    public function itExpires(): void
     {
         // Given
         $checkoutSession = CheckoutSessionFactory::new()
-            ->withExpiry($expiry)
-            ->withOpenedAt($openedAt)
+            ->withExpiry('30 minutes')
+            ->withOpenedAt(Clock::get()->now()->modify('-30 minutes -1 second'))
             ->create();
         $this->store($checkoutSession);
 
@@ -42,7 +40,7 @@ final class ExpireCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
 
         // Then
         $result = $this->finder->ofId($checkoutSession->id->toString());
-        self::assertSame($expectedStatus, $result->status);
+        self::assertSame(CheckoutSessionStatus::EXPIRED, $result->status);
     }
 
     #[Test]
@@ -60,6 +58,24 @@ final class ExpireCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itIgnoresWhenNotExpired(): void
+    {
+        // Given
+        $checkoutSession = CheckoutSessionFactory::new()
+            ->withExpiry('30 minutes')
+            ->withOpenedAt(Clock::get()->now()->modify('-30 minutes +1 second'))
+            ->create();
+        $this->store($checkoutSession);
+
+        // When
+        $this->dispatch(new ExpireCheckoutSession($checkoutSession->id->toString()));
+
+        // Then
+        $result = $this->finder->ofId($checkoutSession->id->toString());
+        self::assertSame(CheckoutSessionStatus::OPEN, $result->status);
+    }
+
+    #[Test]
     public function itFailsWhenNotFound(): void
     {
         // Given
@@ -70,16 +86,5 @@ final class ExpireCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
 
         // When
         $this->dispatch(new ExpireCheckoutSession($unknownId));
-    }
-
-    /**
-     * @return iterable<string, array{string, \DateTimeImmutable, CheckoutSessionStatus}>
-     */
-    public static function provideExpiry(): iterable
-    {
-        $now = Clock::get()->now();
-
-        yield 'before expiry' => ['30 minutes', $now->modify('-30 minutes +1 second'), CheckoutSessionStatus::OPEN];
-        yield 'after expiry' => ['30 minutes', $now->modify('-30 minutes -1 second'), CheckoutSessionStatus::EXPIRED];
     }
 }
