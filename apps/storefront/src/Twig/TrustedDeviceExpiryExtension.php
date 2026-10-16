@@ -9,15 +9,18 @@ use Twig\Attribute\AsTwigFunction;
 
 final readonly class TrustedDeviceExpiryExtension
 {
+    private \DateInterval $expiry;
+
     public function __construct(
-        #[Autowire(param: 'iam.authentication.trusted_device_expiry_seconds')]
-        private int $expirySeconds,
+        #[Autowire(param: 'iam.authentication.trusted_device_expiry')]
+        string $expiry,
     ) {
+        $this->expiry = \DateInterval::createFromDateString($expiry);
     }
 
-    #[AsTwigFunction(name: 'trusted_device_expiry_days')]
-    public function expiryDays(): int
+    #[AsTwigFunction(name: 'trusted_device_expiry')]
+    public function expiry(): \DateInterval
     {
-        return intdiv($this->expirySeconds, 24 * 60 * 60);
+        return $this->expiry;
     }
 }

@@ -32,14 +32,14 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
     {
         // Given
         $other = PaymentFactory::new()->create();
-        $orderPayment = PaymentFactory::new()->authorized()->create();
-        $this->store($other, $orderPayment);
+        $payment = PaymentFactory::new()->authorized()->create();
+        $this->store($other, $payment);
 
         // When
-        $result = $this->finder()->ofId($orderPayment->id->toString());
+        $result = $this->finder()->ofId($payment->id->toString());
 
         // Then
-        self::assertSame($orderPayment->id->toString(), $result->id);
+        self::assertSame($payment->id->toString(), $result->id);
         self::assertSame(PaymentStatus::AUTHORIZED, $result->status);
     }
 
@@ -64,23 +64,23 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
         $requestedAt = Clock::get()->now()->modify('-4 days');
         $authorizedAt = $requestedAt->modify('+1 hour');
         $capturedAt = $requestedAt->modify('+1 day 2 hours');
-        $orderPayment = PaymentFactory::new()
+        $payment = PaymentFactory::new()
             ->withRequestedAt($requestedAt)
             ->authorized($authorizedAt)
             ->captured($order->id->toString(), $capturedAt)
             ->create();
-        $this->store($order, $orderPayment);
+        $this->store($order, $payment);
 
         // When
-        $result = $this->finder()->ofReference($orderPayment->reference->value);
+        $result = $this->finder()->ofReference($payment->reference->value);
 
         // Then
-        self::assertSame($orderPayment->id->toString(), $result->id);
-        self::assertSame($orderPayment->checkoutSessionId, $result->checkoutSessionId);
+        self::assertSame($payment->id->toString(), $result->id);
+        self::assertSame($payment->checkoutSessionId, $result->checkoutSessionId);
         self::assertSame($order->id->toString(), $result->orderId);
-        self::assertSame($orderPayment->amount->cents, $result->amountInCents);
-        self::assertSame($orderPayment->reference->value, $result->reference);
-        self::assertSame($orderPayment->hostedPageUrl, $result->hostedPageUrl);
+        self::assertSame($payment->amount->cents, $result->amountInCents);
+        self::assertSame($payment->reference->value, $result->reference);
+        self::assertSame($payment->hostedPageUrl, $result->hostedPageUrl);
         self::assertSame(PaymentStatus::CAPTURED, $result->status);
         self::assertSameDateTime($requestedAt, $result->requestedAt);
         self::assertSameDateTime($authorizedAt, $result->authorizedAt);
@@ -108,14 +108,14 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
     {
         // Given
         $other = PaymentFactory::new()->create();
-        $orderPayment = PaymentFactory::new()->create();
-        $this->store($other, $orderPayment);
+        $payment = PaymentFactory::new()->create();
+        $this->store($other, $payment);
 
         // When
-        $result = $this->finder()->ofCheckoutSession($orderPayment->checkoutSessionId);
+        $result = $this->finder()->ofCheckoutSession($payment->checkoutSessionId);
 
         // Then
-        self::assertSame($orderPayment->id->toString(), $result->id);
+        self::assertSame($payment->id->toString(), $result->id);
     }
 
     #[Test]
@@ -137,14 +137,14 @@ final class DbalPaymentFinderTest extends AbstractIterableFinderTestCase
         // Given
         $other = PaymentFactory::new()->create();
         $order = OrderFactory::new()->create();
-        $orderPayment = PaymentFactory::new()->authorized()->captured($order->id->toString())->create();
-        $this->store($other, $orderPayment);
+        $payment = PaymentFactory::new()->authorized()->captured($order->id->toString())->create();
+        $this->store($other, $payment);
 
         // When
         $result = $this->finder()->ofOrderId($order->id->toString());
 
         // Then
-        self::assertSame($orderPayment->id->toString(), $result->id);
+        self::assertSame($payment->id->toString(), $result->id);
     }
 
     #[Test]

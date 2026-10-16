@@ -85,7 +85,9 @@ final class CompleteCheckoutSessionHandlerTest extends AbstractIntegrationTestCa
         ));
 
         // Then
-        self::expectNotToPerformAssertions();
+        $result = $this->finder->ofId($checkoutSession->id->toString());
+        self::assertSame($checkoutSession->cartId, $result->cartId);
+        self::assertSame($checkoutSession->customerId, $result->customerId);
     }
 
     #[Test]

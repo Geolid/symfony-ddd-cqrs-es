@@ -22,8 +22,6 @@ use Shared\Domain\ValueObject\Money;
 use Shared\Tests\Support\Factory\MoneyFactory;
 use Symfony\Component\Clock\Clock;
 
-use function Zenstruck\Foundry\faker;
-
 final class PaymentTest extends AggregateRootTestCase
 {
     private PaymentId $id;
@@ -45,7 +43,7 @@ final class PaymentTest extends AggregateRootTestCase
         $this->orderId = Uuid::uuid7()->toString();
         $this->amount = MoneyFactory::new()->create();
         $this->reference = PaymentReferenceFactory::new()->create();
-        $this->hostedPageUrl = 'https://checkout.globex.test/pay/'.faker()->regexify('[A-Z0-9]{8}');
+        $this->hostedPageUrl = \sprintf('https://checkout.globex.test/pay/%s', $this->reference->value);
         $this->requestedAt = Clock::get()->now();
         $this->authorizedAt = $this->requestedAt->modify('+1 day');
         $this->capturedAt = $this->requestedAt->modify('+2 day');
@@ -72,7 +70,7 @@ final class PaymentTest extends AggregateRootTestCase
     {
         $this
             ->given($this->requested())
-            ->when(fn (Payment $orderPayment) => $orderPayment->authorize($this->authorizedAt))
+            ->when(fn (Payment $payment) => $payment->authorize($this->authorizedAt))
             ->then(new PaymentAuthorized($this->id, $this->checkoutSessionId, $this->authorizedAt));
     }
 
@@ -81,7 +79,7 @@ final class PaymentTest extends AggregateRootTestCase
     {
         $this
             ->given($this->requested(), $this->authorized())
-            ->when(fn (Payment $orderPayment) => $orderPayment->authorize($this->authorizedAt))
+            ->when(fn (Payment $payment) => $payment->authorize($this->authorizedAt))
             ->then();
     }
 
@@ -97,7 +95,7 @@ final class PaymentTest extends AggregateRootTestCase
                 $this->requested(),
                 new PaymentAbandoned($this->id, $this->checkoutSessionId, $abandonedAt),
             )
-            ->when(static fn (Payment $orderPayment) => $orderPayment->authorize($lateAuthorizedAt))
+            ->when(static fn (Payment $payment) => $payment->authorize($lateAuthorizedAt))
             ->then(new PaymentVoided($this->id, $this->reference, $lateAuthorizedAt));
     }
 
@@ -106,7 +104,7 @@ final class PaymentTest extends AggregateRootTestCase
     {
         $this
             ->given($this->requested())
-            ->when(fn (Payment $orderPayment) => $orderPayment->fail($this->orderId, $this->authorizedAt))
+            ->when(fn (Payment $payment) => $payment->fail($this->orderId, $this->authorizedAt))
             ->then();
     }
 
@@ -117,7 +115,7 @@ final class PaymentTest extends AggregateRootTestCase
 
         $this
             ->given($this->requested(), $this->authorized())
-            ->when(fn (Payment $orderPayment) => $orderPayment->fail($this->orderId, $failedAt))
+            ->when(fn (Payment $payment) => $payment->fail($this->orderId, $failedAt))
             ->then(new PaymentFailed($this->id, $this->orderId, $failedAt));
     }
 
@@ -126,7 +124,7 @@ final class PaymentTest extends AggregateRootTestCase
     {
         $this
             ->given($this->requested(), $this->authorized(), $this->captured())
-            ->when(fn (Payment $orderPayment) => $orderPayment->fail($this->orderId, $this->authorizedAt))
+            ->when(fn (Payment $payment) => $payment->fail($this->orderId, $this->authorizedAt))
             ->then();
     }
 
@@ -135,7 +133,7 @@ final class PaymentTest extends AggregateRootTestCase
     {
         $this
             ->given($this->requested(), $this->authorized())
-            ->when(fn (Payment $orderPayment) => $orderPayment->capture($this->orderId, $this->capturedAt))
+            ->when(fn (Payment $payment) => $payment->capture($this->orderId, $this->capturedAt))
             ->then(new PaymentCaptured($this->id, $this->orderId, $this->capturedAt));
     }
 
@@ -144,7 +142,7 @@ final class PaymentTest extends AggregateRootTestCase
     {
         $this
             ->given($this->requested())
-            ->when(fn (Payment $orderPayment) => $orderPayment->capture($this->orderId, $this->capturedAt))
+            ->when(fn (Payment $payment) => $payment->capture($this->orderId, $this->capturedAt))
             ->then();
     }
 
@@ -153,7 +151,7 @@ final class PaymentTest extends AggregateRootTestCase
     {
         $this
             ->given($this->requested(), $this->authorized(), $this->captured())
-            ->when(fn (Payment $orderPayment) => $orderPayment->capture($this->orderId, $this->capturedAt))
+            ->when(fn (Payment $payment) => $payment->capture($this->orderId, $this->capturedAt))
             ->then();
     }
 
@@ -164,7 +162,7 @@ final class PaymentTest extends AggregateRootTestCase
 
         $this
             ->given($this->requested())
-            ->when(static fn (Payment $orderPayment) => $orderPayment->abandon($abandonedAt))
+            ->when(static fn (Payment $payment) => $payment->abandon($abandonedAt))
             ->then(new PaymentAbandoned($this->id, $this->checkoutSessionId, $abandonedAt));
     }
 
@@ -173,7 +171,7 @@ final class PaymentTest extends AggregateRootTestCase
     {
         $this
             ->given($this->requested(), $this->authorized())
-            ->when(fn (Payment $orderPayment) => $orderPayment->abandon($this->authorizedAt))
+            ->when(fn (Payment $payment) => $payment->abandon($this->authorizedAt))
             ->then();
     }
 
@@ -184,7 +182,7 @@ final class PaymentTest extends AggregateRootTestCase
 
         $this
             ->given($this->requested(), $this->authorized())
-            ->when(static fn (Payment $orderPayment) => $orderPayment->void($voidedAt))
+            ->when(static fn (Payment $payment) => $payment->void($voidedAt))
             ->then(new PaymentVoided($this->id, $this->reference, $voidedAt));
     }
 
@@ -193,7 +191,7 @@ final class PaymentTest extends AggregateRootTestCase
     {
         $this
             ->given($this->requested())
-            ->when(fn (Payment $orderPayment) => $orderPayment->void($this->authorizedAt))
+            ->when(fn (Payment $payment) => $payment->void($this->authorizedAt))
             ->then();
     }
 
@@ -202,7 +200,7 @@ final class PaymentTest extends AggregateRootTestCase
     {
         $this
             ->given($this->requested(), $this->authorized(), $this->captured())
-            ->when(fn (Payment $orderPayment) => $orderPayment->void($this->authorizedAt))
+            ->when(fn (Payment $payment) => $payment->void($this->authorizedAt))
             ->then();
     }
 
@@ -218,7 +216,7 @@ final class PaymentTest extends AggregateRootTestCase
                 $this->authorized(),
                 new PaymentFailed($this->id, $this->orderId, $failedAt),
             )
-            ->when(static fn (Payment $orderPayment) => $orderPayment->void($voidedAt))
+            ->when(static fn (Payment $payment) => $payment->void($voidedAt))
             ->then();
     }
 

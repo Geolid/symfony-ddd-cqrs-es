@@ -27,9 +27,9 @@ final class SweepErasuresDueForApprovalCommandTest extends AbstractCronTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $retentionSeconds = 30 * 24 * 60 * 60;
-        $fresh = ErasureFactory::new()->withRetentionSeconds($retentionSeconds)->withRequestedAt($now->modify(\sprintf('-%d seconds', $retentionSeconds - 1)))->create();
-        $due = ErasureFactory::new()->withRetentionSeconds($retentionSeconds)->withRequestedAt($now->modify(\sprintf('-%d seconds', $retentionSeconds + 1)))->create();
+        $retention = '30 days';
+        $fresh = ErasureFactory::new()->withRetention($retention)->withRequestedAt($now->modify(\sprintf('-%s +1 second', $retention)))->create();
+        $due = ErasureFactory::new()->withRetention($retention)->withRequestedAt($now->modify(\sprintf('-%s -1 second', $retention)))->create();
         $this->store($fresh, $due);
 
         // When

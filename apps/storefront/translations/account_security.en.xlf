@@ -219,7 +219,7 @@
       </trans-unit>
       <trans-unit id="trusted_devices_instructions">
         <source>trusted_devices_instructions</source>
-        <target>Here are the devices where two-factor authentication (2FA) is skipped for the next %days% days. You can revoke access for a device you don't recognize.</target>
+        <target>Here are the devices where two-factor authentication (2FA) is skipped for the next %duration%. You can revoke access for a device you don't recognize.</target>
       </trans-unit>
       <trans-unit id="trusted_devices_empty">
         <source>trusted_devices_empty</source>

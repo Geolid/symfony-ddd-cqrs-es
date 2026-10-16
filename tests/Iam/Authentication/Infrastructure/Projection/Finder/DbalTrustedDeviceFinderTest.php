@@ -47,18 +47,18 @@ final class DbalTrustedDeviceFinderTest extends AbstractIterableFinderTestCase
         // Given
         $now = Clock::get()->now();
         $identityId = Uuid::uuid7()->toString();
-        $expirySeconds = 30 * 24 * 60 * 60;
+        $expiry = '30 days';
 
         $expired = TrustedDeviceFactory::new()
             ->withIdentityId($identityId)
-            ->withExpirySeconds($expirySeconds)
-            ->withTrustedAt($now->modify(\sprintf('-%d seconds', $expirySeconds + 1)))
+            ->withExpiry($expiry)
+            ->withTrustedAt($now->modify(\sprintf('-%s -1 second', $expiry)))
             ->create();
 
         $stillActive = TrustedDeviceFactory::new()
             ->withIdentityId($identityId)
-            ->withExpirySeconds($expirySeconds)
-            ->withTrustedAt($now->modify(\sprintf('-%d seconds', $expirySeconds)))
+            ->withExpiry($expiry)
+            ->withTrustedAt($now->modify(\sprintf('-%s', $expiry)))
             ->create();
 
         $this->store($expired, $stillActive);

@@ -47,8 +47,8 @@ final class CheckoutSessionOpenerTest extends AbstractIntegrationTestCase
             $this->service(ListedProductFinderInterface::class),
             $this->taxRateResolver,
             $this->service(CommandBusInterface::class),
-            $this->service(ClockInterface::class),
             $this->service(CheckoutSessionExpiryCalculator::class),
+            $this->service(ClockInterface::class),
         );
     }
 

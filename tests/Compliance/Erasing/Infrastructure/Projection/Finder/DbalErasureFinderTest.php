@@ -100,15 +100,15 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
     }
 
     #[Test]
-    public function itFiltersByEffectiveBefore(): void
+    public function itFiltersEffectiveBefore(): void
     {
         // Given
         $now = Clock::get()->now();
-        $retentionSeconds = 30 * 24 * 60 * 60;
-        $dueRequestedAt = $now->modify(\sprintf('-%d seconds', $retentionSeconds + 1));
-        $atEffectiveAt = ErasureFactory::new()->withRetentionSeconds($retentionSeconds)->withRequestedAt($now->modify(\sprintf('-%d seconds', $retentionSeconds)))->create();
-        $due = ErasureFactory::new()->withRetentionSeconds($retentionSeconds)->withRequestedAt($dueRequestedAt)->create();
-        $approved = ErasureFactory::new()->withRetentionSeconds($retentionSeconds)->withRequestedAt($dueRequestedAt)->approved()->create();
+        $retention = '30 days';
+        $dueRequestedAt = $now->modify(\sprintf('-%s -1 second', $retention));
+        $atEffectiveAt = ErasureFactory::new()->withRetention($retention)->withRequestedAt($now->modify(\sprintf('-%s', $retention)))->create();
+        $due = ErasureFactory::new()->withRetention($retention)->withRequestedAt($dueRequestedAt)->create();
+        $approved = ErasureFactory::new()->withRetention($retention)->withRequestedAt($dueRequestedAt)->approved()->create();
         $this->store($atEffectiveAt, $due, $approved);
 
         // When

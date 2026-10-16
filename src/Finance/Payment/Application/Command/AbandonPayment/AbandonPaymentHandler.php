@@ -31,9 +31,9 @@ final readonly class AbandonPaymentHandler
     public function __invoke(AbandonPayment $command): void
     {
         $id = PaymentId::fromString($command->id);
-        $orderPayment = $this->repository->load($id);
-        $orderPayment->abandon($this->clock->now());
-        $this->repository->save($orderPayment);
+        $payment = $this->repository->load($id);
+        $payment->abandon($this->clock->now());
+        $this->repository->save($payment);
 
         $this->uniqueness->release(UniqueKey::for(PaymentUniqueKey::CHECKOUT_SESSION), $command->id);
     }

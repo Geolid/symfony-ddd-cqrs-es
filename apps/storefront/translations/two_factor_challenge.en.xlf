@@ -27,7 +27,7 @@
       </trans-unit>
       <trans-unit id="label_trust_device">
         <source>label_trust_device</source>
-        <target>Remember this device for %days% days</target>
+        <target>Remember this device for %duration%</target>
       </trans-unit>
       <trans-unit id="button_submit">
         <source>button_submit</source>

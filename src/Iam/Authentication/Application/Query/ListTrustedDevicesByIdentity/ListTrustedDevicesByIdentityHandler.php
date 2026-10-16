@@ -23,6 +23,6 @@ final readonly class ListTrustedDevicesByIdentityHandler
      */
     public function __invoke(ListTrustedDevicesByIdentity $query): array
     {
-        return [...$this->trustedDeviceFinder->activeByIdentity($query->identityId, $this->clock->now())];
+        return iterator_to_array($this->trustedDeviceFinder->activeByIdentity($query->identityId, $this->clock->now()), false);
     }
 }

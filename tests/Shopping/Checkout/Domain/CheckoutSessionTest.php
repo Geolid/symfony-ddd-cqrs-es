@@ -36,7 +36,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
     private PostalAddress $billingAddress;
     private string $paymentId;
     private \DateTimeImmutable $openedAt;
-    private int $expirySeconds;
+    private string $expiry;
     private \DateTimeImmutable $expiresAt;
     private \DateTimeImmutable $expiredAt;
     private \DateTimeImmutable $staledAt;
@@ -55,8 +55,8 @@ final class CheckoutSessionTest extends AggregateRootTestCase
         $this->billingAddress = PostalAddressFactory::new()->create();
         $this->paymentId = Uuid::uuid7()->toString();
         $this->openedAt = Clock::get()->now();
-        $this->expirySeconds = 60 * 60;
-        $this->expiresAt = $this->openedAt->modify(\sprintf('+%d seconds', $this->expirySeconds));
+        $this->expiry = '1 hour';
+        $this->expiresAt = $this->openedAt->modify(\sprintf('+%s', $this->expiry));
         $this->expiredAt = $this->expiresAt->modify('+1 minute');
         $this->staledAt = $this->openedAt->modify('+1 minute');
         $this->completedAt = $this->openedAt->modify('+5 minutes');
@@ -76,7 +76,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
                 $this->shippingAddress,
                 $this->billingAddress,
                 $this->openedAt,
-                new CheckoutSessionExpiryCalculator($this->expirySeconds),
+                new CheckoutSessionExpiryCalculator(\DateInterval::createFromDateString($this->expiry)),
             ))
             ->then($this->opened());
     }
@@ -95,7 +95,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
                 $this->shippingAddress,
                 $this->billingAddress,
                 $this->openedAt,
-                new CheckoutSessionExpiryCalculator($this->expirySeconds),
+                new CheckoutSessionExpiryCalculator(\DateInterval::createFromDateString($this->expiry)),
             ))
             ->expectsException(CheckoutSessionEmptyException::class);
     }
@@ -119,7 +119,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotExpireWhenExpiresAtNotPassed(): void
+    public function itDoesNotExpireWhenNotExpired(): void
     {
         $this
             ->given($this->opened())

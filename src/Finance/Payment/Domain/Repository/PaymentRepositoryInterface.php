@@ -21,5 +21,5 @@ interface PaymentRepositoryInterface
     /**
      * @throws PaymentAlreadyExistsException
      */
-    public function save(Payment $orderPayment): void;
+    public function save(Payment $payment): void;
 }

@@ -18,19 +18,19 @@ final class GetPaymentByReferenceHandlerTest extends AbstractIntegrationTestCase
     public function itGetsByReference(): void
     {
         // Given
-        $orderPayment = PaymentFactory::new()->create();
-        $this->store($orderPayment);
+        $payment = PaymentFactory::new()->create();
+        $this->store($payment);
 
         // When
-        $result = $this->ask(new GetPaymentByReference($orderPayment->reference->value));
+        $result = $this->ask(new GetPaymentByReference($payment->reference->value));
 
         // Then
-        self::assertSame($orderPayment->id->toString(), $result->id);
-        self::assertSame($orderPayment->checkoutSessionId, $result->checkoutSessionId);
+        self::assertSame($payment->id->toString(), $result->id);
+        self::assertSame($payment->checkoutSessionId, $result->checkoutSessionId);
         self::assertNull($result->orderId);
-        self::assertSame($orderPayment->amount->cents, $result->amountInCents);
-        self::assertSame($orderPayment->reference->value, $result->reference);
-        self::assertSame($orderPayment->hostedPageUrl, $result->hostedPageUrl);
+        self::assertSame($payment->amount->cents, $result->amountInCents);
+        self::assertSame($payment->reference->value, $result->reference);
+        self::assertSame($payment->hostedPageUrl, $result->hostedPageUrl);
         self::assertSame(PaymentStatus::REQUESTED, $result->status);
         self::assertNotNull($result->requestedAt);
         self::assertNull($result->capturedAt);

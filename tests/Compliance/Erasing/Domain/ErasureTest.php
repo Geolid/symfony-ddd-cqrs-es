@@ -24,7 +24,7 @@ final class ErasureTest extends AggregateRootTestCase
     private \DateTimeImmutable $requestedAt;
     private \DateTimeImmutable $cancelledAt;
     private \DateTimeImmutable $approvedAt;
-    private int $retentionSeconds;
+    private string $retention;
     private \DateTimeImmutable $effectiveAt;
 
     protected function setUp(): void
@@ -35,8 +35,8 @@ final class ErasureTest extends AggregateRootTestCase
         $this->identityId = Uuid::uuid7()->toString();
         $this->requestedAt = Clock::get()->now();
         $this->cancelledAt = $this->requestedAt->modify('+1 hour');
-        $this->retentionSeconds = 60 * 60;
-        $this->effectiveAt = $this->requestedAt->modify(\sprintf('+%d seconds', $this->retentionSeconds));
+        $this->retention = '1 hour';
+        $this->effectiveAt = $this->requestedAt->modify(\sprintf('+%s', $this->retention));
         $this->approvedAt = $this->effectiveAt->modify('+1 day');
     }
 
@@ -45,7 +45,7 @@ final class ErasureTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Erasure => Erasure::request($this->id, $this->identityId, $this->requestedAt, new ErasureRetentionCalculator($this->retentionSeconds)))
+            ->when(fn (): Erasure => Erasure::request($this->id, $this->identityId, $this->requestedAt, new ErasureRetentionCalculator(\DateInterval::createFromDateString($this->retention))))
             ->then($this->requested());
     }
 
@@ -97,7 +97,7 @@ final class ErasureTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotApproveWhenEffectiveAtNotPassed(): void
+    public function itDoesNotApproveWhenNotEffective(): void
     {
         $this
             ->given($this->requested())

@@ -44,7 +44,7 @@ final class IdentityTest extends AggregateRootTestCase
     private Email $email;
     private Reason $reason;
     private \DateTimeImmutable $registeredAt;
-    private int $expirySeconds;
+    private string $expiry;
     private \DateTimeImmutable $expiresAt;
     private \DateTimeImmutable $confirmedAt;
     private string $confirmationCode;
@@ -68,8 +68,8 @@ final class IdentityTest extends AggregateRootTestCase
         $this->email = EmailFactory::new()->create();
         $this->reason = ReasonFactory::new()->create();
         $this->registeredAt = Clock::get()->now();
-        $this->expirySeconds = 60 * 60;
-        $this->expiresAt = $this->registeredAt->modify(\sprintf('+%d seconds', $this->expirySeconds));
+        $this->expiry = '1 hour';
+        $this->expiresAt = $this->registeredAt->modify(\sprintf('+%s', $this->expiry));
         $this->confirmedAt = $this->registeredAt->modify('+1 hour');
         $this->confirmationCode = FakeCodeChallenger::CODE;
         $this->fullNameChangedAt = $this->registeredAt->modify('+45 minutes');
@@ -89,7 +89,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Identity => Identity::register($this->id, $this->fullName, $this->email, $this->registeredAt, new PendingIdentityExpiryCalculator($this->expirySeconds)))
+            ->when(fn (): Identity => Identity::register($this->id, $this->fullName, $this->email, $this->registeredAt, new PendingIdentityExpiryCalculator(\DateInterval::createFromDateString($this->expiry))))
             ->then($this->registered());
     }
 
@@ -493,7 +493,7 @@ final class IdentityTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotErasePendingWhenExpiresAtNotPassed(): void
+    public function itDoesNotErasePendingWhenNotExpired(): void
     {
         $this
             ->given($this->registered())

@@ -42,8 +42,8 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
         private ListedProductFinderInterface $listedProductFinder,
         private TaxRateResolverInterface $taxRateResolver,
         private CommandBusInterface $commandBus,
-        private ClockInterface $clock,
         private CheckoutSessionExpiryCalculator $expiryCalculator,
+        private ClockInterface $clock,
     ) {
     }
 

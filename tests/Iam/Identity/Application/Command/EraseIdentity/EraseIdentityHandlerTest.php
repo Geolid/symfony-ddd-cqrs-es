@@ -51,7 +51,8 @@ final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new EraseIdentity($identity->id->toString()));
 
         // Then
-        self::expectNotToPerformAssertions();
+        $result = $this->identityFinder->ofId($identity->id->toString());
+        self::assertSame($identity->id->toString(), $result->id);
     }
 
     #[Test]

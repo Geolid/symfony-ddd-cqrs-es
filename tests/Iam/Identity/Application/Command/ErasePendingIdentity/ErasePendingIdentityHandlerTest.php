@@ -30,10 +30,10 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $expirySeconds = 24 * 60 * 60;
+        $expiry = '24 hours';
         $identity = IdentityFactory::new()
-            ->withExpirySeconds($expirySeconds)
-            ->withRegisteredAt($now->modify(\sprintf('-%d seconds', $expirySeconds + 1)))
+            ->withExpiry($expiry)
+            ->withRegisteredAt($now->modify(\sprintf('-%s -1 second', $expiry)))
             ->create();
         $this->store($identity);
 
@@ -51,10 +51,10 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $expirySeconds = 24 * 60 * 60;
+        $expiry = '24 hours';
         $identity = IdentityFactory::new()
-            ->withExpirySeconds($expirySeconds)
-            ->withRegisteredAt($now->modify(\sprintf('-%d seconds', $expirySeconds + 1)))
+            ->withExpiry($expiry)
+            ->withRegisteredAt($now->modify(\sprintf('-%s -1 second', $expiry)))
             ->confirmed()
             ->create();
         $this->store($identity);
@@ -71,7 +71,12 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenNotExpired(): void
     {
         // Given
-        $identity = IdentityFactory::new()->create();
+        $now = Clock::get()->now();
+        $expiry = '24 hours';
+        $identity = IdentityFactory::new()
+            ->withExpiry($expiry)
+            ->withRegisteredAt($now->modify(\sprintf('-%s +1 second', $expiry)))
+            ->create();
         $this->store($identity);
 
         // When
@@ -87,10 +92,10 @@ final class ErasePendingIdentityHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $expirySeconds = 24 * 60 * 60;
+        $expiry = '24 hours';
         $identity = IdentityFactory::new()
-            ->withExpirySeconds($expirySeconds)
-            ->withRegisteredAt($now->modify(\sprintf('-%d seconds', $expirySeconds + 1)))
+            ->withExpiry($expiry)
+            ->withRegisteredAt($now->modify(\sprintf('-%s -1 second', $expiry)))
             ->erasureRequested()
             ->erased()
             ->create();

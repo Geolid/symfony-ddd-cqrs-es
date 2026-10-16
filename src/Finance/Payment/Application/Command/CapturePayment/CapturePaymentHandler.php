@@ -26,9 +26,9 @@ final readonly class CapturePaymentHandler
      */
     public function __invoke(CapturePayment $command): void
     {
-        $orderPayment = $this->repository->load(PaymentId::fromString($command->id));
-        $orderPayment->capture($command->orderId, $this->clock->now());
+        $payment = $this->repository->load(PaymentId::fromString($command->id));
+        $payment->capture($command->orderId, $this->clock->now());
 
-        $this->repository->save($orderPayment);
+        $this->repository->save($payment);
     }
 }

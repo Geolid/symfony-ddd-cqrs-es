@@ -29,10 +29,10 @@ final class ExpireCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
     public function itExpires(): void
     {
         // Given
-        $expirySeconds = 30 * 60;
+        $expiry = '30 minutes';
         $checkoutSession = CheckoutSessionFactory::new()
-            ->withExpirySeconds($expirySeconds)
-            ->withOpenedAt(Clock::get()->now()->modify(\sprintf('-%d seconds', $expirySeconds + 1)))
+            ->withExpiry($expiry)
+            ->withOpenedAt(Clock::get()->now()->modify(\sprintf('-%s -1 second', $expiry)))
             ->create();
         $this->store($checkoutSession);
 
@@ -59,17 +59,22 @@ final class ExpireCheckoutSessionHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresWhenTTLNotElapsed(): void
+    public function itIgnoresWhenNotExpired(): void
     {
         // Given
-        $checkoutSession = CheckoutSessionFactory::new()->create();
+        $expiry = '30 minutes';
+        $checkoutSession = CheckoutSessionFactory::new()
+            ->withExpiry($expiry)
+            ->withOpenedAt(Clock::get()->now()->modify(\sprintf('-%s +1 second', $expiry)))
+            ->create();
         $this->store($checkoutSession);
 
         // When
         $this->dispatch(new ExpireCheckoutSession($checkoutSession->id->toString()));
 
         // Then
-        self::expectNotToPerformAssertions();
+        $result = $this->finder->ofId($checkoutSession->id->toString());
+        self::assertSame(CheckoutSessionStatus::OPEN, $result->status);
     }
 
     #[Test]

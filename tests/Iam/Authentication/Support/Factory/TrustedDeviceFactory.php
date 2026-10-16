@@ -21,7 +21,7 @@ use function Zenstruck\Foundry\faker;
  *     userAgent: string,
  *     ip: string,
  *     trustedAt: \DateTimeImmutable,
- *     expirySeconds: int,
+ *     expiry: string,
  *     revokedAt: \DateTimeImmutable,
  * }
  *
@@ -49,9 +49,9 @@ final class TrustedDeviceFactory extends AbstractAggregateFactory
         return $this->with(['trustedAt' => $trustedAt]);
     }
 
-    public function withExpirySeconds(int $expirySeconds): self
+    public function withExpiry(string $expiry): self
     {
-        return $this->with(['expirySeconds' => $expirySeconds]);
+        return $this->with(['expiry' => $expiry]);
     }
 
     public function revoked(?\DateTimeImmutable $revokedAt = null): self
@@ -71,7 +71,7 @@ final class TrustedDeviceFactory extends AbstractAggregateFactory
             userAgent: $parameters['userAgent'],
             ip: $parameters['ip'],
             trustedAt: $parameters['trustedAt'],
-            expiryCalculator: new TrustedDeviceExpiryCalculator($parameters['expirySeconds']),
+            expiryCalculator: new TrustedDeviceExpiryCalculator(\DateInterval::createFromDateString($parameters['expiry'])),
         );
     }
 
@@ -85,7 +85,7 @@ final class TrustedDeviceFactory extends AbstractAggregateFactory
             'userAgent' => faker()->userAgent(),
             'ip' => faker()->ipv4(),
             'trustedAt' => $now,
-            'expirySeconds' => 60 * 60,
+            'expiry' => '1 hour',
             'revokedAt' => $now->modify('+1 day'),
         ];
     }

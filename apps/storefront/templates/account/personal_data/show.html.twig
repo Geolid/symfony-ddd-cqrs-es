@@ -15,7 +15,7 @@
         <dl>
             <dt>{{ 'show_label_erasure'|trans }}</dt>
             {% if erasure is null %}
-                <dd>{{ 'show_erasure_description'|trans({'%days%': erasure_retention_days()}) }}</dd>
+                <dd>{{ 'show_erasure_description'|trans({'%duration%': erasure_retention()|duration}) }}</dd>
             {% else %}
                 <dd data-testid="erasure-pending">{{ 'show_erasure_pending'|trans({'%requestedAt%': erasure.requestedAt|date('d/m/Y'), '%effectiveAt%': erasure.effectiveAt|date('d/m/Y')}) }}</dd>
             {% endif %}

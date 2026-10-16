@@ -39,14 +39,14 @@ final class DbalErasureFinder extends AbstractIterableDbalFinder implements Eras
         )->one();
     }
 
-    public function effectiveBefore(\DateTimeImmutable $now): static
+    public function effectiveBefore(\DateTimeImmutable $cutoff): static
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($now): void {
+            static function (QueryBuilder $qb) use ($cutoff): void {
                 $qb->andWhere('status = :requestedStatus')
-                    ->andWhere('effective_at < :now')
+                    ->andWhere('effective_at < :cutoff')
                     ->setParameter('requestedStatus', ErasureRequestStatus::REQUESTED->value)
-                    ->setParameter('now', $now, Types::DATETIME_IMMUTABLE);
+                    ->setParameter('cutoff', $cutoff, Types::DATETIME_IMMUTABLE);
             },
         );
     }

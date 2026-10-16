@@ -18,7 +18,7 @@ final class TrustedDeviceExpiryCalculatorTest extends TestCase
     public function itCalculatesExpiresAt(): void
     {
         // Given
-        $calculator = new TrustedDeviceExpiryCalculator(24 * 60 * 60);
+        $calculator = new TrustedDeviceExpiryCalculator(\DateInterval::createFromDateString('24 hours'));
         $trustedAt = Clock::get()->now();
 
         // When
@@ -26,15 +26,5 @@ final class TrustedDeviceExpiryCalculatorTest extends TestCase
 
         // Then
         self::assertSameDateTime($trustedAt->modify('+24 hours'), $expiresAt);
-    }
-
-    #[Test]
-    public function itFailsWhenNotPositive(): void
-    {
-        // Then
-        $this->expectException(\InvalidArgumentException::class);
-
-        // When
-        new TrustedDeviceExpiryCalculator(0);
     }
 }

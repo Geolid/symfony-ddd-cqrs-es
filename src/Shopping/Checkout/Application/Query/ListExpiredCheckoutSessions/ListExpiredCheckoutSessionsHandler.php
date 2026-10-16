@@ -25,7 +25,7 @@ final readonly class ListExpiredCheckoutSessionsHandler
     public function __invoke(ListExpiredCheckoutSessions $query): StreamResult
     {
         return new StreamResult(
-            $this->checkoutSessionFinder->expiresBefore($this->clock->now()),
+            $this->checkoutSessionFinder->expiredBefore($this->clock->now()),
         );
     }
 }

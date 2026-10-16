@@ -37,14 +37,14 @@ final class DbalIdentityFinder extends AbstractPaginatableDbalFinder implements 
         )->one();
     }
 
-    public function expiresBefore(\DateTimeImmutable $now): static
+    public function expiredBefore(\DateTimeImmutable $cutoff): static
     {
         return $this->filter(
-            static function (QueryBuilder $qb) use ($now): void {
+            static function (QueryBuilder $qb) use ($cutoff): void {
                 $qb->andWhere('verification_status = :pending')
-                    ->andWhere('expires_at < :now')
+                    ->andWhere('expires_at < :cutoff')
                     ->setParameter('pending', IdentityVerificationStatus::PENDING)
-                    ->setParameter('now', $now, Types::DATETIME_IMMUTABLE);
+                    ->setParameter('cutoff', $cutoff, Types::DATETIME_IMMUTABLE);
             },
         );
     }

@@ -31,8 +31,6 @@ use Shared\Domain\ValueObject\Quantity;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
-use function Zenstruck\Foundry\faker;
-
 final class PaymentRequesterTest extends AbstractIntegrationTestCase
 {
     private PaymentGatewayInterface&MockObject $paymentGateway;
@@ -66,7 +64,7 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
         $checkoutSessionId = Uuid::uuid7()->toString();
         $paymentId = PaymentId::forCheckoutSession($checkoutSessionId)->toString();
         $reference = PaymentReferenceFactory::new()->create()->value;
-        $hostedPageUrl = 'https://checkout.globex.test/pay/'.faker()->regexify('[A-Z0-9]{8}');
+        $hostedPageUrl = \sprintf('https://checkout.globex.test/pay/%s', $reference);
         $lines = $this->lines();
         $this->paymentGateway->expects(self::once())->method('requestPayment')
             ->with($paymentId, $checkoutSessionId, $lines, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt)
@@ -104,12 +102,12 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itRequestsWhenExpiresAtNotPassed(): void
+    public function itRequestsWhenNotExpired(): void
     {
         // Given
         $checkoutSessionId = Uuid::uuid7()->toString();
         $reference = PaymentReferenceFactory::new()->create()->value;
-        $hostedPageUrl = 'https://checkout.globex.test/pay/'.faker()->regexify('[A-Z0-9]{8}');
+        $hostedPageUrl = \sprintf('https://checkout.globex.test/pay/%s', $reference);
         $expiresAt = Clock::get()->now();
         $this->paymentGateway->expects(self::once())->method('requestPayment')
             ->willReturn(new PaymentSession($reference, $hostedPageUrl));

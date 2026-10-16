@@ -21,7 +21,7 @@ use Symfony\Component\Clock\Clock;
  *     fullName: FullName,
  *     email: Email,
  *     registeredAt: \DateTimeImmutable,
- *     expirySeconds: int,
+ *     expiry: string,
  *     confirmedAt: \DateTimeImmutable,
  *     confirmationCode: string,
  *     confirmationRequestedAt: \DateTimeImmutable,
@@ -65,9 +65,9 @@ final class IdentityFactory extends AbstractAggregateFactory
         return $this->with(['registeredAt' => $registeredAt]);
     }
 
-    public function withExpirySeconds(int $expirySeconds): self
+    public function withExpiry(string $expiry): self
     {
-        return $this->with(['expirySeconds' => $expirySeconds]);
+        return $this->with(['expiry' => $expiry]);
     }
 
     public function confirmed(?string $confirmationCode = null, ?\DateTimeImmutable $confirmedAt = null): self
@@ -153,7 +153,7 @@ final class IdentityFactory extends AbstractAggregateFactory
             fullName: $parameters['fullName'],
             email: $parameters['email'],
             registeredAt: $parameters['registeredAt'],
-            expiryCalculator: new PendingIdentityExpiryCalculator($parameters['expirySeconds']),
+            expiryCalculator: new PendingIdentityExpiryCalculator(\DateInterval::createFromDateString($parameters['expiry'])),
         );
     }
 
@@ -166,7 +166,7 @@ final class IdentityFactory extends AbstractAggregateFactory
             'fullName' => FullNameFactory::new(),
             'email' => EmailFactory::new(),
             'registeredAt' => $now,
-            'expirySeconds' => 60 * 60,
+            'expiry' => '1 hour',
             'confirmedAt' => $now->modify('+1 hour'),
             'confirmationCode' => FakeCodeChallenger::CODE,
             'confirmationRequestedAt' => $now->modify('+30 minutes'),

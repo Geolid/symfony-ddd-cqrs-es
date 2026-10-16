@@ -17,18 +17,18 @@ final class ListExpiredCheckoutSessionsHandlerTest extends AbstractIntegrationTe
     {
         // Given
         $now = Clock::get()->now();
-        $expirySeconds = 30 * 60;
-        $expiredOpenedAt = $now->modify(\sprintf('-%d seconds', $expirySeconds + 1));
+        $expiry = '30 minutes';
+        $expiredOpenedAt = $now->modify(\sprintf('-%s -1 second', $expiry));
         $expired = CheckoutSessionFactory::new()
-            ->withExpirySeconds($expirySeconds)
+            ->withExpiry($expiry)
             ->withOpenedAt($expiredOpenedAt)
             ->create();
         $fresh = CheckoutSessionFactory::new()
-            ->withExpirySeconds($expirySeconds)
-            ->withOpenedAt($now->modify(\sprintf('-%d seconds', $expirySeconds - 1)))
+            ->withExpiry($expiry)
+            ->withOpenedAt($now->modify(\sprintf('-%s +1 second', $expiry)))
             ->create();
         $completed = CheckoutSessionFactory::new()
-            ->withExpirySeconds($expirySeconds)
+            ->withExpiry($expiry)
             ->withOpenedAt($expiredOpenedAt)
             ->completed()
             ->create();
