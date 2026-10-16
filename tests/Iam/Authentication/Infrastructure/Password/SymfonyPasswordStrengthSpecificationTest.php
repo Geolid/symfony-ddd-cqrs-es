@@ -6,7 +6,6 @@ namespace Iam\Tests\Authentication\Infrastructure\Password;
 
 use Iam\Authentication\Domain\PasswordCredential\ValueObject\Password;
 use Iam\Authentication\Infrastructure\Password\SymfonyPasswordStrengthSpecification;
-use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Validator\Validation;
@@ -23,22 +22,22 @@ final class SymfonyPasswordStrengthSpecificationTest extends TestCase
     }
 
     #[Test]
-    #[DataProvider('providePasswords')]
-    public function itIsSatisfiedBy(string $rawPassword, bool $expected): void
+    public function itIsSatisfiedWhenPasswordStrong(): void
     {
         // When
-        $isSatisfied = $this->passwordStrength->isSatisfiedBy(Password::fromString($rawPassword));
+        $result = $this->passwordStrength->isSatisfiedBy(Password::fromString('Marmoset-42-Zephyr!'));
 
         // Then
-        self::assertSame($expected, $isSatisfied);
+        self::assertTrue($result);
     }
 
-    /**
-     * @return iterable<string, array{string, bool}>
-     */
-    public static function providePasswords(): iterable
+    #[Test]
+    public function itIsNotSatisfiedWhenPasswordWeak(): void
     {
-        yield 'sufficient password' => ['Marmoset-42-Zephyr!', true];
-        yield 'weak password' => [str_repeat('a', Password::MIN_LENGTH), false];
+        // When
+        $result = $this->passwordStrength->isSatisfiedBy(Password::fromString(str_repeat('a', Password::MIN_LENGTH)));
+
+        // Then
+        self::assertFalse($result);
     }
 }

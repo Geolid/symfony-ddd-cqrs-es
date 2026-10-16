@@ -14,8 +14,8 @@ use Symfony\Component\Clock\Clock;
 final class CooldownElapsedSpecificationTest extends TestCase
 {
     #[Test]
-    #[DataProvider('provideThreshold')]
-    public function itIsSatisfiedBy(?\DateTimeImmutable $lastRequestedAt, \DateTimeImmutable $now, bool $expected): void
+    #[DataProvider('provideElapsedCooldowns')]
+    public function itIsSatisfiedWhenCooldownElapsed(?\DateTimeImmutable $lastRequestedAt, \DateTimeImmutable $now): void
     {
         // Given
         $specification = new CooldownElapsedSpecification(new CooldownCalculator(\DateInterval::createFromDateString('1 minute')), $now);
@@ -24,19 +24,44 @@ final class CooldownElapsedSpecificationTest extends TestCase
         $result = $specification->isSatisfiedBy($lastRequestedAt);
 
         // Then
-        self::assertSame($expected, $result);
+        self::assertTrue($result);
     }
 
     /**
-     * @return iterable<string, array{?\DateTimeImmutable, \DateTimeImmutable, bool}>
+     * @return iterable<string, array{?\DateTimeImmutable, \DateTimeImmutable}>
      */
-    public static function provideThreshold(): iterable
+    public static function provideElapsedCooldowns(): iterable
     {
         $now = Clock::get()->now();
 
-        yield 'no prior request' => [null, $now, true];
-        yield 'within cooldown' => [$now->modify('-30 seconds'), $now, false];
-        yield 'at cooldown boundary' => [$now->modify('-1 minute'), $now, true];
-        yield 'past cooldown' => [$now->modify('-90 seconds'), $now, true];
+        yield 'no prior request' => [null, $now];
+        yield 'exactly one cooldown ago' => [$now->modify('-1 minute'), $now];
+        yield 'well past the cooldown' => [$now->modify('-90 seconds'), $now];
+    }
+
+    #[Test]
+    #[DataProvider('provideRunningCooldowns')]
+    public function itIsNotSatisfiedWhenCooldownRunning(\DateTimeImmutable $lastRequestedAt, \DateTimeImmutable $now): void
+    {
+        // Given
+        $specification = new CooldownElapsedSpecification(new CooldownCalculator(\DateInterval::createFromDateString('1 minute')), $now);
+
+        // When
+        $result = $specification->isSatisfiedBy($lastRequestedAt);
+
+        // Then
+        self::assertFalse($result);
+    }
+
+    /**
+     * @return iterable<string, array{\DateTimeImmutable, \DateTimeImmutable}>
+     */
+    public static function provideRunningCooldowns(): iterable
+    {
+        $now = Clock::get()->now();
+
+        yield 'requested just now' => [$now, $now];
+        yield 'half a cooldown ago' => [$now->modify('-30 seconds'), $now];
+        yield 'one second left' => [$now->modify('-59 seconds'), $now];
     }
 }

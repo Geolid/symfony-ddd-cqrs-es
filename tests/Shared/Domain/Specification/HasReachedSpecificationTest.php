@@ -22,8 +22,8 @@ final class HasReachedSpecificationTest extends TestCase
     ];
 
     #[Test]
-    #[DataProvider('provideTransitions')]
-    public function itIsSatisfiedBy(DummyState $candidate, DummyState $target, bool $expected): void
+    #[DataProvider('provideReachedTargets')]
+    public function itIsSatisfiedWhenTargetReached(DummyState $candidate, DummyState $target): void
     {
         // Given
         $specification = new HasReachedSpecification(self::TRANSITIONS, $target);
@@ -32,21 +32,42 @@ final class HasReachedSpecificationTest extends TestCase
         $result = $specification->isSatisfiedBy($candidate);
 
         // Then
-        self::assertSame($expected, $result);
+        self::assertTrue($result);
     }
 
     /**
-     * @return iterable<string, array{DummyState, DummyState, bool}>
+     * @return iterable<string, array{DummyState, DummyState}>
      */
-    public static function provideTransitions(): iterable
+    public static function provideReachedTargets(): iterable
     {
-        yield 'same state' => [DummyState::PENDING, DummyState::PENDING, true];
-        yield 'one hop away' => [DummyState::PROCESSING, DummyState::PENDING, true];
-        yield 'several hops away' => [DummyState::SUCCESS, DummyState::PENDING, true];
-        yield 'backward' => [DummyState::PENDING, DummyState::PROCESSING, false];
-        yield 'other branch' => [DummyState::PENDING, DummyState::FAILED, false];
-        yield 'dead end itself' => [DummyState::FAILED, DummyState::FAILED, true];
-        yield 'dead end' => [DummyState::FAILED, DummyState::SUCCESS, false];
+        yield 'same state' => [DummyState::PENDING, DummyState::PENDING];
+        yield 'one hop away' => [DummyState::PROCESSING, DummyState::PENDING];
+        yield 'several hops away' => [DummyState::SUCCESS, DummyState::PENDING];
+        yield 'dead end itself' => [DummyState::FAILED, DummyState::FAILED];
+    }
+
+    #[Test]
+    #[DataProvider('provideUnreachedTargets')]
+    public function itIsNotSatisfiedWhenTargetNotReached(DummyState $candidate, DummyState $target): void
+    {
+        // Given
+        $specification = new HasReachedSpecification(self::TRANSITIONS, $target);
+
+        // When
+        $result = $specification->isSatisfiedBy($candidate);
+
+        // Then
+        self::assertFalse($result);
+    }
+
+    /**
+     * @return iterable<string, array{DummyState, DummyState}>
+     */
+    public static function provideUnreachedTargets(): iterable
+    {
+        yield 'backward' => [DummyState::PENDING, DummyState::PROCESSING];
+        yield 'other branch' => [DummyState::PENDING, DummyState::FAILED];
+        yield 'dead end' => [DummyState::FAILED, DummyState::SUCCESS];
     }
 
     #[Test]
@@ -83,7 +104,7 @@ final class HasReachedSpecificationTest extends TestCase
     }
 
     #[Test]
-    public function itIsSatisfiedByWithIntBackedStates(): void
+    public function itIsSatisfiedWhenIntBackedTargetReached(): void
     {
         // Given
         /** @var array<string, list<DummyIntState>> $transitions */

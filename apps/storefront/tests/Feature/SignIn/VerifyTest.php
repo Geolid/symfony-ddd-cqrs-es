@@ -97,7 +97,7 @@ final class VerifyTest extends AbstractStorefrontTestCase
 
     #[Test]
     #[WithStory(SuspendedStory::class)]
-    public function itRefusesSuspendedAccount(): void
+    public function itRefusesWhenSuspended(): void
     {
         // Given
         $persona = SuspendedStory::persona();
