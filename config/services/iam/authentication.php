@@ -6,7 +6,6 @@ use Bootstrap\DependencyInjection\BoundedContextServiceLoader;
 use Iam\Authentication\Application\BackupCodeRegeneration\BackupCodeRegenerator;
 use Iam\Authentication\Application\TotpEnrollment\TotpEnroller;
 use Iam\Authentication\Domain\TrustedDevice\Service\TrustedDeviceExpiryCalculator;
-use Symfony\Component\Clock\Clock;
 use Symfony\Component\DependencyInjection\Loader\Configurator\ContainerConfigurator;
 use Symfony\Component\PasswordHasher\Hasher\NativePasswordHasher;
 
@@ -26,10 +25,7 @@ return static function (ContainerConfigurator $container): void {
 
     $container->parameters()->set('iam.authentication.backup_code_digit_count', 8);
 
-    $trustedDeviceExpiry = '30 days';
-    $container->parameters()->set('iam.authentication.trusted_device_expiry', $trustedDeviceExpiry);
-    $now = Clock::get()->now();
-    $container->parameters()->set('iam.authentication.trusted_device_lifetime', $now->add(DateInterval::createFromDateString($trustedDeviceExpiry))->getTimestamp() - $now->getTimestamp());
+    $container->parameters()->set('iam.authentication.trusted_device_expiry', '30 days');
     $services->get(TrustedDeviceExpiryCalculator::class)->arg('$expiry', inline_service(DateInterval::class)->factory([DateInterval::class, 'createFromDateString'])->args(['%iam.authentication.trusted_device_expiry%']));
 
     if ('test' === $container->env()) {
