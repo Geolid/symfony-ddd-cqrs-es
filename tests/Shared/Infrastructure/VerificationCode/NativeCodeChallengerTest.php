@@ -65,14 +65,14 @@ final class NativeCodeChallengerTest extends TestCase
 
     #[Test]
     #[DataProvider('provideValidTiming')]
-    public function itAccepts(string $verifiedAtOffset): void
+    public function itAccepts(string $modifier): void
     {
         // Given
         $now = Clock::get()->now();
         $code = $this->codeChallenger->issue($this->key, $now);
 
         // When
-        $result = $this->codeChallenger->verify($this->key, $code, $now->modify($verifiedAtOffset));
+        $result = $this->codeChallenger->verify($this->key, $code, $now->modify($modifier));
 
         // Then
         self::assertTrue($result);
