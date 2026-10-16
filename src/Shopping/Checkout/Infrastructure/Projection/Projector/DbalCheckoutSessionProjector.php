@@ -48,8 +48,9 @@ final readonly class DbalCheckoutSessionProjector extends AbstractDbalProjector
                 'tax_rate_basis_points' => $event->items[0]->taxRate->basisPoints,
                 'status' => CheckoutSessionStatus::OPEN->value,
                 'opened_at' => $event->openedAt,
+                'expires_at' => $event->expiresAt,
             ],
-            ['opened_at' => Types::DATETIME_IMMUTABLE, 'items' => Types::JSON, 'shipping_address' => Types::JSON, 'billing_address' => Types::JSON],
+            ['opened_at' => Types::DATETIME_IMMUTABLE, 'expires_at' => Types::DATETIME_IMMUTABLE, 'items' => Types::JSON, 'shipping_address' => Types::JSON, 'billing_address' => Types::JSON],
         );
     }
 
@@ -102,6 +103,7 @@ final readonly class DbalCheckoutSessionProjector extends AbstractDbalProjector
         $table->addColumn('tax_rate_basis_points', Types::INTEGER);
         $table->addColumn('status', Types::STRING, ['length' => 9]);
         $table->addColumn('opened_at', Types::DATETIME_IMMUTABLE);
+        $table->addColumn('expires_at', Types::DATETIME_IMMUTABLE);
         $table->addPrimaryKeyConstraint(
             PrimaryKeyConstraint::editor()
                 ->setColumnNames(UnqualifiedName::unquoted('id'))
@@ -109,6 +111,6 @@ final readonly class DbalCheckoutSessionProjector extends AbstractDbalProjector
         );
         $table->addIndex(['cart_id'], 'shopping_checkout_checkout_session_cart_id_idx');
         $table->addIndex(['customer_id'], 'shopping_checkout_checkout_session_customer_id_idx');
-        $table->addIndex(['status', 'opened_at'], 'shopping_checkout_checkout_session_status_opened_at_idx');
+        $table->addIndex(['status', 'expires_at'], 'shopping_checkout_checkout_session_status_expires_at_idx');
     }
 }

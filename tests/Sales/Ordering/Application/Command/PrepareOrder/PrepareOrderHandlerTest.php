@@ -44,14 +44,15 @@ final class PrepareOrderHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenNotConfirmed(): void
     {
         // Given
-        $order = OrderFactory::new()->create();
+        $order = OrderFactory::new()->cancelled()->create();
         $this->store($order);
 
         // When
         $this->dispatch(new PrepareOrder($order->id->toString()));
 
         // Then
-        self::expectNotToPerformAssertions();
+        $result = $this->finder->ofId($order->id->toString());
+        self::assertSame(OrderStatus::CANCELLED, $result->status);
     }
 
     #[Test]

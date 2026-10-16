@@ -52,7 +52,7 @@ final readonly class RequestPaymentHandler
             throw PaymentAlreadyClaimedException::forCheckoutSession($command->checkoutSessionId, $e);
         }
 
-        $orderPayment = Payment::request(
+        $payment = Payment::request(
             id: $id,
             checkoutSessionId: $command->checkoutSessionId,
             amount: Money::fromCents($command->amountInCents, $command->currency),
@@ -61,6 +61,6 @@ final readonly class RequestPaymentHandler
             requestedAt: $this->clock->now(),
         );
 
-        $this->repository->save($orderPayment);
+        $this->repository->save($payment);
     }
 }

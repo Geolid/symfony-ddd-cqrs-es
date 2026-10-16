@@ -77,10 +77,11 @@ final class SuspendIdentityHandlerTest extends AbstractIntegrationTestCase
         $this->store($identity);
 
         // When
-        $this->dispatch(new SuspendIdentity($identity->id->toString(), $reason->value));
+        $this->dispatch(new SuspendIdentity($identity->id->toString(), ReasonFactory::new()->create()->value));
 
         // Then
-        self::expectNotToPerformAssertions();
+        $result = $this->identityFinder->ofId($identity->id->toString());
+        self::assertSame($reason->value, $result->reason);
     }
 
     #[Test]

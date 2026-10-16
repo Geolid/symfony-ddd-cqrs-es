@@ -17,7 +17,7 @@ use Shopping\Checkout\Domain\Event\CheckoutSessionExpired;
 use Shopping\Checkout\Domain\Event\CheckoutSessionOpened;
 use Shopping\Checkout\Domain\Event\CheckoutSessionStaled;
 use Shopping\Checkout\Domain\Exception\CheckoutSessionEmptyException;
-use Shopping\Checkout\Domain\Specification\CheckoutSessionExpiredSpecification;
+use Shopping\Checkout\Domain\Service\CheckoutSessionExpiryCalculator;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Checkout\Domain\ValueObject\CheckoutSessionId;
 use Shopping\Tests\Checkout\Support\Factory\CheckoutItemFactory;
@@ -36,6 +36,8 @@ final class CheckoutSessionTest extends AggregateRootTestCase
     private PostalAddress $billingAddress;
     private string $paymentId;
     private \DateTimeImmutable $openedAt;
+    private string $expiry;
+    private \DateTimeImmutable $expiresAt;
     private \DateTimeImmutable $expiredAt;
     private \DateTimeImmutable $staledAt;
     private \DateTimeImmutable $completedAt;
@@ -53,7 +55,9 @@ final class CheckoutSessionTest extends AggregateRootTestCase
         $this->billingAddress = PostalAddressFactory::new()->create();
         $this->paymentId = Uuid::uuid7()->toString();
         $this->openedAt = Clock::get()->now();
-        $this->expiredAt = $this->openedAt->modify(\sprintf('+%d minutes', CheckoutSessionExpiredSpecification::TTL_MINUTES + 1));
+        $this->expiry = '1 hour';
+        $this->expiresAt = $this->openedAt->modify(\sprintf('+%s', $this->expiry));
+        $this->expiredAt = $this->expiresAt->modify('+1 minute');
         $this->staledAt = $this->openedAt->modify('+1 minute');
         $this->completedAt = $this->openedAt->modify('+5 minutes');
     }
@@ -72,6 +76,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
                 $this->shippingAddress,
                 $this->billingAddress,
                 $this->openedAt,
+                new CheckoutSessionExpiryCalculator(\DateInterval::createFromDateString($this->expiry)),
             ))
             ->then($this->opened());
     }
@@ -90,6 +95,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
                 $this->shippingAddress,
                 $this->billingAddress,
                 $this->openedAt,
+                new CheckoutSessionExpiryCalculator(\DateInterval::createFromDateString($this->expiry)),
             ))
             ->expectsException(CheckoutSessionEmptyException::class);
     }
@@ -113,13 +119,11 @@ final class CheckoutSessionTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotExpireWhenTTLNotElapsed(): void
+    public function itDoesNotExpireWhenExpiresAtNotPassed(): void
     {
-        $earlyExpiredAt = $this->openedAt->modify('+1 minute');
-
         $this
             ->given($this->opened())
-            ->when(static fn (CheckoutSession $checkoutSession) => $checkoutSession->expire($earlyExpiredAt))
+            ->when(fn (CheckoutSession $checkoutSession) => $checkoutSession->expire($this->expiresAt))
             ->then();
     }
 
@@ -229,6 +233,7 @@ final class CheckoutSessionTest extends AggregateRootTestCase
             $this->billingAddress,
             $this->total(),
             $this->openedAt,
+            $this->expiresAt,
         );
     }
 

@@ -12,6 +12,7 @@ use Shopping\Checkout\Domain\CheckoutSession;
 use Shopping\Checkout\Domain\Exception\CheckoutSessionAlreadyExistsException;
 use Shopping\Checkout\Domain\Exception\CheckoutSessionEmptyException;
 use Shopping\Checkout\Domain\Repository\CheckoutSessionRepositoryInterface;
+use Shopping\Checkout\Domain\Service\CheckoutSessionExpiryCalculator;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Checkout\Domain\ValueObject\CheckoutSessionId;
 use Shopping\Checkout\Domain\ValueObject\TaxRate;
@@ -19,8 +20,10 @@ use Shopping\Checkout\Domain\ValueObject\TaxRate;
 #[CommandHandler]
 final readonly class OpenCheckoutSessionHandler
 {
-    public function __construct(private CheckoutSessionRepositoryInterface $repository)
-    {
+    public function __construct(
+        private CheckoutSessionRepositoryInterface $repository,
+        private CheckoutSessionExpiryCalculator $expiryCalculator,
+    ) {
     }
 
     /**
@@ -41,6 +44,7 @@ final readonly class OpenCheckoutSessionHandler
             shippingAddress: PostalAddressMapper::fromArray($command->shippingAddress),
             billingAddress: PostalAddressMapper::fromArray($command->billingAddress),
             openedAt: $command->openedAt,
+            expiryCalculator: $this->expiryCalculator,
         );
 
         $this->repository->save($checkoutSession);

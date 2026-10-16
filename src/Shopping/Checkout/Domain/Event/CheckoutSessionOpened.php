@@ -30,6 +30,7 @@ final readonly class CheckoutSessionOpened
         public PostalAddress $billingAddress,
         public TaxedAmount $total,
         public \DateTimeImmutable $openedAt,
+        public \DateTimeImmutable $expiresAt,
     ) {
     }
 }

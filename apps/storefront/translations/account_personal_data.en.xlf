@@ -15,7 +15,7 @@
       </trans-unit>
       <trans-unit id="show_erasure_description">
         <source>show_erasure_description</source>
-        <target>Permanently delete your account and personal data. The deletion takes effect %days% days after your request, and you can cancel it until then.</target>
+        <target>Permanently delete your account and personal data. The deletion takes effect %duration% after your request, and you can cancel it until then.</target>
       </trans-unit>
       <trans-unit id="show_erasure_pending">
         <source>show_erasure_pending</source>
@@ -67,7 +67,7 @@
       </trans-unit>
       <trans-unit id="confirm_erasure_delay_description">
         <source>confirm_erasure_delay_description</source>
-        <target>The deletion takes effect %days% days after your request. Until then, your account stays active and you can cancel the request at any time from your personal data page. We will confirm your request by email.</target>
+        <target>The deletion takes effect %duration% after your request. Until then, your account stays active and you can cancel the request at any time from your personal data page. We will confirm your request by email.</target>
       </trans-unit>
       <trans-unit id="confirm_erasure_button_submit">
         <source>confirm_erasure_button_submit</source>

@@ -6,10 +6,6 @@ namespace Support;
 
 use Symfony\Component\Clock\Clock;
 
-/**
- * Ticks Clock::get()->now() forward by one second on every call — monotonically increasing,
- * reset before each test.
- */
 final class ClockSequence
 {
     private static int $tick = 0;

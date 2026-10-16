@@ -51,7 +51,8 @@ final class DispatchOrderHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new DispatchOrder($order->id->toString()));
 
         // Then
-        self::expectNotToPerformAssertions();
+        $result = $this->finder->ofId($order->id->toString());
+        self::assertSame(OrderStatus::CONFIRMED, $result->status);
     }
 
     #[Test]

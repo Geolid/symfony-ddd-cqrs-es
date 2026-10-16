@@ -57,8 +57,6 @@ trait EventSourcingTrait
     }
 
     /**
-     * Replaced by its erasure fallback once its subject's cipher key is dropped.
-     *
      * @template T of object
      *
      * @param class-string<T> $eventClass
@@ -71,8 +69,6 @@ trait EventSourcingTrait
     }
 
     /**
-     * Replaced by its erasure fallback once its subject's cipher key is dropped.
-     *
      * @template T of object
      *
      * @param class-string<T> $eventClass

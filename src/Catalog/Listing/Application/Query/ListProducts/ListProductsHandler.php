@@ -24,9 +24,6 @@ final readonly class ListProductsHandler
     {
         $paginator = $this->productFinder->paginate($query->page, $query->itemsPerPage);
 
-        /** @var list<ProductResult> $items */
-        $items = iterator_to_array($paginator);
-
-        return new PaginatedResult($items, PaginationMetadata::fromPaginator($paginator));
+        return new PaginatedResult([...$paginator], PaginationMetadata::fromPaginator($paginator));
     }
 }

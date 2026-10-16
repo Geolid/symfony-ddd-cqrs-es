@@ -11,5 +11,5 @@ use Shared\Application\Finder\IterableFinderInterface;
  */
 interface TrustedDeviceFinderInterface extends IterableFinderInterface
 {
-    public function activeByIdentity(string $identityId): static;
+    public function activeByIdentity(string $identityId, \DateTimeImmutable $now): static;
 }

@@ -16,7 +16,7 @@ use Shared\Application\ErasureStatus;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{id: string, full_name: string, email: string, verification_status: string, moderation_status: string, reason: string|null, registered_at: string, confirmation_requested_at: string, suspended_at: string|null, reactivated_at: string|null, erasure_status: string}
+ * @phpstan-type Row array{id: string, full_name: string, email: string, verification_status: string, moderation_status: string, reason: string|null, registered_at: string, expires_at: string, confirmation_requested_at: string, suspended_at: string|null, reactivated_at: string|null, erasure_status: string}
  */
 final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
 {
@@ -41,6 +41,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
         self::assertSame(IdentityModerationStatus::ACTIVE->value, $row['moderation_status']);
         self::assertNull($row['reason']);
         self::assertSame($identity->registeredAt->format(self::DATE_FORMAT), $row['registered_at']);
+        self::assertSame($identity->expiresAt->format(self::DATE_FORMAT), $row['expires_at']);
         self::assertSame($identity->registeredAt->format(self::DATE_FORMAT), $row['confirmation_requested_at']);
         self::assertNull($row['suspended_at']);
         self::assertNull($row['reactivated_at']);
@@ -269,7 +270,7 @@ final class DbalIdentityProjectorTest extends AbstractIntegrationTestCase
 
         /** @var Row|false */
         return $connection->fetchAssociative(
-            \sprintf('SELECT id, full_name, email, verification_status, moderation_status, reason, registered_at, confirmation_requested_at, suspended_at, reactivated_at, erasure_status FROM %s WHERE id = :id', DbalIdentityProjector::TABLE),
+            \sprintf('SELECT id, full_name, email, verification_status, moderation_status, reason, registered_at, expires_at, confirmation_requested_at, suspended_at, reactivated_at, erasure_status FROM %s WHERE id = :id', DbalIdentityProjector::TABLE),
             ['id' => $id],
         );
     }

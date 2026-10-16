@@ -29,7 +29,7 @@ use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductFinderInterf
 use Shopping\Checkout\Application\Finder\ListedProduct\ListedProductResult;
 use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
 use Shopping\Checkout\Application\Tax\TaxRateResolverInterface;
-use Shopping\Checkout\Domain\Specification\CheckoutSessionExpiredSpecification;
+use Shopping\Checkout\Domain\Service\CheckoutSessionExpiryCalculator;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 use Shopping\Checkout\Domain\ValueObject\TaxRate;
 
@@ -42,6 +42,7 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
         private ListedProductFinderInterface $listedProductFinder,
         private TaxRateResolverInterface $taxRateResolver,
         private CommandBusInterface $commandBus,
+        private CheckoutSessionExpiryCalculator $expiryCalculator,
         private ClockInterface $clock,
     ) {
     }
@@ -58,7 +59,7 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
     public function openFor(string $cartId): OpenedCheckoutSession
     {
         $cart = $this->cartFinder->ofId($cartId);
-        $cartItems = iterator_to_array($this->cartItemFinder->byCart($cartId));
+        $cartItems = [...$this->cartItemFinder->byCart($cartId)];
 
         $customer = $this->customerFinder->ofIdOrNull($cart->customerId)
             ?? throw CustomerNotRegisteredException::forId($cart->customerId);
@@ -108,12 +109,12 @@ final readonly class CheckoutSessionOpener implements CheckoutSessionOpenerInter
             total: $total,
             shippingAddress: $shippingAddress,
             billingAddress: $billingAddress,
-            expiresAt: $now->modify(\sprintf('+%d minutes', CheckoutSessionExpiredSpecification::TTL_MINUTES)),
+            expiresAt: $this->expiryCalculator->expiresAt($now),
         );
     }
 
     /**
-     * @param array<CartItemResult> $cartItems
+     * @param list<CartItemResult> $cartItems
      *
      * @return list<CheckoutItem>
      *

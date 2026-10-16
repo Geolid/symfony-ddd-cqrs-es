@@ -26,8 +26,8 @@ final readonly class FailPaymentHandler
      */
     public function __invoke(FailPayment $command): void
     {
-        $orderPayment = $this->repository->load(PaymentId::fromString($command->id));
-        $orderPayment->fail($command->orderId, $this->clock->now());
-        $this->repository->save($orderPayment);
+        $payment = $this->repository->load(PaymentId::fromString($command->id));
+        $payment->fail($command->orderId, $this->clock->now());
+        $this->repository->save($payment);
     }
 }

@@ -27,9 +27,10 @@ final class IssueConfirmationOnIdentityRegisteredTest extends AbstractIntegratio
         $fullName = FullNameFactory::new()->create();
         $email = EmailFactory::new()->create();
         $registeredAt = Clock::get()->now();
+        $expiresAt = $registeredAt->modify('+1 hour');
 
         // When
-        $this->trigger(IssueConfirmationOnIdentityRegistered::class, new IdentityRegistered($id, $fullName, $email, $registeredAt));
+        $this->trigger(IssueConfirmationOnIdentityRegistered::class, new IdentityRegistered($id, $fullName, $email, $registeredAt, $expiresAt));
 
         // Then
         self::assertEmailCount(1);

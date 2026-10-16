@@ -6,13 +6,16 @@ namespace Iam\Authentication\Application\Query\ListTrustedDevicesByIdentity;
 
 use Iam\Authentication\Application\Finder\TrustedDevice\TrustedDeviceFinderInterface;
 use Iam\Authentication\Application\Finder\TrustedDevice\TrustedDeviceResult;
+use Psr\Clock\ClockInterface;
 use Shared\Application\Query\QueryHandler;
 
 #[QueryHandler]
 final readonly class ListTrustedDevicesByIdentityHandler
 {
-    public function __construct(private TrustedDeviceFinderInterface $trustedDeviceFinder)
-    {
+    public function __construct(
+        private TrustedDeviceFinderInterface $trustedDeviceFinder,
+        private ClockInterface $clock,
+    ) {
     }
 
     /**
@@ -20,6 +23,6 @@ final readonly class ListTrustedDevicesByIdentityHandler
      */
     public function __invoke(ListTrustedDevicesByIdentity $query): array
     {
-        return iterator_to_array($this->trustedDeviceFinder->activeByIdentity($query->identityId), false);
+        return [...$this->trustedDeviceFinder->activeByIdentity($query->identityId, $this->clock->now())];
     }
 }

@@ -7,9 +7,6 @@ namespace Support\Faker;
 use Faker\Provider\Base;
 use Webmozart\Assert\Assert;
 
-/**
- * Seeded primitives a credential is derived from; the aggregates keep only the derived value, so a test needing the plain one draws it first.
- */
 final class CredentialFakerProvider extends Base
 {
     /**

@@ -12,7 +12,7 @@
 
     <h1>{{ 'trusted_devices_title'|trans }}</h1>
 
-    <p>{{ 'trusted_devices_instructions'|trans({'%days%': trustedDeviceLifetimeDays}) }}</p>
+    <p>{{ 'trusted_devices_instructions'|trans({'%duration%': trusted_device_expiry()|duration}) }}</p>
 
     {% if trustedDevices is empty %}
         <p>{{ 'trusted_devices_empty'|trans }}</p>

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Iam\Tests\Authentication\Support\Factory;
 
+use Iam\Authentication\Domain\TrustedDevice\Service\TrustedDeviceExpiryCalculator;
 use Iam\Authentication\Domain\TrustedDevice\TrustedDevice;
 use Iam\Authentication\Domain\TrustedDevice\ValueObject\TrustedDeviceId;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
@@ -20,6 +21,7 @@ use function Zenstruck\Foundry\faker;
  *     userAgent: string,
  *     ip: string,
  *     trustedAt: \DateTimeImmutable,
+ *     expiry: string,
  *     revokedAt: \DateTimeImmutable,
  * }
  *
@@ -47,6 +49,11 @@ final class TrustedDeviceFactory extends AbstractAggregateFactory
         return $this->with(['trustedAt' => $trustedAt]);
     }
 
+    public function withExpiry(string $expiry): self
+    {
+        return $this->with(['expiry' => $expiry]);
+    }
+
     public function revoked(?\DateTimeImmutable $revokedAt = null): self
     {
         return $this->with(array_filter(['revokedAt' => $revokedAt]))->transition(
@@ -64,6 +71,7 @@ final class TrustedDeviceFactory extends AbstractAggregateFactory
             userAgent: $parameters['userAgent'],
             ip: $parameters['ip'],
             trustedAt: $parameters['trustedAt'],
+            expiryCalculator: new TrustedDeviceExpiryCalculator(\DateInterval::createFromDateString($parameters['expiry'])),
         );
     }
 
@@ -77,6 +85,7 @@ final class TrustedDeviceFactory extends AbstractAggregateFactory
             'userAgent' => faker()->userAgent(),
             'ip' => faker()->ipv4(),
             'trustedAt' => $now,
+            'expiry' => '1 hour',
             'revokedAt' => $now->modify('+1 day'),
         ];
     }

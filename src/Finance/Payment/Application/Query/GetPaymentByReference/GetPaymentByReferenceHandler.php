@@ -12,7 +12,7 @@ use Shared\Application\Query\QueryHandler;
 #[QueryHandler]
 final readonly class GetPaymentByReferenceHandler
 {
-    public function __construct(private PaymentFinderInterface $orderPaymentFinder)
+    public function __construct(private PaymentFinderInterface $paymentFinder)
     {
     }
 
@@ -21,6 +21,6 @@ final readonly class GetPaymentByReferenceHandler
      */
     public function __invoke(GetPaymentByReference $query): PaymentResult
     {
-        return $this->orderPaymentFinder->ofReference($query->reference);
+        return $this->paymentFinder->ofReference($query->reference);
     }
 }

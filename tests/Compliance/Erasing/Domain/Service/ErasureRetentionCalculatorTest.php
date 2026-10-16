@@ -18,7 +18,7 @@ final class ErasureRetentionCalculatorTest extends TestCase
     public function itCalculatesEffectiveAt(): void
     {
         // Given
-        $calculator = new ErasureRetentionCalculator(7 * 24 * 60 * 60);
+        $calculator = new ErasureRetentionCalculator(\DateInterval::createFromDateString('7 days'));
         $requestedAt = Clock::get()->now();
 
         // When
@@ -26,15 +26,5 @@ final class ErasureRetentionCalculatorTest extends TestCase
 
         // Then
         self::assertSameDateTime($requestedAt->modify('+7 days'), $effectiveAt);
-    }
-
-    #[Test]
-    public function itFailsWhenNotPositive(): void
-    {
-        // Then
-        $this->expectException(\InvalidArgumentException::class);
-
-        // When
-        new ErasureRetentionCalculator(0);
     }
 }

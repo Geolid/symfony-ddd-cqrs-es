@@ -51,11 +51,11 @@ final class DbalCheckoutSessionFinder extends AbstractIterableDbalFinder impleme
         );
     }
 
-    public function stalledBefore(\DateTimeImmutable $cutoff): static
+    public function expiredBefore(\DateTimeImmutable $cutoff): static
     {
         return $this->filter(
             static function (QueryBuilder $qb) use ($cutoff): void {
-                $qb->andWhere('status = :open AND opened_at < :cutoff')
+                $qb->andWhere('status = :open AND expires_at < :cutoff')
                     ->setParameter('open', CheckoutSessionStatus::OPEN)
                     ->setParameter('cutoff', $cutoff, Types::DATETIME_IMMUTABLE);
             },

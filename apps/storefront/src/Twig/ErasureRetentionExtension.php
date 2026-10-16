@@ -9,15 +9,18 @@ use Twig\Attribute\AsTwigFunction;
 
 final readonly class ErasureRetentionExtension
 {
+    private \DateInterval $retention;
+
     public function __construct(
-        #[Autowire(param: 'compliance.erasing.retention_seconds')]
-        private int $retentionSeconds,
+        #[Autowire(param: 'compliance.erasing.retention')]
+        string $retention,
     ) {
+        $this->retention = \DateInterval::createFromDateString($retention);
     }
 
-    #[AsTwigFunction(name: 'erasure_retention_days')]
-    public function retentionDays(): int
+    #[AsTwigFunction(name: 'erasure_retention')]
+    public function retention(): \DateInterval
     {
-        return intdiv($this->retentionSeconds, 24 * 60 * 60);
+        return $this->retention;
     }
 }

@@ -16,19 +16,28 @@ use Support\TestCase\AbstractIntegrationTestCase;
 
 final class FailPaymentHandlerTest extends AbstractIntegrationTestCase
 {
+    private PaymentFinderInterface $finder;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->finder = $this->service(PaymentFinderInterface::class);
+    }
+
     #[Test]
     public function itFailsWhenAuthorized(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
-        $orderPayment = PaymentFactory::new()->authorized()->create();
-        $this->store($orderPayment);
+        $payment = PaymentFactory::new()->authorized()->create();
+        $this->store($payment);
 
         // When
-        $this->dispatch(new FailPayment($orderPayment->id->toString(), $orderId));
+        $this->dispatch(new FailPayment($payment->id->toString(), $orderId));
 
         // Then
-        $result = $this->service(PaymentFinderInterface::class)->ofReference($orderPayment->reference->value);
+        $result = $this->finder->ofReference($payment->reference->value);
         self::assertSame(PaymentStatus::FAILED, $result->status);
         self::assertSame($orderId, $result->orderId);
     }
@@ -37,14 +46,15 @@ final class FailPaymentHandlerTest extends AbstractIntegrationTestCase
     public function itIgnoresWhenRequested(): void
     {
         // Given
-        $orderPayment = PaymentFactory::new()->create();
-        $this->store($orderPayment);
+        $payment = PaymentFactory::new()->create();
+        $this->store($payment);
 
         // When
-        $this->dispatch(new FailPayment($orderPayment->id->toString(), Uuid::uuid7()->toString()));
+        $this->dispatch(new FailPayment($payment->id->toString(), Uuid::uuid7()->toString()));
 
         // Then
-        self::expectNotToPerformAssertions();
+        $result = $this->finder->ofReference($payment->reference->value);
+        self::assertSame(PaymentStatus::REQUESTED, $result->status);
     }
 
     #[Test]

@@ -22,6 +22,7 @@ use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\InvalidConfirmationCodeException;
 use Iam\Identity\Domain\Exception\InvalidEmailChangeCodeException;
 use Iam\Identity\Domain\Identity;
+use Iam\Identity\Domain\Service\PendingIdentityExpiryCalculator;
 use Iam\Identity\Domain\ValueObject\Email;
 use Iam\Identity\Domain\ValueObject\FullName;
 use Iam\Identity\Domain\ValueObject\IdentityId;
@@ -44,6 +45,8 @@ final class IdentityTest extends AggregateRootTestCase
     private Email $email;
     private Reason $reason;
     private \DateTimeImmutable $registeredAt;
+    private string $expiry;
+    private \DateTimeImmutable $expiresAt;
     private \DateTimeImmutable $confirmedAt;
     private string $confirmationCode;
     private \DateTimeImmutable $fullNameChangedAt;
@@ -67,6 +70,8 @@ final class IdentityTest extends AggregateRootTestCase
         $this->email = EmailFactory::new()->create();
         $this->reason = ReasonFactory::new()->create();
         $this->registeredAt = Clock::get()->now();
+        $this->expiry = '1 hour';
+        $this->expiresAt = $this->registeredAt->modify(\sprintf('+%s', $this->expiry));
         $this->confirmedAt = $this->registeredAt->modify('+1 hour');
         $this->confirmationCode = FakeCodeChallenger::CODE;
         $this->fullNameChangedAt = $this->registeredAt->modify('+45 minutes');
@@ -87,7 +92,7 @@ final class IdentityTest extends AggregateRootTestCase
     {
         $this
             ->given()
-            ->when(fn (): Identity => Identity::register($this->id, $this->fullName, $this->email, $this->registeredAt))
+            ->when(fn (): Identity => Identity::register($this->id, $this->fullName, $this->email, $this->registeredAt, new PendingIdentityExpiryCalculator(\DateInterval::createFromDateString($this->expiry))))
             ->then($this->registered());
     }
 
@@ -493,11 +498,9 @@ final class IdentityTest extends AggregateRootTestCase
     #[Test]
     public function itDoesNotErasePendingWhenNotExpired(): void
     {
-        $earlyErasedAt = $this->registeredAt->modify('+1 hour');
-
         $this
             ->given($this->registered())
-            ->when(static fn (Identity $identity) => $identity->erasePending($earlyErasedAt))
+            ->when(fn (Identity $identity) => $identity->erasePending($this->expiresAt))
             ->then();
     }
 
@@ -521,7 +524,7 @@ final class IdentityTest extends AggregateRootTestCase
 
     private function registered(): IdentityRegistered
     {
-        return new IdentityRegistered($this->id, $this->fullName, $this->email, $this->registeredAt);
+        return new IdentityRegistered($this->id, $this->fullName, $this->email, $this->registeredAt, $this->expiresAt);
     }
 
     private function confirmed(): IdentityConfirmed

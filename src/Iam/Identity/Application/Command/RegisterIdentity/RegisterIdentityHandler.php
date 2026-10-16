@@ -9,6 +9,7 @@ use Iam\Identity\Application\IdentityUniqueKey;
 use Iam\Identity\Domain\Exception\IdentityAlreadyExistsException;
 use Iam\Identity\Domain\Identity;
 use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
+use Iam\Identity\Domain\Service\PendingIdentityExpiryCalculator;
 use Iam\Identity\Domain\ValueObject\Email;
 use Iam\Identity\Domain\ValueObject\FullName;
 use Iam\Identity\Domain\ValueObject\IdentityId;
@@ -24,6 +25,7 @@ final readonly class RegisterIdentityHandler
     public function __construct(
         private IdentityRepositoryInterface $repository,
         private UniquenessRegistryInterface $uniqueness,
+        private PendingIdentityExpiryCalculator $expiryCalculator,
         private ClockInterface $clock,
     ) {
     }
@@ -47,6 +49,7 @@ final readonly class RegisterIdentityHandler
             fullName: FullName::fromString($command->fullName),
             email: $email,
             registeredAt: $this->clock->now(),
+            expiryCalculator: $this->expiryCalculator,
         );
 
         $this->repository->save($identity);

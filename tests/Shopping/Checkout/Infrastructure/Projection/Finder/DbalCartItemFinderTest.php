@@ -51,10 +51,6 @@ final class DbalCartItemFinderTest extends AbstractIterableFinderTestCase
     {
         $now = Clock::get()->now();
 
-        // Each cart gets two products — the second one added later than any other cart's own
-        // first product — so grouping by cart_id (both of one cart's items adjacent) diverges
-        // from sorting by added_at alone (every cart's first item bunched together, then every
-        // second item).
         $carts = [];
         $indexes = [];
         for ($i = 0; $i < $count; ++$i) {

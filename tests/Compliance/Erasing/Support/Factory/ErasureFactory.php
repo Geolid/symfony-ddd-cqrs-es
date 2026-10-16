@@ -18,7 +18,7 @@ use Webmozart\Assert\Assert;
  *     id: ErasureId,
  *     identityId: string,
  *     requestedAt: \DateTimeImmutable,
- *     retentionSeconds: int,
+ *     retention: string,
  *     cancelledAt: \DateTimeImmutable,
  *     approvedAt: \DateTimeImmutable,
  * }
@@ -56,9 +56,9 @@ final class ErasureFactory extends AbstractAggregateFactory
         );
     }
 
-    public function withRetentionSeconds(int $retentionSeconds): self
+    public function withRetention(string $retention): self
     {
-        return $this->with(['retentionSeconds' => $retentionSeconds]);
+        return $this->with(['retention' => $retention]);
     }
 
     public function approved(?\DateTimeImmutable $approvedAt = null): self
@@ -76,7 +76,7 @@ final class ErasureFactory extends AbstractAggregateFactory
             id: $parameters['id'],
             identityId: $parameters['identityId'],
             requestedAt: $parameters['requestedAt'],
-            retentionCalculator: new ErasureRetentionCalculator($parameters['retentionSeconds']),
+            retentionCalculator: new ErasureRetentionCalculator(\DateInterval::createFromDateString($parameters['retention'])),
         );
     }
 
@@ -84,8 +84,8 @@ final class ErasureFactory extends AbstractAggregateFactory
     {
         return parent::initialize()->beforeInstantiate(static function (array $parameters): array {
             Assert::isInstanceOf($parameters['requestedAt'], \DateTimeImmutable::class);
-            Assert::integer($parameters['retentionSeconds']);
-            $parameters['approvedAt'] ??= $parameters['requestedAt']->modify(\sprintf('+%d seconds', $parameters['retentionSeconds'] + 1));
+            Assert::string($parameters['retention']);
+            $parameters['approvedAt'] ??= $parameters['requestedAt']->modify(\sprintf('+%s +1 second', $parameters['retention']));
 
             return $parameters;
         });
@@ -99,7 +99,7 @@ final class ErasureFactory extends AbstractAggregateFactory
             'id' => ErasureIdFactory::new(),
             'identityId' => Uuid::uuid7()->toString(),
             'requestedAt' => $now,
-            'retentionSeconds' => 60 * 60,
+            'retention' => '1 hour',
             'cancelledAt' => $now->modify('+1 hour'),
         ];
     }
