@@ -17,6 +17,14 @@
         <source>card_security_description</source>
         <target>Gérez votre mot de passe, l'authentification à deux facteurs et les appareils de confiance.</target>
       </trans-unit>
+      <trans-unit id="link_personal_data">
+        <source>link_personal_data</source>
+        <target>Données personnelles</target>
+      </trans-unit>
+      <trans-unit id="card_personal_data_description">
+        <source>card_personal_data_description</source>
+        <target>Demandez la suppression de votre compte et de vos données personnelles.</target>
+      </trans-unit>
     </body>
   </file>
 </xliff>

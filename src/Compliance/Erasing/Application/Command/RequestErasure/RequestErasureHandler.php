@@ -9,6 +9,7 @@ use Compliance\Erasing\Application\ErasingUniqueKey;
 use Compliance\Erasing\Domain\Erasure;
 use Compliance\Erasing\Domain\Exception\ErasureAlreadyExistsException;
 use Compliance\Erasing\Domain\Repository\ErasureRepositoryInterface;
+use Compliance\Erasing\Domain\Service\ErasureRetentionCalculator;
 use Compliance\Erasing\Domain\ValueObject\ErasureId;
 use Psr\Clock\ClockInterface;
 use Shared\Application\Command\CommandHandler;
@@ -22,6 +23,7 @@ final readonly class RequestErasureHandler
     public function __construct(
         private ErasureRepositoryInterface $repository,
         private UniquenessRegistryInterface $uniqueness,
+        private ErasureRetentionCalculator $retentionCalculator,
         private ClockInterface $clock,
     ) {
     }
@@ -40,7 +42,7 @@ final readonly class RequestErasureHandler
             throw ErasureAlreadyClaimedException::forIdentity($command->identityId, $e);
         }
 
-        $erasure = Erasure::request($id, $command->identityId, $this->clock->now());
+        $erasure = Erasure::request($id, $command->identityId, $this->clock->now(), $this->retentionCalculator);
 
         $this->repository->save($erasure);
     }

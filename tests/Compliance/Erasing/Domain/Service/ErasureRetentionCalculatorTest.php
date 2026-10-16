@@ -1,0 +1,40 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Compliance\Tests\Erasing\Domain\Service;
+
+use Compliance\Erasing\Domain\Service\ErasureRetentionCalculator;
+use PHPUnit\Framework\Attributes\Test;
+use PHPUnit\Framework\TestCase;
+use Support\TestCase\AssertionTrait;
+use Symfony\Component\Clock\Clock;
+
+final class ErasureRetentionCalculatorTest extends TestCase
+{
+    use AssertionTrait;
+
+    #[Test]
+    public function itCalculatesEffectiveAt(): void
+    {
+        // Given
+        $calculator = new ErasureRetentionCalculator(7 * 24 * 60 * 60);
+        $requestedAt = Clock::get()->now();
+
+        // When
+        $effectiveAt = $calculator->effectiveAt($requestedAt);
+
+        // Then
+        self::assertSameDateTime($requestedAt->modify('+7 days'), $effectiveAt);
+    }
+
+    #[Test]
+    public function itFailsWhenNotPositive(): void
+    {
+        // Then
+        $this->expectException(\InvalidArgumentException::class);
+
+        // When
+        new ErasureRetentionCalculator(0);
+    }
+}

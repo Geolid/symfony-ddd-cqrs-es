@@ -17,4 +17,9 @@ interface IdentityNotifierInterface
      * @throws MailerException
      */
     public function notifyEmailChangeCode(string $email, #[\SensitiveParameter] string $code): void;
+
+    /**
+     * @throws MailerException
+     */
+    public function notifyErasureRequested(string $email, \DateTimeImmutable $effectiveAt): void;
 }

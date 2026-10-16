@@ -16,6 +16,7 @@ use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
+use Symfony\Component\Clock\Clock;
 
 final class RequestErasureHandlerTest extends AbstractIntegrationTestCase
 {
@@ -36,6 +37,7 @@ final class RequestErasureHandlerTest extends AbstractIntegrationTestCase
         // Given
         $id = ErasureIdFactory::new()->create()->toString();
         $identityId = Uuid::uuid7()->toString();
+        $now = Clock::get()->now();
 
         // When
         $this->dispatch(new RequestErasure($id, $identityId));
@@ -43,6 +45,9 @@ final class RequestErasureHandlerTest extends AbstractIntegrationTestCase
         // Then
         $result = $this->finder->ofId($id);
         self::assertSame(ErasureRequestStatus::REQUESTED, $result->status);
+        self::assertNotNull($result->requestedAt);
+        self::assertSameDateTime($now, $result->requestedAt);
+        self::assertGreaterThan($result->requestedAt, $result->effectiveAt);
     }
 
     #[Test]
@@ -68,11 +73,12 @@ final class RequestErasureHandlerTest extends AbstractIntegrationTestCase
         $erasure = ErasureFactory::new()->create();
         $this->store($erasure);
         $this->uniqueness->claim(UniqueKey::for(ErasingUniqueKey::IDENTITY), $erasure->identityId, $erasure->id->toString());
+        $id = ErasureIdFactory::new()->create()->toString();
 
         // Then
         $this->expectException(ErasureAlreadyClaimedException::class);
 
         // When
-        $this->dispatch(new RequestErasure(ErasureIdFactory::new()->create()->toString(), $erasure->identityId));
+        $this->dispatch(new RequestErasure($id, $erasure->identityId));
     }
 }
