@@ -5,18 +5,20 @@ declare(strict_types=1);
 namespace Compliance\Tests\Erasing\Support\Factory;
 
 use Compliance\Erasing\Domain\Erasure;
-use Compliance\Erasing\Domain\Specification\ErasureRetentionExpiredSpecification;
+use Compliance\Erasing\Domain\Service\ErasureRetentionCalculator;
 use Compliance\Erasing\Domain\ValueObject\ErasureId;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Ramsey\Uuid\Uuid;
 use Support\Foundry\AbstractAggregateFactory;
 use Symfony\Component\Clock\Clock;
+use Webmozart\Assert\Assert;
 
 /**
  * @phpstan-type Inputs = array{
  *     id: ErasureId,
  *     identityId: string,
  *     requestedAt: \DateTimeImmutable,
+ *     retentionSeconds: int,
  *     cancelledAt: \DateTimeImmutable,
  *     approvedAt: \DateTimeImmutable,
  * }
@@ -49,9 +51,14 @@ final class ErasureFactory extends AbstractAggregateFactory
     {
         return $this->with(array_filter(['cancelledAt' => $cancelledAt]))->transition(
             static function (Erasure $erasure, array $inputs): void {
-                $erasure->cancel($inputs['cancelledAt']);
+                $erasure->cancel($erasure->identityId, $inputs['cancelledAt']);
             },
         );
+    }
+
+    public function withRetentionSeconds(int $retentionSeconds): self
+    {
+        return $this->with(['retentionSeconds' => $retentionSeconds]);
     }
 
     public function approved(?\DateTimeImmutable $approvedAt = null): self
@@ -69,7 +76,19 @@ final class ErasureFactory extends AbstractAggregateFactory
             id: $parameters['id'],
             identityId: $parameters['identityId'],
             requestedAt: $parameters['requestedAt'],
+            retentionCalculator: new ErasureRetentionCalculator($parameters['retentionSeconds']),
         );
+    }
+
+    protected function initialize(): static
+    {
+        return parent::initialize()->beforeInstantiate(static function (array $parameters): array {
+            Assert::isInstanceOf($parameters['requestedAt'], \DateTimeImmutable::class);
+            Assert::integer($parameters['retentionSeconds']);
+            $parameters['approvedAt'] ??= $parameters['requestedAt']->modify(\sprintf('+%d seconds', $parameters['retentionSeconds'] + 1));
+
+            return $parameters;
+        });
     }
 
     protected function defaults(): array
@@ -80,8 +99,8 @@ final class ErasureFactory extends AbstractAggregateFactory
             'id' => ErasureIdFactory::new(),
             'identityId' => Uuid::uuid7()->toString(),
             'requestedAt' => $now,
+            'retentionSeconds' => 60 * 60,
             'cancelledAt' => $now->modify('+1 hour'),
-            'approvedAt' => $now->modify(\sprintf('+%d days', ErasureRetentionExpiredSpecification::DAYS + 1)),
         ];
     }
 }

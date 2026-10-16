@@ -23,6 +23,7 @@ final readonly class ErasureRequestedPublisher
         $this->publisher->publish(Erasure::class, $event->id->toString(), new ErasureRequestedIntegrationEvent(
             identityId: $event->identityId,
             requestedAt: $event->requestedAt,
+            effectiveAt: $event->effectiveAt,
         ));
     }
 }

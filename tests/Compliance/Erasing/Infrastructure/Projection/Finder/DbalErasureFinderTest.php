@@ -11,6 +11,7 @@ use Compliance\Erasing\Domain\Erasure;
 use Compliance\Tests\Erasing\Support\Factory\ErasureFactory;
 use Compliance\Tests\Erasing\Support\Factory\ErasureIdFactory;
 use PHPUnit\Framework\Attributes\Test;
+use Ramsey\Uuid\Uuid;
 use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -34,6 +35,7 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
         self::assertSame($erasure->id->toString(), $result->id);
         self::assertSame(ErasureRequestStatus::CANCELLED, $result->status);
         self::assertSameDateTime($erasure->requestedAt, $result->requestedAt);
+        self::assertSameDateTime($erasure->effectiveAt, $result->effectiveAt);
         self::assertSameDateTime($erasure->cancelledAt, $result->cancelledAt);
         self::assertNull($result->approvedAt);
     }
@@ -52,17 +54,65 @@ final class DbalErasureFinderTest extends AbstractIterableFinderTestCase
     }
 
     #[Test]
-    public function itFiltersByRequestedBefore(): void
+    public function itFindsRequestedOfIdentity(): void
+    {
+        // Given
+        $identityId = Uuid::uuid7()->toString();
+        $other = ErasureFactory::new()->create();
+        $cancelled = ErasureFactory::new()->withIdentityId($identityId)->cancelled()->create();
+        $requested = ErasureFactory::new()->withIdentityId($identityId)->create();
+        $this->store($other, $cancelled, $requested);
+
+        // When
+        $result = $this->finder()->requestedOfIdentityOrNull($identityId);
+
+        // Then
+        self::assertNotNull($result);
+        self::assertSame($requested->id->toString(), $result->id);
+    }
+
+    #[Test]
+    public function itFindsNothingRequestedOfIdentityWhenCancelled(): void
+    {
+        // Given
+        $identityId = Uuid::uuid7()->toString();
+        $cancelled = ErasureFactory::new()->withIdentityId($identityId)->cancelled()->create();
+        $this->store($cancelled);
+
+        // When
+        $result = $this->finder()->requestedOfIdentityOrNull($identityId);
+
+        // Then
+        self::assertNull($result);
+    }
+
+    #[Test]
+    public function itFindsNothingRequestedOfIdentityWhenNotRequested(): void
+    {
+        // Given
+        $unknownIdentityId = Uuid::uuid7()->toString();
+
+        // When
+        $result = $this->finder()->requestedOfIdentityOrNull($unknownIdentityId);
+
+        // Then
+        self::assertNull($result);
+    }
+
+    #[Test]
+    public function itFiltersByEffectiveBefore(): void
     {
         // Given
         $now = Clock::get()->now();
-        $fresh = ErasureFactory::new()->withRequestedAt($now->modify('-1 day'))->create();
-        $due = ErasureFactory::new()->withRequestedAt($now->modify('-31 days'))->create();
-        $approved = ErasureFactory::new()->withRequestedAt($now->modify('-31 days'))->approved()->create();
-        $this->store($fresh, $due, $approved);
+        $retentionSeconds = 30 * 24 * 60 * 60;
+        $dueRequestedAt = $now->modify(\sprintf('-%d seconds', $retentionSeconds + 1));
+        $atEffectiveAt = ErasureFactory::new()->withRetentionSeconds($retentionSeconds)->withRequestedAt($now->modify(\sprintf('-%d seconds', $retentionSeconds)))->create();
+        $due = ErasureFactory::new()->withRetentionSeconds($retentionSeconds)->withRequestedAt($dueRequestedAt)->create();
+        $approved = ErasureFactory::new()->withRetentionSeconds($retentionSeconds)->withRequestedAt($dueRequestedAt)->approved()->create();
+        $this->store($atEffectiveAt, $due, $approved);
 
         // When
-        $results = iterator_to_array($this->finder()->requestedBefore($now->modify('-30 days')));
+        $results = iterator_to_array($this->finder()->effectiveBefore($now));
 
         // Then
         self::assertCount(1, $results);

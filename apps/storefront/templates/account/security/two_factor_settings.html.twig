@@ -1,4 +1,4 @@
-{% extends 'account/security/_layout.html.twig' %}
+{% extends 'account/_layout.html.twig' %}
 {% trans_default_domain 'account_security' %}
 {% import 'account/security/_breadcrumb.html.twig' as security %}
 
@@ -20,10 +20,14 @@
                 </small>
             </dd>
         </dl>
-        <form method="post" action="{{ path('storefront_account_security_regenerate_backup_codes') }}" data-testid="regenerate-backup-codes-form">
-            <input type="hidden" name="_token" value="{{ csrf_token('regenerate_backup_codes') }}">
-            <button type="submit" class="outline" data-testid="regenerate-backup-codes-submit">{{ 'two_factor_settings_button_regenerate'|trans }}</button>
-        </form>
+        <twig:ui:ActionForm
+            actionUrl="{{ path('storefront_account_security_regenerate_backup_codes') }}"
+            csrfId="regenerate_backup_codes"
+            label="{{ 'two_factor_settings_button_regenerate'|trans }}"
+            formTestId="regenerate-backup-codes-form"
+            class="outline"
+            data-testid="regenerate-backup-codes-submit"
+        />
 
         <hr>
 
@@ -42,9 +46,13 @@
                 <p class="icon-text"><twig:ux:icon name="warning" class="icon icon-warning" /> {{ 'two_factor_settings_section_disable_warning'|trans }}</p>
             </dd>
         </dl>
-        <form method="post" action="{{ path('storefront_account_security_unenroll_totp') }}" data-testid="unenroll-totp-form">
-            <input type="hidden" name="_token" value="{{ csrf_token('unenroll_totp') }}">
-            <button type="submit" class="outline pico-background-red-500" data-testid="unenroll-totp-submit">{{ 'two_factor_settings_button_disable'|trans }}</button>
-        </form>
+        <twig:ui:ActionForm
+            actionUrl="{{ path('storefront_account_security_unenroll_totp') }}"
+            csrfId="unenroll_totp"
+            label="{{ 'two_factor_settings_button_disable'|trans }}"
+            formTestId="unenroll-totp-form"
+            class="outline pico-background-red-500"
+            data-testid="unenroll-totp-submit"
+        />
     </article>
 {% endblock %}
