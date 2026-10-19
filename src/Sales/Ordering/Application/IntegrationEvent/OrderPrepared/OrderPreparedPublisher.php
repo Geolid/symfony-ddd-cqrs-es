@@ -13,9 +13,8 @@ use Shared\Application\IntegrationEvent\Publisher;
 #[Publisher('sales.ordering.publish_order_prepared')]
 final readonly class OrderPreparedPublisher
 {
-    public function __construct(
-        private IntegrationEventPublisherInterface $publisher,
-    ) {
+    public function __construct(private IntegrationEventPublisherInterface $publisher)
+    {
     }
 
     #[Subscribe(OrderPrepared::class)]
