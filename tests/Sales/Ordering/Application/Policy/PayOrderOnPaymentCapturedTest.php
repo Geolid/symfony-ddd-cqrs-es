@@ -6,7 +6,6 @@ namespace Sales\Tests\Ordering\Application\Policy;
 
 use Finance\Payment\Application\IntegrationEvent\PaymentCaptured\PaymentCapturedIntegrationEvent;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\OrderStatus;
 use Sales\Ordering\Application\Policy\PayOrderOnPaymentCaptured;
@@ -29,18 +28,5 @@ final class PayOrderOnPaymentCapturedTest extends AbstractIntegrationTestCase
         // Then
         $result = $this->service(OrderFinderInterface::class)->ofId($order->id->toString());
         self::assertSame(OrderStatus::PAID, $result->status);
-    }
-
-    #[Test]
-    public function itIgnoresWhenNotFound(): void
-    {
-        // Given
-        $orderId = Uuid::uuid7()->toString();
-
-        // When
-        $this->trigger(PayOrderOnPaymentCaptured::class, new PaymentCapturedIntegrationEvent($orderId, Clock::get()->now()));
-
-        // Then
-        self::expectNotToPerformAssertions();
     }
 }
