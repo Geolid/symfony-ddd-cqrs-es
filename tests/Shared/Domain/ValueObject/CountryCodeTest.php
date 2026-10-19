@@ -13,9 +13,11 @@ final class CountryCodeTest extends TestCase
     #[Test]
     public function itListsValues(): void
     {
+        // Given
+        $cases = CountryCode::cases();
+
         // When
         $values = CountryCode::values();
-        $cases = CountryCode::cases();
 
         // Then
         self::assertSame(

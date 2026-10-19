@@ -48,9 +48,9 @@ final class SymfonyPasswordHasherTest extends TestCase
         // Given
         $lowCostHasher = new SymfonyPasswordHasher(new NativePasswordHasher(cost: 4));
         $highCostHasher = new SymfonyPasswordHasher(new NativePasswordHasher(cost: 12));
+        $hash = $lowCostHasher->hash('Marmoset-42-Zephyr!');
 
         // When
-        $hash = $lowCostHasher->hash('Marmoset-42-Zephyr!');
         $needsRehash = $highCostHasher->needsRehash($hash);
 
         // Then

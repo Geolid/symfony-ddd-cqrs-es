@@ -13,9 +13,11 @@ final class CurrencyTest extends TestCase
     #[Test]
     public function itListsValues(): void
     {
+        // Given
+        $cases = Currency::cases();
+
         // When
         $values = Currency::values();
-        $cases = Currency::cases();
 
         // Then
         self::assertSame(

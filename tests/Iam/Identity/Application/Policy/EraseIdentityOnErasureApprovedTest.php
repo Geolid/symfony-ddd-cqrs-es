@@ -22,11 +22,12 @@ final class EraseIdentityOnErasureApprovedTest extends AbstractIntegrationTestCa
         $identity = IdentityFactory::new()->erasureRequested()->create();
         $this->store($identity);
 
+        // When
+        $this->trigger(EraseIdentityOnErasureApproved::class, new ErasureApprovedIntegrationEvent($identity->id->toString(), Clock::get()->now()));
+
         // Then
         $this->expectException(IdentityResultNotFoundException::class);
 
-        // When
-        $this->trigger(EraseIdentityOnErasureApproved::class, new ErasureApprovedIntegrationEvent($identity->id->toString(), Clock::get()->now()));
         $this->service(IdentityFinderInterface::class)->ofId($identity->id->toString());
     }
 }
