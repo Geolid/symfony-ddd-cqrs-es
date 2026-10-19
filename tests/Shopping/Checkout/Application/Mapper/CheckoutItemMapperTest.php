@@ -6,14 +6,8 @@ namespace Shopping\Tests\Checkout\Application\Mapper;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Ramsey\Uuid\Uuid;
-use Shared\Domain\ValueObject\Currency;
-use Shared\Domain\ValueObject\Label;
-use Shared\Domain\ValueObject\Money;
-use Shared\Domain\ValueObject\Quantity;
 use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
-use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
-use Shopping\Checkout\Domain\ValueObject\TaxRate;
+use Shopping\Tests\Checkout\Support\Factory\CheckoutItemFactory;
 
 final class CheckoutItemMapperTest extends TestCase
 {
@@ -21,8 +15,7 @@ final class CheckoutItemMapperTest extends TestCase
     public function itMapsToArray(): void
     {
         // Given
-        $productId = Uuid::uuid7()->toString();
-        $item = CheckoutItem::of($productId, Label::fromString('Espresso cups, set of 6'), Money::fromCents(2500, 'EUR'), Quantity::of(2), TaxRate::fromBasisPoints(2000));
+        $item = CheckoutItemFactory::new()->create();
 
         // When
         $array = CheckoutItemMapper::toArray($item);
@@ -30,10 +23,10 @@ final class CheckoutItemMapperTest extends TestCase
         // Then
         self::assertSame(
             [
-                'productId' => $productId,
-                'label' => 'Espresso cups, set of 6',
-                'unitPriceInCents' => 2500,
-                'quantity' => 2,
+                'productId' => $item->productId,
+                'label' => $item->label->value,
+                'unitPriceInCents' => $item->unitPrice->cents,
+                'quantity' => $item->quantity->value,
             ],
             $array,
         );
@@ -43,21 +36,21 @@ final class CheckoutItemMapperTest extends TestCase
     public function itMapsFromArray(): void
     {
         // Given
-        $productId = Uuid::uuid7()->toString();
+        $source = CheckoutItemFactory::new()->create();
         $data = [
-            'productId' => $productId,
-            'label' => 'Espresso cups, set of 6',
-            'unitPriceInCents' => 2500,
-            'quantity' => 2,
+            'productId' => $source->productId,
+            'label' => $source->label->value,
+            'unitPriceInCents' => $source->unitPrice->cents,
+            'quantity' => $source->quantity->value,
         ];
 
         // When
-        $item = CheckoutItemMapper::fromArray($data, Currency::EUR, TaxRate::fromBasisPoints(2000));
+        $item = CheckoutItemMapper::fromArray($data, $source->unitPrice->currency, $source->taxRate);
 
         // Then
-        self::assertSame($productId, $item->productId);
-        self::assertSame('Espresso cups, set of 6', $item->label->value);
-        self::assertSame(2500, $item->unitPrice->cents);
-        self::assertSame(2, $item->quantity->value);
+        self::assertSame($source->productId, $item->productId);
+        self::assertSame($source->label->value, $item->label->value);
+        self::assertSame($source->unitPrice->cents, $item->unitPrice->cents);
+        self::assertSame($source->quantity->value, $item->quantity->value);
     }
 }

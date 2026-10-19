@@ -8,11 +8,8 @@ use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Domain\Order\Entity\OrderLine;
-use Sales\Ordering\Domain\Order\ValueObject\OrderItem;
 use Sales\Ordering\Domain\Order\ValueObject\OrderLineId;
-use Sales\Ordering\Domain\Order\ValueObject\Product;
-use Shared\Domain\ValueObject\Label;
-use Shared\Domain\ValueObject\Money;
+use Sales\Tests\Ordering\Support\Factory\OrderItemFactory;
 use Shared\Domain\ValueObject\Quantity;
 
 final class OrderLineTest extends TestCase
@@ -21,41 +18,33 @@ final class OrderLineTest extends TestCase
     public function itComputesTotal(): void
     {
         // Given
-        $line = new OrderLine(
-            OrderLineId::forOrder(Uuid::uuid7()->toString(), 0),
-            OrderItem::of(
-                Product::of(Uuid::uuid7()->toString(), Label::fromString('Saucer'), Money::fromCents(83, 'EUR')),
-                Quantity::of(3),
-                Money::fromCents(50, 'EUR'),
-            ),
-        );
+        $item = OrderItemFactory::new()
+            ->withQuantity(Quantity::of(3))
+            ->create();
+        $line = new OrderLine(OrderLineId::forOrder(Uuid::uuid7()->toString(), 0), $item);
 
         // When
         $total = $line->total();
 
         // Then
-        self::assertSame(249, $total->cents);
+        self::assertSame($item->total()->cents, $total->cents);
     }
 
     #[Test]
     public function itComputesTaxedTotal(): void
     {
         // Given
-        $line = new OrderLine(
-            OrderLineId::forOrder(Uuid::uuid7()->toString(), 0),
-            OrderItem::of(
-                Product::of(Uuid::uuid7()->toString(), Label::fromString('Saucer'), Money::fromCents(83, 'EUR')),
-                Quantity::of(3),
-                Money::fromCents(50, 'EUR'),
-            ),
-        );
+        $item = OrderItemFactory::new()
+            ->withQuantity(Quantity::of(3))
+            ->create();
+        $line = new OrderLine(OrderLineId::forOrder(Uuid::uuid7()->toString(), 0), $item);
 
         // When
         $taxedTotal = $line->taxedTotal();
 
         // Then
-        self::assertSame(249, $taxedTotal->excludingTax->cents);
-        self::assertSame(50, $taxedTotal->taxAmount->cents);
-        self::assertSame(299, $taxedTotal->includingTax->cents);
+        self::assertSame($item->taxedTotal()->excludingTax->cents, $taxedTotal->excludingTax->cents);
+        self::assertSame($item->taxedTotal()->taxAmount->cents, $taxedTotal->taxAmount->cents);
+        self::assertSame($item->taxedTotal()->includingTax->cents, $taxedTotal->includingTax->cents);
     }
 }

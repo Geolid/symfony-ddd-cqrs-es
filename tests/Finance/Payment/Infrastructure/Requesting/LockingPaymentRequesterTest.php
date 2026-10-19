@@ -4,16 +4,13 @@ declare(strict_types=1);
 
 namespace Finance\Tests\Payment\Infrastructure\Requesting;
 
-use Finance\Payment\Application\PSP\PaymentLine;
 use Finance\Payment\Application\Requesting\Exception\PaymentRequestInProgressException;
 use Finance\Payment\Application\Requesting\PaymentRequesterInterface;
 use Finance\Payment\Infrastructure\Requesting\LockingPaymentRequester;
+use Finance\Tests\Payment\Support\Factory\PaymentLineFactory;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Shared\Domain\ValueObject\Label;
-use Shared\Domain\ValueObject\Money;
-use Shared\Domain\ValueObject\Quantity;
 use Symfony\Component\Clock\Clock;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\SharedLockInterface;
@@ -41,7 +38,7 @@ final class LockingPaymentRequesterTest extends TestCase
         // Given
         $lock = $this->createStub(SharedLockInterface::class);
         $lock->method('acquire')->willReturn(true);
-        $lines = $this->lines();
+        $lines = PaymentLineFactory::new()->many(2)->create();
 
         $this->lockFactory->expects($this->once())->method('createLock')
             ->with('finance.payment.payment_request.checkout-session-id', (float) $this->lockTtl)
@@ -64,6 +61,7 @@ final class LockingPaymentRequesterTest extends TestCase
         // Given
         $lock = $this->createStub(SharedLockInterface::class);
         $lock->method('acquire')->willReturn(false);
+        $lines = PaymentLineFactory::new()->many(2)->create();
 
         $this->lockFactory->expects($this->once())->method('createLock')
             ->with('finance.payment.payment_request.checkout-session-id', (float) $this->lockTtl)
@@ -74,16 +72,6 @@ final class LockingPaymentRequesterTest extends TestCase
         $this->expectException(PaymentRequestInProgressException::class);
 
         // When
-        $this->requester->requestFor('checkout-session-id', 'EUR', $this->lines(), 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt);
-    }
-
-    /**
-     * @return list<PaymentLine>
-     */
-    private function lines(): array
-    {
-        return [
-            new PaymentLine(Label::fromString('Espresso cups, set of 6'), Money::fromCents(4_200, 'EUR'), Quantity::of(1)),
-        ];
+        $this->requester->requestFor('checkout-session-id', 'EUR', $lines, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt);
     }
 }

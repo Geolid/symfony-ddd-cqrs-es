@@ -7,16 +7,13 @@ namespace Finance\Tests\Payment\Infrastructure\PSP\Globex;
 use Finance\Payment\Application\PSP\Exception\PaymentFatalFailureException;
 use Finance\Payment\Application\PSP\Exception\PaymentTransientFailureException;
 use Finance\Payment\Application\PSP\PaymentGatewayStatus;
-use Finance\Payment\Application\PSP\PaymentLine;
 use Finance\Payment\Infrastructure\PSP\Globex\GlobexClient;
 use Finance\Payment\Infrastructure\PSP\Globex\GlobexPaymentGateway;
+use Finance\Tests\Payment\Support\Factory\PaymentLineFactory;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
-use Shared\Domain\ValueObject\Label;
-use Shared\Domain\ValueObject\Money;
-use Shared\Domain\ValueObject\Quantity;
 use Symfony\Component\Clock\Clock;
 use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Component\HttpClient\MockHttpClient;
@@ -31,7 +28,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         $paymentId = Uuid::uuid7()->toString();
         $checkoutSessionId = Uuid::uuid7()->toString();
         $expiresAt = $this->expiresAt();
-        $lines = $this->lines();
+        $lines = PaymentLineFactory::new()->many(2)->create();
         $response = self::jsonResponse([
             'id' => 'GLBX-9F3K2M1P',
             'url' => 'https://checkout.globex.test/pay/GLBX-9F3K2M1P',
@@ -60,12 +57,22 @@ final class GlobexPaymentGatewayTest extends TestCase
                     [
                         'price_data' => [
                             'currency' => 'eur',
-                            'unit_amount' => 4_200,
+                            'unit_amount' => $lines[0]->unitPrice->cents,
                             'product_data' => [
-                                'name' => 'Espresso cups, set of 6',
+                                'name' => $lines[0]->label->value,
                             ],
                         ],
-                        'quantity' => 2,
+                        'quantity' => $lines[0]->quantity->value,
+                    ],
+                    [
+                        'price_data' => [
+                            'currency' => 'eur',
+                            'unit_amount' => $lines[1]->unitPrice->cents,
+                            'product_data' => [
+                                'name' => $lines[1]->label->value,
+                            ],
+                        ],
+                        'quantity' => $lines[1]->quantity->value,
                     ],
                 ],
                 'metadata' => [
@@ -85,7 +92,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         $paymentId = Uuid::uuid7()->toString();
         $checkoutSessionId = Uuid::uuid7()->toString();
         $expiresAt = $this->expiresAt();
-        $lines = $this->lines();
+        $lines = PaymentLineFactory::new()->many(2)->create();
 
         // Then
         $this->expectException(PaymentTransientFailureException::class);
@@ -110,7 +117,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         $paymentId = Uuid::uuid7()->toString();
         $checkoutSessionId = Uuid::uuid7()->toString();
         $expiresAt = $this->expiresAt();
-        $lines = $this->lines();
+        $lines = PaymentLineFactory::new()->many(2)->create();
         $response = self::jsonResponse(['error' => 'invalid amount'], 400);
 
         // Then
@@ -128,7 +135,7 @@ final class GlobexPaymentGatewayTest extends TestCase
         $paymentId = Uuid::uuid7()->toString();
         $checkoutSessionId = Uuid::uuid7()->toString();
         $expiresAt = $this->expiresAt();
-        $lines = $this->lines();
+        $lines = PaymentLineFactory::new()->many(2)->create();
 
         // Then
         $this->expectException(PaymentFatalFailureException::class);
@@ -276,16 +283,6 @@ final class GlobexPaymentGatewayTest extends TestCase
     private function expiresAt(): \DateTimeImmutable
     {
         return Clock::get()->now()->modify('+30 minutes');
-    }
-
-    /**
-     * @return list<PaymentLine>
-     */
-    private function lines(): array
-    {
-        return [
-            new PaymentLine(Label::fromString('Espresso cups, set of 6'), Money::fromCents(4_200, 'EUR'), Quantity::of(2)),
-        ];
     }
 
     /**

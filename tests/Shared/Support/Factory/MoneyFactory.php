@@ -21,6 +21,16 @@ final class MoneyFactory extends ObjectFactory
         return Money::class;
     }
 
+    public function withCents(int $cents): self
+    {
+        return $this->with(['cents' => $cents]);
+    }
+
+    public function withCurrency(string $currency): self
+    {
+        return $this->with(['currency' => $currency]);
+    }
+
     protected function initialize(): static
     {
         return $this->instantiateWith(Instantiator::namedConstructor('fromCents'));
