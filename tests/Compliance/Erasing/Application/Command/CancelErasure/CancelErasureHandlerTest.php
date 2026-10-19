@@ -9,7 +9,7 @@ use Compliance\Erasing\Application\ErasingUniqueKey;
 use Compliance\Erasing\Application\ErasureRequestStatus;
 use Compliance\Erasing\Application\Finder\Erasure\ErasureFinderInterface;
 use Compliance\Erasing\Domain\Exception\ErasureNotFoundException;
-use Compliance\Erasing\Domain\Exception\ErasureOwnedByAnotherIdentityException;
+use Compliance\Erasing\Domain\Exception\ErasureRequestedByAnotherIdentityException;
 use Compliance\Tests\Erasing\Support\Factory\ErasureFactory;
 use Compliance\Tests\Erasing\Support\Factory\ErasureIdFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -82,7 +82,7 @@ final class CancelErasureHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFailsWhenOwnedByAnotherIdentity(): void
+    public function itFailsWhenRequestedByAnotherIdentity(): void
     {
         // Given
         $erasure = ErasureFactory::new()->create();
@@ -90,7 +90,7 @@ final class CancelErasureHandlerTest extends AbstractIntegrationTestCase
         $anotherIdentityId = Uuid::uuid7()->toString();
 
         // Then
-        $this->expectException(ErasureOwnedByAnotherIdentityException::class);
+        $this->expectException(ErasureRequestedByAnotherIdentityException::class);
 
         // When
         $this->dispatch(new CancelErasure($erasure->id->toString(), $anotherIdentityId));

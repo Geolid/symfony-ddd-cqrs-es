@@ -7,7 +7,7 @@ namespace Compliance\Erasing\Domain;
 use Compliance\Erasing\Domain\Event\ErasureApproved;
 use Compliance\Erasing\Domain\Event\ErasureCancelled;
 use Compliance\Erasing\Domain\Event\ErasureRequested;
-use Compliance\Erasing\Domain\Exception\ErasureOwnedByAnotherIdentityException;
+use Compliance\Erasing\Domain\Exception\ErasureRequestedByAnotherIdentityException;
 use Compliance\Erasing\Domain\Service\ErasureRetentionCalculator;
 use Compliance\Erasing\Domain\ValueObject\ErasureId;
 use Compliance\Erasing\Domain\ValueObject\ErasureRequestState;
@@ -54,12 +54,12 @@ final class Erasure implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws ErasureOwnedByAnotherIdentityException
+     * @throws ErasureRequestedByAnotherIdentityException
      */
     public function cancel(string $identityId, \DateTimeImmutable $cancelledAt): void
     {
         if ($this->identityId !== $identityId) {
-            throw ErasureOwnedByAnotherIdentityException::forId($this->id);
+            throw ErasureRequestedByAnotherIdentityException::forId($this->id);
         }
 
         if (!$this->canTransitionStateTo(ErasureRequestState::CANCELLED)) {

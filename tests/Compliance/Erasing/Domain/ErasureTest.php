@@ -8,7 +8,7 @@ use Compliance\Erasing\Domain\Erasure;
 use Compliance\Erasing\Domain\Event\ErasureApproved;
 use Compliance\Erasing\Domain\Event\ErasureCancelled;
 use Compliance\Erasing\Domain\Event\ErasureRequested;
-use Compliance\Erasing\Domain\Exception\ErasureOwnedByAnotherIdentityException;
+use Compliance\Erasing\Domain\Exception\ErasureRequestedByAnotherIdentityException;
 use Compliance\Erasing\Domain\Service\ErasureRetentionCalculator;
 use Compliance\Erasing\Domain\ValueObject\ErasureId;
 use Compliance\Tests\Erasing\Support\Factory\ErasureIdFactory;
@@ -68,14 +68,14 @@ final class ErasureTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCannotCancelWhenOwnedByAnotherIdentity(): void
+    public function itCannotCancelWhenRequestedByAnotherIdentity(): void
     {
         $anotherIdentityId = Uuid::uuid7()->toString();
 
         $this
             ->given($this->requested())
             ->when(fn (Erasure $erasure) => $erasure->cancel($anotherIdentityId, $this->cancelledAt))
-            ->expectsException(ErasureOwnedByAnotherIdentityException::class);
+            ->expectsException(ErasureRequestedByAnotherIdentityException::class);
     }
 
     #[Test]

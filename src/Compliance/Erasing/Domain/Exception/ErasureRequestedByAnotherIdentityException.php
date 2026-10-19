@@ -6,10 +6,10 @@ namespace Compliance\Erasing\Domain\Exception;
 
 use Compliance\Erasing\Domain\ValueObject\ErasureId;
 
-final class ErasureOwnedByAnotherIdentityException extends \DomainException
+final class ErasureRequestedByAnotherIdentityException extends \DomainException
 {
     public static function forId(ErasureId $id): self
     {
-        return new self(\sprintf('Erasure "%s" is owned by another identity.', $id->toString()));
+        return new self(\sprintf('Erasure "%s" was requested by another identity.', $id->toString()));
     }
 }
