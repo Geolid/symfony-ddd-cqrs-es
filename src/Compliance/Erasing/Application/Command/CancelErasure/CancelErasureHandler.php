@@ -7,7 +7,7 @@ namespace Compliance\Erasing\Application\Command\CancelErasure;
 use Compliance\Erasing\Application\ErasingUniqueKey;
 use Compliance\Erasing\Domain\Exception\ErasureAlreadyExistsException;
 use Compliance\Erasing\Domain\Exception\ErasureNotFoundException;
-use Compliance\Erasing\Domain\Exception\ErasureOwnedByAnotherIdentityException;
+use Compliance\Erasing\Domain\Exception\ErasureRequestedByAnotherIdentityException;
 use Compliance\Erasing\Domain\Repository\ErasureRepositoryInterface;
 use Compliance\Erasing\Domain\ValueObject\ErasureId;
 use Psr\Clock\ClockInterface;
@@ -27,7 +27,7 @@ final readonly class CancelErasureHandler
 
     /**
      * @throws ErasureNotFoundException
-     * @throws ErasureOwnedByAnotherIdentityException
+     * @throws ErasureRequestedByAnotherIdentityException
      * @throws ErasureAlreadyExistsException
      */
     public function __invoke(CancelErasure $command): void

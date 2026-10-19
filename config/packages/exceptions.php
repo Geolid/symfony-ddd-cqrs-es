@@ -5,7 +5,7 @@ declare(strict_types=1);
 use Catalog\Listing\Application\Command\PublishProduct\Exception\ProductLabelAlreadyInUseException;
 use Catalog\Listing\Domain\Exception\ProductAlreadyDelistedException;
 use Compliance\Erasing\Application\Command\RequestErasure\Exception\ErasureAlreadyClaimedException;
-use Compliance\Erasing\Domain\Exception\ErasureOwnedByAnotherIdentityException;
+use Compliance\Erasing\Domain\Exception\ErasureRequestedByAnotherIdentityException;
 use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentAlreadyClaimedException;
 use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentReferenceAlreadyInUseException;
 use Finance\Payment\Application\PSP\Exception\PaymentGatewayException;
@@ -67,7 +67,7 @@ return static function (ContainerConfigurator $container): void {
 
             // Compliance
             ErasureAlreadyClaimedException::class => ['log_level' => 'info', 'status_code' => 409],
-            ErasureOwnedByAnotherIdentityException::class => ['log_level' => 'info', 'status_code' => 403],
+            ErasureRequestedByAnotherIdentityException::class => ['log_level' => 'info', 'status_code' => 403],
 
             // Fulfilment
             ShipmentAlreadyTrackedException::class => ['log_level' => 'info', 'status_code' => 409],
