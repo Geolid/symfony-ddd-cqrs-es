@@ -6,9 +6,8 @@ namespace Sales\Tests\Ordering\Application\Mapper;
 
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
-use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\Mapper\OrderItemMapper;
-use Shared\Domain\ValueObject\Currency;
+use Sales\Tests\Ordering\Support\Factory\OrderItemFactory;
 
 final class OrderItemMapperTest extends TestCase
 {
@@ -16,23 +15,23 @@ final class OrderItemMapperTest extends TestCase
     public function itMapsFromArray(): void
     {
         // Given
-        $productId = Uuid::uuid7()->toString();
+        $source = OrderItemFactory::new()->create();
         $data = [
-            'productId' => $productId,
-            'label' => 'Espresso cups, set of 6',
-            'unitPriceInCents' => 2500,
-            'quantity' => 2,
-            'taxAmountInCents' => 500,
+            'productId' => $source->product->id,
+            'label' => $source->product->label->value,
+            'unitPriceInCents' => $source->product->price->cents,
+            'quantity' => $source->quantity->value,
+            'taxAmountInCents' => $source->taxAmount->cents,
         ];
 
         // When
-        $item = OrderItemMapper::fromArray($data, Currency::EUR);
+        $item = OrderItemMapper::fromArray($data, $source->product->price->currency);
 
         // Then
-        self::assertSame($productId, $item->product->id);
-        self::assertSame('Espresso cups, set of 6', $item->product->label->value);
-        self::assertSame(2500, $item->product->price->cents);
-        self::assertSame(2, $item->quantity->value);
-        self::assertSame(500, $item->taxAmount->cents);
+        self::assertSame($source->product->id, $item->product->id);
+        self::assertSame($source->product->label->value, $item->product->label->value);
+        self::assertSame($source->product->price->cents, $item->product->price->cents);
+        self::assertSame($source->quantity->value, $item->quantity->value);
+        self::assertSame($source->taxAmount->cents, $item->taxAmount->cents);
     }
 }
