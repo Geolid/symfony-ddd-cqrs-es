@@ -12,12 +12,12 @@ use Finance\Payment\Application\PSP\Exception\PaymentTransientFailureException;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Application\PSP\PaymentGatewayStatus;
 use Finance\Tests\Payment\Support\Factory\PaymentFactory;
-use Sales\Ordering\Application\IntegrationEvent\OrderPrepared\OrderPreparedIntegrationEvent;
 use Patchlevel\EventSourcing\Message\Message;
 use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
 use Ramsey\Uuid\Uuid;
+use Sales\Ordering\Application\IntegrationEvent\OrderPrepared\OrderPreparedIntegrationEvent;
 use Sales\Tests\Ordering\Support\Factory\OrderFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
@@ -55,7 +55,6 @@ final class CapturePaymentOnOrderPreparedTest extends AbstractIntegrationTestCas
 
         // When
         $this->trigger(CapturePaymentOnOrderPrepared::class, new OrderPreparedIntegrationEvent(
-            Uuid::uuid7()->toString(),
             $order->id->toString(),
             Clock::get()->now(),
         ));
@@ -69,13 +68,12 @@ final class CapturePaymentOnOrderPreparedTest extends AbstractIntegrationTestCas
     public function itIgnoresWhenNotFound(): void
     {
         // Given
-        $shipmentId = Uuid::uuid7()->toString();
         $orderId = Uuid::uuid7()->toString();
 
         $this->paymentGateway->expects(self::never())->method('capture');
 
         // When
-        $this->trigger(CapturePaymentOnOrderPrepared::class, new OrderPreparedIntegrationEvent($shipmentId, $orderId, Clock::get()->now()));
+        $this->trigger(CapturePaymentOnOrderPrepared::class, new OrderPreparedIntegrationEvent($orderId, Clock::get()->now()));
     }
 
     #[Test]
@@ -90,7 +88,6 @@ final class CapturePaymentOnOrderPreparedTest extends AbstractIntegrationTestCas
 
         // When
         $this->trigger(CapturePaymentOnOrderPrepared::class, new OrderPreparedIntegrationEvent(
-            Uuid::uuid7()->toString(),
             $order->id->toString(),
             Clock::get()->now(),
         ));
@@ -112,7 +109,6 @@ final class CapturePaymentOnOrderPreparedTest extends AbstractIntegrationTestCas
 
         // When
         $this->trigger(CapturePaymentOnOrderPrepared::class, new OrderPreparedIntegrationEvent(
-            Uuid::uuid7()->toString(),
             $order->id->toString(),
             Clock::get()->now(),
         ));
@@ -131,7 +127,7 @@ final class CapturePaymentOnOrderPreparedTest extends AbstractIntegrationTestCas
         $payment = PaymentFactory::new()->withCheckoutSessionId($checkoutSessionId)->authorized()->create();
         $order = OrderFactory::new()->withCheckoutSessionId($checkoutSessionId)->create();
         $this->store($payment, $order);
-        $message = Message::create(new OrderPreparedIntegrationEvent(Uuid::uuid7()->toString(), $order->id->toString(), Clock::get()->now()));
+        $message = Message::create(new OrderPreparedIntegrationEvent($order->id->toString(), Clock::get()->now()));
         $error = PaymentFatalFailureException::forReason('rejected');
 
         // When
@@ -147,7 +143,7 @@ final class CapturePaymentOnOrderPreparedTest extends AbstractIntegrationTestCas
     public function itRethrowsTransientGatewayFailure(): void
     {
         // Given
-        $message = Message::create(new OrderPreparedIntegrationEvent(Uuid::uuid7()->toString(), Uuid::uuid7()->toString(), Clock::get()->now()));
+        $message = Message::create(new OrderPreparedIntegrationEvent(Uuid::uuid7()->toString(), Clock::get()->now()));
         $error = PaymentTransientFailureException::forReason('unreachable');
 
         // Then
