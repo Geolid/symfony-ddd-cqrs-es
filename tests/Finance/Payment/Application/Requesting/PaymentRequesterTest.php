@@ -26,9 +26,9 @@ use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
-use Shared\Domain\ValueObject\Label;
-use Shared\Domain\ValueObject\Money;
-use Shared\Domain\ValueObject\Quantity;
+use Shared\Tests\Support\Factory\LabelFactory;
+use Shared\Tests\Support\Factory\MoneyFactory;
+use Shared\Tests\Support\Factory\QuantityFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -79,7 +79,7 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
         self::assertSame($hostedPageUrl, $result);
         $payment = $this->finder->ofCheckoutSession($checkoutSessionId);
         self::assertSame($reference, $payment->reference);
-        self::assertSame(4_200, $payment->amountInCents);
+        self::assertSame($lines[0]->unitPrice->times($lines[0]->quantity)->cents, $payment->amountInCents);
         self::assertSame(PaymentStatus::REQUESTED, $payment->status);
     }
 
@@ -133,7 +133,7 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
         // Given
         $this->paymentGateway->expects(self::never())->method('requestPayment');
         $lines = [
-            new PaymentLine(Label::fromString('Mug'), Money::fromCents(1_500, 'GBP'), Quantity::of(1)),
+            new PaymentLine(LabelFactory::new()->create(), MoneyFactory::new()->withCurrency('GBP')->create(), QuantityFactory::new()->create()),
         ];
 
         // Then
@@ -176,7 +176,7 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
     private function lines(): array
     {
         return [
-            new PaymentLine(Label::fromString('Espresso cups, set of 6'), Money::fromCents(4_200, 'EUR'), Quantity::of(1)),
+            new PaymentLine(LabelFactory::new()->create(), MoneyFactory::new()->create(), QuantityFactory::new()->create()),
         ];
     }
 }

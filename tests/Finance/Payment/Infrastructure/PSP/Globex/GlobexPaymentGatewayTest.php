@@ -14,9 +14,9 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Ramsey\Uuid\Uuid;
-use Shared\Domain\ValueObject\Label;
-use Shared\Domain\ValueObject\Money;
-use Shared\Domain\ValueObject\Quantity;
+use Shared\Tests\Support\Factory\LabelFactory;
+use Shared\Tests\Support\Factory\MoneyFactory;
+use Shared\Tests\Support\Factory\QuantityFactory;
 use Symfony\Component\Clock\Clock;
 use Symfony\Component\HttpClient\Exception\TransportException;
 use Symfony\Component\HttpClient\MockHttpClient;
@@ -60,12 +60,12 @@ final class GlobexPaymentGatewayTest extends TestCase
                     [
                         'price_data' => [
                             'currency' => 'eur',
-                            'unit_amount' => 4_200,
+                            'unit_amount' => $lines[0]->unitPrice->cents,
                             'product_data' => [
-                                'name' => 'Espresso cups, set of 6',
+                                'name' => $lines[0]->label->value,
                             ],
                         ],
-                        'quantity' => 2,
+                        'quantity' => $lines[0]->quantity->value,
                     ],
                 ],
                 'metadata' => [
@@ -284,7 +284,7 @@ final class GlobexPaymentGatewayTest extends TestCase
     private function lines(): array
     {
         return [
-            new PaymentLine(Label::fromString('Espresso cups, set of 6'), Money::fromCents(4_200, 'EUR'), Quantity::of(2)),
+            new PaymentLine(LabelFactory::new()->create(), MoneyFactory::new()->create(), QuantityFactory::new()->create()),
         ];
     }
 

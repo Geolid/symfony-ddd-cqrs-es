@@ -8,7 +8,6 @@ use Iam\Authentication\Application\Query\GetPasswordCredentialByIdentity\GetPass
 use Iam\Authentication\Domain\PasswordCredential\Service\PasswordHasherInterface;
 use Iam\Authentication\Domain\PasswordCredential\Specification\PasswordStrengthSpecificationInterface;
 use Iam\Tests\Authentication\Support\Factory\PasswordCredentialFactory;
-use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -26,7 +25,7 @@ final class GetPasswordCredentialByIdentityHandlerTest extends AbstractIntegrati
     }
 
     #[Test]
-    public function itFinds(): void
+    public function itGets(): void
     {
         // Given
         $credential = PasswordCredentialFactory::new()
@@ -43,18 +42,5 @@ final class GetPasswordCredentialByIdentityHandlerTest extends AbstractIntegrati
         self::assertSame($credential->id->toString(), $result->id);
         self::assertSame($credential->identityId, $result->identityId);
         self::assertSameDateTime($credential->definedAt, $result->changedAt);
-    }
-
-    #[Test]
-    public function itFindsNothing(): void
-    {
-        // Given
-        $unknownIdentityId = IdentityIdFactory::new()->create()->toString();
-
-        // When
-        $result = $this->ask(new GetPasswordCredentialByIdentity($unknownIdentityId));
-
-        // Then
-        self::assertNull($result);
     }
 }

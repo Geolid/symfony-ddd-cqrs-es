@@ -16,6 +16,7 @@ use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
+use Shared\Tests\Support\Factory\MoneyFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class RequestPaymentHandlerTest extends AbstractIntegrationTestCase
@@ -59,6 +60,7 @@ final class RequestPaymentHandlerTest extends AbstractIntegrationTestCase
         // Given
         $checkoutSessionId = Uuid::uuid7()->toString();
         $reference = PaymentReferenceFactory::new()->create()->value;
+        $amount = MoneyFactory::new()->create();
         $this->uniqueness->claim(UniqueKey::for(PaymentUniqueKey::REFERENCE), $reference, Uuid::uuid7()->toString());
 
         // Then
@@ -68,8 +70,8 @@ final class RequestPaymentHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new RequestPayment(
             id: Uuid::uuid7()->toString(),
             checkoutSessionId: $checkoutSessionId,
-            amountInCents: 4_200,
-            currency: 'EUR',
+            amountInCents: $amount->cents,
+            currency: $amount->currency->value,
             reference: $reference,
             hostedPageUrl: \sprintf('https://checkout.globex.test/pay/%s', $reference),
         ));
@@ -82,6 +84,7 @@ final class RequestPaymentHandlerTest extends AbstractIntegrationTestCase
         $checkoutSessionId = Uuid::uuid7()->toString();
         $this->uniqueness->claim(UniqueKey::for(PaymentUniqueKey::CHECKOUT_SESSION), $checkoutSessionId, Uuid::uuid7()->toString());
         $reference = PaymentReferenceFactory::new()->create()->value;
+        $amount = MoneyFactory::new()->create();
 
         // Then
         $this->expectException(PaymentAlreadyClaimedException::class);
@@ -90,8 +93,8 @@ final class RequestPaymentHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new RequestPayment(
             id: Uuid::uuid7()->toString(),
             checkoutSessionId: $checkoutSessionId,
-            amountInCents: 4_200,
-            currency: 'EUR',
+            amountInCents: $amount->cents,
+            currency: $amount->currency->value,
             reference: $reference,
             hostedPageUrl: \sprintf('https://checkout.globex.test/pay/%s', $reference),
         ));

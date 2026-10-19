@@ -11,9 +11,9 @@ use Finance\Payment\Infrastructure\Requesting\LockingPaymentRequester;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
-use Shared\Domain\ValueObject\Label;
-use Shared\Domain\ValueObject\Money;
-use Shared\Domain\ValueObject\Quantity;
+use Shared\Tests\Support\Factory\LabelFactory;
+use Shared\Tests\Support\Factory\MoneyFactory;
+use Shared\Tests\Support\Factory\QuantityFactory;
 use Symfony\Component\Clock\Clock;
 use Symfony\Component\Lock\LockFactory;
 use Symfony\Component\Lock\SharedLockInterface;
@@ -83,7 +83,7 @@ final class LockingPaymentRequesterTest extends TestCase
     private function lines(): array
     {
         return [
-            new PaymentLine(Label::fromString('Espresso cups, set of 6'), Money::fromCents(4_200, 'EUR'), Quantity::of(1)),
+            new PaymentLine(LabelFactory::new()->create(), MoneyFactory::new()->create(), QuantityFactory::new()->create()),
         ];
     }
 }
