@@ -6,6 +6,7 @@ namespace Sales\Tests\Ordering\Application\Command\ApproveOrderErasure;
 
 use PHPUnit\Framework\Attributes\Test;
 use Sales\Ordering\Application\Command\ApproveOrderErasure\ApproveOrderErasure;
+use Sales\Ordering\Application\Finder\Order\Exception\OrderResultNotFoundException;
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
 use Sales\Tests\Ordering\Support\Factory\OrderFactory;
@@ -50,8 +51,9 @@ final class ApproveOrderErasureHandlerTest extends AbstractIntegrationTestCase
         $this->dispatch(new ApproveOrderErasure($order->id->toString()));
 
         // Then
-        $result = $this->finder->ofId($order->id->toString());
-        self::assertSame(ErasureStatus::ERASED, $result->erasureStatus);
+        $this->expectException(OrderResultNotFoundException::class);
+
+        $this->finder->ofId($order->id->toString());
     }
 
     #[Test]

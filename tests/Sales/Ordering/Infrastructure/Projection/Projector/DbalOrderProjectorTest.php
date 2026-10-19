@@ -187,7 +187,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsOnOrderErased(): void
+    public function itRemovesOnOrderErased(): void
     {
         // Given
         $other = OrderFactory::new()->prepared()->dispatched()->delivered()->create();
@@ -198,13 +198,8 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         $this->store($order);
 
         // Then
-        $row = $this->fetchRow($order->id->toString());
-        self::assertNotFalse($row);
-        self::assertSame(ErasureStatus::ERASED->value, $row['erasure_status']);
-
-        $otherRow = $this->fetchRow($other->id->toString());
-        self::assertNotFalse($otherRow);
-        self::assertSame(ErasureStatus::RETAINED->value, $otherRow['erasure_status']);
+        self::assertFalse($this->fetchRow($order->id->toString()));
+        self::assertNotFalse($this->fetchRow($other->id->toString()));
     }
 
     /**

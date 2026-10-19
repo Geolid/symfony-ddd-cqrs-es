@@ -134,11 +134,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
     #[Subscribe(OrderErased::class)]
     public function onOrderErased(OrderErased $event): void
     {
-        $this->connection->update(
-            self::TABLE,
-            ['erasure_status' => ErasureStatus::ERASED->value],
-            ['id' => $event->id->toString()],
-        );
+        $this->connection->delete(self::TABLE, ['id' => $event->id->toString()]);
     }
 
     /**
