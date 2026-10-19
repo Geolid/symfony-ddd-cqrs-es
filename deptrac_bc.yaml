@@ -68,7 +68,7 @@ deptrac:
     Shopping.Checkout:    [ Catalog.Listing, Compliance.Erasing, Crm.Customer, Shopping.Cart, Finance.Payment, Shared, Vendors ]
     Sales.Ordering:       [ Crm.Customer, Shopping.Checkout, Fulfilment.Shipping, Finance.Payment, Shared, Vendors ]
     Fulfilment.Shipping:  [ Sales.Ordering, Crm.Customer, Finance.Payment, Shared, Vendors ]
-    Finance.Payment:      [ Sales.Ordering, Fulfilment.Shipping, Shopping.Checkout, Shared, Vendors ]
+    Finance.Payment:      [ Sales.Ordering, Shopping.Checkout, Shared, Vendors ]
     Iam.Identity:         [ Compliance.Erasing, Shared, Vendors ]
     Iam.Authentication:   [ Iam.Identity, Shared, Vendors ]
     Catalog.Listing:      [ Shared, Vendors ]

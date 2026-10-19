@@ -118,6 +118,15 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
+    public function itDoesNotPrepareWhenCancelled(): void
+    {
+        $this
+            ->given($this->confirmed(), $this->cancelled())
+            ->when(fn (Order $order) => $order->prepare($this->preparedAt))
+            ->then();
+    }
+
+    #[Test]
     public function itCancels(): void
     {
         $this
