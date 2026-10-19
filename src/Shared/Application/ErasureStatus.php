@@ -9,7 +9,6 @@ enum ErasureStatus: string
     case RETAINED = 'retained';
     case REQUESTED = 'requested';
     case APPROVED = 'approved';
-    case ERASED = 'erased';
 
     public function isRequested(): bool
     {

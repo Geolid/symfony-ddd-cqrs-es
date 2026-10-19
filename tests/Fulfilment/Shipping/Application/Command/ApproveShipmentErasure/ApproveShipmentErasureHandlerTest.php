@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipping\Application\Command\ApproveShipmentErasure;
 
 use Fulfilment\Shipping\Application\Command\ApproveShipmentErasure\ApproveShipmentErasure;
+use Fulfilment\Shipping\Application\Finder\Shipment\Exception\ShipmentResultNotFoundException;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Tests\Shipping\Support\Factory\ShipmentFactory;
@@ -50,8 +51,9 @@ final class ApproveShipmentErasureHandlerTest extends AbstractIntegrationTestCas
         $this->dispatch(new ApproveShipmentErasure($shipment->id->toString()));
 
         // Then
-        $result = $this->finder->ofId($shipment->id->toString());
-        self::assertSame(ErasureStatus::ERASED, $result->erasureStatus);
+        $this->expectException(ShipmentResultNotFoundException::class);
+
+        $this->finder->ofId($shipment->id->toString());
     }
 
     #[Test]

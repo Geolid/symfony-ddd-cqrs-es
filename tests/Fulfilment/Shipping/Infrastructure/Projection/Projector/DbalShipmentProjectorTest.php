@@ -182,7 +182,7 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itProjectsOnShipmentErased(): void
+    public function itRemovesOnShipmentErased(): void
     {
         // Given
         $other = ShipmentFactory::new()->prepared()->manifested()->dispatched()->delivered()->create();
@@ -194,13 +194,8 @@ final class DbalShipmentProjectorTest extends AbstractIntegrationTestCase
         $this->store($shipment);
 
         // Then
-        $row = $this->fetchRow($shipment->id->toString());
-        self::assertNotFalse($row);
-        self::assertSame(ErasureStatus::ERASED->value, $row['erasure_status']);
-
-        $otherRow = $this->fetchRow($other->id->toString());
-        self::assertNotFalse($otherRow);
-        self::assertSame(ErasureStatus::RETAINED->value, $otherRow['erasure_status']);
+        self::assertFalse($this->fetchRow($shipment->id->toString()));
+        self::assertNotFalse($this->fetchRow($other->id->toString()));
     }
 
     private function otherShipment(): Shipment

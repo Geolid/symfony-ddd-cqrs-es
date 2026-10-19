@@ -129,11 +129,7 @@ final readonly class DbalShipmentProjector extends AbstractDbalProjector
     #[Subscribe(ShipmentErased::class)]
     public function onShipmentErased(ShipmentErased $event): void
     {
-        $this->connection->update(
-            self::TABLE,
-            ['erasure_status' => ErasureStatus::ERASED->value],
-            ['id' => $event->id->toString()],
-        );
+        $this->connection->delete(self::TABLE, ['id' => $event->id->toString()]);
     }
 
     /**
