@@ -11,7 +11,7 @@ use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PSP\Exception\PaymentFatalFailureException;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
 use Finance\Payment\Application\PSP\PaymentGatewayStatus;
-use Fulfilment\Shipping\Application\IntegrationEvent\ShipmentPrepared\ShipmentPreparedIntegrationEvent;
+use Sales\Ordering\Application\IntegrationEvent\OrderPrepared\OrderPreparedIntegrationEvent;
 use Patchlevel\EventSourcing\Attribute\OnFailed;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Patchlevel\EventSourcing\Message\Message;
@@ -20,8 +20,8 @@ use Shared\Application\Command\CommandInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Policy;
 
-#[Policy('finance.payment.capture_payment_on_shipment_prepared')]
-final readonly class CapturePaymentOnShipmentPrepared
+#[Policy('finance.payment.capture_payment_on_order_prepared')]
+final readonly class CapturePaymentOnOrderPrepared
 {
     public function __construct(
         private PaymentFinderInterface $paymentFinder,
@@ -34,8 +34,8 @@ final readonly class CapturePaymentOnShipmentPrepared
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    #[Subscribe(ShipmentPreparedIntegrationEvent::class)]
-    public function __invoke(ShipmentPreparedIntegrationEvent $event): void
+    #[Subscribe(OrderPreparedIntegrationEvent::class)]
+    public function __invoke(OrderPreparedIntegrationEvent $event): void
     {
         try {
             $payment = $this->paymentFinder->ofOrderId($event->orderId);
@@ -66,7 +66,7 @@ final readonly class CapturePaymentOnShipmentPrepared
         }
 
         $event = $message->event();
-        \assert($event instanceof ShipmentPreparedIntegrationEvent);
+        \assert($event instanceof OrderPreparedIntegrationEvent);
 
         $payment = $this->paymentFinder->ofOrderId($event->orderId);
 
