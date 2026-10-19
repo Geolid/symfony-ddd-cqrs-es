@@ -21,6 +21,7 @@ final readonly class OrderResult
         public OrderStatus $status,
         public \DateTimeImmutable $confirmedAt,
         public ?\DateTimeImmutable $preparedAt,
+        public ?\DateTimeImmutable $paidAt,
         public ?\DateTimeImmutable $dispatchedAt,
         public ?\DateTimeImmutable $deliveredAt,
         public ?\DateTimeImmutable $cancelledAt,

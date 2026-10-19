@@ -110,7 +110,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
     {
         // Given
         $customerId = Uuid::uuid7()->toString();
-        $order = OrderFactory::new()->withCustomerId($customerId)->prepared()->dispatched()->create();
+        $order = OrderFactory::new()->withCustomerId($customerId)->prepared()->paid()->dispatched()->create();
         $this->store($order);
 
         // Then

@@ -5,10 +5,9 @@ declare(strict_types=1);
 namespace Fulfilment\Tests\Shipping\Infrastructure\Projection\Projector;
 
 use Doctrine\DBAL\Connection;
-use Finance\Tests\Payment\Support\Factory\PaymentFactory;
 use Fulfilment\Shipping\Infrastructure\Projection\Projector\DbalOrderPaymentProjector;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
+use Sales\Tests\Ordering\Support\Factory\OrderFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
@@ -17,16 +16,15 @@ use Support\TestCase\AbstractIntegrationTestCase;
 final class DbalOrderPaymentProjectorTest extends AbstractIntegrationTestCase
 {
     #[Test]
-    public function itProjectsOnPaymentCaptured(): void
+    public function itProjectsOnOrderPaid(): void
     {
         // Given
-        $orderId = Uuid::uuid7()->toString();
-        $other = PaymentFactory::new()->create();
-        $payment = PaymentFactory::new()->authorized()->captured($orderId)->create();
-        $this->store($other, $payment);
+        $other = OrderFactory::new()->prepared()->create();
+        $order = OrderFactory::new()->prepared()->paid()->create();
+        $this->store($other, $order);
 
         // Then
-        $row = $this->fetchRow($orderId);
+        $row = $this->fetchRow($order->id->toString());
         self::assertNotFalse($row);
         self::assertTrue((bool) $row['paid']);
     }

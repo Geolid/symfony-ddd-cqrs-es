@@ -8,6 +8,7 @@ enum OrderState: string
 {
     case CONFIRMED = 'confirmed';
     case PREPARED = 'prepared';
+    case PAID = 'paid';
     case DISPATCHED = 'dispatched';
     case DELIVERED = 'delivered';
     case CANCELLED = 'cancelled';

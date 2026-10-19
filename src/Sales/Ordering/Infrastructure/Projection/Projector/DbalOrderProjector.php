@@ -17,6 +17,7 @@ use Sales\Ordering\Domain\Order\Event\OrderDispatched;
 use Sales\Ordering\Domain\Order\Event\OrderErased;
 use Sales\Ordering\Domain\Order\Event\OrderErasureApproved;
 use Sales\Ordering\Domain\Order\Event\OrderFailed;
+use Sales\Ordering\Domain\Order\Event\OrderPaid;
 use Sales\Ordering\Domain\Order\Event\OrderPrepared;
 use Shared\Application\ErasureStatus;
 use Shared\Application\Mapper\PostalAddressMapper;
@@ -93,6 +94,20 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
         );
     }
 
+    #[Subscribe(OrderPaid::class)]
+    public function onOrderPaid(OrderPaid $event): void
+    {
+        $this->connection->update(
+            self::TABLE,
+            [
+                'status' => OrderStatus::PAID->value,
+                'paid_at' => $event->paidAt,
+            ],
+            ['id' => $event->id->toString()],
+            ['paid_at' => Types::DATETIME_IMMUTABLE],
+        );
+    }
+
     #[Subscribe(OrderDispatched::class)]
     public function onOrderDispatched(OrderDispatched $event): void
     {
@@ -154,6 +169,7 @@ final readonly class DbalOrderProjector extends AbstractDbalProjector
         $table->addColumn('status', Types::STRING, ['length' => 10]);
         $table->addColumn('confirmed_at', Types::DATETIME_IMMUTABLE);
         $table->addColumn('prepared_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
+        $table->addColumn('paid_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('dispatched_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('delivered_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);
         $table->addColumn('cancelled_at', Types::DATETIME_IMMUTABLE, ['notnull' => false, 'default' => null]);

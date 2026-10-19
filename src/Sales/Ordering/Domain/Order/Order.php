@@ -18,9 +18,11 @@ use Sales\Ordering\Domain\Order\Event\OrderDispatched;
 use Sales\Ordering\Domain\Order\Event\OrderErased;
 use Sales\Ordering\Domain\Order\Event\OrderErasureApproved;
 use Sales\Ordering\Domain\Order\Event\OrderFailed;
+use Sales\Ordering\Domain\Order\Event\OrderPaid;
 use Sales\Ordering\Domain\Order\Event\OrderPrepared;
 use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
+use Sales\Ordering\Domain\Order\Exception\OrderOutOfSequenceException;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Sales\Ordering\Domain\Order\ValueObject\OrderItem;
@@ -41,7 +43,8 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     /** @var array<string, list<OrderState>> */
     private const array OPERATIONAL_TRANSITIONS = [
         OrderState::CONFIRMED->value => [OrderState::PREPARED, OrderState::CANCELLED, OrderState::FAILED],
-        OrderState::PREPARED->value => [OrderState::DISPATCHED, OrderState::CANCELLED, OrderState::FAILED],
+        OrderState::PREPARED->value => [OrderState::PAID, OrderState::CANCELLED, OrderState::FAILED],
+        OrderState::PAID->value => [OrderState::DISPATCHED],
         OrderState::DISPATCHED->value => [OrderState::DELIVERED],
         OrderState::DELIVERED->value => [],
         OrderState::CANCELLED->value => [],
@@ -67,6 +70,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     public private(set) \DateTimeImmutable $confirmedAt;
     public private(set) OrderState $operationalState;
     public private(set) ?\DateTimeImmutable $preparedAt = null;
+    public private(set) ?\DateTimeImmutable $paidAt = null;
     public private(set) ?\DateTimeImmutable $cancelledAt = null;
     public private(set) ?\DateTimeImmutable $failedAt = null;
     public private(set) ?\DateTimeImmutable $dispatchedAt = null;
@@ -134,6 +138,21 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
+     * @throws OrderOutOfSequenceException
+     */
+    public function pay(\DateTimeImmutable $paidAt): void
+    {
+        if (!$this->transitionsOperationalTo(OrderState::PAID)) {
+            return;
+        }
+
+        $this->recordThat(new OrderPaid(
+            id: $this->id,
+            paidAt: $paidAt,
+        ));
+    }
+
+    /**
      * @throws OrderBelongsToAnotherCustomerException
      * @throws OrderNotCancellableException
      */
@@ -173,9 +192,12 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         $this->tryErase($failedAt);
     }
 
+    /**
+     * @throws OrderOutOfSequenceException
+     */
     public function dispatch(\DateTimeImmutable $dispatchedAt): void
     {
-        if (!$this->canTransitionOperationalTo(OrderState::DISPATCHED)) {
+        if (!$this->transitionsOperationalTo(OrderState::DISPATCHED)) {
             return;
         }
 
@@ -185,9 +207,12 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    /**
+     * @throws OrderOutOfSequenceException
+     */
     public function deliver(\DateTimeImmutable $deliveredAt): void
     {
-        if (!$this->canTransitionOperationalTo(OrderState::DELIVERED)) {
+        if (!$this->transitionsOperationalTo(OrderState::DELIVERED)) {
             return;
         }
 
@@ -230,6 +255,22 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         return $this->erasureState->isApproved() && ($this->operationalState->isDelivered() || $this->operationalState->isCancelled() || $this->operationalState->isFailed());
     }
 
+    /**
+     * @throws OrderOutOfSequenceException
+     */
+    private function transitionsOperationalTo(OrderState $target): bool
+    {
+        if ($this->canTransitionOperationalTo($target)) {
+            return true;
+        }
+
+        if ($this->operationalState !== $target && new HasReachedSpecification(self::OPERATIONAL_TRANSITIONS, $this->operationalState)->isSatisfiedBy($target)) {
+            throw OrderOutOfSequenceException::forTarget($this->id, $target);
+        }
+
+        return false;
+    }
+
     private function canTransitionOperationalTo(OrderState $target): bool
     {
         return new CanTransitionToSpecification(self::OPERATIONAL_TRANSITIONS, $target)->isSatisfiedBy($this->operationalState);
@@ -265,6 +306,13 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     {
         $this->operationalState = OrderState::PREPARED;
         $this->preparedAt = $event->preparedAt;
+    }
+
+    #[Apply]
+    private function applyPaid(OrderPaid $event): void
+    {
+        $this->operationalState = OrderState::PAID;
+        $this->paidAt = $event->paidAt;
     }
 
     #[Apply]

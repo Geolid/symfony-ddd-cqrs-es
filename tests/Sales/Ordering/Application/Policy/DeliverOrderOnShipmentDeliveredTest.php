@@ -20,7 +20,7 @@ final class DeliverOrderOnShipmentDeliveredTest extends AbstractIntegrationTestC
     public function itDelivers(): void
     {
         // Given
-        $order = OrderFactory::new()->prepared()->dispatched()->create();
+        $order = OrderFactory::new()->prepared()->paid()->dispatched()->create();
         $this->store($order);
 
         // When

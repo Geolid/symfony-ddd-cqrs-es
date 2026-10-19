@@ -47,7 +47,7 @@ final class PatchlevelOrderRepositoryTest extends AbstractIntegrationTestCase
      */
     public static function provideLifecycle(): iterable
     {
-        yield 'delivered' => [OrderFactory::new()->prepared()->dispatched()->delivered()->erasureApproved()];
+        yield 'delivered' => [OrderFactory::new()->prepared()->paid()->dispatched()->delivered()->erasureApproved()];
         yield 'cancelled' => [OrderFactory::new()->cancelled()];
         yield 'failed' => [OrderFactory::new()->failed()];
     }

@@ -44,7 +44,7 @@ final class ApproveOrderErasureHandlerTest extends AbstractIntegrationTestCase
     public function itApprovesAndErasesWhenAlreadyDelivered(): void
     {
         // Given
-        $order = OrderFactory::new()->prepared()->dispatched()->delivered()->create();
+        $order = OrderFactory::new()->prepared()->paid()->dispatched()->delivered()->create();
         $this->store($order);
 
         // When

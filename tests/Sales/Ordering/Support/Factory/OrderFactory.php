@@ -30,6 +30,7 @@ use function Zenstruck\Foundry\faker;
  *     currency: Currency,
  *     confirmedAt: \DateTimeImmutable,
  *     preparedAt: \DateTimeImmutable,
+ *     paidAt: \DateTimeImmutable,
  *     cancelledAt: \DateTimeImmutable,
  *     failedAt: \DateTimeImmutable,
  *     dispatchedAt: \DateTimeImmutable,
@@ -89,6 +90,15 @@ final class OrderFactory extends AbstractAggregateFactory
         return $this->with(array_filter(['preparedAt' => $preparedAt]))->transition(
             static function (Order $order, array $inputs): void {
                 $order->prepare($inputs['preparedAt']);
+            },
+        );
+    }
+
+    public function paid(?\DateTimeImmutable $paidAt = null): self
+    {
+        return $this->with(array_filter(['paidAt' => $paidAt]))->transition(
+            static function (Order $order, array $inputs): void {
+                $order->pay($inputs['paidAt']);
             },
         );
     }
@@ -179,6 +189,7 @@ final class OrderFactory extends AbstractAggregateFactory
             'currency' => Currency::EUR,
             'confirmedAt' => $now,
             'preparedAt' => $now->modify('+1 day'),
+            'paidAt' => $now->modify('+1 day'),
             'cancelledAt' => $now->modify('+1 day'),
             'failedAt' => $now->modify('+1 day'),
             'dispatchedAt' => $now->modify('+2 day'),

@@ -15,9 +15,11 @@ use Sales\Ordering\Domain\Order\Event\OrderDispatched;
 use Sales\Ordering\Domain\Order\Event\OrderErased;
 use Sales\Ordering\Domain\Order\Event\OrderErasureApproved;
 use Sales\Ordering\Domain\Order\Event\OrderFailed;
+use Sales\Ordering\Domain\Order\Event\OrderPaid;
 use Sales\Ordering\Domain\Order\Event\OrderPrepared;
 use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
+use Sales\Ordering\Domain\Order\Exception\OrderOutOfSequenceException;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Sales\Ordering\Domain\Order\Order;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
@@ -46,6 +48,7 @@ final class OrderTest extends AggregateRootTestCase
 
     private \DateTimeImmutable $confirmedAt;
     private \DateTimeImmutable $preparedAt;
+    private \DateTimeImmutable $paidAt;
     private \DateTimeImmutable $cancelledAt;
     private \DateTimeImmutable $failedAt;
     private \DateTimeImmutable $dispatchedAt;
@@ -65,9 +68,10 @@ final class OrderTest extends AggregateRootTestCase
         $this->currency = Currency::EUR;
         $this->confirmedAt = Clock::get()->now();
         $this->preparedAt = $this->confirmedAt->modify('+1 day');
+        $this->paidAt = $this->preparedAt->modify('+1 hour');
         $this->cancelledAt = $this->confirmedAt->modify('+1 day');
         $this->failedAt = $this->confirmedAt->modify('+1 day');
-        $this->dispatchedAt = $this->preparedAt->modify('+1 day');
+        $this->dispatchedAt = $this->paidAt->modify('+1 day');
         $this->deliveredAt = $this->dispatchedAt->modify('+1 day');
         $this->erasureApprovedAt = $this->confirmedAt->modify('+1 hour');
     }
@@ -127,6 +131,42 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
+    public function itPaysWhenPrepared(): void
+    {
+        $this
+            ->given($this->confirmed(), $this->prepared())
+            ->when(fn (Order $order) => $order->pay($this->paidAt))
+            ->then(new OrderPaid($this->id, $this->paidAt));
+    }
+
+    #[Test]
+    public function itDoesNotPayWhenAlreadyPaid(): void
+    {
+        $this
+            ->given($this->confirmed(), $this->prepared(), $this->paid())
+            ->when(fn (Order $order) => $order->pay($this->paidAt))
+            ->then();
+    }
+
+    #[Test]
+    public function itDoesNotPayWhenCancelled(): void
+    {
+        $this
+            ->given($this->confirmed(), $this->cancelled())
+            ->when(fn (Order $order) => $order->pay($this->paidAt))
+            ->then();
+    }
+
+    #[Test]
+    public function itCannotPayWhenNotPrepared(): void
+    {
+        $this
+            ->given($this->confirmed())
+            ->when(fn (Order $order) => $order->pay($this->paidAt))
+            ->expectsException(OrderOutOfSequenceException::class);
+    }
+
+    #[Test]
     public function itCancels(): void
     {
         $this
@@ -161,6 +201,15 @@ final class OrderTest extends AggregateRootTestCase
     {
         $this
             ->given($this->confirmed(), $this->prepared())
+            ->when(fn (Order $order) => $order->cancel($this->customerId, $this->cancelledAt))
+            ->expectsException(OrderNotCancellableException::class);
+    }
+
+    #[Test]
+    public function itCannotCancelWhenPaid(): void
+    {
+        $this
+            ->given($this->confirmed(), $this->prepared(), $this->paid())
             ->when(fn (Order $order) => $order->cancel($this->customerId, $this->cancelledAt))
             ->expectsException(OrderNotCancellableException::class);
     }
@@ -208,52 +257,52 @@ final class OrderTest extends AggregateRootTestCase
     public function itDoesNotFailWhenDispatched(): void
     {
         $this
-            ->given($this->confirmed(), $this->prepared(), $this->dispatched())
+            ->given($this->confirmed(), $this->prepared(), $this->paid(), $this->dispatched())
             ->when(fn (Order $order) => $order->fail($this->failedAt))
             ->then();
     }
 
     #[Test]
-    public function itDispatchesWhenPrepared(): void
+    public function itDispatchesWhenPaid(): void
     {
         $this
-            ->given($this->confirmed(), $this->prepared())
+            ->given($this->confirmed(), $this->prepared(), $this->paid())
             ->when(fn (Order $order) => $order->dispatch($this->dispatchedAt))
             ->then(new OrderDispatched($this->id, $this->dispatchedAt));
     }
 
     #[Test]
-    public function itDoesNotDispatchWhenNotPrepared(): void
+    public function itCannotDispatchWhenNotPaid(): void
     {
         $this
-            ->given($this->confirmed())
+            ->given($this->confirmed(), $this->prepared())
             ->when(fn (Order $order) => $order->dispatch($this->dispatchedAt))
-            ->then();
+            ->expectsException(OrderOutOfSequenceException::class);
     }
 
     #[Test]
     public function itDeliversWhenDispatched(): void
     {
         $this
-            ->given($this->confirmed(), $this->prepared(), $this->dispatched())
+            ->given($this->confirmed(), $this->prepared(), $this->paid(), $this->dispatched())
             ->when(fn (Order $order) => $order->deliver($this->deliveredAt))
             ->then(new OrderDelivered($this->id, $this->deliveredAt));
     }
 
     #[Test]
-    public function itDoesNotDeliverWhenNotDispatched(): void
+    public function itCannotDeliverWhenNotDispatched(): void
     {
         $this
-            ->given($this->confirmed(), $this->prepared())
+            ->given($this->confirmed(), $this->prepared(), $this->paid())
             ->when(fn (Order $order) => $order->deliver($this->deliveredAt))
-            ->then();
+            ->expectsException(OrderOutOfSequenceException::class);
     }
 
     #[Test]
     public function itDeliversAndErasesWhenErasureApproved(): void
     {
         $this
-            ->given($this->confirmed(), $this->erasureApproved(), $this->prepared(), $this->dispatched())
+            ->given($this->confirmed(), $this->erasureApproved(), $this->prepared(), $this->paid(), $this->dispatched())
             ->when(fn (Order $order) => $order->deliver($this->deliveredAt))
             ->then(
                 new OrderDelivered($this->id, $this->deliveredAt),
@@ -279,6 +328,7 @@ final class OrderTest extends AggregateRootTestCase
             ->given(
                 $this->confirmed(),
                 $this->prepared(),
+                $this->paid(),
                 $this->dispatched(),
                 new OrderDelivered($this->id, $this->deliveredAt),
             )
@@ -336,6 +386,11 @@ final class OrderTest extends AggregateRootTestCase
     private function prepared(): OrderPrepared
     {
         return new OrderPrepared($this->id, $this->preparedAt);
+    }
+
+    private function paid(): OrderPaid
+    {
+        return new OrderPaid($this->id, $this->paidAt);
     }
 
     private function cancelled(): OrderCancelled
