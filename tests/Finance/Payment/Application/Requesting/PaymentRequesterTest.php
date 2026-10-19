@@ -8,7 +8,6 @@ use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
 use Finance\Payment\Application\PaymentUniqueKey;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
-use Finance\Payment\Application\PSP\PaymentLine;
 use Finance\Payment\Application\PSP\PaymentSession;
 use Finance\Payment\Application\Requesting\Exception\PaymentRequestAlreadyExpiredException;
 use Finance\Payment\Application\Requesting\Exception\PaymentRequestCurrencyMismatchException;
@@ -17,6 +16,7 @@ use Finance\Payment\Application\Requesting\Exception\PaymentRequestWithoutLineEx
 use Finance\Payment\Application\Requesting\PaymentRequester;
 use Finance\Payment\Domain\ValueObject\PaymentId;
 use Finance\Tests\Payment\Support\Factory\PaymentFactory;
+use Finance\Tests\Payment\Support\Factory\PaymentLineFactory;
 use Finance\Tests\Payment\Support\Factory\PaymentReferenceFactory;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\Attributes\Test;
@@ -26,9 +26,7 @@ use Ramsey\Uuid\Uuid;
 use Shared\Application\Command\CommandBusInterface;
 use Shared\Application\Uniqueness\UniqueKey;
 use Shared\Application\Uniqueness\UniquenessRegistryInterface;
-use Shared\Tests\Support\Factory\LabelFactory;
 use Shared\Tests\Support\Factory\MoneyFactory;
-use Shared\Tests\Support\Factory\QuantityFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Component\Clock\Clock;
 
@@ -67,7 +65,8 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
         $paymentId = PaymentId::forCheckoutSession($checkoutSessionId)->toString();
         $reference = PaymentReferenceFactory::new()->create()->value;
         $hostedPageUrl = \sprintf('https://checkout.globex.test/pay/%s', $reference);
-        $lines = $this->lines();
+        $lines = PaymentLineFactory::new()->many(2)->create();
+        $requestedAmount = $lines[0]->unitPrice->times($lines[0]->quantity)->plus($lines[1]->unitPrice->times($lines[1]->quantity));
         $this->paymentGateway->expects(self::once())->method('requestPayment')
             ->with($paymentId, $checkoutSessionId, $lines, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $expiresAt)
             ->willReturn(new PaymentSession($reference, $hostedPageUrl));
@@ -79,7 +78,7 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
         self::assertSame($hostedPageUrl, $result);
         $payment = $this->finder->ofCheckoutSession($checkoutSessionId);
         self::assertSame($reference, $payment->reference);
-        self::assertSame($lines[0]->unitPrice->times($lines[0]->quantity)->cents, $payment->amountInCents);
+        self::assertSame($requestedAmount->cents, $payment->amountInCents);
         self::assertSame(PaymentStatus::REQUESTED, $payment->status);
     }
 
@@ -105,10 +104,11 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
             $payment->checkoutSessionId,
             $payment->id->toString(),
         );
+        $lines = PaymentLineFactory::new()->many(2)->create();
         $this->paymentGateway->expects(self::never())->method('requestPayment');
 
         // When
-        $hostedPageUrl = $this->service->requestFor($payment->checkoutSessionId, 'EUR', $this->lines(), 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt);
+        $hostedPageUrl = $this->service->requestFor($payment->checkoutSessionId, 'EUR', $lines, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $this->expiresAt);
 
         // Then
         self::assertSame($payment->hostedPageUrl, $hostedPageUrl);
@@ -133,7 +133,7 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
         // Given
         $this->paymentGateway->expects(self::never())->method('requestPayment');
         $lines = [
-            new PaymentLine(LabelFactory::new()->create(), MoneyFactory::new()->withCurrency('GBP')->create(), QuantityFactory::new()->create()),
+            PaymentLineFactory::new()->withUnitPrice(MoneyFactory::new()->withCurrency('GBP')->create())->create(),
         ];
 
         // Then
@@ -148,12 +148,13 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
     {
         // Given
         $this->paymentGateway->expects(self::never())->method('requestPayment');
+        $lines = PaymentLineFactory::new()->many(2)->create();
 
         // Then
         $this->expectException(PaymentRequestInvalidUrlException::class);
 
         // When
-        $this->service->requestFor(Uuid::uuid7()->toString(), 'EUR', $this->lines(), 'not-a-url', 'https://web.test/sales/cart', $this->expiresAt);
+        $this->service->requestFor(Uuid::uuid7()->toString(), 'EUR', $lines, 'not-a-url', 'https://web.test/sales/cart', $this->expiresAt);
     }
 
     #[Test]
@@ -162,21 +163,12 @@ final class PaymentRequesterTest extends AbstractIntegrationTestCase
         // Given
         $this->paymentGateway->expects(self::never())->method('requestPayment');
         $expiredAt = Clock::get()->now()->modify('-1 second');
+        $lines = PaymentLineFactory::new()->many(2)->create();
 
         // Then
         $this->expectException(PaymentRequestAlreadyExpiredException::class);
 
         // When
-        $this->service->requestFor(Uuid::uuid7()->toString(), 'EUR', $this->lines(), 'https://web.test/sales/orders', 'https://web.test/sales/cart', $expiredAt);
-    }
-
-    /**
-     * @return list<PaymentLine>
-     */
-    private function lines(): array
-    {
-        return [
-            new PaymentLine(LabelFactory::new()->create(), MoneyFactory::new()->create(), QuantityFactory::new()->create()),
-        ];
+        $this->service->requestFor(Uuid::uuid7()->toString(), 'EUR', $lines, 'https://web.test/sales/orders', 'https://web.test/sales/cart', $expiredAt);
     }
 }
