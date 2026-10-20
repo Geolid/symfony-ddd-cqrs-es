@@ -6,22 +6,21 @@ namespace Sales\Ordering\Domain\Order\Exception;
 
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Sales\Ordering\Domain\Order\ValueObject\OrderState;
-use Shared\Domain\Exception\AggregateStateInconsistentException;
 
-final class OrderStateInconsistentException extends AggregateStateInconsistentException
+final class OrderInvalidStateException extends \DomainException
 {
     public static function cannotPay(OrderId $id, OrderState $state): self
     {
-        return new self(self::describe('Order', $id->toString(), 'paid', $state->value));
+        return new self(\sprintf('Order "%s" cannot be paid while in state "%s".', $id->toString(), $state->value));
     }
 
     public static function cannotDispatch(OrderId $id, OrderState $state): self
     {
-        return new self(self::describe('Order', $id->toString(), 'dispatched', $state->value));
+        return new self(\sprintf('Order "%s" cannot be dispatched while in state "%s".', $id->toString(), $state->value));
     }
 
     public static function cannotDeliver(OrderId $id, OrderState $state): self
     {
-        return new self(self::describe('Order', $id->toString(), 'delivered', $state->value));
+        return new self(\sprintf('Order "%s" cannot be delivered while in state "%s".', $id->toString(), $state->value));
     }
 }

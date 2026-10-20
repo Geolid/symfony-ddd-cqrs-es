@@ -6,12 +6,11 @@ namespace Crm\Customer\Domain\Customer\Exception;
 
 use Crm\Customer\Domain\Customer\ValueObject\CustomerId;
 use Shared\Domain\ValueObject\ErasureState;
-use Shared\Domain\Exception\AggregateStateInconsistentException;
 
-final class CustomerStateInconsistentException extends AggregateStateInconsistentException
+final class CustomerInvalidStateException extends \DomainException
 {
     public static function cannotErase(CustomerId $id, ErasureState $state): self
     {
-        return new self(self::describe('Customer', $id->toString(), 'erased', $state->value));
+        return new self(\sprintf('Customer "%s" cannot be erased while in state "%s".', $id->toString(), $state->value));
     }
 }

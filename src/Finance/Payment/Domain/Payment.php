@@ -10,7 +10,7 @@ use Finance\Payment\Domain\Event\PaymentCaptured;
 use Finance\Payment\Domain\Event\PaymentFailed;
 use Finance\Payment\Domain\Event\PaymentRequested;
 use Finance\Payment\Domain\Event\PaymentVoided;
-use Finance\Payment\Domain\Exception\PaymentStateInconsistentException;
+use Finance\Payment\Domain\Exception\PaymentInvalidStateException;
 use Finance\Payment\Domain\ValueObject\PaymentId;
 use Finance\Payment\Domain\ValueObject\PaymentReference;
 use Finance\Payment\Domain\ValueObject\PaymentState;
@@ -96,16 +96,16 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws PaymentStateInconsistentException
+     * @throws PaymentInvalidStateException
      */
     public function fail(string $orderId, \DateTimeImmutable $failedAt): void
     {
-        if (!$this->canTransitionOperationalTo(PaymentState::FAILED)) {
-            if ($this->isBeforeOperational(PaymentState::FAILED)) {
-                throw PaymentStateInconsistentException::cannotFail($this->id, $this->operationalState);
-            }
-
+        if ($this->hasReachedOperational(PaymentState::FAILED)) {
             return;
+        }
+
+        if (!$this->canTransitionOperationalTo(PaymentState::FAILED)) {
+            throw PaymentInvalidStateException::cannotFail($this->id, $this->operationalState);
         }
 
         $this->recordThat(new PaymentFailed(
@@ -116,16 +116,16 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws PaymentStateInconsistentException
+     * @throws PaymentInvalidStateException
      */
     public function capture(string $orderId, \DateTimeImmutable $capturedAt): void
     {
-        if (!$this->canTransitionOperationalTo(PaymentState::CAPTURED)) {
-            if ($this->isBeforeOperational(PaymentState::CAPTURED)) {
-                throw PaymentStateInconsistentException::cannotCapture($this->id, $this->operationalState);
-            }
-
+        if ($this->hasReachedOperational(PaymentState::CAPTURED)) {
             return;
+        }
+
+        if (!$this->canTransitionOperationalTo(PaymentState::CAPTURED)) {
+            throw PaymentInvalidStateException::cannotCapture($this->id, $this->operationalState);
         }
 
         $this->recordThat(new PaymentCaptured(
@@ -148,16 +148,9 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    /**
-     * @throws PaymentStateInconsistentException
-     */
     public function void(\DateTimeImmutable $voidedAt): void
     {
         if (!$this->canTransitionOperationalTo(PaymentState::VOIDED)) {
-            if ($this->isBeforeOperational(PaymentState::VOIDED)) {
-                throw PaymentStateInconsistentException::cannotVoid($this->id, $this->operationalState);
-            }
-
             return;
         }
 
@@ -168,9 +161,9 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    private function isBeforeOperational(PaymentState $target): bool
+    private function hasReachedOperational(PaymentState $target): bool
     {
-        return $this->operationalState !== $target && new StateTransitions(self::OPERATIONAL_TRANSITIONS)->reaches($this->operationalState, $target);
+        return new StateTransitions(self::OPERATIONAL_TRANSITIONS)->reaches($target, $this->operationalState);
     }
 
     private function canTransitionOperationalTo(PaymentState $target): bool

@@ -10,7 +10,7 @@ use Crm\Customer\Domain\Customer\Event\CustomerErasureCancelled;
 use Crm\Customer\Domain\Customer\Event\CustomerErasureRequested;
 use Crm\Customer\Domain\Customer\Event\CustomerRegistered;
 use Crm\Customer\Domain\Customer\Event\CustomerShippingAddressDefined;
-use Crm\Customer\Domain\Customer\Exception\CustomerStateInconsistentException;
+use Crm\Customer\Domain\Customer\Exception\CustomerInvalidStateException;
 use Crm\Customer\Domain\Customer\ValueObject\CustomerId;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootAttributeBehaviour;
@@ -107,16 +107,16 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws CustomerStateInconsistentException
+     * @throws CustomerInvalidStateException
      */
     public function erase(\DateTimeImmutable $erasedAt): void
     {
-        if (!$this->canTransitionErasureTo(ErasureState::ERASED)) {
-            if ($this->isBeforeErasure(ErasureState::ERASED)) {
-                throw CustomerStateInconsistentException::cannotErase($this->id, $this->erasureState);
-            }
-
+        if ($this->hasReachedErasure(ErasureState::ERASED)) {
             return;
+        }
+
+        if (!$this->canTransitionErasureTo(ErasureState::ERASED)) {
+            throw CustomerInvalidStateException::cannotErase($this->id, $this->erasureState);
         }
 
         $this->recordThat(new CustomerErased(
@@ -125,9 +125,9 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    private function isBeforeErasure(ErasureState $target): bool
+    private function hasReachedErasure(ErasureState $target): bool
     {
-        return $this->erasureState !== $target && new StateTransitions(self::ERASURE_TRANSITIONS)->reaches($this->erasureState, $target);
+        return new StateTransitions(self::ERASURE_TRANSITIONS)->reaches($target, $this->erasureState);
     }
 
     private function canTransitionErasureTo(ErasureState $target): bool

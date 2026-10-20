@@ -11,7 +11,7 @@ use Crm\Customer\Domain\Customer\Event\CustomerErasureCancelled;
 use Crm\Customer\Domain\Customer\Event\CustomerErasureRequested;
 use Crm\Customer\Domain\Customer\Event\CustomerRegistered;
 use Crm\Customer\Domain\Customer\Event\CustomerShippingAddressDefined;
-use Crm\Customer\Domain\Customer\Exception\CustomerStateInconsistentException;
+use Crm\Customer\Domain\Customer\Exception\CustomerInvalidStateException;
 use Crm\Customer\Domain\Customer\ValueObject\CustomerId;
 use Crm\Tests\Customer\Support\Factory\CustomerIdFactory;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
@@ -162,7 +162,7 @@ final class CustomerTest extends AggregateRootTestCase
         $this
             ->given($this->registered())
             ->when(fn (Customer $customer) => $customer->erase($this->erasedAt))
-            ->expectsException(CustomerStateInconsistentException::class);
+            ->expectsException(CustomerInvalidStateException::class);
     }
 
     #[Test]

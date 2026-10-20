@@ -7,8 +7,8 @@ namespace Finance\Tests\Payment\Application\Command\FailPayment;
 use Finance\Payment\Application\Command\FailPayment\FailPayment;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
+use Finance\Payment\Domain\Exception\PaymentInvalidStateException;
 use Finance\Payment\Domain\Exception\PaymentNotFoundException;
-use Finance\Payment\Domain\Exception\PaymentStateInconsistentException;
 use Finance\Tests\Payment\Support\Factory\PaymentFactory;
 use Finance\Tests\Payment\Support\Factory\PaymentIdFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -51,7 +51,7 @@ final class FailPaymentHandlerTest extends AbstractIntegrationTestCase
         $this->store($payment);
 
         // Then
-        $this->expectException(PaymentStateInconsistentException::class);
+        $this->expectException(PaymentInvalidStateException::class);
 
         // When
         $this->dispatch(new FailPayment($payment->id->toString(), Uuid::uuid7()->toString()));

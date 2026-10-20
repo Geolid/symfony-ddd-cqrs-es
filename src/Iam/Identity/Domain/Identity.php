@@ -19,7 +19,7 @@ use Iam\Identity\Domain\Exception\ConfirmationRequestedTooRecentlyException;
 use Iam\Identity\Domain\Exception\EmailChangeRequestedTooRecentlyException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyConfirmedException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
-use Iam\Identity\Domain\Exception\IdentityStateInconsistentException;
+use Iam\Identity\Domain\Exception\IdentityInvalidStateException;
 use Iam\Identity\Domain\Exception\InvalidConfirmationCodeException;
 use Iam\Identity\Domain\Exception\InvalidEmailChangeCodeException;
 use Iam\Identity\Domain\Service\PendingIdentityExpiryCalculator;
@@ -284,16 +284,16 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws IdentityStateInconsistentException
+     * @throws IdentityInvalidStateException
      */
     public function erase(\DateTimeImmutable $erasedAt): void
     {
-        if (!$this->canTransitionErasureTo(ErasureState::ERASED)) {
-            if ($this->isBeforeErasure(ErasureState::ERASED)) {
-                throw IdentityStateInconsistentException::cannotErase($this->id, $this->erasureState);
-            }
-
+        if ($this->hasReachedErasure(ErasureState::ERASED)) {
             return;
+        }
+
+        if (!$this->canTransitionErasureTo(ErasureState::ERASED)) {
+            throw IdentityInvalidStateException::cannotErase($this->id, $this->erasureState);
         }
 
         $this->recordThat(new IdentityErased(
@@ -322,9 +322,9 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    private function isBeforeErasure(ErasureState $target): bool
+    private function hasReachedErasure(ErasureState $target): bool
     {
-        return $this->erasureState !== $target && new StateTransitions(self::ERASURE_TRANSITIONS)->reaches($this->erasureState, $target);
+        return new StateTransitions(self::ERASURE_TRANSITIONS)->reaches($target, $this->erasureState);
     }
 
     private function canTransitionErasureTo(ErasureState $target): bool

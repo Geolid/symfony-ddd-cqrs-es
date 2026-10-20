@@ -10,7 +10,7 @@ use Finance\Payment\Domain\Event\PaymentCaptured;
 use Finance\Payment\Domain\Event\PaymentFailed;
 use Finance\Payment\Domain\Event\PaymentRequested;
 use Finance\Payment\Domain\Event\PaymentVoided;
-use Finance\Payment\Domain\Exception\PaymentStateInconsistentException;
+use Finance\Payment\Domain\Exception\PaymentInvalidStateException;
 use Finance\Payment\Domain\Payment;
 use Finance\Payment\Domain\ValueObject\PaymentId;
 use Finance\Payment\Domain\ValueObject\PaymentReference;
@@ -106,7 +106,7 @@ final class PaymentTest extends AggregateRootTestCase
         $this
             ->given($this->requested())
             ->when(fn (Payment $payment) => $payment->fail($this->orderId, $this->authorizedAt))
-            ->expectsException(PaymentStateInconsistentException::class);
+            ->expectsException(PaymentInvalidStateException::class);
     }
 
     #[Test]
@@ -121,12 +121,12 @@ final class PaymentTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotFailWhenCaptured(): void
+    public function itCannotFailWhenCaptured(): void
     {
         $this
             ->given($this->requested(), $this->authorized(), $this->captured())
             ->when(fn (Payment $payment) => $payment->fail($this->orderId, $this->authorizedAt))
-            ->then();
+            ->expectsException(PaymentInvalidStateException::class);
     }
 
     #[Test]
@@ -144,7 +144,7 @@ final class PaymentTest extends AggregateRootTestCase
         $this
             ->given($this->requested())
             ->when(fn (Payment $payment) => $payment->capture($this->orderId, $this->capturedAt))
-            ->expectsException(PaymentStateInconsistentException::class);
+            ->expectsException(PaymentInvalidStateException::class);
     }
 
     #[Test]
@@ -188,12 +188,12 @@ final class PaymentTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itCannotVoidWhenRequested(): void
+    public function itDoesNotVoidWhenRequested(): void
     {
         $this
             ->given($this->requested())
             ->when(fn (Payment $payment) => $payment->void($this->authorizedAt))
-            ->expectsException(PaymentStateInconsistentException::class);
+            ->then();
     }
 
     #[Test]

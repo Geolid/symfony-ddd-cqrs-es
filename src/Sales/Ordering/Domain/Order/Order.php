@@ -21,8 +21,8 @@ use Sales\Ordering\Domain\Order\Event\OrderFailed;
 use Sales\Ordering\Domain\Order\Event\OrderPaid;
 use Sales\Ordering\Domain\Order\Event\OrderPrepared;
 use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherCustomerException;
+use Sales\Ordering\Domain\Order\Exception\OrderInvalidStateException;
 use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
-use Sales\Ordering\Domain\Order\Exception\OrderStateInconsistentException;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Sales\Ordering\Domain\Order\ValueObject\OrderItem;
@@ -137,16 +137,16 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws OrderStateInconsistentException
+     * @throws OrderInvalidStateException
      */
     public function pay(\DateTimeImmutable $paidAt): void
     {
-        if (!$this->canTransitionOperationalTo(OrderState::PAID)) {
-            if ($this->isBeforeOperational(OrderState::PAID)) {
-                throw OrderStateInconsistentException::cannotPay($this->id, $this->operationalState);
-            }
-
+        if ($this->hasReachedOperational(OrderState::PAID)) {
             return;
+        }
+
+        if (!$this->canTransitionOperationalTo(OrderState::PAID)) {
+            throw OrderInvalidStateException::cannotPay($this->id, $this->operationalState);
         }
 
         $this->recordThat(new OrderPaid(
@@ -196,16 +196,16 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws OrderStateInconsistentException
+     * @throws OrderInvalidStateException
      */
     public function dispatch(\DateTimeImmutable $dispatchedAt): void
     {
-        if (!$this->canTransitionOperationalTo(OrderState::DISPATCHED)) {
-            if ($this->isBeforeOperational(OrderState::DISPATCHED)) {
-                throw OrderStateInconsistentException::cannotDispatch($this->id, $this->operationalState);
-            }
-
+        if ($this->hasReachedOperational(OrderState::DISPATCHED)) {
             return;
+        }
+
+        if (!$this->canTransitionOperationalTo(OrderState::DISPATCHED)) {
+            throw OrderInvalidStateException::cannotDispatch($this->id, $this->operationalState);
         }
 
         $this->recordThat(new OrderDispatched(
@@ -215,16 +215,16 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws OrderStateInconsistentException
+     * @throws OrderInvalidStateException
      */
     public function deliver(\DateTimeImmutable $deliveredAt): void
     {
-        if (!$this->canTransitionOperationalTo(OrderState::DELIVERED)) {
-            if ($this->isBeforeOperational(OrderState::DELIVERED)) {
-                throw OrderStateInconsistentException::cannotDeliver($this->id, $this->operationalState);
-            }
-
+        if ($this->hasReachedOperational(OrderState::DELIVERED)) {
             return;
+        }
+
+        if (!$this->canTransitionOperationalTo(OrderState::DELIVERED)) {
+            throw OrderInvalidStateException::cannotDeliver($this->id, $this->operationalState);
         }
 
         $this->recordThat(new OrderDelivered(
@@ -269,11 +269,6 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     private function canTransitionOperationalTo(OrderState $target): bool
     {
         return new StateTransitions(self::OPERATIONAL_TRANSITIONS)->allows($this->operationalState, $target);
-    }
-
-    private function isBeforeOperational(OrderState $target): bool
-    {
-        return $this->operationalState !== $target && new StateTransitions(self::OPERATIONAL_TRANSITIONS)->reaches($this->operationalState, $target);
     }
 
     private function hasReachedOperational(OrderState $target): bool

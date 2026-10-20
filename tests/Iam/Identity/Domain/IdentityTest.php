@@ -19,7 +19,7 @@ use Iam\Identity\Domain\Exception\ConfirmationRequestedTooRecentlyException;
 use Iam\Identity\Domain\Exception\EmailChangeRequestedTooRecentlyException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyConfirmedException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
-use Iam\Identity\Domain\Exception\IdentityStateInconsistentException;
+use Iam\Identity\Domain\Exception\IdentityInvalidStateException;
 use Iam\Identity\Domain\Exception\InvalidConfirmationCodeException;
 use Iam\Identity\Domain\Exception\InvalidEmailChangeCodeException;
 use Iam\Identity\Domain\Identity;
@@ -462,7 +462,7 @@ final class IdentityTest extends AggregateRootTestCase
         $this
             ->given($this->registered())
             ->when(fn (Identity $identity) => $identity->erase($this->erasedAt))
-            ->expectsException(IdentityStateInconsistentException::class);
+            ->expectsException(IdentityInvalidStateException::class);
     }
 
     #[Test]

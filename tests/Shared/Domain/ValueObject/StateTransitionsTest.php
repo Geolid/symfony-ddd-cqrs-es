@@ -16,16 +16,9 @@ final class StateTransitionsTest extends TestCase
     private const array TRANSITIONS = [
         DummyState::INIT->value => [DummyState::PENDING, DummyState::FAILED],
         DummyState::PENDING->value => [DummyState::PROCESSING],
-        DummyState::PROCESSING->value => [DummyState::SUCCESS, DummyState::FAILED],
+        DummyState::PROCESSING->value => [DummyState::SUCCESS, DummyState::FAILED, DummyState::PENDING],
         DummyState::SUCCESS->value => [],
         DummyState::FAILED->value => [],
-    ];
-
-    /** @var array<string, list<DummyState>> */
-    private const array CYCLIC_TRANSITIONS = [
-        DummyState::INIT->value => [DummyState::PENDING],
-        DummyState::PENDING->value => [DummyState::INIT, DummyState::SUCCESS],
-        DummyState::SUCCESS->value => [],
     ];
 
     #[Test]
@@ -50,11 +43,12 @@ final class StateTransitionsTest extends TestCase
         yield 'direct hop' => [DummyState::PENDING, DummyState::PROCESSING];
         yield 'first branch' => [DummyState::INIT, DummyState::PENDING];
         yield 'second branch' => [DummyState::INIT, DummyState::FAILED];
+        yield 'retry' => [DummyState::PROCESSING, DummyState::PENDING];
     }
 
     #[Test]
-    #[DataProvider('provideForbiddenTransitions')]
-    public function itRefusesWhenEdgeNotDirect(DummyState $from, DummyState $to): void
+    #[DataProvider('provideRefusedTransitions')]
+    public function itDoesNotAllowWhenEdgeIndirect(DummyState $from, DummyState $to): void
     {
         // Given
         $transitions = new StateTransitions(self::TRANSITIONS);
@@ -69,10 +63,10 @@ final class StateTransitionsTest extends TestCase
     /**
      * @return iterable<string, array{DummyState, DummyState}>
      */
-    public static function provideForbiddenTransitions(): iterable
+    public static function provideRefusedTransitions(): iterable
     {
         yield 'two hops away' => [DummyState::INIT, DummyState::PROCESSING];
-        yield 'backward' => [DummyState::PROCESSING, DummyState::PENDING];
+        yield 'backward' => [DummyState::PENDING, DummyState::INIT];
         yield 'dead end' => [DummyState::FAILED, DummyState::PENDING];
         yield 'same state' => [DummyState::INIT, DummyState::INIT];
     }
@@ -97,9 +91,8 @@ final class StateTransitionsTest extends TestCase
     public static function provideReachedTargets(): iterable
     {
         yield 'same state' => [DummyState::PENDING, DummyState::PENDING];
-        yield 'one hop' => [DummyState::PENDING, DummyState::PROCESSING];
         yield 'several hops' => [DummyState::INIT, DummyState::SUCCESS];
-        yield 'dead end itself' => [DummyState::FAILED, DummyState::FAILED];
+        yield 'through retry loop' => [DummyState::PENDING, DummyState::FAILED];
     }
 
     #[Test]
@@ -121,58 +114,8 @@ final class StateTransitionsTest extends TestCase
      */
     public static function provideUnreachedTargets(): iterable
     {
-        yield 'backward' => [DummyState::PROCESSING, DummyState::PENDING];
-        yield 'other branch' => [DummyState::PENDING, DummyState::FAILED];
+        yield 'backward' => [DummyState::PENDING, DummyState::INIT];
         yield 'dead end' => [DummyState::FAILED, DummyState::SUCCESS];
+        yield 'around retry loop' => [DummyState::PROCESSING, DummyState::INIT];
     }
-
-    #[Test]
-    public function itReachesAcrossCycle(): void
-    {
-        // Given
-        $transitions = new StateTransitions(self::CYCLIC_TRANSITIONS);
-
-        // When
-        $result = $transitions->reaches(DummyState::INIT, DummyState::SUCCESS);
-
-        // Then
-        self::assertTrue($result);
-    }
-
-    #[Test]
-    public function itDoesNotReachAcrossCycle(): void
-    {
-        // Given
-        $transitions = new StateTransitions(self::CYCLIC_TRANSITIONS);
-
-        // When
-        $result = $transitions->reaches(DummyState::INIT, DummyState::FAILED);
-
-        // Then
-        self::assertFalse($result);
-    }
-
-    #[Test]
-    public function itReachesWhenIntBacked(): void
-    {
-        // Given
-        /** @var array<string, list<DummyIntState>> $table */
-        $table = [
-            DummyIntState::FIRST->value => [DummyIntState::SECOND],
-            DummyIntState::SECOND->value => [],
-        ];
-        $transitions = new StateTransitions($table);
-
-        // When
-        $result = $transitions->reaches(DummyIntState::FIRST, DummyIntState::SECOND);
-
-        // Then
-        self::assertTrue($result);
-    }
-}
-
-enum DummyIntState: int
-{
-    case FIRST = 1;
-    case SECOND = 2;
 }

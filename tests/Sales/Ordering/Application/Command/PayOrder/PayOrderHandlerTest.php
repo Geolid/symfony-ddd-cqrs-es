@@ -8,8 +8,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Ordering\Application\Command\PayOrder\PayOrder;
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\OrderStatus;
+use Sales\Ordering\Domain\Order\Exception\OrderInvalidStateException;
 use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
-use Sales\Ordering\Domain\Order\Exception\OrderStateInconsistentException;
 use Sales\Tests\Ordering\Support\Factory\OrderFactory;
 use Sales\Tests\Ordering\Support\Factory\OrderIdFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -42,18 +42,17 @@ final class PayOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresWhenCancelled(): void
+    public function itFailsWhenCancelled(): void
     {
         // Given
         $order = OrderFactory::new()->cancelled()->create();
         $this->store($order);
 
+        // Then
+        $this->expectException(OrderInvalidStateException::class);
+
         // When
         $this->dispatch(new PayOrder($order->id->toString()));
-
-        // Then
-        $result = $this->finder->ofId($order->id->toString());
-        self::assertSame(OrderStatus::CANCELLED, $result->status);
     }
 
     #[Test]
@@ -64,7 +63,7 @@ final class PayOrderHandlerTest extends AbstractIntegrationTestCase
         $this->store($order);
 
         // Then
-        $this->expectException(OrderStateInconsistentException::class);
+        $this->expectException(OrderInvalidStateException::class);
 
         // When
         $this->dispatch(new PayOrder($order->id->toString()));
