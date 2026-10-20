@@ -7,6 +7,7 @@ namespace Crm\Customer\Application\IntegrationEvent\CustomerErasureRequested;
 use Crm\Customer\Domain\Customer\Customer;
 use Crm\Customer\Domain\Customer\Event\CustomerErasureRequested;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Patchlevel\EventSourcing\Message\Message;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 
@@ -18,11 +19,11 @@ final readonly class CustomerErasureRequestedPublisher
     }
 
     #[Subscribe(CustomerErasureRequested::class)]
-    public function __invoke(CustomerErasureRequested $event): void
+    public function __invoke(CustomerErasureRequested $event, Message $message): void
     {
         $this->publisher->publish(Customer::class, $event->id->toString(), new CustomerErasureRequestedIntegrationEvent(
             customerId: $event->id->toString(),
             requestedAt: $event->requestedAt,
-        ));
+        ), $message);
     }
 }

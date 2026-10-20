@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Ordering\Application\IntegrationEvent\OrderCancelled;
 
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Patchlevel\EventSourcing\Message\Message;
 use Sales\Ordering\Domain\Order\Event\OrderCancelled;
 use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
 use Sales\Ordering\Domain\Order\Order;
@@ -25,7 +26,7 @@ final readonly class OrderCancelledPublisher
      * @throws OrderNotFoundException
      */
     #[Subscribe(OrderCancelled::class)]
-    public function __invoke(OrderCancelled $event): void
+    public function __invoke(OrderCancelled $event, Message $message): void
     {
         $order = $this->repository->load($event->id);
 
@@ -33,6 +34,6 @@ final readonly class OrderCancelledPublisher
             orderId: $event->id->toString(),
             customerId: $order->customerId,
             cancelledAt: $event->cancelledAt,
-        ));
+        ), $message);
     }
 }

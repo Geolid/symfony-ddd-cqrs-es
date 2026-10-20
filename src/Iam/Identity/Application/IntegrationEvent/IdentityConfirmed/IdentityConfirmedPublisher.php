@@ -7,6 +7,7 @@ namespace Iam\Identity\Application\IntegrationEvent\IdentityConfirmed;
 use Iam\Identity\Domain\Event\IdentityConfirmed;
 use Iam\Identity\Domain\Identity;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Patchlevel\EventSourcing\Message\Message;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 
@@ -18,11 +19,11 @@ final readonly class IdentityConfirmedPublisher
     }
 
     #[Subscribe(IdentityConfirmed::class)]
-    public function __invoke(IdentityConfirmed $event): void
+    public function __invoke(IdentityConfirmed $event, Message $message): void
     {
         $this->publisher->publish(Identity::class, $event->id->toString(), new IdentityConfirmedIntegrationEvent(
             identityId: $event->id->toString(),
             confirmedAt: $event->confirmedAt,
-        ));
+        ), $message);
     }
 }

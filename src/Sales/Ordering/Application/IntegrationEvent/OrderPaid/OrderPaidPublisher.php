@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Sales\Ordering\Application\IntegrationEvent\OrderPaid;
 
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Patchlevel\EventSourcing\Message\Message;
 use Sales\Ordering\Domain\Order\Event\OrderPaid;
 use Sales\Ordering\Domain\Order\Order;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
@@ -18,11 +19,11 @@ final readonly class OrderPaidPublisher
     }
 
     #[Subscribe(OrderPaid::class)]
-    public function __invoke(OrderPaid $event): void
+    public function __invoke(OrderPaid $event, Message $message): void
     {
         $this->publisher->publish(Order::class, $event->id->toString(), new OrderPaidIntegrationEvent(
             orderId: $event->id->toString(),
             paidAt: $event->paidAt,
-        ));
+        ), $message);
     }
 }

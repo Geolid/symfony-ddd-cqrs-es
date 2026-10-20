@@ -6,10 +6,13 @@ namespace Shared\Infrastructure\EventStore;
 
 use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Message\Message;
+use Patchlevel\EventSourcing\Store\Header\EventIdHeader;
 use Patchlevel\EventSourcing\Store\Header\RecordedOnHeader;
 use Patchlevel\EventSourcing\Store\Header\StreamNameHeader;
 use Patchlevel\EventSourcing\Store\Store;
+use Patchlevel\EventSourcing\Store\UniqueConstraintViolation;
 use Psr\Clock\ClockInterface;
+use Ramsey\Uuid\Uuid;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Webmozart\Assert\Assert;
@@ -21,6 +24,8 @@ use Webmozart\Assert\Assert;
  */
 final readonly class PatchlevelIntegrationEventPublisher implements IntegrationEventPublisherInterface
 {
+    private const string EVENT_ID_NAMESPACE = '6b0c1f0e-3a55-4d8e-9f5c-2c7e1a4b9d10';
+
     public function __construct(
         private Store $store,
         private ClockInterface $clock,
@@ -38,12 +43,22 @@ final readonly class PatchlevelIntegrationEventPublisher implements IntegrationE
         return 'integration.'.$aggregateClass::metadata()->streamName($aggregateId);
     }
 
-    public function publish(string $aggregateClass, string $aggregateId, IntegrationEventInterface $event): void
+    public function publish(string $aggregateClass, string $aggregateId, IntegrationEventInterface $event, Message $source): void
     {
-        $this->store->save(
-            Message::create($event)
-                ->withHeader(new StreamNameHeader(self::streamNameOf($aggregateClass, $aggregateId)))
-                ->withHeader(new RecordedOnHeader($this->clock->now())),
-        );
+        try {
+            $this->store->save(
+                Message::create($event)
+                    ->withHeader(new StreamNameHeader(self::streamNameOf($aggregateClass, $aggregateId)))
+                    ->withHeader(new RecordedOnHeader($this->clock->now()))
+                    ->withHeader(new EventIdHeader(self::eventIdOf($source, $event))),
+            );
+        } catch (UniqueConstraintViolation) {
+            return;
+        }
+    }
+
+    private static function eventIdOf(Message $source, IntegrationEventInterface $event): string
+    {
+        return Uuid::uuid5(self::EVENT_ID_NAMESPACE, \sprintf('%s|%s', $source->header(EventIdHeader::class)->eventId, $event::class))->toString();
     }
 }

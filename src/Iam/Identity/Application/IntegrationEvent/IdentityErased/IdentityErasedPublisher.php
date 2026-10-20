@@ -7,6 +7,7 @@ namespace Iam\Identity\Application\IntegrationEvent\IdentityErased;
 use Iam\Identity\Domain\Event\IdentityErased;
 use Iam\Identity\Domain\Identity;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Patchlevel\EventSourcing\Message\Message;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 
@@ -18,11 +19,11 @@ final readonly class IdentityErasedPublisher
     }
 
     #[Subscribe(IdentityErased::class)]
-    public function __invoke(IdentityErased $event): void
+    public function __invoke(IdentityErased $event, Message $message): void
     {
         $this->publisher->publish(Identity::class, $event->id->toString(), new IdentityErasedIntegrationEvent(
             identityId: $event->id->toString(),
             erasedAt: $event->erasedAt,
-        ));
+        ), $message);
     }
 }

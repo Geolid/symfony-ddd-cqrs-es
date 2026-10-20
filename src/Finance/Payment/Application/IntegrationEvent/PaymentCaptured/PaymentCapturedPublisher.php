@@ -7,6 +7,7 @@ namespace Finance\Payment\Application\IntegrationEvent\PaymentCaptured;
 use Finance\Payment\Domain\Event\PaymentCaptured;
 use Finance\Payment\Domain\Payment;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Patchlevel\EventSourcing\Message\Message;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 
@@ -18,11 +19,11 @@ final readonly class PaymentCapturedPublisher
     }
 
     #[Subscribe(PaymentCaptured::class)]
-    public function __invoke(PaymentCaptured $event): void
+    public function __invoke(PaymentCaptured $event, Message $message): void
     {
         $this->publisher->publish(Payment::class, $event->id->toString(), new PaymentCapturedIntegrationEvent(
             orderId: $event->orderId,
             capturedAt: $event->capturedAt,
-        ));
+        ), $message);
     }
 }

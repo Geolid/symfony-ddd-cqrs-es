@@ -7,6 +7,7 @@ namespace Iam\Identity\Application\IntegrationEvent\IdentityRegistered;
 use Iam\Identity\Domain\Event\IdentityRegistered;
 use Iam\Identity\Domain\Identity;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Patchlevel\EventSourcing\Message\Message;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 
@@ -18,13 +19,13 @@ final readonly class IdentityRegisteredPublisher
     }
 
     #[Subscribe(IdentityRegistered::class)]
-    public function __invoke(IdentityRegistered $event): void
+    public function __invoke(IdentityRegistered $event, Message $message): void
     {
         $this->publisher->publish(Identity::class, $event->id->toString(), new IdentityRegisteredIntegrationEvent(
             identityId: $event->id->toString(),
             fullName: $event->fullName->value,
             email: $event->email->value,
             registeredAt: $event->registeredAt,
-        ));
+        ), $message);
     }
 }

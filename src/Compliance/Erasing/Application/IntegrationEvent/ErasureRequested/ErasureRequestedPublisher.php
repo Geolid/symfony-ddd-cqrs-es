@@ -7,6 +7,7 @@ namespace Compliance\Erasing\Application\IntegrationEvent\ErasureRequested;
 use Compliance\Erasing\Domain\Erasure;
 use Compliance\Erasing\Domain\Event\ErasureRequested;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Patchlevel\EventSourcing\Message\Message;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 
@@ -18,12 +19,12 @@ final readonly class ErasureRequestedPublisher
     }
 
     #[Subscribe(ErasureRequested::class)]
-    public function __invoke(ErasureRequested $event): void
+    public function __invoke(ErasureRequested $event, Message $message): void
     {
         $this->publisher->publish(Erasure::class, $event->id->toString(), new ErasureRequestedIntegrationEvent(
             identityId: $event->identityId,
             requestedAt: $event->requestedAt,
             effectiveAt: $event->effectiveAt,
-        ));
+        ), $message);
     }
 }

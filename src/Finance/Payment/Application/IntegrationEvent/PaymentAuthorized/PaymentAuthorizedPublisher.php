@@ -7,6 +7,7 @@ namespace Finance\Payment\Application\IntegrationEvent\PaymentAuthorized;
 use Finance\Payment\Domain\Event\PaymentAuthorized;
 use Finance\Payment\Domain\Payment;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Patchlevel\EventSourcing\Message\Message;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 
@@ -18,12 +19,12 @@ final readonly class PaymentAuthorizedPublisher
     }
 
     #[Subscribe(PaymentAuthorized::class)]
-    public function __invoke(PaymentAuthorized $event): void
+    public function __invoke(PaymentAuthorized $event, Message $message): void
     {
         $this->publisher->publish(Payment::class, $event->id->toString(), new PaymentAuthorizedIntegrationEvent(
             paymentId: $event->id->toString(),
             checkoutSessionId: $event->checkoutSessionId,
             authorizedAt: $event->authorizedAt,
-        ));
+        ), $message);
     }
 }

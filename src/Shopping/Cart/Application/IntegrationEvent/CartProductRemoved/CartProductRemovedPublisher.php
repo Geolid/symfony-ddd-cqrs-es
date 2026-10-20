@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shopping\Cart\Application\IntegrationEvent\CartProductRemoved;
 
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Patchlevel\EventSourcing\Message\Message;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 use Shopping\Cart\Domain\Cart;
@@ -18,12 +19,12 @@ final readonly class CartProductRemovedPublisher
     }
 
     #[Subscribe(CartProductRemoved::class)]
-    public function __invoke(CartProductRemoved $event): void
+    public function __invoke(CartProductRemoved $event, Message $message): void
     {
         $this->publisher->publish(Cart::class, $event->id->toString(), new CartProductRemovedIntegrationEvent(
             cartId: $event->id->toString(),
             productId: $event->productId,
             removedAt: $event->removedAt,
-        ));
+        ), $message);
     }
 }
