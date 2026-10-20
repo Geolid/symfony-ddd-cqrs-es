@@ -19,6 +19,7 @@ use Iam\Identity\Domain\Exception\ConfirmationRequestedTooRecentlyException;
 use Iam\Identity\Domain\Exception\EmailChangeRequestedTooRecentlyException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyConfirmedException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
+use Iam\Identity\Domain\Exception\IdentityNotErasableException;
 use Iam\Identity\Domain\Exception\InvalidConfirmationCodeException;
 use Iam\Identity\Domain\Exception\InvalidEmailChangeCodeException;
 use Iam\Identity\Domain\Service\PendingIdentityExpiryCalculator;
@@ -39,9 +40,9 @@ use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
 use Shared\Domain\Exception\VerificationCodeNotFoundException;
 use Shared\Domain\Service\CodeChallengerInterface;
 use Shared\Domain\Service\CooldownCalculator;
-use Shared\Domain\Specification\CanTransitionToSpecification;
 use Shared\Domain\Specification\CooldownElapsedSpecification;
 use Shared\Domain\ValueObject\ErasureState;
+use Shared\Domain\ValueObject\StateTransitions;
 use Shared\Domain\ValueObject\VerificationCodeKey;
 
 #[Aggregate('iam.identity.identity')]
@@ -282,9 +283,16 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    /**
+     * @throws IdentityNotErasableException
+     */
     public function erase(\DateTimeImmutable $erasedAt): void
     {
         if (!$this->canTransitionErasureTo(ErasureState::ERASED)) {
+            if ($this->isBeforeErasure(ErasureState::ERASED)) {
+                throw IdentityNotErasableException::cannotErase($this->id);
+            }
+
             return;
         }
 
@@ -314,9 +322,14 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    private function isBeforeErasure(ErasureState $target): bool
+    {
+        return $this->erasureState !== $target && new StateTransitions(self::ERASURE_TRANSITIONS)->reaches($this->erasureState, $target);
+    }
+
     private function canTransitionErasureTo(ErasureState $target): bool
     {
-        return new CanTransitionToSpecification(self::ERASURE_TRANSITIONS, $target)->isSatisfiedBy($this->erasureState);
+        return new StateTransitions(self::ERASURE_TRANSITIONS)->allows($this->erasureState, $target);
     }
 
     #[Apply]

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Finance\Payment\Application\Command\CapturePayment;
 
 use Finance\Payment\Domain\Exception\PaymentAlreadyExistsException;
+use Finance\Payment\Domain\Exception\PaymentNotCapturableException;
 use Finance\Payment\Domain\Exception\PaymentNotFoundException;
 use Finance\Payment\Domain\Repository\PaymentRepositoryInterface;
 use Finance\Payment\Domain\ValueObject\PaymentId;
@@ -23,6 +24,7 @@ final readonly class CapturePaymentHandler
     /**
      * @throws PaymentNotFoundException
      * @throws PaymentAlreadyExistsException
+     * @throws PaymentNotCapturableException
      */
     public function __invoke(CapturePayment $command): void
     {

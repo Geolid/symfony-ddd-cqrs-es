@@ -10,8 +10,8 @@ use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\ShipmentStatus;
 use Fulfilment\Shipping\Application\ShippingUniqueKey;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
-use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentNotFoundException;
+use Fulfilment\Shipping\Domain\Exception\ShipmentNotManifestableException;
 use Fulfilment\Tests\Shipping\Support\Factory\ShipmentFactory;
 use Fulfilment\Tests\Shipping\Support\Factory\TrackingNumberFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -101,7 +101,7 @@ final class ManifestShipmentHandlerTest extends AbstractIntegrationTestCase
         $this->store($shipment);
 
         // Then
-        $this->expectException(ShipmentInvalidTransitionException::class);
+        $this->expectException(ShipmentNotManifestableException::class);
 
         // When
         $this->dispatch(new ManifestShipment($shipment->id->toString(), TrackingNumberFactory::new()->create()->value));

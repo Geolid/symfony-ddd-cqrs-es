@@ -21,7 +21,9 @@ use Fulfilment\Shipping\Application\Command\ManifestShipment\Exception\ShipmentT
 use Fulfilment\Shipping\Application\Manifesting\Exception\ManifestDeniedException;
 use Fulfilment\Shipping\Application\Manifesting\Exception\ManifestPostponedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
-use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
+use Fulfilment\Shipping\Domain\Exception\ShipmentNotDeliverableException;
+use Fulfilment\Shipping\Domain\Exception\ShipmentNotDispatchableException;
+use Fulfilment\Shipping\Domain\Exception\ShipmentNotManifestableException;
 use Iam\Authentication\Application\BackupCodeRegeneration\Exception\BackupCodeCredentialNotGeneratedException;
 use Iam\Authentication\Application\BreachDatabase\Exception\CompromisedPasswordException;
 use Iam\Authentication\Application\Command\EnrollTotp\Exception\TotpAlreadyEnrolledException;
@@ -71,7 +73,9 @@ return static function (ContainerConfigurator $container): void {
 
             // Fulfilment
             ShipmentAlreadyTrackedException::class => ['log_level' => 'info', 'status_code' => 409],
-            ShipmentInvalidTransitionException::class => ['log_level' => 'info', 'status_code' => 409],
+            ShipmentNotDeliverableException::class => ['log_level' => 'info', 'status_code' => 409],
+            ShipmentNotDispatchableException::class => ['log_level' => 'info', 'status_code' => 409],
+            ShipmentNotManifestableException::class => ['log_level' => 'info', 'status_code' => 409],
             ShipmentTrackingNumberAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
             ManifestDeniedException::class => ['log_level' => 'info', 'status_code' => 409],
             ManifestPostponedException::class => ['log_level' => 'info', 'status_code' => 503],

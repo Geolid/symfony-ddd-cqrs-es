@@ -11,6 +11,7 @@ use Crm\Customer\Domain\Customer\Event\CustomerErasureCancelled;
 use Crm\Customer\Domain\Customer\Event\CustomerErasureRequested;
 use Crm\Customer\Domain\Customer\Event\CustomerRegistered;
 use Crm\Customer\Domain\Customer\Event\CustomerShippingAddressDefined;
+use Crm\Customer\Domain\Customer\Exception\CustomerNotErasableException;
 use Crm\Customer\Domain\Customer\ValueObject\CustomerId;
 use Crm\Tests\Customer\Support\Factory\CustomerIdFactory;
 use Patchlevel\EventSourcing\PhpUnit\Test\AggregateRootTestCase;
@@ -156,12 +157,12 @@ final class CustomerTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotEraseWhenRetained(): void
+    public function itCannotEraseWhenRetained(): void
     {
         $this
             ->given($this->registered())
             ->when(fn (Customer $customer) => $customer->erase($this->erasedAt))
-            ->then();
+            ->expectsException(CustomerNotErasableException::class);
     }
 
     #[Test]

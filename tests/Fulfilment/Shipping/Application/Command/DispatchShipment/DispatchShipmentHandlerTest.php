@@ -7,7 +7,7 @@ namespace Fulfilment\Tests\Shipping\Application\Command\DispatchShipment;
 use Fulfilment\Shipping\Application\Command\DispatchShipment\DispatchShipment;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\ShipmentStatus;
-use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
+use Fulfilment\Shipping\Domain\Exception\ShipmentNotDispatchableException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Tests\Shipping\Support\Factory\ShipmentFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -76,7 +76,7 @@ final class DispatchShipmentHandlerTest extends AbstractIntegrationTestCase
         $this->store($shipment);
 
         // Then
-        $this->expectException(ShipmentInvalidTransitionException::class);
+        $this->expectException(ShipmentNotDispatchableException::class);
 
         // When
         $this->dispatch(new DispatchShipment($shipment->id->toString()));

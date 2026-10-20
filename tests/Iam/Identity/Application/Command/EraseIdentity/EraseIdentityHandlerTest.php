@@ -7,6 +7,7 @@ namespace Iam\Tests\Identity\Application\Command\EraseIdentity;
 use Iam\Identity\Application\Command\EraseIdentity\EraseIdentity;
 use Iam\Identity\Application\Finder\Identity\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
+use Iam\Identity\Domain\Exception\IdentityNotErasableException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
@@ -41,18 +42,17 @@ final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresWhenRetained(): void
+    public function itFailsWhenRetained(): void
     {
         // Given
         $identity = IdentityFactory::new()->create();
         $this->store($identity);
 
+        // Then
+        $this->expectException(IdentityNotErasableException::class);
+
         // When
         $this->dispatch(new EraseIdentity($identity->id->toString()));
-
-        // Then
-        $result = $this->identityFinder->ofId($identity->id->toString());
-        self::assertSame($identity->id->toString(), $result->id);
     }
 
     #[Test]

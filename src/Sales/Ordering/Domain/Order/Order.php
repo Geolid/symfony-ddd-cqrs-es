@@ -22,17 +22,18 @@ use Sales\Ordering\Domain\Order\Event\OrderPaid;
 use Sales\Ordering\Domain\Order\Event\OrderPrepared;
 use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
-use Sales\Ordering\Domain\Order\Exception\OrderOutOfSequenceException;
+use Sales\Ordering\Domain\Order\Exception\OrderNotDeliverableException;
+use Sales\Ordering\Domain\Order\Exception\OrderNotDispatchableException;
+use Sales\Ordering\Domain\Order\Exception\OrderNotPayableException;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Sales\Ordering\Domain\Order\ValueObject\OrderItem;
 use Sales\Ordering\Domain\Order\ValueObject\OrderLineId;
 use Sales\Ordering\Domain\Order\ValueObject\OrderState;
-use Shared\Domain\Specification\CanTransitionToSpecification;
-use Shared\Domain\Specification\HasReachedSpecification;
 use Shared\Domain\ValueObject\Currency;
 use Shared\Domain\ValueObject\ErasureState;
 use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Domain\ValueObject\StateTransitions;
 use Shared\Domain\ValueObject\TaxedAmount;
 
 #[Aggregate('sales.ordering.order')]
@@ -138,11 +139,15 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws OrderOutOfSequenceException
+     * @throws OrderNotPayableException
      */
     public function pay(\DateTimeImmutable $paidAt): void
     {
-        if (!$this->transitionsOperationalTo(OrderState::PAID)) {
+        if (!$this->canTransitionOperationalTo(OrderState::PAID)) {
+            if ($this->isBeforeOperational(OrderState::PAID)) {
+                throw OrderNotPayableException::cannotPay($this->id);
+            }
+
             return;
         }
 
@@ -193,11 +198,15 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws OrderOutOfSequenceException
+     * @throws OrderNotDispatchableException
      */
     public function dispatch(\DateTimeImmutable $dispatchedAt): void
     {
-        if (!$this->transitionsOperationalTo(OrderState::DISPATCHED)) {
+        if (!$this->canTransitionOperationalTo(OrderState::DISPATCHED)) {
+            if ($this->isBeforeOperational(OrderState::DISPATCHED)) {
+                throw OrderNotDispatchableException::cannotDispatch($this->id);
+            }
+
             return;
         }
 
@@ -208,11 +217,15 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws OrderOutOfSequenceException
+     * @throws OrderNotDeliverableException
      */
     public function deliver(\DateTimeImmutable $deliveredAt): void
     {
-        if (!$this->transitionsOperationalTo(OrderState::DELIVERED)) {
+        if (!$this->canTransitionOperationalTo(OrderState::DELIVERED)) {
+            if ($this->isBeforeOperational(OrderState::DELIVERED)) {
+                throw OrderNotDeliverableException::cannotDeliver($this->id);
+            }
+
             return;
         }
 
@@ -255,35 +268,24 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         return $this->erasureState->isApproved() && ($this->operationalState->isDelivered() || $this->operationalState->isCancelled() || $this->operationalState->isFailed());
     }
 
-    /**
-     * @throws OrderOutOfSequenceException
-     */
-    private function transitionsOperationalTo(OrderState $target): bool
-    {
-        if ($this->canTransitionOperationalTo($target)) {
-            return true;
-        }
-
-        if ($this->operationalState !== $target && new HasReachedSpecification(self::OPERATIONAL_TRANSITIONS, $this->operationalState)->isSatisfiedBy($target)) {
-            throw OrderOutOfSequenceException::forTarget($this->id, $target);
-        }
-
-        return false;
-    }
-
     private function canTransitionOperationalTo(OrderState $target): bool
     {
-        return new CanTransitionToSpecification(self::OPERATIONAL_TRANSITIONS, $target)->isSatisfiedBy($this->operationalState);
+        return new StateTransitions(self::OPERATIONAL_TRANSITIONS)->allows($this->operationalState, $target);
+    }
+
+    private function isBeforeOperational(OrderState $target): bool
+    {
+        return $this->operationalState !== $target && new StateTransitions(self::OPERATIONAL_TRANSITIONS)->reaches($this->operationalState, $target);
     }
 
     private function hasReachedOperational(OrderState $target): bool
     {
-        return new HasReachedSpecification(self::OPERATIONAL_TRANSITIONS, $target)->isSatisfiedBy($this->operationalState);
+        return new StateTransitions(self::OPERATIONAL_TRANSITIONS)->reaches($target, $this->operationalState);
     }
 
     private function canTransitionErasureTo(ErasureState $target): bool
     {
-        return new CanTransitionToSpecification(self::ERASURE_TRANSITIONS, $target)->isSatisfiedBy($this->erasureState);
+        return new StateTransitions(self::ERASURE_TRANSITIONS)->allows($this->erasureState, $target);
     }
 
     #[Apply]

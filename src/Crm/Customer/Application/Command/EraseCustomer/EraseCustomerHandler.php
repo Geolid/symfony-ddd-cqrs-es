@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Crm\Customer\Application\Command\EraseCustomer;
 
 use Crm\Customer\Domain\Customer\Exception\CustomerAlreadyExistsException;
+use Crm\Customer\Domain\Customer\Exception\CustomerNotErasableException;
 use Crm\Customer\Domain\Customer\Exception\CustomerNotFoundException;
 use Crm\Customer\Domain\Customer\Repository\CustomerRepositoryInterface;
 use Crm\Customer\Domain\Customer\ValueObject\CustomerId;
@@ -23,6 +24,7 @@ final readonly class EraseCustomerHandler
     /**
      * @throws CustomerNotFoundException
      * @throws CustomerAlreadyExistsException
+     * @throws CustomerNotErasableException
      */
     public function __invoke(EraseCustomer $command): void
     {

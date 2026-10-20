@@ -10,6 +10,9 @@ use Finance\Payment\Domain\Event\PaymentCaptured;
 use Finance\Payment\Domain\Event\PaymentFailed;
 use Finance\Payment\Domain\Event\PaymentRequested;
 use Finance\Payment\Domain\Event\PaymentVoided;
+use Finance\Payment\Domain\Exception\PaymentNotCapturableException;
+use Finance\Payment\Domain\Exception\PaymentNotFailableException;
+use Finance\Payment\Domain\Exception\PaymentNotVoidableException;
 use Finance\Payment\Domain\ValueObject\PaymentId;
 use Finance\Payment\Domain\ValueObject\PaymentReference;
 use Finance\Payment\Domain\ValueObject\PaymentState;
@@ -19,8 +22,8 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
-use Shared\Domain\Specification\CanTransitionToSpecification;
 use Shared\Domain\ValueObject\Money;
+use Shared\Domain\ValueObject\StateTransitions;
 
 #[Aggregate('finance.payment.payment')]
 final class Payment implements AggregateRoot, AggregateRootMetadataAware
@@ -94,9 +97,16 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    /**
+     * @throws PaymentNotFailableException
+     */
     public function fail(string $orderId, \DateTimeImmutable $failedAt): void
     {
         if (!$this->canTransitionOperationalTo(PaymentState::FAILED)) {
+            if ($this->isBeforeOperational(PaymentState::FAILED)) {
+                throw PaymentNotFailableException::cannotFail($this->id);
+            }
+
             return;
         }
 
@@ -107,9 +117,16 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    /**
+     * @throws PaymentNotCapturableException
+     */
     public function capture(string $orderId, \DateTimeImmutable $capturedAt): void
     {
         if (!$this->canTransitionOperationalTo(PaymentState::CAPTURED)) {
+            if ($this->isBeforeOperational(PaymentState::CAPTURED)) {
+                throw PaymentNotCapturableException::cannotCapture($this->id);
+            }
+
             return;
         }
 
@@ -133,9 +150,16 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    /**
+     * @throws PaymentNotVoidableException
+     */
     public function void(\DateTimeImmutable $voidedAt): void
     {
         if (!$this->canTransitionOperationalTo(PaymentState::VOIDED)) {
+            if ($this->isBeforeOperational(PaymentState::VOIDED)) {
+                throw PaymentNotVoidableException::cannotVoid($this->id);
+            }
+
             return;
         }
 
@@ -146,9 +170,14 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    private function isBeforeOperational(PaymentState $target): bool
+    {
+        return $this->operationalState !== $target && new StateTransitions(self::OPERATIONAL_TRANSITIONS)->reaches($this->operationalState, $target);
+    }
+
     private function canTransitionOperationalTo(PaymentState $target): bool
     {
-        return new CanTransitionToSpecification(self::OPERATIONAL_TRANSITIONS, $target)->isSatisfiedBy($this->operationalState);
+        return new StateTransitions(self::OPERATIONAL_TRANSITIONS)->allows($this->operationalState, $target);
     }
 
     #[Apply]

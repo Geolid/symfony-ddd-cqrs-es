@@ -10,6 +10,7 @@ use Crm\Customer\Domain\Customer\Event\CustomerErasureCancelled;
 use Crm\Customer\Domain\Customer\Event\CustomerErasureRequested;
 use Crm\Customer\Domain\Customer\Event\CustomerRegistered;
 use Crm\Customer\Domain\Customer\Event\CustomerShippingAddressDefined;
+use Crm\Customer\Domain\Customer\Exception\CustomerNotErasableException;
 use Crm\Customer\Domain\Customer\ValueObject\CustomerId;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootAttributeBehaviour;
@@ -17,9 +18,9 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
-use Shared\Domain\Specification\CanTransitionToSpecification;
 use Shared\Domain\ValueObject\ErasureState;
 use Shared\Domain\ValueObject\PostalAddress;
+use Shared\Domain\ValueObject\StateTransitions;
 
 #[Aggregate('crm.customer.customer')]
 final class Customer implements AggregateRoot, AggregateRootMetadataAware
@@ -105,9 +106,16 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    /**
+     * @throws CustomerNotErasableException
+     */
     public function erase(\DateTimeImmutable $erasedAt): void
     {
         if (!$this->canTransitionErasureTo(ErasureState::ERASED)) {
+            if ($this->isBeforeErasure(ErasureState::ERASED)) {
+                throw CustomerNotErasableException::cannotErase($this->id);
+            }
+
             return;
         }
 
@@ -117,9 +125,14 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    private function isBeforeErasure(ErasureState $target): bool
+    {
+        return $this->erasureState !== $target && new StateTransitions(self::ERASURE_TRANSITIONS)->reaches($this->erasureState, $target);
+    }
+
     private function canTransitionErasureTo(ErasureState $target): bool
     {
-        return new CanTransitionToSpecification(self::ERASURE_TRANSITIONS, $target)->isSatisfiedBy($this->erasureState);
+        return new StateTransitions(self::ERASURE_TRANSITIONS)->allows($this->erasureState, $target);
     }
 
     #[Apply]

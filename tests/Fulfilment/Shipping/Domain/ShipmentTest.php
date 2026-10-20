@@ -14,7 +14,9 @@ use Fulfilment\Shipping\Domain\Event\ShipmentManifested;
 use Fulfilment\Shipping\Domain\Event\ShipmentPrepared;
 use Fulfilment\Shipping\Domain\Event\ShipmentRequested;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
-use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
+use Fulfilment\Shipping\Domain\Exception\ShipmentNotDeliverableException;
+use Fulfilment\Shipping\Domain\Exception\ShipmentNotDispatchableException;
+use Fulfilment\Shipping\Domain\Exception\ShipmentNotManifestableException;
 use Fulfilment\Shipping\Domain\Shipment;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentState;
@@ -123,7 +125,7 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given($this->requested())
             ->when(fn (Shipment $shipment) => $shipment->manifest($this->trackingNumber, $this->manifestedAt))
-            ->expectsException(ShipmentInvalidTransitionException::class);
+            ->expectsException(ShipmentNotManifestableException::class);
     }
 
     #[Test]
@@ -150,7 +152,7 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given($this->requested())
             ->when(fn (Shipment $shipment) => $shipment->dispatch($this->dispatchedAt))
-            ->expectsException(ShipmentInvalidTransitionException::class);
+            ->expectsException(ShipmentNotDispatchableException::class);
     }
 
     #[Test]
@@ -186,7 +188,7 @@ final class ShipmentTest extends AggregateRootTestCase
         $this
             ->given($this->requested())
             ->when(fn (Shipment $shipment) => $shipment->deliver($this->deliveredAt))
-            ->expectsException(ShipmentInvalidTransitionException::class);
+            ->expectsException(ShipmentNotDeliverableException::class);
     }
 
     #[Test]

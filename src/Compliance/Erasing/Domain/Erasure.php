@@ -17,7 +17,7 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
-use Shared\Domain\Specification\CanTransitionToSpecification;
+use Shared\Domain\ValueObject\StateTransitions;
 
 #[Aggregate('compliance.erasing.erasure')]
 final class Erasure implements AggregateRoot, AggregateRootMetadataAware
@@ -92,7 +92,7 @@ final class Erasure implements AggregateRoot, AggregateRootMetadataAware
 
     private function canTransitionStateTo(ErasureRequestState $target): bool
     {
-        return new CanTransitionToSpecification(self::STATE_TRANSITIONS, $target)->isSatisfiedBy($this->state);
+        return new StateTransitions(self::STATE_TRANSITIONS)->allows($this->state, $target);
     }
 
     #[Apply]

@@ -6,8 +6,8 @@ namespace Sales\Ordering\Application\Command\DeliverOrder;
 
 use Psr\Clock\ClockInterface;
 use Sales\Ordering\Domain\Order\Exception\OrderAlreadyExistsException;
+use Sales\Ordering\Domain\Order\Exception\OrderNotDeliverableException;
 use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
-use Sales\Ordering\Domain\Order\Exception\OrderOutOfSequenceException;
 use Sales\Ordering\Domain\Order\Repository\OrderRepositoryInterface;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Shared\Application\Command\CommandHandler;
@@ -24,7 +24,7 @@ final readonly class DeliverOrderHandler
     /**
      * @throws OrderNotFoundException
      * @throws OrderAlreadyExistsException
-     * @throws OrderOutOfSequenceException
+     * @throws OrderNotDeliverableException
      */
     public function __invoke(DeliverOrder $command): void
     {
