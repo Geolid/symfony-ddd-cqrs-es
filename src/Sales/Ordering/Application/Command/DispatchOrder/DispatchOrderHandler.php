@@ -7,6 +7,7 @@ namespace Sales\Ordering\Application\Command\DispatchOrder;
 use Psr\Clock\ClockInterface;
 use Sales\Ordering\Domain\Order\Exception\OrderAlreadyExistsException;
 use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
+use Sales\Ordering\Domain\Order\Exception\OrderOutOfSequenceException;
 use Sales\Ordering\Domain\Order\Repository\OrderRepositoryInterface;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Shared\Application\Command\CommandHandler;
@@ -23,6 +24,7 @@ final readonly class DispatchOrderHandler
     /**
      * @throws OrderNotFoundException
      * @throws OrderAlreadyExistsException
+     * @throws OrderOutOfSequenceException
      */
     public function __invoke(DispatchOrder $command): void
     {

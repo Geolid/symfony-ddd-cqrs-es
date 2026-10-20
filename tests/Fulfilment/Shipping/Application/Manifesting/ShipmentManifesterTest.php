@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipping\Application\Manifesting;
 
-use Finance\Tests\Payment\Support\Factory\PaymentFactory;
 use Fulfilment\Shipping\Application\Carrier\CarrierGatewayInterface;
 use Fulfilment\Shipping\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use Fulfilment\Shipping\Application\Finder\Shipment\Exception\ShipmentResultNotFoundException;
@@ -48,10 +47,9 @@ final class ShipmentManifesterTest extends AbstractIntegrationTestCase
     public function itManifestsWhenOrderPaid(): void
     {
         // Given
-        $order = OrderFactory::new()->create();
-        $payment = PaymentFactory::new()->authorized()->captured($order->id->toString())->create();
+        $order = OrderFactory::new()->prepared()->paid()->create();
         $shipment = ShipmentFactory::new()->withOrderId($order->id->toString())->prepared()->create();
-        $this->store($order, $payment, $shipment);
+        $this->store($order, $shipment);
         $trackingNumber = TrackingNumberFactory::new()->create()->value;
         $this->carrier->expects(self::once())->method('manifest')
             ->with($shipment->id->toString(), $shipment->origin, $shipment->destination)
@@ -101,10 +99,9 @@ final class ShipmentManifesterTest extends AbstractIntegrationTestCase
     public function itFailsWhenOrderUnpaid(): void
     {
         // Given
-        $order = OrderFactory::new()->create();
-        $payment = PaymentFactory::new()->create();
+        $order = OrderFactory::new()->prepared()->create();
         $shipment = ShipmentFactory::new()->withOrderId($order->id->toString())->prepared()->create();
-        $this->store($order, $payment, $shipment);
+        $this->store($order, $shipment);
         $this->carrier->expects(self::never())->method('manifest');
 
         // Then

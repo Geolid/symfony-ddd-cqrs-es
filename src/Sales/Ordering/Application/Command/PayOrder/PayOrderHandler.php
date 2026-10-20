@@ -1,0 +1,35 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Sales\Ordering\Application\Command\PayOrder;
+
+use Psr\Clock\ClockInterface;
+use Sales\Ordering\Domain\Order\Exception\OrderAlreadyExistsException;
+use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
+use Sales\Ordering\Domain\Order\Exception\OrderOutOfSequenceException;
+use Sales\Ordering\Domain\Order\Repository\OrderRepositoryInterface;
+use Sales\Ordering\Domain\Order\ValueObject\OrderId;
+use Shared\Application\Command\CommandHandler;
+
+#[CommandHandler]
+final readonly class PayOrderHandler
+{
+    public function __construct(
+        private OrderRepositoryInterface $repository,
+        private ClockInterface $clock,
+    ) {
+    }
+
+    /**
+     * @throws OrderNotFoundException
+     * @throws OrderAlreadyExistsException
+     * @throws OrderOutOfSequenceException
+     */
+    public function __invoke(PayOrder $command): void
+    {
+        $order = $this->repository->load(OrderId::fromString($command->id));
+        $order->pay($this->clock->now());
+        $this->repository->save($order);
+    }
+}

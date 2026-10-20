@@ -32,7 +32,7 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
     public function itGets(): void
     {
         // Given
-        $order = OrderFactory::new()->prepared()->dispatched()->delivered()->create();
+        $order = OrderFactory::new()->prepared()->paid()->dispatched()->delivered()->create();
         $this->store($order);
 
         // When
@@ -54,6 +54,7 @@ final class DbalOrderFinderTest extends AbstractIterableFinderTestCase
         self::assertSame(OrderStatus::DELIVERED, $result->status);
         self::assertSameDateTime($order->confirmedAt, $result->confirmedAt);
         self::assertSameDateTime($order->preparedAt, $result->preparedAt);
+        self::assertSameDateTime($order->paidAt, $result->paidAt);
         self::assertSameDateTime($order->dispatchedAt, $result->dispatchedAt);
         self::assertSameDateTime($order->deliveredAt, $result->deliveredAt);
         self::assertNull($result->cancelledAt);

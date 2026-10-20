@@ -16,7 +16,7 @@ use Shared\Infrastructure\Projection\SnakeCaseKeys;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 /**
- * @phpstan-type Row array{customer_id: string, checkout_session_id: string, shipping_address: string, total_excluding_tax_in_cents: int|string, total_tax_amount_in_cents: int|string, total_including_tax_in_cents: int|string, currency: string, status: string, confirmed_at: ?string, prepared_at: ?string, dispatched_at: ?string, delivered_at: ?string, cancelled_at: ?string, failed_at: ?string, erasure_status: string}
+ * @phpstan-type Row array{customer_id: string, checkout_session_id: string, shipping_address: string, total_excluding_tax_in_cents: int|string, total_tax_amount_in_cents: int|string, total_including_tax_in_cents: int|string, currency: string, status: string, confirmed_at: ?string, prepared_at: ?string, paid_at: ?string, dispatched_at: ?string, delivered_at: ?string, cancelled_at: ?string, failed_at: ?string, erasure_status: string}
  */
 final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
 {
@@ -47,6 +47,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         self::assertSame(OrderStatus::CONFIRMED->value, $row['status']);
         self::assertNotNull($row['confirmed_at']);
         self::assertNull($row['prepared_at']);
+        self::assertNull($row['paid_at']);
         self::assertNull($row['dispatched_at']);
         self::assertNull($row['delivered_at']);
         self::assertNull($row['cancelled_at']);
@@ -121,12 +122,34 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itProjectsOnOrderPaid(): void
+    {
+        // Given
+        $other = OrderFactory::new()->prepared()->create();
+        $this->store($other);
+        $order = OrderFactory::new()->prepared()->paid()->create();
+
+        // When
+        $this->store($order);
+
+        // Then
+        $row = $this->fetchRow($order->id->toString());
+        self::assertNotFalse($row);
+        self::assertSame(OrderStatus::PAID->value, $row['status']);
+        self::assertNotNull($row['paid_at']);
+
+        $otherRow = $this->fetchRow($other->id->toString());
+        self::assertNotFalse($otherRow);
+        self::assertSame(OrderStatus::PREPARED->value, $otherRow['status']);
+    }
+
+    #[Test]
     public function itProjectsOnOrderDispatched(): void
     {
         // Given
         $other = OrderFactory::new()->prepared()->create();
         $this->store($other);
-        $order = OrderFactory::new()->prepared()->dispatched()->create();
+        $order = OrderFactory::new()->prepared()->paid()->dispatched()->create();
 
         // When
         $this->store($order);
@@ -146,9 +169,9 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itProjectsOnOrderDelivered(): void
     {
         // Given
-        $other = OrderFactory::new()->prepared()->dispatched()->create();
+        $other = OrderFactory::new()->prepared()->paid()->dispatched()->create();
         $this->store($other);
-        $order = OrderFactory::new()->prepared()->dispatched()->delivered()->create();
+        $order = OrderFactory::new()->prepared()->paid()->dispatched()->delivered()->create();
 
         // When
         $this->store($order);
@@ -190,9 +213,9 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
     public function itRemovesOnOrderErased(): void
     {
         // Given
-        $other = OrderFactory::new()->prepared()->dispatched()->delivered()->create();
+        $other = OrderFactory::new()->prepared()->paid()->dispatched()->delivered()->create();
         $this->store($other);
-        $order = OrderFactory::new()->prepared()->dispatched()->delivered()->erasureApproved()->create();
+        $order = OrderFactory::new()->prepared()->paid()->dispatched()->delivered()->erasureApproved()->create();
 
         // When
         $this->store($order);
@@ -212,7 +235,7 @@ final class DbalOrderProjectorTest extends AbstractIntegrationTestCase
         /** @var Row|false */
         return $connection->fetchAssociative(
             \sprintf(
-                'SELECT customer_id, checkout_session_id, shipping_address, total_excluding_tax_in_cents, total_tax_amount_in_cents, total_including_tax_in_cents, currency, status, confirmed_at, prepared_at, dispatched_at, delivered_at, cancelled_at, failed_at, erasure_status FROM %s WHERE id = :id',
+                'SELECT customer_id, checkout_session_id, shipping_address, total_excluding_tax_in_cents, total_tax_amount_in_cents, total_including_tax_in_cents, currency, status, confirmed_at, prepared_at, paid_at, dispatched_at, delivered_at, cancelled_at, failed_at, erasure_status FROM %s WHERE id = :id',
                 DbalOrderProjector::TABLE,
             ),
             ['id' => $id],

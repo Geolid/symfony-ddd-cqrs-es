@@ -20,7 +20,7 @@ final class DispatchOrderOnShipmentDispatchedTest extends AbstractIntegrationTes
     public function itDispatches(): void
     {
         // Given
-        $order = OrderFactory::new()->prepared()->create();
+        $order = OrderFactory::new()->prepared()->paid()->create();
         $this->store($order);
 
         // When

@@ -4,10 +4,10 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipping\Infrastructure\Projection\Finder;
 
-use Finance\Tests\Payment\Support\Factory\PaymentFactory;
 use Fulfilment\Shipping\Application\Finder\OrderPayment\OrderPaymentFinderInterface;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
+use Sales\Tests\Ordering\Support\Factory\OrderFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
@@ -25,10 +25,10 @@ final class DbalOrderPaymentFinderTest extends AbstractIntegrationTestCase
     public function itFindsByOrder(): void
     {
         // Given
-        $other = PaymentFactory::new()->create();
-        $orderId = Uuid::uuid7()->toString();
-        $payment = PaymentFactory::new()->authorized()->captured($orderId)->create();
-        $this->store($other, $payment);
+        $other = OrderFactory::new()->prepared()->create();
+        $order = OrderFactory::new()->prepared()->paid()->create();
+        $orderId = $order->id->toString();
+        $this->store($other, $order);
 
         // When
         $found = $this->finder->ofOrderOrNull($orderId);

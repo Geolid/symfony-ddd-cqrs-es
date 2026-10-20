@@ -9,6 +9,7 @@ use Sales\Ordering\Application\Command\DispatchOrder\DispatchOrder;
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\OrderStatus;
 use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
+use Sales\Ordering\Domain\Order\Exception\OrderOutOfSequenceException;
 use Sales\Tests\Ordering\Support\Factory\OrderFactory;
 use Sales\Tests\Ordering\Support\Factory\OrderIdFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -25,10 +26,10 @@ final class DispatchOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itDispatchesWhenPrepared(): void
+    public function itDispatchesWhenPaid(): void
     {
         // Given
-        $order = OrderFactory::new()->prepared()->create();
+        $order = OrderFactory::new()->prepared()->paid()->create();
         $this->store($order);
 
         // When
@@ -41,18 +42,17 @@ final class DispatchOrderHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresWhenNotPrepared(): void
+    public function itFailsWhenNotPaid(): void
     {
         // Given
-        $order = OrderFactory::new()->create();
+        $order = OrderFactory::new()->prepared()->create();
         $this->store($order);
+
+        // Then
+        $this->expectException(OrderOutOfSequenceException::class);
 
         // When
         $this->dispatch(new DispatchOrder($order->id->toString()));
-
-        // Then
-        $result = $this->finder->ofId($order->id->toString());
-        self::assertSame(OrderStatus::CONFIRMED, $result->status);
     }
 
     #[Test]
