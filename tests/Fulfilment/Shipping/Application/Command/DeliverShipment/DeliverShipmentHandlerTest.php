@@ -7,7 +7,7 @@ namespace Fulfilment\Tests\Shipping\Application\Command\DeliverShipment;
 use Fulfilment\Shipping\Application\Command\DeliverShipment\DeliverShipment;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\ShipmentStatus;
-use Fulfilment\Shipping\Domain\Exception\ShipmentNotDeliverableException;
+use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidStateException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Tests\Shipping\Support\Factory\ShipmentFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -91,7 +91,7 @@ final class DeliverShipmentHandlerTest extends AbstractIntegrationTestCase
         $this->store($shipment);
 
         // Then
-        $this->expectException(ShipmentNotDeliverableException::class);
+        $this->expectException(ShipmentInvalidStateException::class);
 
         // When
         $this->dispatch(new DeliverShipment($shipment->id->toString()));

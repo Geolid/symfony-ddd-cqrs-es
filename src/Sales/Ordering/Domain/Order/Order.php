@@ -22,7 +22,6 @@ use Sales\Ordering\Domain\Order\Event\OrderPaid;
 use Sales\Ordering\Domain\Order\Event\OrderPrepared;
 use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Ordering\Domain\Order\Exception\OrderInvalidStateException;
-use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Sales\Ordering\Domain\Order\ValueObject\OrderItem;
@@ -157,7 +156,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
     /**
      * @throws OrderBelongsToAnotherCustomerException
-     * @throws OrderNotCancellableException
+     * @throws OrderInvalidStateException
      */
     public function cancel(string $customerId, \DateTimeImmutable $cancelledAt): void
     {
@@ -170,7 +169,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
         }
 
         if ($this->hasReachedOperational(OrderState::PREPARED)) {
-            throw OrderNotCancellableException::forId($this->id);
+            throw OrderInvalidStateException::cannotCancel($this->id, $this->operationalState);
         }
 
         $this->recordThat(new OrderCancelled(

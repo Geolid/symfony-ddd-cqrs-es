@@ -8,7 +8,7 @@ use Fulfilment\Shipping\Application\Finder\Shipment\Exception\ShipmentResultNotF
 use Fulfilment\Shipping\Application\Manifesting\Exception\ManifestDeniedException;
 use Fulfilment\Shipping\Application\Manifesting\Exception\ManifestPostponedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
-use Fulfilment\Shipping\Domain\Exception\ShipmentNotManifestableException;
+use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidStateException;
 use Shared\Application\DrivingPort;
 
 #[DrivingPort]
@@ -21,7 +21,7 @@ interface ShipmentManifesterInterface
      * @throws ManifestDeniedException
      * @throws ManifestPostponedException
      * @throws ShipmentAlreadyTrackedException
-     * @throws ShipmentNotManifestableException
+     * @throws ShipmentInvalidStateException
      */
     public function manifest(string $shipmentId): string;
 }

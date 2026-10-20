@@ -23,9 +23,7 @@ use Fulfilment\Shipping\Application\Command\ManifestShipment\Exception\ShipmentT
 use Fulfilment\Shipping\Application\Manifesting\Exception\ManifestDeniedException;
 use Fulfilment\Shipping\Application\Manifesting\Exception\ManifestPostponedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
-use Fulfilment\Shipping\Domain\Exception\ShipmentNotDeliverableException;
-use Fulfilment\Shipping\Domain\Exception\ShipmentNotDispatchableException;
-use Fulfilment\Shipping\Domain\Exception\ShipmentNotManifestableException;
+use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidStateException;
 use Iam\Authentication\Application\BackupCodeRegeneration\Exception\BackupCodeCredentialNotGeneratedException;
 use Iam\Authentication\Application\BreachDatabase\Exception\CompromisedPasswordException;
 use Iam\Authentication\Application\Command\EnrollTotp\Exception\TotpAlreadyEnrolledException;
@@ -43,7 +41,6 @@ use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
 use Iam\Identity\Domain\Exception\IdentityInvalidStateException;
 use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Ordering\Domain\Order\Exception\OrderInvalidStateException;
-use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Finder\Exception\ResultNotFoundException;
 use Shared\Application\Mailer\Exception\MailerException;
@@ -76,13 +73,11 @@ return static function (ContainerConfigurator $container): void {
             ErasureRequestedByAnotherIdentityException::class => ['log_level' => 'info', 'status_code' => 403],
 
             // Crm
-            CustomerInvalidStateException::class => ['log_level' => 'critical', 'status_code' => 500],
+            CustomerInvalidStateException::class => ['log_level' => 'info', 'status_code' => 409],
 
             // Fulfilment
             ShipmentAlreadyTrackedException::class => ['log_level' => 'info', 'status_code' => 409],
-            ShipmentNotDeliverableException::class => ['log_level' => 'info', 'status_code' => 409],
-            ShipmentNotDispatchableException::class => ['log_level' => 'info', 'status_code' => 409],
-            ShipmentNotManifestableException::class => ['log_level' => 'info', 'status_code' => 409],
+            ShipmentInvalidStateException::class => ['log_level' => 'info', 'status_code' => 409],
             ShipmentTrackingNumberAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
             ManifestDeniedException::class => ['log_level' => 'info', 'status_code' => 409],
             ManifestPostponedException::class => ['log_level' => 'info', 'status_code' => 503],
@@ -97,7 +92,7 @@ return static function (ContainerConfigurator $container): void {
             RequestEmailChangeIdentityEmailAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
             ChangeEmailIdentityEmailAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
             IdentityNotAuthenticatableException::class => ['log_level' => 'info', 'status_code' => 409],
-            IdentityInvalidStateException::class => ['log_level' => 'critical', 'status_code' => 500],
+            IdentityInvalidStateException::class => ['log_level' => 'info', 'status_code' => 409],
             TotpAlreadyEnrolledException::class => ['log_level' => 'info', 'status_code' => 409],
             ApiKeyCredentialRevokedException::class => ['log_level' => 'info', 'status_code' => 409],
             ApiKeyCredentialOwnedByAnotherIdentityException::class => ['log_level' => 'info', 'status_code' => 403],
@@ -116,8 +111,7 @@ return static function (ContainerConfigurator $container): void {
             CheckoutCustomerAddressesNotCompletedException::class => ['log_level' => 'info', 'status_code' => 422],
             CheckoutCustomerErasureRequestedException::class => ['log_level' => 'info', 'status_code' => 422],
             OrderBelongsToAnotherCustomerException::class => ['log_level' => 'info', 'status_code' => 403],
-            OrderNotCancellableException::class => ['log_level' => 'info', 'status_code' => 409],
-            OrderInvalidStateException::class => ['log_level' => 'critical', 'status_code' => 500],
+            OrderInvalidStateException::class => ['log_level' => 'info', 'status_code' => 409],
 
             // Finance
             PaymentRequestInProgressException::class => ['log_level' => 'info', 'status_code' => 503],
@@ -129,7 +123,7 @@ return static function (ContainerConfigurator $container): void {
             PaymentAlreadyClaimedException::class => ['log_level' => 'info', 'status_code' => 409],
             PaymentTransientFailureException::class => ['log_level' => 'error', 'status_code' => 503],
             PaymentGatewayException::class => ['log_level' => 'error', 'status_code' => 502],
-            PaymentInvalidStateException::class => ['log_level' => 'critical', 'status_code' => 500],
+            PaymentInvalidStateException::class => ['log_level' => 'info', 'status_code' => 409],
 
             // Shared
             AggregateNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],

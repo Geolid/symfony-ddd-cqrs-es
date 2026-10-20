@@ -14,9 +14,7 @@ use Fulfilment\Shipping\Domain\Event\ShipmentManifested;
 use Fulfilment\Shipping\Domain\Event\ShipmentPrepared;
 use Fulfilment\Shipping\Domain\Event\ShipmentRequested;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
-use Fulfilment\Shipping\Domain\Exception\ShipmentNotDeliverableException;
-use Fulfilment\Shipping\Domain\Exception\ShipmentNotDispatchableException;
-use Fulfilment\Shipping\Domain\Exception\ShipmentNotManifestableException;
+use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidStateException;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentState;
 use Fulfilment\Shipping\Domain\ValueObject\TrackingNumber;
@@ -106,7 +104,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
     /**
      * @throws ShipmentAlreadyTrackedException
-     * @throws ShipmentNotManifestableException
+     * @throws ShipmentInvalidStateException
      */
     public function manifest(TrackingNumber $trackingNumber, \DateTimeImmutable $manifestedAt): void
     {
@@ -121,7 +119,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         }
 
         if (!$this->canTransitionOperationalTo(ShipmentState::MANIFESTED)) {
-            throw ShipmentNotManifestableException::cannotManifest($this->id, $this->operationalState);
+            throw ShipmentInvalidStateException::cannotManifest($this->id, $this->operationalState);
         }
 
         $this->recordThat(new ShipmentManifested(
@@ -132,7 +130,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws ShipmentNotDispatchableException
+     * @throws ShipmentInvalidStateException
      */
     public function dispatch(\DateTimeImmutable $dispatchedAt): void
     {
@@ -141,7 +139,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         }
 
         if (!$this->canTransitionOperationalTo(ShipmentState::DISPATCHED)) {
-            throw ShipmentNotDispatchableException::cannotDispatch($this->id, $this->operationalState);
+            throw ShipmentInvalidStateException::cannotDispatch($this->id, $this->operationalState);
         }
 
         $this->recordThat(new ShipmentDispatched(
@@ -151,7 +149,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws ShipmentNotDeliverableException
+     * @throws ShipmentInvalidStateException
      */
     public function deliver(\DateTimeImmutable $deliveredAt): void
     {
@@ -161,7 +159,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
         // Tolerates skipping DISPATCHED — a missed carrier transit scan still delivers.
         if (!$this->hasReachedOperational(ShipmentState::MANIFESTED)) {
-            throw ShipmentNotDeliverableException::cannotDeliver($this->id, $this->operationalState);
+            throw ShipmentInvalidStateException::cannotDeliver($this->id, $this->operationalState);
         }
 
         $this->recordThat(new ShipmentDelivered(

@@ -11,7 +11,7 @@ use Sales\Ordering\Application\Command\CancelOrder\CancelOrder;
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\OrderStatus;
 use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherCustomerException;
-use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
+use Sales\Ordering\Domain\Order\Exception\OrderInvalidStateException;
 use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
 use Sales\Tests\Ordering\Support\Factory\OrderFactory;
 use Sales\Tests\Ordering\Support\Factory\OrderIdFactory;
@@ -114,7 +114,7 @@ final class CancelOrderHandlerTest extends AbstractIntegrationTestCase
         $this->store($order);
 
         // Then
-        $this->expectException(OrderNotCancellableException::class);
+        $this->expectException(OrderInvalidStateException::class);
 
         // When
         $this->dispatch(new CancelOrder($order->id->toString(), $customerId));
