@@ -125,14 +125,14 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    private function hasReachedErasure(ErasureState $target): bool
-    {
-        return new StateTransitions(self::ERASURE_TRANSITIONS)->reaches($target, $this->erasureState);
-    }
-
     private function canTransitionErasureTo(ErasureState $target): bool
     {
         return new StateTransitions(self::ERASURE_TRANSITIONS)->allows($this->erasureState, $target);
+    }
+
+    private function hasReachedErasure(ErasureState $target): bool
+    {
+        return new StateTransitions(self::ERASURE_TRANSITIONS)->reaches($target, $this->erasureState);
     }
 
     #[Apply]

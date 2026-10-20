@@ -161,14 +161,14 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
-    private function hasReachedOperational(PaymentState $target): bool
-    {
-        return new StateTransitions(self::OPERATIONAL_TRANSITIONS)->reaches($target, $this->operationalState);
-    }
-
     private function canTransitionOperationalTo(PaymentState $target): bool
     {
         return new StateTransitions(self::OPERATIONAL_TRANSITIONS)->allows($this->operationalState, $target);
+    }
+
+    private function hasReachedOperational(PaymentState $target): bool
+    {
+        return new StateTransitions(self::OPERATIONAL_TRANSITIONS)->reaches($target, $this->operationalState);
     }
 
     #[Apply]
