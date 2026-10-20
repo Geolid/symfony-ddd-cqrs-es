@@ -8,8 +8,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Ordering\Application\Command\DispatchOrder\DispatchOrder;
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\OrderStatus;
-use Sales\Ordering\Domain\Order\Exception\OrderNotDispatchableException;
 use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
+use Sales\Ordering\Domain\Order\Exception\OrderStateInconsistentException;
 use Sales\Tests\Ordering\Support\Factory\OrderFactory;
 use Sales\Tests\Ordering\Support\Factory\OrderIdFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -49,7 +49,7 @@ final class DispatchOrderHandlerTest extends AbstractIntegrationTestCase
         $this->store($order);
 
         // Then
-        $this->expectException(OrderNotDispatchableException::class);
+        $this->expectException(OrderStateInconsistentException::class);
 
         // When
         $this->dispatch(new DispatchOrder($order->id->toString()));

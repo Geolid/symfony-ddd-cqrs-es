@@ -22,9 +22,7 @@ use Sales\Ordering\Domain\Order\Event\OrderPaid;
 use Sales\Ordering\Domain\Order\Event\OrderPrepared;
 use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherCustomerException;
 use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
-use Sales\Ordering\Domain\Order\Exception\OrderNotDeliverableException;
-use Sales\Ordering\Domain\Order\Exception\OrderNotDispatchableException;
-use Sales\Ordering\Domain\Order\Exception\OrderNotPayableException;
+use Sales\Ordering\Domain\Order\Exception\OrderStateInconsistentException;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Sales\Ordering\Domain\Order\ValueObject\OrderItem;
@@ -139,13 +137,13 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws OrderNotPayableException
+     * @throws OrderStateInconsistentException
      */
     public function pay(\DateTimeImmutable $paidAt): void
     {
         if (!$this->canTransitionOperationalTo(OrderState::PAID)) {
             if ($this->isBeforeOperational(OrderState::PAID)) {
-                throw OrderNotPayableException::cannotPay($this->id);
+                throw OrderStateInconsistentException::cannotPay($this->id, $this->operationalState);
             }
 
             return;
@@ -198,13 +196,13 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws OrderNotDispatchableException
+     * @throws OrderStateInconsistentException
      */
     public function dispatch(\DateTimeImmutable $dispatchedAt): void
     {
         if (!$this->canTransitionOperationalTo(OrderState::DISPATCHED)) {
             if ($this->isBeforeOperational(OrderState::DISPATCHED)) {
-                throw OrderNotDispatchableException::cannotDispatch($this->id);
+                throw OrderStateInconsistentException::cannotDispatch($this->id, $this->operationalState);
             }
 
             return;
@@ -217,13 +215,13 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws OrderNotDeliverableException
+     * @throws OrderStateInconsistentException
      */
     public function deliver(\DateTimeImmutable $deliveredAt): void
     {
         if (!$this->canTransitionOperationalTo(OrderState::DELIVERED)) {
             if ($this->isBeforeOperational(OrderState::DELIVERED)) {
-                throw OrderNotDeliverableException::cannotDeliver($this->id);
+                throw OrderStateInconsistentException::cannotDeliver($this->id, $this->operationalState);
             }
 
             return;

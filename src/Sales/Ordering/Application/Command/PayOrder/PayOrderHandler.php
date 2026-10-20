@@ -7,7 +7,7 @@ namespace Sales\Ordering\Application\Command\PayOrder;
 use Psr\Clock\ClockInterface;
 use Sales\Ordering\Domain\Order\Exception\OrderAlreadyExistsException;
 use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
-use Sales\Ordering\Domain\Order\Exception\OrderNotPayableException;
+use Sales\Ordering\Domain\Order\Exception\OrderStateInconsistentException;
 use Sales\Ordering\Domain\Order\Repository\OrderRepositoryInterface;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Shared\Application\Command\CommandHandler;
@@ -24,7 +24,7 @@ final readonly class PayOrderHandler
     /**
      * @throws OrderNotFoundException
      * @throws OrderAlreadyExistsException
-     * @throws OrderNotPayableException
+     * @throws OrderStateInconsistentException
      */
     public function __invoke(PayOrder $command): void
     {

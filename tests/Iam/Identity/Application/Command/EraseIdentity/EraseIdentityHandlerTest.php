@@ -7,8 +7,8 @@ namespace Iam\Tests\Identity\Application\Command\EraseIdentity;
 use Iam\Identity\Application\Command\EraseIdentity\EraseIdentity;
 use Iam\Identity\Application\Finder\Identity\Exception\IdentityResultNotFoundException;
 use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
-use Iam\Identity\Domain\Exception\IdentityNotErasableException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
+use Iam\Identity\Domain\Exception\IdentityStateInconsistentException;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -49,7 +49,7 @@ final class EraseIdentityHandlerTest extends AbstractIntegrationTestCase
         $this->store($identity);
 
         // Then
-        $this->expectException(IdentityNotErasableException::class);
+        $this->expectException(IdentityStateInconsistentException::class);
 
         // When
         $this->dispatch(new EraseIdentity($identity->id->toString()));

@@ -11,6 +11,6 @@ final class ShipmentNotManifestableException extends \DomainException
 {
     public static function cannotManifest(ShipmentId $id, ShipmentState $current): self
     {
-        return new self(\sprintf('Cannot manifest shipment "%s" with status "%s".', $id->toString(), $current->value));
+        return new self(\sprintf('Shipment "%s" cannot be manifested while in state "%s".', $id->toString(), $current->value));
     }
 }

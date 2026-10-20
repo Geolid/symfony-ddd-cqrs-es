@@ -6,7 +6,7 @@ namespace Finance\Payment\Application\Command\VoidPayment;
 
 use Finance\Payment\Domain\Exception\PaymentAlreadyExistsException;
 use Finance\Payment\Domain\Exception\PaymentNotFoundException;
-use Finance\Payment\Domain\Exception\PaymentNotVoidableException;
+use Finance\Payment\Domain\Exception\PaymentStateInconsistentException;
 use Finance\Payment\Domain\Repository\PaymentRepositoryInterface;
 use Finance\Payment\Domain\ValueObject\PaymentId;
 use Psr\Clock\ClockInterface;
@@ -24,7 +24,7 @@ final readonly class VoidPaymentHandler
     /**
      * @throws PaymentNotFoundException
      * @throws PaymentAlreadyExistsException
-     * @throws PaymentNotVoidableException
+     * @throws PaymentStateInconsistentException
      */
     public function __invoke(VoidPayment $command): void
     {

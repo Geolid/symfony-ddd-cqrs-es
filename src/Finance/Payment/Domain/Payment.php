@@ -10,9 +10,7 @@ use Finance\Payment\Domain\Event\PaymentCaptured;
 use Finance\Payment\Domain\Event\PaymentFailed;
 use Finance\Payment\Domain\Event\PaymentRequested;
 use Finance\Payment\Domain\Event\PaymentVoided;
-use Finance\Payment\Domain\Exception\PaymentNotCapturableException;
-use Finance\Payment\Domain\Exception\PaymentNotFailableException;
-use Finance\Payment\Domain\Exception\PaymentNotVoidableException;
+use Finance\Payment\Domain\Exception\PaymentStateInconsistentException;
 use Finance\Payment\Domain\ValueObject\PaymentId;
 use Finance\Payment\Domain\ValueObject\PaymentReference;
 use Finance\Payment\Domain\ValueObject\PaymentState;
@@ -98,13 +96,13 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws PaymentNotFailableException
+     * @throws PaymentStateInconsistentException
      */
     public function fail(string $orderId, \DateTimeImmutable $failedAt): void
     {
         if (!$this->canTransitionOperationalTo(PaymentState::FAILED)) {
             if ($this->isBeforeOperational(PaymentState::FAILED)) {
-                throw PaymentNotFailableException::cannotFail($this->id);
+                throw PaymentStateInconsistentException::cannotFail($this->id, $this->operationalState);
             }
 
             return;
@@ -118,13 +116,13 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws PaymentNotCapturableException
+     * @throws PaymentStateInconsistentException
      */
     public function capture(string $orderId, \DateTimeImmutable $capturedAt): void
     {
         if (!$this->canTransitionOperationalTo(PaymentState::CAPTURED)) {
             if ($this->isBeforeOperational(PaymentState::CAPTURED)) {
-                throw PaymentNotCapturableException::cannotCapture($this->id);
+                throw PaymentStateInconsistentException::cannotCapture($this->id, $this->operationalState);
             }
 
             return;
@@ -151,13 +149,13 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws PaymentNotVoidableException
+     * @throws PaymentStateInconsistentException
      */
     public function void(\DateTimeImmutable $voidedAt): void
     {
         if (!$this->canTransitionOperationalTo(PaymentState::VOIDED)) {
             if ($this->isBeforeOperational(PaymentState::VOIDED)) {
-                throw PaymentNotVoidableException::cannotVoid($this->id);
+                throw PaymentStateInconsistentException::cannotVoid($this->id, $this->operationalState);
             }
 
             return;

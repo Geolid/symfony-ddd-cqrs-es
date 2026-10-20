@@ -11,6 +11,6 @@ final class ShipmentNotDeliverableException extends \DomainException
 {
     public static function cannotDeliver(ShipmentId $id, ShipmentState $current): self
     {
-        return new self(\sprintf('Cannot deliver shipment "%s" with status "%s".', $id->toString(), $current->value));
+        return new self(\sprintf('Shipment "%s" cannot be delivered while in state "%s".', $id->toString(), $current->value));
     }
 }

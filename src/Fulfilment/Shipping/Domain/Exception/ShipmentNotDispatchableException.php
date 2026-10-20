@@ -11,6 +11,6 @@ final class ShipmentNotDispatchableException extends \DomainException
 {
     public static function cannotDispatch(ShipmentId $id, ShipmentState $current): self
     {
-        return new self(\sprintf('Cannot dispatch shipment "%s" with status "%s".', $id->toString(), $current->value));
+        return new self(\sprintf('Shipment "%s" cannot be dispatched while in state "%s".', $id->toString(), $current->value));
     }
 }

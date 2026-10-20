@@ -10,9 +10,7 @@ use Finance\Payment\Domain\Event\PaymentCaptured;
 use Finance\Payment\Domain\Event\PaymentFailed;
 use Finance\Payment\Domain\Event\PaymentRequested;
 use Finance\Payment\Domain\Event\PaymentVoided;
-use Finance\Payment\Domain\Exception\PaymentNotCapturableException;
-use Finance\Payment\Domain\Exception\PaymentNotFailableException;
-use Finance\Payment\Domain\Exception\PaymentNotVoidableException;
+use Finance\Payment\Domain\Exception\PaymentStateInconsistentException;
 use Finance\Payment\Domain\Payment;
 use Finance\Payment\Domain\ValueObject\PaymentId;
 use Finance\Payment\Domain\ValueObject\PaymentReference;
@@ -108,7 +106,7 @@ final class PaymentTest extends AggregateRootTestCase
         $this
             ->given($this->requested())
             ->when(fn (Payment $payment) => $payment->fail($this->orderId, $this->authorizedAt))
-            ->expectsException(PaymentNotFailableException::class);
+            ->expectsException(PaymentStateInconsistentException::class);
     }
 
     #[Test]
@@ -146,7 +144,7 @@ final class PaymentTest extends AggregateRootTestCase
         $this
             ->given($this->requested())
             ->when(fn (Payment $payment) => $payment->capture($this->orderId, $this->capturedAt))
-            ->expectsException(PaymentNotCapturableException::class);
+            ->expectsException(PaymentStateInconsistentException::class);
     }
 
     #[Test]
@@ -195,7 +193,7 @@ final class PaymentTest extends AggregateRootTestCase
         $this
             ->given($this->requested())
             ->when(fn (Payment $payment) => $payment->void($this->authorizedAt))
-            ->expectsException(PaymentNotVoidableException::class);
+            ->expectsException(PaymentStateInconsistentException::class);
     }
 
     #[Test]

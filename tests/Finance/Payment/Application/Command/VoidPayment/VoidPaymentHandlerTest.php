@@ -7,7 +7,7 @@ namespace Finance\Tests\Payment\Application\Command\VoidPayment;
 use Finance\Payment\Application\Command\VoidPayment\VoidPayment;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
-use Finance\Payment\Domain\Exception\PaymentNotVoidableException;
+use Finance\Payment\Domain\Exception\PaymentStateInconsistentException;
 use Finance\Tests\Payment\Support\Factory\PaymentFactory;
 use Finance\Tests\Payment\Support\Factory\PaymentIdFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -47,7 +47,7 @@ final class VoidPaymentHandlerTest extends AbstractIntegrationTestCase
         $this->store($payment);
 
         // Then
-        $this->expectException(PaymentNotVoidableException::class);
+        $this->expectException(PaymentStateInconsistentException::class);
 
         // When
         $this->dispatch(new VoidPayment($payment->id->toString()));

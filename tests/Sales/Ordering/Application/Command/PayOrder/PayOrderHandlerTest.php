@@ -9,7 +9,7 @@ use Sales\Ordering\Application\Command\PayOrder\PayOrder;
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\OrderStatus;
 use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
-use Sales\Ordering\Domain\Order\Exception\OrderNotPayableException;
+use Sales\Ordering\Domain\Order\Exception\OrderStateInconsistentException;
 use Sales\Tests\Ordering\Support\Factory\OrderFactory;
 use Sales\Tests\Ordering\Support\Factory\OrderIdFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -64,7 +64,7 @@ final class PayOrderHandlerTest extends AbstractIntegrationTestCase
         $this->store($order);
 
         // Then
-        $this->expectException(OrderNotPayableException::class);
+        $this->expectException(OrderStateInconsistentException::class);
 
         // When
         $this->dispatch(new PayOrder($order->id->toString()));

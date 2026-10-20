@@ -8,8 +8,8 @@ use PHPUnit\Framework\Attributes\Test;
 use Sales\Ordering\Application\Command\DeliverOrder\DeliverOrder;
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\OrderStatus;
-use Sales\Ordering\Domain\Order\Exception\OrderNotDeliverableException;
 use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
+use Sales\Ordering\Domain\Order\Exception\OrderStateInconsistentException;
 use Sales\Tests\Ordering\Support\Factory\OrderFactory;
 use Sales\Tests\Ordering\Support\Factory\OrderIdFactory;
 use Support\TestCase\AbstractIntegrationTestCase;
@@ -48,7 +48,7 @@ final class DeliverOrderHandlerTest extends AbstractIntegrationTestCase
         $this->store($order);
 
         // Then
-        $this->expectException(OrderNotDeliverableException::class);
+        $this->expectException(OrderStateInconsistentException::class);
 
         // When
         $this->dispatch(new DeliverOrder($order->id->toString()));
