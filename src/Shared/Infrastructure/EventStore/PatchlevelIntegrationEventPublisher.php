@@ -40,7 +40,6 @@ final readonly class PatchlevelIntegrationEventPublisher implements IntegrationE
                     ->withHeader(new EventIdHeader($this->eventIdOf($source, $event))),
             );
         } catch (UniqueConstraintViolation) {
-            return;
         }
     }
 
