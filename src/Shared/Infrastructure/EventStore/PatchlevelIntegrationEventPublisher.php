@@ -15,11 +15,6 @@ use Ramsey\Uuid\Uuid;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 
-/**
- * No PlayheadHeader: this repo's store is StreamDoctrineDbalStore (config 'dbal_stream'),
- * whose playhead column is nullable with a unique index on (stream, playhead) — standard SQL
- * never treats NULL as equal to NULL, so concurrent appends on the same stream never collide.
- */
 final readonly class PatchlevelIntegrationEventPublisher implements IntegrationEventPublisherInterface
 {
     private const string EVENT_ID_NAMESPACE = '6b0c1f0e-3a55-4d8e-9f5c-2c7e1a4b9d10';
