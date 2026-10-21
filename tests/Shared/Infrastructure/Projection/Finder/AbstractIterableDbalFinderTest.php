@@ -116,6 +116,6 @@ final class AbstractIterableDbalFinderTest extends AbstractIntegrationTestCase
         $this->expectException(\InvalidArgumentException::class);
 
         // When
-        [...$finder];
+        $results = [...$finder];
     }
 }
