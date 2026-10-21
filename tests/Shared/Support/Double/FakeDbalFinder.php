@@ -45,10 +45,10 @@ final class FakeDbalFinder extends AbstractPaginatableDbalFinder
 
     protected function configureBaseQuery(QueryBuilder $qb): void
     {
-        $rows = array_map(fn (string $value): string => 'SELECT '.$this->connection->quote($value), $this->values);
+        $rows = array_map(fn (string $value): string => \sprintf('SELECT %s', $this->connection->quote($value)), $this->values);
         $source = implode(' UNION ALL ', ["SELECT '' AS string FROM DUAL WHERE 1 = 0", ...$rows]);
 
-        $qb->select('string')->from('('.$source.')', 'fake');
+        $qb->select('string')->from(\sprintf('(%s)', $source), 'fake');
     }
 
     protected function resultClass(): string

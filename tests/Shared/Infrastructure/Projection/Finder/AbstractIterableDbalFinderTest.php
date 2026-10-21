@@ -67,6 +67,22 @@ final class AbstractIterableDbalFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
+    public function itCountsWhenFiltered(): void
+    {
+        // Given
+        $value = faker()->unique()->word();
+        $otherValue = faker()->unique()->word();
+        $finder = new FakeDbalFinder($this->connection, $this->hydrator, [$value, $otherValue]);
+        $finder->count();
+
+        // When
+        $count = \count($finder->valued($value));
+
+        // Then
+        self::assertSame(1, $count);
+    }
+
+    #[Test]
     public function itCachesCount(): void
     {
         // Given
