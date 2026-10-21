@@ -109,17 +109,4 @@ final class AbstractIterableDbalFinderTest extends AbstractIntegrationTestCase
         // Then
         self::assertSame(['gamma', 'beta', 'alpha'], array_map(static fn (DummyHydratable $result): ?string => $result->string, $results));
     }
-
-    #[Test]
-    public function itThrowsWhenDefaultSortEmpty(): void
-    {
-        // Given
-        $finder = new FakeDbalFinder($this->connection, $this->hydrator, ['alpha'], []); // @phpstan-ignore argument.type
-
-        // Then
-        $this->expectException(\InvalidArgumentException::class);
-
-        // When
-        $results = [...$finder];
-    }
 }

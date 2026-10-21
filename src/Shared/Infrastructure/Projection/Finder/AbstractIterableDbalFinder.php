@@ -103,10 +103,7 @@ abstract class AbstractIterableDbalFinder extends AbstractDbalFinder implements 
         $qb = parent::query();
         $qb->resetOrderBy();
 
-        $default = $this->defaultSort();
-        Assert::notEmpty($default, \sprintf('%s::defaultSort() must return at least one column.', static::class));
-
-        $sorts = $this->sorts + $default;
+        $sorts = $this->sorts + $this->defaultSort();
 
         foreach ($sorts as $column => $direction) {
             $qb->addOrderBy($column, $this->direction($direction));

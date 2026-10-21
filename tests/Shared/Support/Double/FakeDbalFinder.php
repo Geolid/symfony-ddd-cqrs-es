@@ -16,14 +16,12 @@ use Shared\Infrastructure\Projection\Finder\AbstractPaginatableDbalFinder;
 final class FakeDbalFinder extends AbstractPaginatableDbalFinder
 {
     /**
-     * @param list<string>                           $values
-     * @param non-empty-array<string, SortDirection> $defaultSort
+     * @param list<string> $values
      */
     public function __construct(
         Connection $connection,
         Hydrator $hydrator,
         public array $values,
-        private readonly array $defaultSort = ['string' => SortDirection::Ascending],
     ) {
         parent::__construct($connection, $hydrator);
     }
@@ -60,6 +58,6 @@ final class FakeDbalFinder extends AbstractPaginatableDbalFinder
 
     protected function defaultSort(): array
     {
-        return $this->defaultSort;
+        return ['string' => SortDirection::Ascending];
     }
 }
