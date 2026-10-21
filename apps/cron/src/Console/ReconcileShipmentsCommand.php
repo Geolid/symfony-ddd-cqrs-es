@@ -45,10 +45,8 @@ final class ReconcileShipmentsCommand
             $checked = 0;
 
             foreach ($stuck as $shipment) {
-                \assert(null !== $shipment->trackingNumber);
-
                 try {
-                    $this->shipmentReconciler->reconcile($shipment->id, $shipment->status, $shipment->trackingNumber);
+                    $this->shipmentReconciler->reconcile($shipment->id);
                     ++$checked;
                 } catch (ApplicationExceptionInterface $e) {
                     ++$failed;

@@ -4,34 +4,51 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipping\Application\Reconciliation;
 
+use Fulfilment\Shipping\Application\Carrier\CarrierGatewayInterface;
+use Fulfilment\Shipping\Application\Command\DeliverShipment\DeliverShipment;
+use Fulfilment\Shipping\Application\Command\DispatchShipment\DispatchShipment;
+use Fulfilment\Shipping\Application\Finder\Shipment\Exception\ShipmentResultNotFoundException;
+use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\Reconciliation\Exception\UnsupportedShipmentStatusException;
-use Fulfilment\Shipping\Application\ShipmentStatus;
+use Shared\Application\Command\CommandBusInterface;
+use Shared\Application\Command\CommandInterface;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 
 final readonly class ShipmentReconciler implements ShipmentReconcilerInterface
 {
-    /**
-     * @param iterable<ShipmentStatusReconcilerInterface> $reconcilers
-     */
-    public function __construct(private iterable $reconcilers)
-    {
+    public function __construct(
+        private ShipmentFinderInterface $shipmentFinder,
+        private CarrierGatewayInterface $carrierGateway,
+        private CommandBusInterface $commandBus,
+    ) {
     }
 
     /**
+     * @throws ShipmentResultNotFoundException
      * @throws UnsupportedShipmentStatusException
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    public function reconcile(string $id, ShipmentStatus $status, string $trackingNumber): void
+    public function reconcile(string $shipmentId): void
     {
-        foreach ($this->reconcilers as $reconciler) {
-            if ($reconciler->supports($status)) {
-                $reconciler->reconcile($id, $trackingNumber);
+        $shipment = $this->shipmentFinder->ofId($shipmentId);
 
-                return;
-            }
+        if (!$shipment->status->isManifested() && !$shipment->status->isDispatched()) {
+            throw UnsupportedShipmentStatusException::forStatus($shipment->status);
         }
 
-        throw UnsupportedShipmentStatusException::forStatus($status);
+        \assert(null !== $shipment->trackingNumber);
+
+        $carrierStatus = $this->carrierGateway->checkStatus($shipment->trackingNumber);
+
+        $command = match (true) {
+            $shipment->status->isManifested() && $carrierStatus->isDispatched() => new DispatchShipment($shipmentId),
+            $shipment->status->isDispatched() && $carrierStatus->isDelivered() => new DeliverShipment($shipmentId),
+            default => null,
+        };
+
+        if ($command instanceof CommandInterface) {
+            $this->commandBus->dispatch($command);
+        }
     }
 }

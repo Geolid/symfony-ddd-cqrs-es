@@ -11,6 +11,6 @@ final class UnsupportedPaymentStatusException extends \RuntimeException implemen
 {
     public static function forStatus(PaymentStatus $status): self
     {
-        return new self(\sprintf('No reconciler supports order payment status "%s".', $status->value));
+        return new self(\sprintf('No reconciliation applies to payment status "%s".', $status->value));
     }
 }

@@ -46,7 +46,7 @@ final class ReconcilePaymentsCommand
 
             foreach ($stuck as $payment) {
                 try {
-                    $this->paymentReconciler->reconcile($payment->id, $payment->status, $payment->reference);
+                    $this->paymentReconciler->reconcile($payment->id);
                     ++$checked;
                 } catch (ApplicationExceptionInterface $e) {
                     ++$failed;
