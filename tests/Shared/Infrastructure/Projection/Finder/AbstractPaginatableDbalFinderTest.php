@@ -41,7 +41,7 @@ final class AbstractPaginatableDbalFinderTest extends AbstractIntegrationTestCas
             expectedIds: ['alpha', 'beta', 'delta', 'epsilon', 'gamma'],
             pageSize: 2,
             askPage: static fn (int $page, int $itemsPerPage): PaginatorInterface => $finder->paginate($page, $itemsPerPage),
-            idsOf: self::idsOf(...),
+            idsOf: $this->idsOf(...),
             metadataOf: PaginationMetadata::fromPaginator(...),
         );
     }
@@ -55,7 +55,7 @@ final class AbstractPaginatableDbalFinderTest extends AbstractIntegrationTestCas
         // When
         $this->traverseEmptyPage(
             askPage: static fn (int $page, int $itemsPerPage): PaginatorInterface => $finder->paginate($page, $itemsPerPage),
-            idsOf: self::idsOf(...),
+            idsOf: $this->idsOf(...),
             metadataOf: PaginationMetadata::fromPaginator(...),
             itemsPerPage: 20,
         );
@@ -66,7 +66,7 @@ final class AbstractPaginatableDbalFinderTest extends AbstractIntegrationTestCas
      *
      * @return list<string>
      */
-    private static function idsOf(PaginatorInterface $paginator): array
+    private function idsOf(PaginatorInterface $paginator): array
     {
         return array_map(static fn (DummyHydratable $result): string => (string) $result->string, [...$paginator]);
     }
