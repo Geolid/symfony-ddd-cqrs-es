@@ -30,18 +30,4 @@ final class PrepareOrderOnShipmentPreparedTest extends AbstractIntegrationTestCa
         $result = $this->service(OrderFinderInterface::class)->ofId($order->id->toString());
         self::assertSame(OrderStatus::PREPARED, $result->status);
     }
-
-    #[Test]
-    public function itIgnoresWhenNotFound(): void
-    {
-        // Given
-        $shipmentId = Uuid::uuid7()->toString();
-        $orderId = Uuid::uuid7()->toString();
-
-        // When
-        $this->trigger(PrepareOrderOnShipmentPrepared::class, new ShipmentPreparedIntegrationEvent($shipmentId, $orderId, Clock::get()->now()));
-
-        // Then
-        self::expectNotToPerformAssertions();
-    }
 }

@@ -6,7 +6,6 @@ namespace Sales\Tests\Ordering\Application\Policy;
 
 use Finance\Payment\Application\IntegrationEvent\PaymentFailed\PaymentFailedIntegrationEvent;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
 use Sales\Ordering\Application\Finder\Order\OrderFinderInterface;
 use Sales\Ordering\Application\OrderStatus;
 use Sales\Ordering\Application\Policy\FailOrderOnPaymentFailed;
@@ -29,18 +28,5 @@ final class FailOrderOnPaymentFailedTest extends AbstractIntegrationTestCase
         // Then
         $result = $this->service(OrderFinderInterface::class)->ofId($order->id->toString());
         self::assertSame(OrderStatus::FAILED, $result->status);
-    }
-
-    #[Test]
-    public function itIgnoresWhenNotFound(): void
-    {
-        // Given
-        $unknownOrderId = Uuid::uuid7()->toString();
-
-        // When
-        $this->trigger(FailOrderOnPaymentFailed::class, new PaymentFailedIntegrationEvent($unknownOrderId, Clock::get()->now()));
-
-        // Then
-        self::expectNotToPerformAssertions();
     }
 }

@@ -28,10 +28,6 @@ final readonly class VoidPaymentHandler
     {
         $id = PaymentId::fromString($command->id);
 
-        if (!$this->repository->has($id)) {
-            return;
-        }
-
         $payment = $this->repository->load($id);
         $payment->void($this->clock->now());
         $this->repository->save($payment);
