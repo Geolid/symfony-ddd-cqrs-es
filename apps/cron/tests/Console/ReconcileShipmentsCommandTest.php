@@ -68,7 +68,7 @@ final class ReconcileShipmentsCommandTest extends AbstractCronTestCase
     }
 
     #[Test]
-    public function itReconcilesWhenGatewayFails(): void
+    public function itFailsToReconcile(): void
     {
         // Given
         $now = Clock::get()->now();
