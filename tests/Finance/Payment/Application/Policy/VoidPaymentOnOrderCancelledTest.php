@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Finance\Tests\Payment\Application\Policy;
 
+use Finance\Payment\Application\Finder\Payment\Exception\PaymentResultNotFoundException;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
 use Finance\Payment\Application\Policy\VoidPaymentOnOrderCancelled;
@@ -35,15 +36,15 @@ final class VoidPaymentOnOrderCancelledTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresWhenNoneExist(): void
+    public function itFailsWhenNotFound(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
 
+        // Then
+        $this->expectException(PaymentResultNotFoundException::class);
+
         // When
         $this->trigger(VoidPaymentOnOrderCancelled::class, new OrderCancelledIntegrationEvent($orderId, Uuid::uuid7()->toString(), Clock::get()->now()));
-
-        // Then
-        self::expectNotToPerformAssertions();
     }
 }
