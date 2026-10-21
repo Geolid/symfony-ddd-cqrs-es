@@ -4,15 +4,14 @@ declare(strict_types=1);
 
 namespace Shared\Tests\Infrastructure\EventStore;
 
-use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
-use Patchlevel\EventSourcing\Aggregate\AggregateRootAttributeBehaviour;
-use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
-use Patchlevel\EventSourcing\Attribute\Aggregate;
-use Patchlevel\EventSourcing\Attribute\Id;
+use Patchlevel\EventSourcing\Message\Message;
+use Patchlevel\EventSourcing\Store\Header\EventIdHeader;
 use Patchlevel\EventSourcing\Store\Header\PlayheadHeader;
 use Patchlevel\EventSourcing\Store\Header\RecordedOnHeader;
 use Patchlevel\EventSourcing\Store\Header\StreamNameHeader;
 use Patchlevel\EventSourcing\Store\InMemoryStore;
+use Patchlevel\EventSourcing\Store\Store;
+use Patchlevel\EventSourcing\Store\UniqueConstraintViolation;
 use PHPUnit\Framework\Attributes\Test;
 use PHPUnit\Framework\TestCase;
 use Shared\Application\IntegrationEvent\IntegrationEventInterface;
@@ -41,9 +40,12 @@ final class PatchlevelIntegrationEventPublisherTest extends TestCase
         // Given
         $now = Clock::get()->now();
         $event = new DummyIntegrationEvent();
+        $source = Message::create(new \stdClass())
+            ->withHeader(new StreamNameHeader('fake_aggregate-aggregate-id'))
+            ->withHeader(new EventIdHeader('source-event-id'));
 
         // When
-        $this->publisher->publish(FakeAggregate::class, 'aggregate-id', $event);
+        $this->publisher->publish($event, $source);
 
         // Then
         $messages = iterator_to_array($this->store->load());
@@ -58,25 +60,24 @@ final class PatchlevelIntegrationEventPublisherTest extends TestCase
     }
 
     #[Test]
-    public function itThrowsWhenNotStreamAware(): void
+    public function itIgnoresWhenAlreadyPublished(): void
     {
-        // Then
-        $this->expectException(\InvalidArgumentException::class);
+        // Given
+        $store = $this->createStub(Store::class);
+        $store->method('save')->willThrowException(new UniqueConstraintViolation());
+        $publisher = new PatchlevelIntegrationEventPublisher($store, Clock::get());
+        $source = Message::create(new \stdClass())
+            ->withHeader(new StreamNameHeader('fake_aggregate-aggregate-id'))
+            ->withHeader(new EventIdHeader('source-event-id'));
 
         // When
-        $this->publisher->publish(\stdClass::class, 'aggregate-id', new DummyIntegrationEvent());
+        $publisher->publish(new DummyIntegrationEvent(), $source);
+
+        // Then
+        self::expectNotToPerformAssertions();
     }
 }
 
 final class DummyIntegrationEvent implements IntegrationEventInterface
 {
-}
-
-#[Aggregate('fake_aggregate')]
-final class FakeAggregate implements AggregateRoot, AggregateRootMetadataAware
-{
-    use AggregateRootAttributeBehaviour;
-
-    #[Id]
-    private string $id = '';
 }

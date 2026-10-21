@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Crm\Customer\Application\IntegrationEvent\CustomerErasureCancelled;
 
-use Crm\Customer\Domain\Customer\Customer;
 use Crm\Customer\Domain\Customer\Event\CustomerErasureCancelled;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Patchlevel\EventSourcing\Message\Message;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 
@@ -18,11 +18,11 @@ final readonly class CustomerErasureCancelledPublisher
     }
 
     #[Subscribe(CustomerErasureCancelled::class)]
-    public function __invoke(CustomerErasureCancelled $event): void
+    public function __invoke(CustomerErasureCancelled $event, Message $message): void
     {
-        $this->publisher->publish(Customer::class, $event->id->toString(), new CustomerErasureCancelledIntegrationEvent(
+        $this->publisher->publish(new CustomerErasureCancelledIntegrationEvent(
             customerId: $event->id->toString(),
             cancelledAt: $event->cancelledAt,
-        ));
+        ), $message);
     }
 }

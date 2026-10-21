@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Crm\Customer\Application\IntegrationEvent\CustomerErased;
 
-use Crm\Customer\Domain\Customer\Customer;
 use Crm\Customer\Domain\Customer\Event\CustomerErased;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Patchlevel\EventSourcing\Message\Message;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 
@@ -18,11 +18,11 @@ final readonly class CustomerErasedPublisher
     }
 
     #[Subscribe(CustomerErased::class)]
-    public function __invoke(CustomerErased $event): void
+    public function __invoke(CustomerErased $event, Message $message): void
     {
-        $this->publisher->publish(Customer::class, $event->id->toString(), new CustomerErasedIntegrationEvent(
+        $this->publisher->publish(new CustomerErasedIntegrationEvent(
             customerId: $event->id->toString(),
             erasedAt: $event->erasedAt,
-        ));
+        ), $message);
     }
 }

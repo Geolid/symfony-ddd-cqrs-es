@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Crm\Customer\Application\IntegrationEvent\CustomerRegistered;
 
-use Crm\Customer\Domain\Customer\Customer;
 use Crm\Customer\Domain\Customer\Event\CustomerRegistered;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Patchlevel\EventSourcing\Message\Message;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 
@@ -18,11 +18,11 @@ final readonly class CustomerRegisteredPublisher
     }
 
     #[Subscribe(CustomerRegistered::class)]
-    public function __invoke(CustomerRegistered $event): void
+    public function __invoke(CustomerRegistered $event, Message $message): void
     {
-        $this->publisher->publish(Customer::class, $event->id->toString(), new CustomerRegisteredIntegrationEvent(
+        $this->publisher->publish(new CustomerRegisteredIntegrationEvent(
             customerId: $event->id->toString(),
             registeredAt: $event->registeredAt,
-        ));
+        ), $message);
     }
 }
