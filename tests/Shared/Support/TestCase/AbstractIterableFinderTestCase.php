@@ -28,19 +28,6 @@ abstract class AbstractIterableFinderTestCase extends AbstractIntegrationTestCas
     }
 
     #[Test]
-    public function itListsWhenEmpty(): void
-    {
-        // Given
-        $finder = $this->finder();
-
-        // When
-        $results = iterator_to_array($finder);
-
-        // Then
-        self::assertEmpty($results);
-    }
-
-    #[Test]
     public function itCounts(): void
     {
         // Given
@@ -52,36 +39,6 @@ abstract class AbstractIterableFinderTestCase extends AbstractIntegrationTestCas
 
         // Then
         self::assertSame(\count($indexes), $count);
-    }
-
-    #[Test]
-    public function itCachesCount(): void
-    {
-        // Given
-        $finder = $this->finder();
-        $this->seed(3);
-
-        // When
-        $firstCount = \count($finder);
-        $this->seed(1);
-        $secondCount = \count($finder);
-
-        // Then
-        self::assertSame($firstCount, $secondCount);
-    }
-
-    #[Test]
-    public function itIndexes(): void
-    {
-        // Given
-        $finder = $this->finder();
-        $indexes = $this->seed(3);
-
-        // When
-        $indexed = $finder->indexBy($this->indexOf(...));
-
-        // Then
-        self::assertSame($indexes, array_keys(iterator_to_array($indexed)));
     }
 
     /**

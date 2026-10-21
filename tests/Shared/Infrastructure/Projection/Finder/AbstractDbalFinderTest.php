@@ -1,0 +1,88 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Shared\Tests\Infrastructure\Projection\Finder;
+
+use Doctrine\DBAL\Connection;
+use Patchlevel\Hydrator\Hydrator;
+use PHPUnit\Framework\Attributes\Test;
+use Shared\Infrastructure\Projection\Finder\Exception\NonUniqueResultException;
+use Shared\Tests\Support\Double\DummyHydratable;
+use Shared\Tests\Support\Double\FakeDbalFinder;
+use Support\TestCase\AbstractIntegrationTestCase;
+
+use function Zenstruck\Foundry\faker;
+
+final class AbstractDbalFinderTest extends AbstractIntegrationTestCase
+{
+    private Connection $connection;
+    private Hydrator $hydrator;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+
+        $this->connection = $this->service(Connection::class);
+        $this->hydrator = $this->serviceAs('shared.hydration.hydrator', Hydrator::class);
+    }
+
+    #[Test]
+    public function itFinds(): void
+    {
+        // Given
+        $value = faker()->unique()->word();
+        $otherValue = faker()->unique()->word();
+        $finder = new FakeDbalFinder($this->connection, $this->hydrator, [$otherValue, $value]);
+
+        // When
+        $result = $finder->ofValue($value);
+
+        // Then
+        self::assertSame($value, $result?->string);
+    }
+
+    #[Test]
+    public function itFindsNothing(): void
+    {
+        // Given
+        $value = faker()->unique()->word();
+        $unknownValue = faker()->unique()->word();
+        $finder = new FakeDbalFinder($this->connection, $this->hydrator, [$value]);
+
+        // When
+        $result = $finder->ofValue($unknownValue);
+
+        // Then
+        self::assertNull($result);
+    }
+
+    #[Test]
+    public function itThrowsWhenNotUnique(): void
+    {
+        // Given
+        $twin = faker()->unique()->word();
+        $finder = new FakeDbalFinder($this->connection, $this->hydrator, [$twin, $twin]);
+
+        // Then
+        $this->expectException(NonUniqueResultException::class);
+
+        // When
+        $finder->ofValue($twin);
+    }
+
+    #[Test]
+    public function itFiltersByValue(): void
+    {
+        // Given
+        $value = faker()->unique()->word();
+        $otherValue = faker()->unique()->word();
+        $finder = new FakeDbalFinder($this->connection, $this->hydrator, [$otherValue, $value, $value]);
+
+        // When
+        $results = [...$finder->byValue($value)];
+
+        // Then
+        self::assertSame([$value, $value], array_map(static fn (DummyHydratable $result): ?string => $result->string, $results));
+    }
+}

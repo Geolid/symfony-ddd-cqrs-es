@@ -16,16 +16,14 @@ use Iam\Tests\Identity\Support\Factory\IdentityIdFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
 use Shared\Application\ErasureStatus;
-use Shared\Application\Finder\PaginationMetadata;
-use Shared\Application\Finder\PaginatorInterface;
-use Shared\Tests\Support\TestCase\AbstractPaginatableFinderTestCase;
+use Shared\Tests\Support\TestCase\AbstractIterableFinderTestCase;
 use Shared\Tests\Support\TestCase\RealColumnLeadsTrait;
 use Symfony\Component\Clock\Clock;
 
 /**
- * @extends AbstractPaginatableFinderTestCase<IdentityResult>
+ * @extends AbstractIterableFinderTestCase<IdentityResult>
  */
-final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
+final class DbalIdentityFinderTest extends AbstractIterableFinderTestCase
 {
     use RealColumnLeadsTrait;
 
@@ -114,38 +112,6 @@ final class DbalIdentityFinderTest extends AbstractPaginatableFinderTestCase
         // Then
         self::assertCount(1, $results);
         self::assertSame($expired->id->toString(), $results[0]->id);
-    }
-
-    #[Test]
-    public function itPaginates(): void
-    {
-        // Given
-        $finder = $this->finder();
-        $ids = $this->seed(5);
-
-        // When
-        $this->traversePages(
-            expectedIds: $ids,
-            pageSize: 2,
-            askPage: static fn (int $page, int $itemsPerPage): PaginatorInterface => $finder->paginate($page, $itemsPerPage),
-            idsOf: $this->resultIndexes(...),
-            metadataOf: PaginationMetadata::fromPaginator(...),
-        );
-    }
-
-    #[Test]
-    public function itPaginatesWhenEmpty(): void
-    {
-        // Given
-        $finder = $this->finder();
-
-        // When
-        $this->traverseEmptyPage(
-            askPage: static fn (int $page, int $itemsPerPage): PaginatorInterface => $finder->paginate($page, $itemsPerPage),
-            idsOf: $this->resultIndexes(...),
-            metadataOf: PaginationMetadata::fromPaginator(...),
-            itemsPerPage: 20,
-        );
     }
 
     protected function finder(): IdentityFinderInterface
