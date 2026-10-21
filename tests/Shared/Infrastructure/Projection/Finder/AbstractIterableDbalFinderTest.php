@@ -37,7 +37,7 @@ final class AbstractIterableDbalFinderTest extends AbstractIntegrationTestCase
         $results = [...$finder];
 
         // Then
-        self::assertSame(['alpha', 'beta', 'gamma'], array_map(static fn (DummyHydratable $result): ?string => $result->string, $results));
+        self::assertSame(['alpha', 'beta', 'gamma'], $this->valuesOf($results));
     }
 
     #[Test]
@@ -125,6 +125,16 @@ final class AbstractIterableDbalFinderTest extends AbstractIntegrationTestCase
         $results = [...$finder->sortedBy(SortDirection::Descending)];
 
         // Then
-        self::assertSame(['gamma', 'beta', 'alpha'], array_map(static fn (DummyHydratable $result): ?string => $result->string, $results));
+        self::assertSame(['gamma', 'beta', 'alpha'], $this->valuesOf($results));
+    }
+
+    /**
+     * @param list<DummyHydratable> $results
+     *
+     * @return list<string|null>
+     */
+    private function valuesOf(array $results): array
+    {
+        return array_map(static fn (DummyHydratable $result): ?string => $result->string, $results);
     }
 }
