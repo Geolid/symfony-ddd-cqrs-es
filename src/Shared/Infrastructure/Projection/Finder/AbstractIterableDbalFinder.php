@@ -6,7 +6,6 @@ namespace Shared\Infrastructure\Projection\Finder;
 
 use Doctrine\DBAL\Query\QueryBuilder;
 use Shared\Application\Finder\SortDirection;
-use Webmozart\Assert\Assert;
 
 /**
  * @template TResult of object
@@ -57,12 +56,7 @@ abstract class AbstractIterableDbalFinder extends AbstractDbalFinder implements 
             $qb->getParameterTypes(),
         )->fetchOne();
 
-        /*
-         * A real `COUNT(*)` never returns negative; no caller can exercise this assertion's failure branch.
-         *
-         * @infection-ignore-all
-         */
-        Assert::natural($result);
+        \assert(\is_int($result) && $result >= 0);
 
         return $this->cachedTotal = $result;
     }
