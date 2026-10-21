@@ -10,6 +10,7 @@ use Finance\Payment\Domain\Event\PaymentCaptured;
 use Finance\Payment\Domain\Event\PaymentFailed;
 use Finance\Payment\Domain\Event\PaymentRequested;
 use Finance\Payment\Domain\Event\PaymentVoided;
+use Finance\Payment\Domain\Exception\PaymentInvalidStateException;
 use Finance\Payment\Domain\ValueObject\PaymentId;
 use Finance\Payment\Domain\ValueObject\PaymentReference;
 use Finance\Payment\Domain\ValueObject\PaymentState;
@@ -94,10 +95,17 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    /**
+     * @throws PaymentInvalidStateException
+     */
     public function fail(string $orderId, \DateTimeImmutable $failedAt): void
     {
-        if (!$this->canTransitionOperationalTo(PaymentState::FAILED)) {
+        if ($this->operationalState->isFailed()) {
             return;
+        }
+
+        if (!$this->canTransitionOperationalTo(PaymentState::FAILED)) {
+            throw PaymentInvalidStateException::cannotFail($this->id, $this->operationalState);
         }
 
         $this->recordThat(new PaymentFailed(
@@ -107,10 +115,17 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    /**
+     * @throws PaymentInvalidStateException
+     */
     public function capture(string $orderId, \DateTimeImmutable $capturedAt): void
     {
-        if (!$this->canTransitionOperationalTo(PaymentState::CAPTURED)) {
+        if ($this->operationalState->isCaptured()) {
             return;
+        }
+
+        if (!$this->canTransitionOperationalTo(PaymentState::CAPTURED)) {
+            throw PaymentInvalidStateException::cannotCapture($this->id, $this->operationalState);
         }
 
         $this->recordThat(new PaymentCaptured(

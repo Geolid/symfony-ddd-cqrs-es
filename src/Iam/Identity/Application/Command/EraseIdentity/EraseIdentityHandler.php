@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Iam\Identity\Application\Command\EraseIdentity;
 
 use Iam\Identity\Domain\Exception\IdentityAlreadyExistsException;
+use Iam\Identity\Domain\Exception\IdentityInvalidStateException;
 use Iam\Identity\Domain\Exception\IdentityNotFoundException;
 use Iam\Identity\Domain\Repository\IdentityRepositoryInterface;
 use Iam\Identity\Domain\ValueObject\IdentityId;
@@ -23,6 +24,7 @@ final readonly class EraseIdentityHandler
     /**
      * @throws IdentityNotFoundException
      * @throws IdentityAlreadyExistsException
+     * @throws IdentityInvalidStateException
      */
     public function __invoke(EraseIdentity $command): void
     {

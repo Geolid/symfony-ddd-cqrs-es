@@ -7,7 +7,7 @@ namespace Sales\Ordering\Application\Command\CancelOrder;
 use Psr\Clock\ClockInterface;
 use Sales\Ordering\Domain\Order\Exception\OrderAlreadyExistsException;
 use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherCustomerException;
-use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
+use Sales\Ordering\Domain\Order\Exception\OrderInvalidStateException;
 use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
 use Sales\Ordering\Domain\Order\Repository\OrderRepositoryInterface;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
@@ -25,7 +25,7 @@ final readonly class CancelOrderHandler
     /**
      * @throws OrderNotFoundException
      * @throws OrderBelongsToAnotherCustomerException
-     * @throws OrderNotCancellableException
+     * @throws OrderInvalidStateException
      * @throws OrderAlreadyExistsException
      */
     public function __invoke(CancelOrder $command): void

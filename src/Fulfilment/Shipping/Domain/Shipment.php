@@ -14,7 +14,7 @@ use Fulfilment\Shipping\Domain\Event\ShipmentManifested;
 use Fulfilment\Shipping\Domain\Event\ShipmentPrepared;
 use Fulfilment\Shipping\Domain\Event\ShipmentRequested;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
-use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
+use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidStateException;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentState;
 use Fulfilment\Shipping\Domain\ValueObject\TrackingNumber;
@@ -25,7 +25,6 @@ use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
 use Shared\Domain\Specification\CanTransitionToSpecification;
-use Shared\Domain\Specification\HasReachedSpecification;
 use Shared\Domain\ValueObject\ErasureState;
 use Shared\Domain\ValueObject\PostalAddress;
 
@@ -38,7 +37,8 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     private const array OPERATIONAL_TRANSITIONS = [
         ShipmentState::REQUESTED->value => [ShipmentState::PREPARED, ShipmentState::CANCELLED],
         ShipmentState::PREPARED->value => [ShipmentState::MANIFESTED, ShipmentState::CANCELLED],
-        ShipmentState::MANIFESTED->value => [ShipmentState::DISPATCHED],
+        // DELIVERED straight from MANIFESTED tolerates a missed carrier transit scan.
+        ShipmentState::MANIFESTED->value => [ShipmentState::DISPATCHED, ShipmentState::DELIVERED],
         ShipmentState::DISPATCHED->value => [ShipmentState::DELIVERED],
         ShipmentState::DELIVERED->value => [],
         ShipmentState::CANCELLED->value => [],
@@ -105,7 +105,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
     /**
      * @throws ShipmentAlreadyTrackedException
-     * @throws ShipmentInvalidTransitionException
+     * @throws ShipmentInvalidStateException
      */
     public function manifest(TrackingNumber $trackingNumber, \DateTimeImmutable $manifestedAt): void
     {
@@ -120,7 +120,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
         }
 
         if (!$this->canTransitionOperationalTo(ShipmentState::MANIFESTED)) {
-            throw ShipmentInvalidTransitionException::cannotManifest($this->id, $this->operationalState);
+            throw ShipmentInvalidStateException::cannotManifest($this->id, $this->operationalState);
         }
 
         $this->recordThat(new ShipmentManifested(
@@ -131,16 +131,16 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws ShipmentInvalidTransitionException
+     * @throws ShipmentInvalidStateException
      */
     public function dispatch(\DateTimeImmutable $dispatchedAt): void
     {
-        if ($this->hasReachedOperational(ShipmentState::DISPATCHED)) {
+        if ($this->operationalState->isDispatched()) {
             return;
         }
 
         if (!$this->canTransitionOperationalTo(ShipmentState::DISPATCHED)) {
-            throw ShipmentInvalidTransitionException::cannotDispatch($this->id, $this->operationalState);
+            throw ShipmentInvalidStateException::cannotDispatch($this->id, $this->operationalState);
         }
 
         $this->recordThat(new ShipmentDispatched(
@@ -150,17 +150,16 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     }
 
     /**
-     * @throws ShipmentInvalidTransitionException
+     * @throws ShipmentInvalidStateException
      */
     public function deliver(\DateTimeImmutable $deliveredAt): void
     {
-        if ($this->hasReachedOperational(ShipmentState::DELIVERED)) {
+        if ($this->operationalState->isDelivered()) {
             return;
         }
 
-        // Tolerates skipping DISPATCHED — a missed carrier transit scan still delivers.
-        if (!$this->hasReachedOperational(ShipmentState::MANIFESTED)) {
-            throw ShipmentInvalidTransitionException::cannotDeliver($this->id, $this->operationalState);
+        if (!$this->canTransitionOperationalTo(ShipmentState::DELIVERED)) {
+            throw ShipmentInvalidStateException::cannotDeliver($this->id, $this->operationalState);
         }
 
         $this->recordThat(new ShipmentDelivered(
@@ -173,7 +172,7 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
 
     public function cancel(\DateTimeImmutable $cancelledAt): void
     {
-        if ($this->hasReachedOperational(ShipmentState::CANCELLED)) {
+        if ($this->operationalState->isCancelled()) {
             return;
         }
 
@@ -229,11 +228,6 @@ final class Shipment implements AggregateRoot, AggregateRootMetadataAware
     private function canTransitionOperationalTo(ShipmentState $target): bool
     {
         return new CanTransitionToSpecification(self::OPERATIONAL_TRANSITIONS, $target)->isSatisfiedBy($this->operationalState);
-    }
-
-    private function hasReachedOperational(ShipmentState $target): bool
-    {
-        return new HasReachedSpecification(self::OPERATIONAL_TRANSITIONS, $target)->isSatisfiedBy($this->operationalState);
     }
 
     private function canTransitionErasureTo(ErasureState $target): bool

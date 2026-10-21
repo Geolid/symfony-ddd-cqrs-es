@@ -19,6 +19,7 @@ use Iam\Identity\Domain\Exception\ConfirmationRequestedTooRecentlyException;
 use Iam\Identity\Domain\Exception\EmailChangeRequestedTooRecentlyException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyConfirmedException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
+use Iam\Identity\Domain\Exception\IdentityInvalidStateException;
 use Iam\Identity\Domain\Exception\InvalidConfirmationCodeException;
 use Iam\Identity\Domain\Exception\InvalidEmailChangeCodeException;
 use Iam\Identity\Domain\Service\PendingIdentityExpiryCalculator;
@@ -282,10 +283,17 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    /**
+     * @throws IdentityInvalidStateException
+     */
     public function erase(\DateTimeImmutable $erasedAt): void
     {
-        if (!$this->canTransitionErasureTo(ErasureState::ERASED)) {
+        if ($this->erasureState->isErased()) {
             return;
+        }
+
+        if (!$this->canTransitionErasureTo(ErasureState::ERASED)) {
+            throw IdentityInvalidStateException::cannotErase($this->id, $this->erasureState);
         }
 
         $this->recordThat(new IdentityErased(

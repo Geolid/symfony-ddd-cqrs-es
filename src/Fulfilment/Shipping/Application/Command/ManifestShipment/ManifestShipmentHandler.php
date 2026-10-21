@@ -8,7 +8,7 @@ use Fulfilment\Shipping\Application\Command\ManifestShipment\Exception\ShipmentT
 use Fulfilment\Shipping\Application\ShippingUniqueKey;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyExistsException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
-use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
+use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidStateException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipping\Domain\Repository\ShipmentRepositoryInterface;
 use Fulfilment\Shipping\Domain\ValueObject\ShipmentId;
@@ -32,7 +32,7 @@ final readonly class ManifestShipmentHandler
     /**
      * @throws ShipmentNotFoundException
      * @throws ShipmentAlreadyTrackedException
-     * @throws ShipmentInvalidTransitionException
+     * @throws ShipmentInvalidStateException
      * @throws ShipmentTrackingNumberAlreadyInUseException
      * @throws ShipmentAlreadyExistsException
      */

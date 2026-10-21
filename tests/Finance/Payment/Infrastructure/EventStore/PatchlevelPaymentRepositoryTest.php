@@ -46,9 +46,9 @@ final class PatchlevelPaymentRepositoryTest extends AbstractIntegrationTestCase
     public static function provideLifecycle(): iterable
     {
         yield 'captured' => [PaymentFactory::new()->authorized()->captured()];
-        yield 'failed' => [PaymentFactory::new()->failed()];
+        yield 'failed' => [PaymentFactory::new()->authorized()->failed()];
         yield 'abandoned' => [PaymentFactory::new()->abandoned()];
-        yield 'voided' => [PaymentFactory::new()->abandoned()->voided()];
+        yield 'voided' => [PaymentFactory::new()->authorized()->voided()];
     }
 
     #[Test]

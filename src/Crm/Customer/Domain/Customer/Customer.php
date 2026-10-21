@@ -10,6 +10,7 @@ use Crm\Customer\Domain\Customer\Event\CustomerErasureCancelled;
 use Crm\Customer\Domain\Customer\Event\CustomerErasureRequested;
 use Crm\Customer\Domain\Customer\Event\CustomerRegistered;
 use Crm\Customer\Domain\Customer\Event\CustomerShippingAddressDefined;
+use Crm\Customer\Domain\Customer\Exception\CustomerInvalidStateException;
 use Crm\Customer\Domain\Customer\ValueObject\CustomerId;
 use Patchlevel\EventSourcing\Aggregate\AggregateRoot;
 use Patchlevel\EventSourcing\Aggregate\AggregateRootAttributeBehaviour;
@@ -105,10 +106,17 @@ final class Customer implements AggregateRoot, AggregateRootMetadataAware
         ));
     }
 
+    /**
+     * @throws CustomerInvalidStateException
+     */
     public function erase(\DateTimeImmutable $erasedAt): void
     {
-        if (!$this->canTransitionErasureTo(ErasureState::ERASED)) {
+        if ($this->erasureState->isErased()) {
             return;
+        }
+
+        if (!$this->canTransitionErasureTo(ErasureState::ERASED)) {
+            throw CustomerInvalidStateException::cannotErase($this->id, $this->erasureState);
         }
 
         $this->recordThat(new CustomerErased(

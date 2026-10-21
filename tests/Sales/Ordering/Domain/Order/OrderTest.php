@@ -18,8 +18,7 @@ use Sales\Ordering\Domain\Order\Event\OrderFailed;
 use Sales\Ordering\Domain\Order\Event\OrderPaid;
 use Sales\Ordering\Domain\Order\Event\OrderPrepared;
 use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherCustomerException;
-use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
-use Sales\Ordering\Domain\Order\Exception\OrderOutOfSequenceException;
+use Sales\Ordering\Domain\Order\Exception\OrderInvalidStateException;
 use Sales\Ordering\Domain\Order\Exception\OrderWithoutLineException;
 use Sales\Ordering\Domain\Order\Order;
 use Sales\Ordering\Domain\Order\ValueObject\OrderId;
@@ -149,12 +148,12 @@ final class OrderTest extends AggregateRootTestCase
     }
 
     #[Test]
-    public function itDoesNotPayWhenCancelled(): void
+    public function itCannotPayWhenCancelled(): void
     {
         $this
             ->given($this->confirmed(), $this->cancelled())
             ->when(fn (Order $order) => $order->pay($this->paidAt))
-            ->then();
+            ->expectsException(OrderInvalidStateException::class);
     }
 
     #[Test]
@@ -163,7 +162,7 @@ final class OrderTest extends AggregateRootTestCase
         $this
             ->given($this->confirmed())
             ->when(fn (Order $order) => $order->pay($this->paidAt))
-            ->expectsException(OrderOutOfSequenceException::class);
+            ->expectsException(OrderInvalidStateException::class);
     }
 
     #[Test]
@@ -202,7 +201,7 @@ final class OrderTest extends AggregateRootTestCase
         $this
             ->given($this->confirmed(), $this->prepared())
             ->when(fn (Order $order) => $order->cancel($this->customerId, $this->cancelledAt))
-            ->expectsException(OrderNotCancellableException::class);
+            ->expectsException(OrderInvalidStateException::class);
     }
 
     #[Test]
@@ -211,7 +210,7 @@ final class OrderTest extends AggregateRootTestCase
         $this
             ->given($this->confirmed(), $this->prepared(), $this->paid())
             ->when(fn (Order $order) => $order->cancel($this->customerId, $this->cancelledAt))
-            ->expectsException(OrderNotCancellableException::class);
+            ->expectsException(OrderInvalidStateException::class);
     }
 
     #[Test]
@@ -277,7 +276,7 @@ final class OrderTest extends AggregateRootTestCase
         $this
             ->given($this->confirmed(), $this->prepared())
             ->when(fn (Order $order) => $order->dispatch($this->dispatchedAt))
-            ->expectsException(OrderOutOfSequenceException::class);
+            ->expectsException(OrderInvalidStateException::class);
     }
 
     #[Test]
@@ -295,7 +294,7 @@ final class OrderTest extends AggregateRootTestCase
         $this
             ->given($this->confirmed(), $this->prepared(), $this->paid())
             ->when(fn (Order $order) => $order->deliver($this->deliveredAt))
-            ->expectsException(OrderOutOfSequenceException::class);
+            ->expectsException(OrderInvalidStateException::class);
     }
 
     #[Test]

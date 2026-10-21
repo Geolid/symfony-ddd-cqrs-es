@@ -6,6 +6,7 @@ use Catalog\Listing\Application\Command\PublishProduct\Exception\ProductLabelAlr
 use Catalog\Listing\Domain\Exception\ProductAlreadyDelistedException;
 use Compliance\Erasing\Application\Command\RequestErasure\Exception\ErasureAlreadyClaimedException;
 use Compliance\Erasing\Domain\Exception\ErasureRequestedByAnotherIdentityException;
+use Crm\Customer\Domain\Customer\Exception\CustomerInvalidStateException;
 use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentAlreadyClaimedException;
 use Finance\Payment\Application\Command\RequestPayment\Exception\PaymentReferenceAlreadyInUseException;
 use Finance\Payment\Application\PSP\Exception\PaymentGatewayException;
@@ -15,13 +16,14 @@ use Finance\Payment\Application\Requesting\Exception\PaymentRequestCurrencyMisma
 use Finance\Payment\Application\Requesting\Exception\PaymentRequestInProgressException;
 use Finance\Payment\Application\Requesting\Exception\PaymentRequestInvalidUrlException;
 use Finance\Payment\Application\Requesting\Exception\PaymentRequestWithoutLineException;
+use Finance\Payment\Domain\Exception\PaymentInvalidStateException;
 use Fulfilment\Shipping\Application\Carrier\Exception\CarrierGatewayException;
 use Fulfilment\Shipping\Application\Carrier\Exception\CarrierTransientFailureException;
 use Fulfilment\Shipping\Application\Command\ManifestShipment\Exception\ShipmentTrackingNumberAlreadyInUseException;
 use Fulfilment\Shipping\Application\Manifesting\Exception\ManifestDeniedException;
 use Fulfilment\Shipping\Application\Manifesting\Exception\ManifestPostponedException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyTrackedException;
-use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidTransitionException;
+use Fulfilment\Shipping\Domain\Exception\ShipmentInvalidStateException;
 use Iam\Authentication\Application\BackupCodeRegeneration\Exception\BackupCodeCredentialNotGeneratedException;
 use Iam\Authentication\Application\BreachDatabase\Exception\CompromisedPasswordException;
 use Iam\Authentication\Application\Command\EnrollTotp\Exception\TotpAlreadyEnrolledException;
@@ -36,8 +38,9 @@ use Iam\Identity\Application\Command\RegisterIdentity\Exception\IdentityEmailAlr
 use Iam\Identity\Application\Command\RequestEmailChange\Exception\IdentityEmailAlreadyInUseException as RequestEmailChangeIdentityEmailAlreadyInUseException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyConfirmedException;
 use Iam\Identity\Domain\Exception\IdentityAlreadyErasedException;
+use Iam\Identity\Domain\Exception\IdentityInvalidStateException;
 use Sales\Ordering\Domain\Order\Exception\OrderBelongsToAnotherCustomerException;
-use Sales\Ordering\Domain\Order\Exception\OrderNotCancellableException;
+use Sales\Ordering\Domain\Order\Exception\OrderInvalidStateException;
 use Shared\Application\Exception\ApplicationExceptionInterface;
 use Shared\Application\Finder\Exception\ResultNotFoundException;
 use Shared\Application\Mailer\Exception\MailerException;
@@ -69,9 +72,12 @@ return static function (ContainerConfigurator $container): void {
             ErasureAlreadyClaimedException::class => ['log_level' => 'info', 'status_code' => 409],
             ErasureRequestedByAnotherIdentityException::class => ['log_level' => 'info', 'status_code' => 403],
 
+            // Crm
+            CustomerInvalidStateException::class => ['log_level' => 'info', 'status_code' => 409],
+
             // Fulfilment
             ShipmentAlreadyTrackedException::class => ['log_level' => 'info', 'status_code' => 409],
-            ShipmentInvalidTransitionException::class => ['log_level' => 'info', 'status_code' => 409],
+            ShipmentInvalidStateException::class => ['log_level' => 'info', 'status_code' => 409],
             ShipmentTrackingNumberAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
             ManifestDeniedException::class => ['log_level' => 'info', 'status_code' => 409],
             ManifestPostponedException::class => ['log_level' => 'info', 'status_code' => 503],
@@ -86,6 +92,7 @@ return static function (ContainerConfigurator $container): void {
             RequestEmailChangeIdentityEmailAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
             ChangeEmailIdentityEmailAlreadyInUseException::class => ['log_level' => 'info', 'status_code' => 409],
             IdentityNotAuthenticatableException::class => ['log_level' => 'info', 'status_code' => 409],
+            IdentityInvalidStateException::class => ['log_level' => 'info', 'status_code' => 409],
             TotpAlreadyEnrolledException::class => ['log_level' => 'info', 'status_code' => 409],
             ApiKeyCredentialRevokedException::class => ['log_level' => 'info', 'status_code' => 409],
             ApiKeyCredentialOwnedByAnotherIdentityException::class => ['log_level' => 'info', 'status_code' => 403],
@@ -104,7 +111,7 @@ return static function (ContainerConfigurator $container): void {
             CheckoutCustomerAddressesNotCompletedException::class => ['log_level' => 'info', 'status_code' => 422],
             CheckoutCustomerErasureRequestedException::class => ['log_level' => 'info', 'status_code' => 422],
             OrderBelongsToAnotherCustomerException::class => ['log_level' => 'info', 'status_code' => 403],
-            OrderNotCancellableException::class => ['log_level' => 'info', 'status_code' => 409],
+            OrderInvalidStateException::class => ['log_level' => 'info', 'status_code' => 409],
 
             // Finance
             PaymentRequestInProgressException::class => ['log_level' => 'info', 'status_code' => 503],
@@ -116,6 +123,7 @@ return static function (ContainerConfigurator $container): void {
             PaymentAlreadyClaimedException::class => ['log_level' => 'info', 'status_code' => 409],
             PaymentTransientFailureException::class => ['log_level' => 'error', 'status_code' => 503],
             PaymentGatewayException::class => ['log_level' => 'error', 'status_code' => 502],
+            PaymentInvalidStateException::class => ['log_level' => 'info', 'status_code' => 409],
 
             // Shared
             AggregateNotFoundException::class => ['log_level' => 'debug', 'status_code' => 404],

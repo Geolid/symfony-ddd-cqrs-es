@@ -11,6 +11,38 @@ use Sales\Ordering\Domain\Order\ValueObject\OrderState;
 final class OrderStateTest extends TestCase
 {
     #[Test]
+    public function itIsConfirmed(): void
+    {
+        foreach (OrderState::cases() as $state) {
+            self::assertSame(OrderState::CONFIRMED === $state, $state->isConfirmed(), $state->value);
+        }
+    }
+
+    #[Test]
+    public function itIsPrepared(): void
+    {
+        foreach (OrderState::cases() as $state) {
+            self::assertSame(OrderState::PREPARED === $state, $state->isPrepared(), $state->value);
+        }
+    }
+
+    #[Test]
+    public function itIsPaid(): void
+    {
+        foreach (OrderState::cases() as $state) {
+            self::assertSame(OrderState::PAID === $state, $state->isPaid(), $state->value);
+        }
+    }
+
+    #[Test]
+    public function itIsDispatched(): void
+    {
+        foreach (OrderState::cases() as $state) {
+            self::assertSame(OrderState::DISPATCHED === $state, $state->isDispatched(), $state->value);
+        }
+    }
+
+    #[Test]
     public function itIsDelivered(): void
     {
         foreach (OrderState::cases() as $state) {
