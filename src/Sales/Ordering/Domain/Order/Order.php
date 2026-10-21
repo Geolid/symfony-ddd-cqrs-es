@@ -27,10 +27,10 @@ use Sales\Ordering\Domain\Order\ValueObject\OrderId;
 use Sales\Ordering\Domain\Order\ValueObject\OrderItem;
 use Sales\Ordering\Domain\Order\ValueObject\OrderLineId;
 use Sales\Ordering\Domain\Order\ValueObject\OrderState;
+use Shared\Domain\Specification\CanTransitionToSpecification;
 use Shared\Domain\ValueObject\Currency;
 use Shared\Domain\ValueObject\ErasureState;
 use Shared\Domain\ValueObject\PostalAddress;
-use Shared\Domain\ValueObject\StateTransitions;
 use Shared\Domain\ValueObject\TaxedAmount;
 
 #[Aggregate('sales.ordering.order')]
@@ -267,12 +267,12 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
     private function canTransitionOperationalTo(OrderState $target): bool
     {
-        return StateTransitions::of(self::OPERATIONAL_TRANSITIONS)->can($this->operationalState, $target);
+        return new CanTransitionToSpecification(self::OPERATIONAL_TRANSITIONS, $target)->isSatisfiedBy($this->operationalState);
     }
 
     private function canTransitionErasureTo(ErasureState $target): bool
     {
-        return StateTransitions::of(self::ERASURE_TRANSITIONS)->can($this->erasureState, $target);
+        return new CanTransitionToSpecification(self::ERASURE_TRANSITIONS, $target)->isSatisfiedBy($this->erasureState);
     }
 
     #[Apply]

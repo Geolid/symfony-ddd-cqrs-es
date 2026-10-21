@@ -10,9 +10,9 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
+use Shared\Domain\Specification\CanTransitionToSpecification;
 use Shared\Domain\ValueObject\Currency;
 use Shared\Domain\ValueObject\PostalAddress;
-use Shared\Domain\ValueObject\StateTransitions;
 use Shared\Domain\ValueObject\TaxedAmount;
 use Shopping\Checkout\Domain\Event\CheckoutSessionCompleted;
 use Shopping\Checkout\Domain\Event\CheckoutSessionExpired;
@@ -150,7 +150,7 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
 
     private function canTransitionOperationalTo(CheckoutSessionState $target): bool
     {
-        return StateTransitions::of(self::OPERATIONAL_TRANSITIONS)->can($this->operationalState, $target);
+        return new CanTransitionToSpecification(self::OPERATIONAL_TRANSITIONS, $target)->isSatisfiedBy($this->operationalState);
     }
 
     /**

@@ -40,9 +40,9 @@ use Shared\Domain\Exception\VerificationCodeAttemptsExceededException;
 use Shared\Domain\Exception\VerificationCodeNotFoundException;
 use Shared\Domain\Service\CodeChallengerInterface;
 use Shared\Domain\Service\CooldownCalculator;
+use Shared\Domain\Specification\CanTransitionToSpecification;
 use Shared\Domain\Specification\CooldownElapsedSpecification;
 use Shared\Domain\ValueObject\ErasureState;
-use Shared\Domain\ValueObject\StateTransitions;
 use Shared\Domain\ValueObject\VerificationCodeKey;
 
 #[Aggregate('iam.identity.identity')]
@@ -324,7 +324,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
 
     private function canTransitionErasureTo(ErasureState $target): bool
     {
-        return StateTransitions::of(self::ERASURE_TRANSITIONS)->can($this->erasureState, $target);
+        return new CanTransitionToSpecification(self::ERASURE_TRANSITIONS, $target)->isSatisfiedBy($this->erasureState);
     }
 
     #[Apply]

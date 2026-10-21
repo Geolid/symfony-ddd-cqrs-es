@@ -20,8 +20,8 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
+use Shared\Domain\Specification\CanTransitionToSpecification;
 use Shared\Domain\ValueObject\Money;
-use Shared\Domain\ValueObject\StateTransitions;
 
 #[Aggregate('finance.payment.payment')]
 final class Payment implements AggregateRoot, AggregateRootMetadataAware
@@ -163,7 +163,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
 
     private function canTransitionOperationalTo(PaymentState $target): bool
     {
-        return StateTransitions::of(self::OPERATIONAL_TRANSITIONS)->can($this->operationalState, $target);
+        return new CanTransitionToSpecification(self::OPERATIONAL_TRANSITIONS, $target)->isSatisfiedBy($this->operationalState);
     }
 
     #[Apply]

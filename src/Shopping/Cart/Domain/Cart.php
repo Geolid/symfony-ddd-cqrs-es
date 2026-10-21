@@ -10,8 +10,8 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Attribute\Aggregate;
 use Patchlevel\EventSourcing\Attribute\Apply;
 use Patchlevel\EventSourcing\Attribute\Id;
+use Shared\Domain\Specification\CanTransitionToSpecification;
 use Shared\Domain\ValueObject\Quantity;
-use Shared\Domain\ValueObject\StateTransitions;
 use Shopping\Cart\Domain\Entity\CartLine;
 use Shopping\Cart\Domain\Event\CartProductAdded;
 use Shopping\Cart\Domain\Event\CartProductQuantityChanged;
@@ -159,7 +159,7 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
 
     private function canTransitionOperationalTo(CartState $target): bool
     {
-        return StateTransitions::of(self::OPERATIONAL_TRANSITIONS)->can($this->operationalState, $target);
+        return new CanTransitionToSpecification(self::OPERATIONAL_TRANSITIONS, $target)->isSatisfiedBy($this->operationalState);
     }
 
     #[Apply]
