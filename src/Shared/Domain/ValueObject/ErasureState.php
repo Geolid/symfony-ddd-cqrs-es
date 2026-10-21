@@ -16,6 +16,11 @@ enum ErasureState: string
         return self::RETAINED === $this;
     }
 
+    public function isRequested(): bool
+    {
+        return self::REQUESTED === $this;
+    }
+
     public function isApproved(): bool
     {
         return self::APPROVED === $this;

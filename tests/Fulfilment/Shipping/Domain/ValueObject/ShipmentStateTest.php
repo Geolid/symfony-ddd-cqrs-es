@@ -11,10 +11,34 @@ use PHPUnit\Framework\TestCase;
 final class ShipmentStateTest extends TestCase
 {
     #[Test]
+    public function itIsRequested(): void
+    {
+        foreach (ShipmentState::cases() as $state) {
+            self::assertSame(ShipmentState::REQUESTED === $state, $state->isRequested(), $state->value);
+        }
+    }
+
+    #[Test]
+    public function itIsPrepared(): void
+    {
+        foreach (ShipmentState::cases() as $state) {
+            self::assertSame(ShipmentState::PREPARED === $state, $state->isPrepared(), $state->value);
+        }
+    }
+
+    #[Test]
     public function itIsManifested(): void
     {
         foreach (ShipmentState::cases() as $state) {
             self::assertSame(ShipmentState::MANIFESTED === $state, $state->isManifested(), $state->value);
+        }
+    }
+
+    #[Test]
+    public function itIsDispatched(): void
+    {
+        foreach (ShipmentState::cases() as $state) {
+            self::assertSame(ShipmentState::DISPATCHED === $state, $state->isDispatched(), $state->value);
         }
     }
 

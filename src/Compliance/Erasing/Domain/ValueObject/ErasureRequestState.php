@@ -10,8 +10,18 @@ enum ErasureRequestState: string
     case CANCELLED = 'cancelled';
     case APPROVED = 'approved';
 
+    public function isRequested(): bool
+    {
+        return self::REQUESTED === $this;
+    }
+
     public function isCancelled(): bool
     {
         return self::CANCELLED === $this;
+    }
+
+    public function isApproved(): bool
+    {
+        return self::APPROVED === $this;
     }
 }

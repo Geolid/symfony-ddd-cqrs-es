@@ -23,13 +23,13 @@ final class StateTransitionsTest extends TestCase
 
     #[Test]
     #[DataProvider('provideAllowedTransitions')]
-    public function itAllowsWhenEdgeDirect(DummyState $from, DummyState $to): void
+    public function itCanTransitionWhenEdgeDirect(DummyState $current, DummyState $target): void
     {
         // Given
-        $transitions = new StateTransitions(self::TRANSITIONS);
+        $transitions = StateTransitions::of(self::TRANSITIONS);
 
         // When
-        $result = $transitions->allows($from, $to);
+        $result = $transitions->can($current, $target);
 
         // Then
         self::assertTrue($result);
@@ -48,13 +48,13 @@ final class StateTransitionsTest extends TestCase
 
     #[Test]
     #[DataProvider('provideRefusedTransitions')]
-    public function itDoesNotAllowWhenEdgeIndirect(DummyState $from, DummyState $to): void
+    public function itCannotTransitionWhenEdgeMissing(DummyState $current, DummyState $target): void
     {
         // Given
-        $transitions = new StateTransitions(self::TRANSITIONS);
+        $transitions = StateTransitions::of(self::TRANSITIONS);
 
         // When
-        $result = $transitions->allows($from, $to);
+        $result = $transitions->can($current, $target);
 
         // Then
         self::assertFalse($result);
@@ -72,50 +72,44 @@ final class StateTransitionsTest extends TestCase
     }
 
     #[Test]
-    #[DataProvider('provideReachedTargets')]
-    public function itReachesWhenPathExists(DummyState $from, DummyState $to): void
+    public function itCannotTransitionWhenStateUndeclared(): void
     {
         // Given
-        $transitions = new StateTransitions(self::TRANSITIONS);
+        $transitions = StateTransitions::of([
+            DummyState::INIT->value => [DummyState::PENDING],
+            DummyState::PENDING->value => [],
+        ]);
 
         // When
-        $result = $transitions->reaches($from, $to);
-
-        // Then
-        self::assertTrue($result);
-    }
-
-    /**
-     * @return iterable<string, array{DummyState, DummyState}>
-     */
-    public static function provideReachedTargets(): iterable
-    {
-        yield 'same state' => [DummyState::PENDING, DummyState::PENDING];
-        yield 'several hops' => [DummyState::INIT, DummyState::SUCCESS];
-        yield 'through retry loop' => [DummyState::PENDING, DummyState::FAILED];
-    }
-
-    #[Test]
-    #[DataProvider('provideUnreachedTargets')]
-    public function itDoesNotReachWhenNoPath(DummyState $from, DummyState $to): void
-    {
-        // Given
-        $transitions = new StateTransitions(self::TRANSITIONS);
-
-        // When
-        $result = $transitions->reaches($from, $to);
+        $result = $transitions->can(DummyState::SUCCESS, DummyState::PENDING);
 
         // Then
         self::assertFalse($result);
     }
 
     /**
-     * @return iterable<string, array{DummyState, DummyState}>
+     * @param array<array-key, mixed> $transitions
      */
-    public static function provideUnreachedTargets(): iterable
+    #[Test]
+    #[DataProvider('provideInvalidTransitions')]
+    public function itProtectsInvariants(array $transitions): void
     {
-        yield 'backward' => [DummyState::PENDING, DummyState::INIT];
-        yield 'dead end' => [DummyState::FAILED, DummyState::SUCCESS];
-        yield 'around retry loop' => [DummyState::PROCESSING, DummyState::INIT];
+        // Then
+        $this->expectException(\InvalidArgumentException::class);
+
+        // When
+        StateTransitions::of($transitions);
+    }
+
+    /**
+     * @return iterable<string, array{array<array-key, mixed>}>
+     */
+    public static function provideInvalidTransitions(): iterable
+    {
+        yield 'no state' => [[]];
+        yield 'targets not an array' => [[DummyState::INIT->value => 'pending']];
+        yield 'targets not a list' => [[DummyState::INIT->value => ['first' => DummyState::INIT]]];
+        yield 'target not an enum' => [[DummyState::INIT->value => ['pending'], 'pending' => []]];
+        yield 'target undeclared' => [[DummyState::INIT->value => [DummyState::PENDING]]];
     }
 }

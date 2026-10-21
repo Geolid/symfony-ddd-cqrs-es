@@ -159,7 +159,7 @@ final class Cart implements AggregateRoot, AggregateRootMetadataAware
 
     private function canTransitionOperationalTo(CartState $target): bool
     {
-        return new StateTransitions(self::OPERATIONAL_TRANSITIONS)->allows($this->operationalState, $target);
+        return StateTransitions::of(self::OPERATIONAL_TRANSITIONS)->can($this->operationalState, $target);
     }
 
     #[Apply]

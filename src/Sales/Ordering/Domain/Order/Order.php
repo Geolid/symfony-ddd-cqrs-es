@@ -41,7 +41,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
     /** @var array<string, list<OrderState>> */
     private const array OPERATIONAL_TRANSITIONS = [
         OrderState::CONFIRMED->value => [OrderState::PREPARED, OrderState::CANCELLED, OrderState::FAILED],
-        OrderState::PREPARED->value => [OrderState::PAID, OrderState::CANCELLED, OrderState::FAILED],
+        OrderState::PREPARED->value => [OrderState::PAID, OrderState::FAILED],
         OrderState::PAID->value => [OrderState::DISPATCHED],
         OrderState::DISPATCHED->value => [OrderState::DELIVERED],
         OrderState::DELIVERED->value => [],
@@ -140,7 +140,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
      */
     public function pay(\DateTimeImmutable $paidAt): void
     {
-        if ($this->hasReachedOperational(OrderState::PAID)) {
+        if ($this->operationalState->isPaid()) {
             return;
         }
 
@@ -164,11 +164,11 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
             throw OrderBelongsToAnotherCustomerException::forId($this->id);
         }
 
-        if ($this->hasReachedOperational(OrderState::CANCELLED)) {
+        if ($this->operationalState->isCancelled()) {
             return;
         }
 
-        if ($this->hasReachedOperational(OrderState::PREPARED)) {
+        if (!$this->canTransitionOperationalTo(OrderState::CANCELLED)) {
             throw OrderInvalidStateException::cannotCancel($this->id, $this->operationalState);
         }
 
@@ -199,7 +199,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
      */
     public function dispatch(\DateTimeImmutable $dispatchedAt): void
     {
-        if ($this->hasReachedOperational(OrderState::DISPATCHED)) {
+        if ($this->operationalState->isDispatched()) {
             return;
         }
 
@@ -218,7 +218,7 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
      */
     public function deliver(\DateTimeImmutable $deliveredAt): void
     {
-        if ($this->hasReachedOperational(OrderState::DELIVERED)) {
+        if ($this->operationalState->isDelivered()) {
             return;
         }
 
@@ -267,17 +267,12 @@ final class Order implements AggregateRoot, AggregateRootMetadataAware
 
     private function canTransitionOperationalTo(OrderState $target): bool
     {
-        return new StateTransitions(self::OPERATIONAL_TRANSITIONS)->allows($this->operationalState, $target);
-    }
-
-    private function hasReachedOperational(OrderState $target): bool
-    {
-        return new StateTransitions(self::OPERATIONAL_TRANSITIONS)->reaches($target, $this->operationalState);
+        return StateTransitions::of(self::OPERATIONAL_TRANSITIONS)->can($this->operationalState, $target);
     }
 
     private function canTransitionErasureTo(ErasureState $target): bool
     {
-        return new StateTransitions(self::ERASURE_TRANSITIONS)->allows($this->erasureState, $target);
+        return StateTransitions::of(self::ERASURE_TRANSITIONS)->can($this->erasureState, $target);
     }
 
     #[Apply]

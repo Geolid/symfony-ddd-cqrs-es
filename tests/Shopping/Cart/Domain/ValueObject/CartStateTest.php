@@ -11,6 +11,14 @@ use Shopping\Cart\Domain\ValueObject\CartState;
 final class CartStateTest extends TestCase
 {
     #[Test]
+    public function itIsActive(): void
+    {
+        foreach (CartState::cases() as $state) {
+            self::assertSame(CartState::ACTIVE === $state, $state->isActive(), $state->value);
+        }
+    }
+
+    #[Test]
     public function itIsPurchased(): void
     {
         foreach (CartState::cases() as $state) {

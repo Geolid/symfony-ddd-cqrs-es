@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Shared\Domain\ValueObject;
 
+use Webmozart\Assert\Assert;
+
 /**
  * @template T of \BackedEnum
  */
@@ -12,46 +14,36 @@ final readonly class StateTransitions
     /**
      * @param array<string, list<T>> $transitions
      */
-    public function __construct(private array $transitions)
+    private function __construct(private array $transitions)
     {
-    }
+        Assert::notEmpty($transitions, 'The transitions must declare at least one state.');
 
-    /**
-     * @param T $from
-     * @param T $to
-     */
-    public function allows(\BackedEnum $from, \BackedEnum $to): bool
-    {
-        return \in_array($to, $this->transitions[$from->value] ?? [], true);
-    }
+        foreach ($transitions as $targets) {
+            Assert::isList($targets, 'The targets of a state must be a list.');
+            Assert::allIsInstanceOf($targets, \BackedEnum::class);
 
-    /**
-     * @param T $from
-     * @param T $to
-     */
-    public function reaches(\BackedEnum $from, \BackedEnum $to): bool
-    {
-        $visited = [];
-        $pending = [$from];
-
-        while ([] !== $pending) {
-            $current = array_pop($pending);
-
-            if ($current === $to) {
-                return true;
-            }
-
-            if (isset($visited[$current->value])) {
-                continue;
-            }
-
-            $visited[$current->value] = true;
-
-            foreach ($this->transitions[$current->value] ?? [] as $next) {
-                $pending[] = $next;
+            foreach ($targets as $target) {
+                Assert::keyExists($transitions, $target->value, 'The target state %s must be declared.');
             }
         }
+    }
 
-        return false;
+    /**
+     * @param array<string, list<T>> $transitions
+     *
+     * @return self<T>
+     */
+    public static function of(array $transitions): self
+    {
+        return new self($transitions);
+    }
+
+    /**
+     * @param T $current
+     * @param T $target
+     */
+    public function can(\BackedEnum $current, \BackedEnum $target): bool
+    {
+        return \in_array($target, $this->transitions[$current->value] ?? [], true);
     }
 }

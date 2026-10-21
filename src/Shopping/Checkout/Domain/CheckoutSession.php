@@ -150,7 +150,7 @@ final class CheckoutSession implements AggregateRoot, AggregateRootMetadataAware
 
     private function canTransitionOperationalTo(CheckoutSessionState $target): bool
     {
-        return new StateTransitions(self::OPERATIONAL_TRANSITIONS)->allows($this->operationalState, $target);
+        return StateTransitions::of(self::OPERATIONAL_TRANSITIONS)->can($this->operationalState, $target);
     }
 
     /**

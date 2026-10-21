@@ -92,7 +92,7 @@ final class Erasure implements AggregateRoot, AggregateRootMetadataAware
 
     private function canTransitionStateTo(ErasureRequestState $target): bool
     {
-        return new StateTransitions(self::STATE_TRANSITIONS)->allows($this->state, $target);
+        return StateTransitions::of(self::STATE_TRANSITIONS)->can($this->state, $target);
     }
 
     #[Apply]

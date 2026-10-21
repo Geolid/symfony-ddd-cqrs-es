@@ -100,7 +100,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
      */
     public function fail(string $orderId, \DateTimeImmutable $failedAt): void
     {
-        if ($this->hasReachedOperational(PaymentState::FAILED)) {
+        if ($this->operationalState->isFailed()) {
             return;
         }
 
@@ -120,7 +120,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
      */
     public function capture(string $orderId, \DateTimeImmutable $capturedAt): void
     {
-        if ($this->hasReachedOperational(PaymentState::CAPTURED)) {
+        if ($this->operationalState->isCaptured()) {
             return;
         }
 
@@ -163,12 +163,7 @@ final class Payment implements AggregateRoot, AggregateRootMetadataAware
 
     private function canTransitionOperationalTo(PaymentState $target): bool
     {
-        return new StateTransitions(self::OPERATIONAL_TRANSITIONS)->allows($this->operationalState, $target);
-    }
-
-    private function hasReachedOperational(PaymentState $target): bool
-    {
-        return new StateTransitions(self::OPERATIONAL_TRANSITIONS)->reaches($target, $this->operationalState);
+        return StateTransitions::of(self::OPERATIONAL_TRANSITIONS)->can($this->operationalState, $target);
     }
 
     #[Apply]

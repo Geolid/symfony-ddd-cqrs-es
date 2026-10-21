@@ -288,7 +288,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
      */
     public function erase(\DateTimeImmutable $erasedAt): void
     {
-        if ($this->hasReachedErasure(ErasureState::ERASED)) {
+        if ($this->erasureState->isErased()) {
             return;
         }
 
@@ -324,12 +324,7 @@ final class Identity implements AggregateRoot, AggregateRootMetadataAware
 
     private function canTransitionErasureTo(ErasureState $target): bool
     {
-        return new StateTransitions(self::ERASURE_TRANSITIONS)->allows($this->erasureState, $target);
-    }
-
-    private function hasReachedErasure(ErasureState $target): bool
-    {
-        return new StateTransitions(self::ERASURE_TRANSITIONS)->reaches($target, $this->erasureState);
+        return StateTransitions::of(self::ERASURE_TRANSITIONS)->can($this->erasureState, $target);
     }
 
     #[Apply]
