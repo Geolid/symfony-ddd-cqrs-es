@@ -42,12 +42,12 @@ final class ReconcilePaymentsCommand
 
         try {
             $stuck = $this->queryBus->ask(new ListPaymentsPastReconciliationThreshold());
-            $reconciled = 0;
+            $dispatched = 0;
 
             foreach ($stuck as $payment) {
                 try {
                     if ($this->paymentReconciler->reconcile($payment->id, $payment->status, $payment->reference)) {
-                        ++$reconciled;
+                        ++$dispatched;
                     }
                 } catch (ApplicationExceptionInterface $e) {
                     ++$failed;
@@ -55,7 +55,7 @@ final class ReconcilePaymentsCommand
                 }
             }
 
-            $io->success(\sprintf('%d payment(s) reconciled.', $reconciled));
+            $io->success(\sprintf('%d payment(s) reconciliation dispatched.', $dispatched));
         } finally {
             $this->release();
         }

@@ -38,26 +38,31 @@ final class ReconcileShipmentsCommandTest extends AbstractCronTestCase
         // Given
         $now = Clock::get()->now();
         $freshTrackingNumber = TrackingNumberFactory::new()->create();
+        $unmovedTrackingNumber = TrackingNumberFactory::new()->create();
         $manifestedTrackingNumber = TrackingNumberFactory::new()->create();
         $dispatchedTrackingNumber = TrackingNumberFactory::new()->create();
         $fresh = ShipmentFactory::new()->prepared()->manifested($freshTrackingNumber, $now->modify('-12 hours'))->create();
+        $unmoved = ShipmentFactory::new()->prepared()->manifested($unmovedTrackingNumber, $now->modify('-3 days'))->create();
         $manifested = ShipmentFactory::new()->prepared()->manifested($manifestedTrackingNumber, $now->modify('-3 days'))->create();
         $dispatched = ShipmentFactory::new()->prepared()->manifested($dispatchedTrackingNumber, $now->modify('-4 days'))->dispatched($now->modify('-3 days'))->create();
         $this->carrierGateway->method('checkStatus')->willReturnMap([
+            [$unmovedTrackingNumber->value, CarrierGatewayStatus::REQUESTED],
             [$manifestedTrackingNumber->value, CarrierGatewayStatus::DISPATCHED],
             [$dispatchedTrackingNumber->value, CarrierGatewayStatus::DELIVERED],
         ]);
-        $this->store($fresh, $manifested, $dispatched);
+        $this->store($fresh, $unmoved, $manifested, $dispatched);
 
         // When
         $status = $this->tester()->run(['command' => 'fulfilment:shipment:reconcile']);
 
         // Then
         $freshResult = $this->shipmentFinder->ofId($fresh->id->toString());
+        $unmovedResult = $this->shipmentFinder->ofId($unmoved->id->toString());
         $manifestedResult = $this->shipmentFinder->ofId($manifested->id->toString());
         $dispatchedResult = $this->shipmentFinder->ofId($dispatched->id->toString());
         self::assertSame(Command::SUCCESS, $status);
         self::assertSame(ShipmentStatus::MANIFESTED, $freshResult->status);
+        self::assertSame(ShipmentStatus::MANIFESTED, $unmovedResult->status);
         self::assertSame(ShipmentStatus::DISPATCHED, $manifestedResult->status);
         self::assertSame(ShipmentStatus::DELIVERED, $dispatchedResult->status);
     }

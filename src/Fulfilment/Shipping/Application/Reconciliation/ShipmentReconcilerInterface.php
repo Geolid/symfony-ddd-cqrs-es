@@ -11,7 +11,7 @@ use Shared\Application\DrivingPort;
 interface ShipmentReconcilerInterface
 {
     /**
-     * @return bool whether the carrier reported a transition, and it was applied
+     * @return bool whether the carrier reported a transition, and its command was dispatched
      */
     public function reconcile(string $id, ShipmentStatus $status, string $trackingNumber): bool;
 }

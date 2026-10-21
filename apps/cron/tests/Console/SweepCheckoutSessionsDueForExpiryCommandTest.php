@@ -10,6 +10,7 @@ use Shopping\Checkout\Application\CheckoutSessionStatus;
 use Shopping\Checkout\Application\Finder\CheckoutSession\CheckoutSessionFinderInterface;
 use Shopping\Tests\Checkout\Support\Factory\CheckoutSessionFactory;
 use Symfony\Component\Clock\Clock;
+use Symfony\Component\Console\Command\Command;
 
 final class SweepCheckoutSessionsDueForExpiryCommandTest extends AbstractCronTestCase
 {
@@ -33,11 +34,12 @@ final class SweepCheckoutSessionsDueForExpiryCommandTest extends AbstractCronTes
         $this->store($fresh, $due);
 
         // When
-        $this->tester()->run(['command' => 'shopping:checkout:sweep-due-for-expiry']);
+        $status = $this->tester()->run(['command' => 'shopping:checkout:sweep-due-for-expiry']);
 
         // Then
         $freshResult = $this->checkoutSessionFinder->ofId($fresh->id->toString());
         $dueResult = $this->checkoutSessionFinder->ofId($due->id->toString());
+        self::assertSame(Command::SUCCESS, $status);
         self::assertSame(CheckoutSessionStatus::OPEN, $freshResult->status);
         self::assertSame(CheckoutSessionStatus::EXPIRED, $dueResult->status);
     }

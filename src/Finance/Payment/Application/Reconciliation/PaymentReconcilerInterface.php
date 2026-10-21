@@ -11,7 +11,7 @@ use Shared\Application\DrivingPort;
 interface PaymentReconcilerInterface
 {
     /**
-     * @return bool whether the provider reported a transition, and it was applied
+     * @return bool whether the provider reported a transition, and its command was dispatched
      */
     public function reconcile(string $id, PaymentStatus $status, string $reference): bool;
 }

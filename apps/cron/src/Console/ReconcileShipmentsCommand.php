@@ -42,14 +42,14 @@ final class ReconcileShipmentsCommand
 
         try {
             $stuck = $this->queryBus->ask(new ListShipmentsPastReconciliationThreshold());
-            $reconciled = 0;
+            $dispatched = 0;
 
             foreach ($stuck as $shipment) {
                 \assert(null !== $shipment->trackingNumber);
 
                 try {
                     if ($this->shipmentReconciler->reconcile($shipment->id, $shipment->status, $shipment->trackingNumber)) {
-                        ++$reconciled;
+                        ++$dispatched;
                     }
                 } catch (ApplicationExceptionInterface $e) {
                     ++$failed;
@@ -57,7 +57,7 @@ final class ReconcileShipmentsCommand
                 }
             }
 
-            $io->success(\sprintf('%d shipment(s) reconciled.', $reconciled));
+            $io->success(\sprintf('%d shipment(s) reconciliation dispatched.', $dispatched));
         } finally {
             $this->release();
         }
