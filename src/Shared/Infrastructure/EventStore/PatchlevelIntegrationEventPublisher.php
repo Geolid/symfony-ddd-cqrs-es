@@ -37,14 +37,14 @@ final readonly class PatchlevelIntegrationEventPublisher implements IntegrationE
                 Message::create($event)
                     ->withHeader(new StreamNameHeader('integration.'.$source->header(StreamNameHeader::class)->streamName))
                     ->withHeader(new RecordedOnHeader($this->clock->now()))
-                    ->withHeader(new EventIdHeader(self::eventIdOf($source, $event))),
+                    ->withHeader(new EventIdHeader($this->eventIdOf($source, $event))),
             );
         } catch (UniqueConstraintViolation) {
             return;
         }
     }
 
-    private static function eventIdOf(Message $source, IntegrationEventInterface $event): string
+    private function eventIdOf(Message $source, IntegrationEventInterface $event): string
     {
         return Uuid::uuid5(self::EVENT_ID_NAMESPACE, \sprintf('%s|%s', $source->header(EventIdHeader::class)->eventId, $event::class))->toString();
     }
