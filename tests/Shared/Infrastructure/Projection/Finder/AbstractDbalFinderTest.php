@@ -42,22 +42,6 @@ final class AbstractDbalFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFilters(): void
-    {
-        // Given
-        $value = faker()->unique()->word();
-        $otherValue = faker()->unique()->word();
-        $finder = new FakeDbalFinder($this->connection, $this->hydrator, [$value, $otherValue]);
-        $finder->valued($value);
-
-        // When
-        $count = \count($finder);
-
-        // Then
-        self::assertSame(2, $count);
-    }
-
-    #[Test]
     public function itFindsNothing(): void
     {
         // Given
@@ -84,5 +68,21 @@ final class AbstractDbalFinderTest extends AbstractIntegrationTestCase
 
         // When
         $finder->ofValue($twin);
+    }
+
+    #[Test]
+    public function itFilters(): void
+    {
+        // Given
+        $value = faker()->unique()->word();
+        $otherValue = faker()->unique()->word();
+        $finder = new FakeDbalFinder($this->connection, $this->hydrator, [$value, $otherValue]);
+        $finder->valued($value);
+
+        // When
+        $count = \count($finder);
+
+        // Then
+        self::assertSame(2, $count);
     }
 }

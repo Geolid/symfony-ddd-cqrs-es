@@ -27,6 +27,20 @@ abstract class AbstractIterableFinderTestCase extends AbstractIntegrationTestCas
         self::assertSame($indexes, $this->resultIndexes($results));
     }
 
+    #[Test]
+    public function itCounts(): void
+    {
+        // Given
+        $finder = $this->finder();
+        $indexes = $this->seed(3);
+
+        // When
+        $count = \count($finder);
+
+        // Then
+        self::assertSame(\count($indexes), $count);
+    }
+
     /**
      * @return IterableFinderInterface<TResult>
      */

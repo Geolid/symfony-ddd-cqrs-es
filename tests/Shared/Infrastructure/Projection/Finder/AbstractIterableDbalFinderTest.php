@@ -57,13 +57,14 @@ final class AbstractIterableDbalFinderTest extends AbstractIntegrationTestCase
     public function itCounts(): void
     {
         // Given
-        $finder = new FakeDbalFinder($this->connection, $this->hydrator, [faker()->unique()->word(), faker()->unique()->word(), faker()->unique()->word()]);
+        $values = [faker()->unique()->word(), faker()->unique()->word(), faker()->unique()->word()];
+        $finder = new FakeDbalFinder($this->connection, $this->hydrator, $values);
 
         // When
         $count = \count($finder);
 
         // Then
-        self::assertSame(3, $count);
+        self::assertSame(\count($values), $count);
     }
 
     #[Test]
@@ -96,8 +97,8 @@ final class AbstractIterableDbalFinderTest extends AbstractIntegrationTestCase
         $secondCount = \count($finder);
 
         // Then
-        self::assertSame(2, $firstCount);
-        self::assertSame(2, $secondCount);
+        self::assertSame(\count($values), $firstCount);
+        self::assertSame(\count($values), $secondCount);
     }
 
     #[Test]
