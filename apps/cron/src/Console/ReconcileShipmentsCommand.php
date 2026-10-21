@@ -42,19 +42,21 @@ final class ReconcileShipmentsCommand
 
         try {
             $stuck = $this->queryBus->ask(new ListShipmentsPastReconciliationThreshold());
-            $checked = 0;
+            $polled = 0;
 
             foreach ($stuck as $shipment) {
                 try {
                     $this->shipmentReconciler->reconcile($shipment->id);
-                    ++$checked;
+                    ++$polled;
                 } catch (ApplicationExceptionInterface $e) {
                     ++$failed;
                     $io->error(\sprintf('Failed to reconcile shipment %s: %s', $shipment->id, $e->getMessage()));
                 }
             }
 
-            $io->success(\sprintf('%d shipment(s) checked.', $checked));
+            $summary = \sprintf('%d shipment(s) polled, %d failed.', $polled, $failed);
+
+            0 === $failed ? $io->success($summary) : $io->error($summary);
         } finally {
             $this->release();
         }

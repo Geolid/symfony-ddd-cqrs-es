@@ -42,19 +42,21 @@ final class ReconcilePaymentsCommand
 
         try {
             $stuck = $this->queryBus->ask(new ListPaymentsPastReconciliationThreshold());
-            $checked = 0;
+            $polled = 0;
 
             foreach ($stuck as $payment) {
                 try {
                     $this->paymentReconciler->reconcile($payment->id);
-                    ++$checked;
+                    ++$polled;
                 } catch (ApplicationExceptionInterface $e) {
                     ++$failed;
                     $io->error(\sprintf('Failed to reconcile payment %s: %s', $payment->id, $e->getMessage()));
                 }
             }
 
-            $io->success(\sprintf('%d payment(s) checked.', $checked));
+            $summary = \sprintf('%d payment(s) polled, %d failed.', $polled, $failed);
+
+            0 === $failed ? $io->success($summary) : $io->error($summary);
         } finally {
             $this->release();
         }
