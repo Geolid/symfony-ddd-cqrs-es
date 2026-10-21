@@ -21,6 +21,7 @@ final class ReconcileShipmentsCommandTest extends AbstractCronTestCase
 {
     private CarrierGatewayInterface&Stub $carrierGateway;
     private ShipmentFinderInterface $shipmentFinder;
+    private string $threshold;
 
     protected function setUp(): void
     {
@@ -30,6 +31,10 @@ final class ReconcileShipmentsCommandTest extends AbstractCronTestCase
         $this->replace(CarrierGatewayInterface::class, $this->carrierGateway);
 
         $this->shipmentFinder = $this->service(ShipmentFinderInterface::class);
+
+        $threshold = self::getContainer()->getParameter('fulfilment.shipping.reconciliation_threshold');
+        \assert(\is_string($threshold));
+        $this->threshold = $threshold;
     }
 
     #[Test]
@@ -37,34 +42,62 @@ final class ReconcileShipmentsCommandTest extends AbstractCronTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $freshTrackingNumber = TrackingNumberFactory::new()->create();
+        $withinThresholdTrackingNumber = TrackingNumberFactory::new()->create();
         $unmovedTrackingNumber = TrackingNumberFactory::new()->create();
         $manifestedTrackingNumber = TrackingNumberFactory::new()->create();
         $dispatchedTrackingNumber = TrackingNumberFactory::new()->create();
-        $fresh = ShipmentFactory::new()->prepared()->manifested($freshTrackingNumber, $now->modify('-12 hours'))->create();
-        $unmoved = ShipmentFactory::new()->prepared()->manifested($unmovedTrackingNumber, $now->modify('-3 days'))->create();
-        $manifested = ShipmentFactory::new()->prepared()->manifested($manifestedTrackingNumber, $now->modify('-3 days'))->create();
-        $dispatched = ShipmentFactory::new()->prepared()->manifested($dispatchedTrackingNumber, $now->modify('-4 days'))->dispatched($now->modify('-3 days'))->create();
+        $withinThreshold = ShipmentFactory::new()->prepared()->manifested($withinThresholdTrackingNumber, $now->modify(\sprintf('-%s +1 second', $this->threshold)))->create();
+        $pastThresholdUnmoved = ShipmentFactory::new()->prepared()->manifested($unmovedTrackingNumber, $now->modify(\sprintf('-%s -1 second', $this->threshold)))->create();
+        $pastThresholdManifested = ShipmentFactory::new()->prepared()->manifested($manifestedTrackingNumber, $now->modify(\sprintf('-%s -1 second', $this->threshold)))->create();
+        $pastThresholdDispatched = ShipmentFactory::new()
+            ->prepared()
+            ->manifested($dispatchedTrackingNumber, $now->modify(\sprintf('-%s -1 hour', $this->threshold)))
+            ->dispatched($now->modify(\sprintf('-%s -1 second', $this->threshold)))
+            ->create();
         $this->carrierGateway->method('checkStatus')->willReturnMap([
             [$unmovedTrackingNumber->value, CarrierGatewayStatus::REQUESTED],
             [$manifestedTrackingNumber->value, CarrierGatewayStatus::DISPATCHED],
             [$dispatchedTrackingNumber->value, CarrierGatewayStatus::DELIVERED],
         ]);
-        $this->store($fresh, $unmoved, $manifested, $dispatched);
+        $this->store($withinThreshold, $pastThresholdUnmoved, $pastThresholdManifested, $pastThresholdDispatched);
 
         // When
         $status = $this->tester()->run(['command' => 'fulfilment:shipment:reconcile']);
 
         // Then
-        $freshResult = $this->shipmentFinder->ofId($fresh->id->toString());
-        $unmovedResult = $this->shipmentFinder->ofId($unmoved->id->toString());
-        $manifestedResult = $this->shipmentFinder->ofId($manifested->id->toString());
-        $dispatchedResult = $this->shipmentFinder->ofId($dispatched->id->toString());
+        $withinThresholdResult = $this->shipmentFinder->ofId($withinThreshold->id->toString());
+        $pastThresholdUnmovedResult = $this->shipmentFinder->ofId($pastThresholdUnmoved->id->toString());
+        $pastThresholdManifestedResult = $this->shipmentFinder->ofId($pastThresholdManifested->id->toString());
+        $pastThresholdDispatchedResult = $this->shipmentFinder->ofId($pastThresholdDispatched->id->toString());
         self::assertSame(Command::SUCCESS, $status);
-        self::assertSame(ShipmentStatus::MANIFESTED, $freshResult->status);
-        self::assertSame(ShipmentStatus::MANIFESTED, $unmovedResult->status);
-        self::assertSame(ShipmentStatus::DISPATCHED, $manifestedResult->status);
-        self::assertSame(ShipmentStatus::DELIVERED, $dispatchedResult->status);
+        self::assertSame(ShipmentStatus::MANIFESTED, $withinThresholdResult->status);
+        self::assertSame(ShipmentStatus::MANIFESTED, $pastThresholdUnmovedResult->status);
+        self::assertSame(ShipmentStatus::DISPATCHED, $pastThresholdManifestedResult->status);
+        self::assertSame(ShipmentStatus::DELIVERED, $pastThresholdDispatchedResult->status);
+    }
+
+    #[Test]
+    public function itSkips(): void
+    {
+        // Given
+        $now = Clock::get()->now();
+        $trackingNumber = TrackingNumberFactory::new()->create();
+        $shipment = ShipmentFactory::new()->prepared()->manifested($trackingNumber, $now->modify(\sprintf('-%s -1 second', $this->threshold)))->create();
+        $this->carrierGateway->method('checkStatus')->willReturn(CarrierGatewayStatus::DISPATCHED);
+        $this->store($shipment);
+        $lock = $this->lock('fulfilment:shipment:reconcile');
+
+        try {
+            // When
+            $status = $this->tester()->run(['command' => 'fulfilment:shipment:reconcile']);
+
+            // Then
+            $result = $this->shipmentFinder->ofId($shipment->id->toString());
+            self::assertSame(Command::SUCCESS, $status);
+            self::assertSame(ShipmentStatus::MANIFESTED, $result->status);
+        } finally {
+            $lock->release();
+        }
     }
 
     #[Test]
@@ -74,8 +107,8 @@ final class ReconcileShipmentsCommandTest extends AbstractCronTestCase
         $now = Clock::get()->now();
         $unreachableTrackingNumber = TrackingNumberFactory::new()->create();
         $manifestedTrackingNumber = TrackingNumberFactory::new()->create();
-        $unreachable = ShipmentFactory::new()->prepared()->manifested($unreachableTrackingNumber, $now->modify('-3 days'))->create();
-        $manifested = ShipmentFactory::new()->prepared()->manifested($manifestedTrackingNumber, $now->modify('-3 days'))->create();
+        $unreachable = ShipmentFactory::new()->prepared()->manifested($unreachableTrackingNumber, $now->modify(\sprintf('-%s -1 second', $this->threshold)))->create();
+        $manifested = ShipmentFactory::new()->prepared()->manifested($manifestedTrackingNumber, $now->modify(\sprintf('-%s -1 second', $this->threshold)))->create();
         $this->carrierGateway->method('checkStatus')->willReturnCallback(
             static fn (string $reference): CarrierGatewayStatus => $reference === $unreachableTrackingNumber->value
                 ? throw CarrierTransientFailureException::forReason('Carrier unreachable.') : CarrierGatewayStatus::DISPATCHED,

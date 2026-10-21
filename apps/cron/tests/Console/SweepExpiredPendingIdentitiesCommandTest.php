@@ -10,6 +10,7 @@ use Iam\Identity\Application\Finder\Identity\IdentityFinderInterface;
 use Iam\Tests\Identity\Support\Factory\IdentityFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\Clock\Clock;
+use Symfony\Component\Console\Command\Command;
 
 final class SweepExpiredPendingIdentitiesCommandTest extends AbstractCronTestCase
 {
@@ -42,5 +43,28 @@ final class SweepExpiredPendingIdentitiesCommandTest extends AbstractCronTestCas
         $this->expectException(IdentityResultNotFoundException::class);
 
         $this->identityFinder->ofId($stale->id->toString());
+    }
+
+    #[Test]
+    public function itSkips(): void
+    {
+        // Given
+        $now = Clock::get()->now();
+        $expiry = '24 hours';
+        $stale = IdentityFactory::new()->withExpiry($expiry)->withRegisteredAt($now->modify(\sprintf('-%s -1 second', $expiry)))->create();
+        $this->store($stale);
+        $lock = $this->lock('iam:identity:sweep-expired-pending');
+
+        try {
+            // When
+            $status = $this->tester()->run(['command' => 'iam:identity:sweep-expired-pending']);
+
+            // Then
+            $result = $this->identityFinder->ofId($stale->id->toString());
+            self::assertSame(Command::SUCCESS, $status);
+            self::assertSame($stale->id->toString(), $result->id);
+        } finally {
+            $lock->release();
+        }
     }
 }

@@ -19,21 +19,18 @@ final class PaymentReconcilerTest extends AbstractIntegrationTestCase
     public function itDelegatesToSupportingReconciler(): void
     {
         // Given
+        $id = Uuid::uuid7()->toString();
+        $reference = PaymentReferenceFactory::new()->create()->value;
         $unsupporting = $this->createMock(PaymentStatusReconcilerInterface::class);
         $unsupporting->method('supports')->willReturn(false);
         $unsupporting->expects(self::never())->method('reconcile');
-
-        $matching = $this->createStub(PaymentStatusReconcilerInterface::class);
+        $matching = $this->createMock(PaymentStatusReconcilerInterface::class);
         $matching->method('supports')->willReturn(true);
-        $matching->method('reconcile')->willReturn(true);
-
+        $matching->expects(self::once())->method('reconcile')->with($id, $reference);
         $router = new PaymentReconciler([$unsupporting, $matching]);
 
         // When
-        $result = $router->reconcile(Uuid::uuid7()->toString(), PaymentStatus::REQUESTED, PaymentReferenceFactory::new()->create()->value);
-
-        // Then
-        self::assertTrue($result);
+        $router->reconcile($id, PaymentStatus::REQUESTED, $reference);
     }
 
     #[Test]

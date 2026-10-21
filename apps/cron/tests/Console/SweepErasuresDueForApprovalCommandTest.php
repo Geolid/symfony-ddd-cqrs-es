@@ -10,6 +10,7 @@ use Compliance\Tests\Erasing\Support\Factory\ErasureFactory;
 use Cron\Tests\AbstractCronTestCase;
 use PHPUnit\Framework\Attributes\Test;
 use Symfony\Component\Clock\Clock;
+use Symfony\Component\Console\Command\Command;
 
 final class SweepErasuresDueForApprovalCommandTest extends AbstractCronTestCase
 {
@@ -40,5 +41,28 @@ final class SweepErasuresDueForApprovalCommandTest extends AbstractCronTestCase
         $dueResult = $this->erasureFinder->ofId($due->id->toString());
         self::assertSame(ErasureRequestStatus::REQUESTED, $freshResult->status);
         self::assertSame(ErasureRequestStatus::APPROVED, $dueResult->status);
+    }
+
+    #[Test]
+    public function itSkips(): void
+    {
+        // Given
+        $now = Clock::get()->now();
+        $retention = '30 days';
+        $due = ErasureFactory::new()->withRetention($retention)->withRequestedAt($now->modify(\sprintf('-%s -1 second', $retention)))->create();
+        $this->store($due);
+        $lock = $this->lock('compliance:erasing:sweep-due-for-approval');
+
+        try {
+            // When
+            $status = $this->tester()->run(['command' => 'compliance:erasing:sweep-due-for-approval']);
+
+            // Then
+            $result = $this->erasureFinder->ofId($due->id->toString());
+            self::assertSame(Command::SUCCESS, $status);
+            self::assertSame(ErasureRequestStatus::REQUESTED, $result->status);
+        } finally {
+            $lock->release();
+        }
     }
 }

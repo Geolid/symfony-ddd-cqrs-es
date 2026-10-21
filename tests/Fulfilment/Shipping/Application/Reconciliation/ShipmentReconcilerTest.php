@@ -19,21 +19,18 @@ final class ShipmentReconcilerTest extends AbstractIntegrationTestCase
     public function itDelegatesToSupportingReconciler(): void
     {
         // Given
+        $id = Uuid::uuid7()->toString();
+        $reference = TrackingNumberFactory::new()->create()->value;
         $unsupporting = $this->createMock(ShipmentStatusReconcilerInterface::class);
         $unsupporting->method('supports')->willReturn(false);
         $unsupporting->expects(self::never())->method('reconcile');
-
-        $matching = $this->createStub(ShipmentStatusReconcilerInterface::class);
+        $matching = $this->createMock(ShipmentStatusReconcilerInterface::class);
         $matching->method('supports')->willReturn(true);
-        $matching->method('reconcile')->willReturn(true);
-
+        $matching->expects(self::once())->method('reconcile')->with($id, $reference);
         $router = new ShipmentReconciler([$unsupporting, $matching]);
 
         // When
-        $result = $router->reconcile(Uuid::uuid7()->toString(), ShipmentStatus::MANIFESTED, TrackingNumberFactory::new()->create()->value);
-
-        // Then
-        self::assertTrue($result);
+        $router->reconcile($id, ShipmentStatus::MANIFESTED, $reference);
     }
 
     #[Test]

@@ -10,8 +10,5 @@ use Shared\Application\DrivingPort;
 #[DrivingPort]
 interface ShipmentReconcilerInterface
 {
-    /**
-     * @return bool whether the carrier reported a transition, and its command was dispatched
-     */
-    public function reconcile(string $id, ShipmentStatus $status, string $trackingNumber): bool;
+    public function reconcile(string $id, ShipmentStatus $status, string $trackingNumber): void;
 }

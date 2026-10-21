@@ -43,4 +43,27 @@ final class SweepCheckoutSessionsDueForExpiryCommandTest extends AbstractCronTes
         self::assertSame(CheckoutSessionStatus::OPEN, $freshResult->status);
         self::assertSame(CheckoutSessionStatus::EXPIRED, $dueResult->status);
     }
+
+    #[Test]
+    public function itSkips(): void
+    {
+        // Given
+        $now = Clock::get()->now();
+        $expiry = '30 minutes';
+        $due = CheckoutSessionFactory::new()->withExpiry($expiry)->withOpenedAt($now->modify(\sprintf('-%s -1 second', $expiry)))->create();
+        $this->store($due);
+        $lock = $this->lock('shopping:checkout:sweep-due-for-expiry');
+
+        try {
+            // When
+            $status = $this->tester()->run(['command' => 'shopping:checkout:sweep-due-for-expiry']);
+
+            // Then
+            $result = $this->checkoutSessionFinder->ofId($due->id->toString());
+            self::assertSame(Command::SUCCESS, $status);
+            self::assertSame(CheckoutSessionStatus::OPEN, $result->status);
+        } finally {
+            $lock->release();
+        }
+    }
 }

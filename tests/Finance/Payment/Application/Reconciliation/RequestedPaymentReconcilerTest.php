@@ -38,10 +38,9 @@ final class RequestedPaymentReconcilerTest extends AbstractIntegrationTestCase
         $reconciler = new RequestedPaymentReconciler($this->paymentGatewayReturning(PaymentGatewayStatus::AUTHORIZED), $this->commandBus);
 
         // When
-        $reconciled = $reconciler->reconcile($payment->id->toString(), $payment->reference->value);
+        $reconciler->reconcile($payment->id->toString(), $payment->reference->value);
 
         // Then
-        self::assertTrue($reconciled);
         $result = $this->paymentFinder->ofReference($payment->reference->value);
         self::assertSame(PaymentStatus::AUTHORIZED, $result->status);
     }
@@ -56,10 +55,9 @@ final class RequestedPaymentReconcilerTest extends AbstractIntegrationTestCase
         $reconciler = new RequestedPaymentReconciler($this->paymentGatewayReturning($gatewayStatus), $this->commandBus);
 
         // When
-        $reconciled = $reconciler->reconcile($payment->id->toString(), $payment->reference->value);
+        $reconciler->reconcile($payment->id->toString(), $payment->reference->value);
 
         // Then
-        self::assertTrue($reconciled);
         $result = $this->paymentFinder->ofReference($payment->reference->value);
         self::assertSame(PaymentStatus::ABANDONED, $result->status);
     }

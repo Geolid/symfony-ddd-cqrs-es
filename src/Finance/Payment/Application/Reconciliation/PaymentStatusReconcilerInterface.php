@@ -10,8 +10,5 @@ interface PaymentStatusReconcilerInterface
 {
     public function supports(PaymentStatus $status): bool;
 
-    /**
-     * @return bool whether the provider reported a transition, and it was applied
-     */
-    public function reconcile(string $id, string $reference): bool;
+    public function reconcile(string $id, string $reference): void;
 }

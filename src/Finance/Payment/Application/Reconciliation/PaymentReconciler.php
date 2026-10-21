@@ -22,11 +22,13 @@ final readonly class PaymentReconciler implements PaymentReconcilerInterface
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    public function reconcile(string $id, PaymentStatus $status, string $reference): bool
+    public function reconcile(string $id, PaymentStatus $status, string $reference): void
     {
         foreach ($this->reconcilers as $reconciler) {
             if ($reconciler->supports($status)) {
-                return $reconciler->reconcile($id, $reference);
+                $reconciler->reconcile($id, $reference);
+
+                return;
             }
         }
 

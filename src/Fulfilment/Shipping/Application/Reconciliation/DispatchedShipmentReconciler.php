@@ -27,14 +27,12 @@ final readonly class DispatchedShipmentReconciler implements ShipmentStatusRecon
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    public function reconcile(string $id, string $reference): bool
+    public function reconcile(string $id, string $reference): void
     {
         if (!$this->carrierGateway->checkStatus($reference)->isDelivered()) {
-            return false;
+            return;
         }
 
         $this->commandBus->dispatch(new DeliverShipment($id));
-
-        return true;
     }
 }

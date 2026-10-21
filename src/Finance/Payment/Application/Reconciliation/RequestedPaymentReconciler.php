@@ -29,33 +29,13 @@ final readonly class RequestedPaymentReconciler implements PaymentStatusReconcil
      * @throws ApplicationExceptionInterface
      * @throws \DomainException
      */
-    public function reconcile(string $id, string $reference): bool
+    public function reconcile(string $id, string $reference): void
     {
-        return match ($this->paymentGateway->checkStatus($reference)) {
-            PaymentGatewayStatus::AUTHORIZED => $this->authorize($id),
-            default => $this->abandon($id),
+        $command = match ($this->paymentGateway->checkStatus($reference)) {
+            PaymentGatewayStatus::AUTHORIZED => new AuthorizePayment($id),
+            default => new AbandonPayment($id),
         };
-    }
 
-    /**
-     * @throws ApplicationExceptionInterface
-     * @throws \DomainException
-     */
-    private function authorize(string $id): bool
-    {
-        $this->commandBus->dispatch(new AuthorizePayment($id));
-
-        return true;
-    }
-
-    /**
-     * @throws ApplicationExceptionInterface
-     * @throws \DomainException
-     */
-    private function abandon(string $id): bool
-    {
-        $this->commandBus->dispatch(new AbandonPayment($id));
-
-        return true;
+        $this->commandBus->dispatch($command);
     }
 }

@@ -41,10 +41,9 @@ final class ManifestedShipmentReconcilerTest extends AbstractIntegrationTestCase
         $reconciler = new ManifestedShipmentReconciler($this->carrierGatewayReturning(CarrierGatewayStatus::DISPATCHED), $this->commandBus);
 
         // When
-        $reconciled = $reconciler->reconcile($shipment->id->toString(), $trackingNumber->value);
+        $reconciler->reconcile($shipment->id->toString(), $trackingNumber->value);
 
         // Then
-        self::assertTrue($reconciled);
         $result = $this->shipmentFinder->ofId($shipment->id->toString());
         self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
     }
@@ -59,10 +58,9 @@ final class ManifestedShipmentReconcilerTest extends AbstractIntegrationTestCase
         $reconciler = new ManifestedShipmentReconciler($this->carrierGatewayReturning(CarrierGatewayStatus::REQUESTED), $this->commandBus);
 
         // When
-        $reconciled = $reconciler->reconcile($shipment->id->toString(), $trackingNumber->value);
+        $reconciler->reconcile($shipment->id->toString(), $trackingNumber->value);
 
         // Then
-        self::assertFalse($reconciled);
         $result = $this->shipmentFinder->ofId($shipment->id->toString());
         self::assertSame(ShipmentStatus::MANIFESTED, $result->status);
     }

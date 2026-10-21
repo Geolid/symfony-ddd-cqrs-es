@@ -20,6 +20,7 @@ final class ReconcilePaymentsCommandTest extends AbstractCronTestCase
 {
     private PaymentGatewayInterface&Stub $paymentGateway;
     private PaymentFinderInterface $paymentFinder;
+    private string $threshold;
 
     protected function setUp(): void
     {
@@ -29,6 +30,10 @@ final class ReconcilePaymentsCommandTest extends AbstractCronTestCase
         $this->replace(PaymentGatewayInterface::class, $this->paymentGateway);
 
         $this->paymentFinder = $this->service(PaymentFinderInterface::class);
+
+        $threshold = self::getContainer()->getParameter('finance.payment.reconciliation_threshold');
+        \assert(\is_string($threshold));
+        $this->threshold = $threshold;
     }
 
     #[Test]
@@ -36,26 +41,49 @@ final class ReconcilePaymentsCommandTest extends AbstractCronTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $fresh = PaymentFactory::new()->withRequestedAt($now->modify('-5 minutes'))->create();
-        $declined = PaymentFactory::new()->withRequestedAt($now->modify('-90 minutes'))->create();
-        $authorizable = PaymentFactory::new()->withRequestedAt($now->modify('-90 minutes'))->create();
+        $withinThreshold = PaymentFactory::new()->withRequestedAt($now->modify(\sprintf('-%s +1 second', $this->threshold)))->create();
+        $pastThresholdDeclined = PaymentFactory::new()->withRequestedAt($now->modify(\sprintf('-%s -1 second', $this->threshold)))->create();
+        $pastThresholdAuthorized = PaymentFactory::new()->withRequestedAt($now->modify(\sprintf('-%s -1 second', $this->threshold)))->create();
         $this->paymentGateway->method('checkStatus')->willReturnMap([
-            [$declined->reference->value, PaymentGatewayStatus::DECLINED],
-            [$authorizable->reference->value, PaymentGatewayStatus::AUTHORIZED],
+            [$pastThresholdDeclined->reference->value, PaymentGatewayStatus::DECLINED],
+            [$pastThresholdAuthorized->reference->value, PaymentGatewayStatus::AUTHORIZED],
         ]);
-        $this->store($fresh, $declined, $authorizable);
+        $this->store($withinThreshold, $pastThresholdDeclined, $pastThresholdAuthorized);
 
         // When
         $status = $this->tester()->run(['command' => 'finance:payment:reconcile']);
 
         // Then
-        $freshResult = $this->paymentFinder->ofReference($fresh->reference->value);
-        $declinedResult = $this->paymentFinder->ofReference($declined->reference->value);
-        $authorizableResult = $this->paymentFinder->ofReference($authorizable->reference->value);
+        $withinThresholdResult = $this->paymentFinder->ofReference($withinThreshold->reference->value);
+        $pastThresholdDeclinedResult = $this->paymentFinder->ofReference($pastThresholdDeclined->reference->value);
+        $pastThresholdAuthorizedResult = $this->paymentFinder->ofReference($pastThresholdAuthorized->reference->value);
         self::assertSame(Command::SUCCESS, $status);
-        self::assertSame(PaymentStatus::REQUESTED, $freshResult->status);
-        self::assertSame(PaymentStatus::ABANDONED, $declinedResult->status);
-        self::assertSame(PaymentStatus::AUTHORIZED, $authorizableResult->status);
+        self::assertSame(PaymentStatus::REQUESTED, $withinThresholdResult->status);
+        self::assertSame(PaymentStatus::ABANDONED, $pastThresholdDeclinedResult->status);
+        self::assertSame(PaymentStatus::AUTHORIZED, $pastThresholdAuthorizedResult->status);
+    }
+
+    #[Test]
+    public function itSkips(): void
+    {
+        // Given
+        $now = Clock::get()->now();
+        $payment = PaymentFactory::new()->withRequestedAt($now->modify(\sprintf('-%s -1 second', $this->threshold)))->create();
+        $this->paymentGateway->method('checkStatus')->willReturn(PaymentGatewayStatus::AUTHORIZED);
+        $this->store($payment);
+        $lock = $this->lock('finance:payment:reconcile');
+
+        try {
+            // When
+            $status = $this->tester()->run(['command' => 'finance:payment:reconcile']);
+
+            // Then
+            $result = $this->paymentFinder->ofReference($payment->reference->value);
+            self::assertSame(Command::SUCCESS, $status);
+            self::assertSame(PaymentStatus::REQUESTED, $result->status);
+        } finally {
+            $lock->release();
+        }
     }
 
     #[Test]
@@ -63,8 +91,8 @@ final class ReconcilePaymentsCommandTest extends AbstractCronTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $unreachable = PaymentFactory::new()->withRequestedAt($now->modify('-90 minutes'))->create();
-        $authorizable = PaymentFactory::new()->withRequestedAt($now->modify('-90 minutes'))->create();
+        $unreachable = PaymentFactory::new()->withRequestedAt($now->modify(\sprintf('-%s -1 second', $this->threshold)))->create();
+        $authorizable = PaymentFactory::new()->withRequestedAt($now->modify(\sprintf('-%s -1 second', $this->threshold)))->create();
         $this->paymentGateway->method('checkStatus')->willReturnCallback(
             static fn (string $reference): PaymentGatewayStatus => $reference === $unreachable->reference->value
                 ? throw PaymentTransientFailureException::forReason('Provider unreachable.') : PaymentGatewayStatus::AUTHORIZED,
