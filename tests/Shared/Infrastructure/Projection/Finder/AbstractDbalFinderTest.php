@@ -11,6 +11,8 @@ use Shared\Infrastructure\Projection\Finder\Exception\NonUniqueResultException;
 use Shared\Tests\Support\Double\FakeDbalFinder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
+use function Zenstruck\Foundry\faker;
+
 final class AbstractDbalFinderTest extends AbstractIntegrationTestCase
 {
     private Connection $connection;
@@ -28,25 +30,29 @@ final class AbstractDbalFinderTest extends AbstractIntegrationTestCase
     public function itFinds(): void
     {
         // Given
-        $finder = new FakeDbalFinder($this->connection, $this->hydrator, ['first', 'second']);
+        $firstValue = faker()->unique()->word();
+        $secondValue = faker()->unique()->word();
+        $finder = new FakeDbalFinder($this->connection, $this->hydrator, [$firstValue, $secondValue]);
 
         // When
-        $first = $finder->ofValue('first');
-        $second = $finder->ofValue('second');
+        $first = $finder->ofValue($firstValue);
+        $second = $finder->ofValue($secondValue);
 
         // Then
-        self::assertSame('first', $first?->string);
-        self::assertSame('second', $second?->string);
+        self::assertSame($firstValue, $first?->string);
+        self::assertSame($secondValue, $second?->string);
     }
 
     #[Test]
     public function itFindsNothing(): void
     {
         // Given
-        $finder = new FakeDbalFinder($this->connection, $this->hydrator, ['first']);
+        $value = faker()->unique()->word();
+        $unknownValue = faker()->unique()->word();
+        $finder = new FakeDbalFinder($this->connection, $this->hydrator, [$value]);
 
         // When
-        $result = $finder->ofValue('unknown');
+        $result = $finder->ofValue($unknownValue);
 
         // Then
         self::assertNull($result);
@@ -56,12 +62,13 @@ final class AbstractDbalFinderTest extends AbstractIntegrationTestCase
     public function itThrowsWhenNotUnique(): void
     {
         // Given
-        $finder = new FakeDbalFinder($this->connection, $this->hydrator, ['twin', 'twin']);
+        $twin = faker()->unique()->word();
+        $finder = new FakeDbalFinder($this->connection, $this->hydrator, [$twin, $twin]);
 
         // Then
         $this->expectException(NonUniqueResultException::class);
 
         // When
-        $finder->ofValue('twin');
+        $finder->ofValue($twin);
     }
 }

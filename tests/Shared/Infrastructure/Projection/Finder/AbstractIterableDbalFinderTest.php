@@ -12,6 +12,8 @@ use Shared\Tests\Support\Double\DummyHydratable;
 use Shared\Tests\Support\Double\FakeDbalFinder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
+use function Zenstruck\Foundry\faker;
+
 final class AbstractIterableDbalFinderTest extends AbstractIntegrationTestCase
 {
     private Connection $connection;
@@ -55,7 +57,7 @@ final class AbstractIterableDbalFinderTest extends AbstractIntegrationTestCase
     public function itCounts(): void
     {
         // Given
-        $finder = new FakeDbalFinder($this->connection, $this->hydrator, ['gamma', 'alpha', 'beta']);
+        $finder = new FakeDbalFinder($this->connection, $this->hydrator, [faker()->unique()->word(), faker()->unique()->word(), faker()->unique()->word()]);
 
         // When
         $count = \count($finder);
@@ -68,11 +70,13 @@ final class AbstractIterableDbalFinderTest extends AbstractIntegrationTestCase
     public function itCachesCount(): void
     {
         // Given
-        $finder = new FakeDbalFinder($this->connection, $this->hydrator, ['alpha', 'beta']);
+        $values = [faker()->unique()->word(), faker()->unique()->word()];
+        $addedValue = faker()->unique()->word();
+        $finder = new FakeDbalFinder($this->connection, $this->hydrator, $values);
 
         // When
         $firstCount = \count($finder);
-        $finder->values = ['alpha', 'beta', 'gamma'];
+        $finder->values = [...$values, $addedValue];
         $secondCount = \count($finder);
 
         // Then
