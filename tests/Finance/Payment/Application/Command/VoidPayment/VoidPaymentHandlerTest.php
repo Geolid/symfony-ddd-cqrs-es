@@ -7,6 +7,7 @@ namespace Finance\Tests\Payment\Application\Command\VoidPayment;
 use Finance\Payment\Application\Command\VoidPayment\VoidPayment;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
+use Finance\Payment\Domain\Exception\PaymentNotFoundException;
 use Finance\Tests\Payment\Support\Factory\PaymentFactory;
 use Finance\Tests\Payment\Support\Factory\PaymentIdFactory;
 use PHPUnit\Framework\Attributes\Test;
@@ -54,15 +55,15 @@ final class VoidPaymentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresWhenNotFound(): void
+    public function itFailsWhenNotFound(): void
     {
         // Given
         $unknownId = PaymentIdFactory::new()->create()->toString();
 
+        // Then
+        $this->expectException(PaymentNotFoundException::class);
+
         // When
         $this->dispatch(new VoidPayment($unknownId));
-
-        // Then
-        self::expectNotToPerformAssertions();
     }
 }
