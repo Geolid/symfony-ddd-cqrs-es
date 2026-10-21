@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Compliance\Erasing\Application\IntegrationEvent\ErasureCancelled;
 
-use Compliance\Erasing\Domain\Erasure;
 use Compliance\Erasing\Domain\Event\ErasureCancelled;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Patchlevel\EventSourcing\Message\Message;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 
@@ -18,11 +18,11 @@ final readonly class ErasureCancelledPublisher
     }
 
     #[Subscribe(ErasureCancelled::class)]
-    public function __invoke(ErasureCancelled $event): void
+    public function __invoke(ErasureCancelled $event, Message $message): void
     {
-        $this->publisher->publish(Erasure::class, $event->id->toString(), new ErasureCancelledIntegrationEvent(
+        $this->publisher->publish(new ErasureCancelledIntegrationEvent(
             identityId: $event->identityId,
             cancelledAt: $event->cancelledAt,
-        ));
+        ), $message);
     }
 }

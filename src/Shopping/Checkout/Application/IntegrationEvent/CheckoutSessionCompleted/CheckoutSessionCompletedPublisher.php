@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace Shopping\Checkout\Application\IntegrationEvent\CheckoutSessionCompleted;
 
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Patchlevel\EventSourcing\Message\Message;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
-use Shopping\Checkout\Domain\CheckoutSession;
 use Shopping\Checkout\Domain\Event\CheckoutSessionCompleted;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 
@@ -21,9 +21,9 @@ final readonly class CheckoutSessionCompletedPublisher
     }
 
     #[Subscribe(CheckoutSessionCompleted::class)]
-    public function __invoke(CheckoutSessionCompleted $event): void
+    public function __invoke(CheckoutSessionCompleted $event, Message $message): void
     {
-        $this->publisher->publish(CheckoutSession::class, $event->id, new CheckoutSessionCompletedIntegrationEvent(
+        $this->publisher->publish(new CheckoutSessionCompletedIntegrationEvent(
             checkoutSessionId: $event->id,
             cartId: $event->cartId,
             customerId: $event->customerId,
@@ -39,6 +39,6 @@ final readonly class CheckoutSessionCompletedPublisher
             billingAddress: PostalAddressMapper::toArray($event->billingAddress),
             paymentId: $event->paymentId,
             completedAt: $event->completedAt,
-        ));
+        ), $message);
     }
 }

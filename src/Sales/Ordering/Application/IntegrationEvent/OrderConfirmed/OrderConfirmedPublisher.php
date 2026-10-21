@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Sales\Ordering\Application\IntegrationEvent\OrderConfirmed;
 
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Patchlevel\EventSourcing\Message\Message;
 use Sales\Ordering\Domain\Order\Event\OrderConfirmed;
-use Sales\Ordering\Domain\Order\Order;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 use Shared\Application\Mapper\PostalAddressMapper;
@@ -19,15 +19,15 @@ final readonly class OrderConfirmedPublisher
     }
 
     #[Subscribe(OrderConfirmed::class)]
-    public function __invoke(OrderConfirmed $event): void
+    public function __invoke(OrderConfirmed $event, Message $message): void
     {
-        $this->publisher->publish(Order::class, $event->id->toString(), new OrderConfirmedIntegrationEvent(
+        $this->publisher->publish(new OrderConfirmedIntegrationEvent(
             orderId: $event->id->toString(),
             cartId: $event->cartId,
             customerId: $event->customerId,
             checkoutSessionId: $event->checkoutSessionId,
             shippingAddress: PostalAddressMapper::toArray($event->shippingAddress),
             confirmedAt: $event->confirmedAt,
-        ));
+        ), $message);
     }
 }

@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Iam\Identity\Application\IntegrationEvent\IdentityReactivated;
 
 use Iam\Identity\Domain\Event\IdentityReactivated;
-use Iam\Identity\Domain\Identity;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Patchlevel\EventSourcing\Message\Message;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 
@@ -18,11 +18,11 @@ final readonly class IdentityReactivatedPublisher
     }
 
     #[Subscribe(IdentityReactivated::class)]
-    public function __invoke(IdentityReactivated $event): void
+    public function __invoke(IdentityReactivated $event, Message $message): void
     {
-        $this->publisher->publish(Identity::class, $event->id->toString(), new IdentityReactivatedIntegrationEvent(
+        $this->publisher->publish(new IdentityReactivatedIntegrationEvent(
             identityId: $event->id->toString(),
             reactivatedAt: $event->reactivatedAt,
-        ));
+        ), $message);
     }
 }

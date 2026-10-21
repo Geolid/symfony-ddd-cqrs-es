@@ -7,8 +7,8 @@ namespace Fulfilment\Shipping\Application\IntegrationEvent\ShipmentDelivered;
 use Fulfilment\Shipping\Domain\Event\ShipmentDelivered;
 use Fulfilment\Shipping\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipping\Domain\Repository\ShipmentRepositoryInterface;
-use Fulfilment\Shipping\Domain\Shipment;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
+use Patchlevel\EventSourcing\Message\Message;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 
@@ -25,12 +25,12 @@ final readonly class ShipmentDeliveredPublisher
      * @throws ShipmentNotFoundException
      */
     #[Subscribe(ShipmentDelivered::class)]
-    public function __invoke(ShipmentDelivered $event): void
+    public function __invoke(ShipmentDelivered $event, Message $message): void
     {
-        $this->publisher->publish(Shipment::class, $event->id->toString(), new ShipmentDeliveredIntegrationEvent(
+        $this->publisher->publish(new ShipmentDeliveredIntegrationEvent(
             shipmentId: $event->id->toString(),
             orderId: $this->repository->load($event->id)->orderId,
             deliveredAt: $event->deliveredAt,
-        ));
+        ), $message);
     }
 }
