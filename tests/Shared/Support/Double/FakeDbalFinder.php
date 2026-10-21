@@ -28,10 +28,10 @@ final class FakeDbalFinder extends AbstractPaginatableDbalFinder
 
     public function ofValue(string $value): ?DummyHydratable
     {
-        return $this->valued($value)->one();
+        return $this->byValue($value)->one();
     }
 
-    public function valued(string $value): static
+    public function byValue(string $value): static
     {
         return $this->filter(static function (QueryBuilder $qb) use ($value): void {
             $qb->andWhere('string = :value')->setParameter('value', $value);

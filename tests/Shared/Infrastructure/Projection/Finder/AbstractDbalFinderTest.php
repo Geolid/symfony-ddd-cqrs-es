@@ -8,6 +8,7 @@ use Doctrine\DBAL\Connection;
 use Patchlevel\Hydrator\Hydrator;
 use PHPUnit\Framework\Attributes\Test;
 use Shared\Infrastructure\Projection\Finder\Exception\NonUniqueResultException;
+use Shared\Tests\Support\Double\DummyHydratable;
 use Shared\Tests\Support\Double\FakeDbalFinder;
 use Support\TestCase\AbstractIntegrationTestCase;
 
@@ -68,5 +69,20 @@ final class AbstractDbalFinderTest extends AbstractIntegrationTestCase
 
         // When
         $finder->ofValue($twin);
+    }
+
+    #[Test]
+    public function itFiltersByValue(): void
+    {
+        // Given
+        $value = faker()->unique()->word();
+        $otherValue = faker()->unique()->word();
+        $finder = new FakeDbalFinder($this->connection, $this->hydrator, [$otherValue, $value, $value]);
+
+        // When
+        $results = [...$finder->byValue($value)];
+
+        // Then
+        self::assertSame([$value, $value], array_map(static fn (DummyHydratable $result): ?string => $result->string, $results));
     }
 }

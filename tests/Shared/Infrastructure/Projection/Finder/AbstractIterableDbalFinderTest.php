@@ -77,7 +77,7 @@ final class AbstractIterableDbalFinderTest extends AbstractIntegrationTestCase
         $finder->count();
 
         // When
-        $count = \count($finder->valued($value));
+        $count = \count($finder->byValue($value));
 
         // Then
         self::assertSame(1, $count);
