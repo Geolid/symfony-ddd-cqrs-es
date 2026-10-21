@@ -41,9 +41,11 @@ final class ReconcilePaymentsCommandTest extends AbstractCronTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $withinThreshold = PaymentFactory::new()->withRequestedAt($now->modify(\sprintf('-%s +1 second', $this->threshold)))->create();
-        $pastThresholdDeclined = PaymentFactory::new()->withRequestedAt($now->modify(\sprintf('-%s -1 second', $this->threshold)))->create();
-        $pastThresholdAuthorized = PaymentFactory::new()->withRequestedAt($now->modify(\sprintf('-%s -1 second', $this->threshold)))->create();
+        $pastThresholdAt = $now->modify(\sprintf('-%s -1 second', $this->threshold));
+        $withinThresholdAt = $now->modify(\sprintf('-%s +1 second', $this->threshold));
+        $withinThreshold = PaymentFactory::new()->withRequestedAt($withinThresholdAt)->create();
+        $pastThresholdDeclined = PaymentFactory::new()->withRequestedAt($pastThresholdAt)->create();
+        $pastThresholdAuthorized = PaymentFactory::new()->withRequestedAt($pastThresholdAt)->create();
         $this->paymentGateway->method('checkStatus')->willReturnMap([
             [$pastThresholdDeclined->reference->value, PaymentGatewayStatus::DECLINED],
             [$pastThresholdAuthorized->reference->value, PaymentGatewayStatus::AUTHORIZED],
@@ -68,7 +70,8 @@ final class ReconcilePaymentsCommandTest extends AbstractCronTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $payment = PaymentFactory::new()->withRequestedAt($now->modify(\sprintf('-%s -1 second', $this->threshold)))->create();
+        $pastThresholdAt = $now->modify(\sprintf('-%s -1 second', $this->threshold));
+        $payment = PaymentFactory::new()->withRequestedAt($pastThresholdAt)->create();
         $this->paymentGateway->method('checkStatus')->willReturn(PaymentGatewayStatus::AUTHORIZED);
         $this->store($payment);
         $lock = $this->lock('finance:payment:reconcile');
@@ -91,8 +94,9 @@ final class ReconcilePaymentsCommandTest extends AbstractCronTestCase
     {
         // Given
         $now = Clock::get()->now();
-        $unreachable = PaymentFactory::new()->withRequestedAt($now->modify(\sprintf('-%s -1 second', $this->threshold)))->create();
-        $authorizable = PaymentFactory::new()->withRequestedAt($now->modify(\sprintf('-%s -1 second', $this->threshold)))->create();
+        $pastThresholdAt = $now->modify(\sprintf('-%s -1 second', $this->threshold));
+        $unreachable = PaymentFactory::new()->withRequestedAt($pastThresholdAt)->create();
+        $authorizable = PaymentFactory::new()->withRequestedAt($pastThresholdAt)->create();
         $this->paymentGateway->method('checkStatus')->willReturnCallback(
             static fn (string $reference): PaymentGatewayStatus => $reference === $unreachable->reference->value
                 ? throw PaymentTransientFailureException::forReason('Provider unreachable.') : PaymentGatewayStatus::AUTHORIZED,
