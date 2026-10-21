@@ -42,7 +42,7 @@ final class AbstractDbalFinderTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itFiltersWithoutAlteringFinder(): void
+    public function itFilters(): void
     {
         // Given
         $value = faker()->unique()->word();
