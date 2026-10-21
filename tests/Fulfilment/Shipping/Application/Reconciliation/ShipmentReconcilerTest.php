@@ -34,7 +34,7 @@ final class ShipmentReconcilerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itDispatchesWhenCarrierDispatched(): void
+    public function itDispatches(): void
     {
         // Given
         $shipment = ShipmentFactory::new()->prepared()->manifested()->create();
@@ -50,7 +50,7 @@ final class ShipmentReconcilerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itDeliversWhenCarrierDelivered(): void
+    public function itDelivers(): void
     {
         // Given
         $shipment = ShipmentFactory::new()->prepared()->manifested()->dispatched()->create();
