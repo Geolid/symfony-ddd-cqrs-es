@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Finance\Tests\Payment\Application\Policy;
 
+use Finance\Payment\Application\Finder\Payment\Exception\PaymentResultNotFoundException;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PaymentStatus;
 use Finance\Payment\Application\Policy\CapturePaymentOnOrderPrepared;
@@ -65,12 +66,15 @@ final class CapturePaymentOnOrderPreparedTest extends AbstractIntegrationTestCas
     }
 
     #[Test]
-    public function itIgnoresWhenNotFound(): void
+    public function itFailsWhenNotFound(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
 
         $this->paymentGateway->expects(self::never())->method('capture');
+
+        // Then
+        $this->expectException(PaymentResultNotFoundException::class);
 
         // When
         $this->trigger(CapturePaymentOnOrderPrepared::class, new OrderPreparedIntegrationEvent($orderId, Clock::get()->now()));

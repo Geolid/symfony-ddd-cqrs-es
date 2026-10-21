@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Fulfilment\Shipping\Application\Command\CancelShipment;
 
-use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Domain\Exception\ShipmentAlreadyExistsException;
 use Fulfilment\Shipping\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Shipping\Domain\Repository\ShipmentRepositoryInterface;
@@ -17,7 +16,6 @@ final readonly class CancelShipmentHandler
 {
     public function __construct(
         private ShipmentRepositoryInterface $repository,
-        private ShipmentFinderInterface $finder,
         private ClockInterface $clock,
     ) {
     }
@@ -28,13 +26,7 @@ final readonly class CancelShipmentHandler
      */
     public function __invoke(CancelShipment $command): void
     {
-        $result = $this->finder->ofOrderOrNull($command->orderId);
-
-        if (null === $result) {
-            return;
-        }
-
-        $shipment = $this->repository->load(ShipmentId::fromString($result->id));
+        $shipment = $this->repository->load(ShipmentId::forOrder($command->orderId));
         $shipment->cancel($this->clock->now());
         $this->repository->save($shipment);
     }

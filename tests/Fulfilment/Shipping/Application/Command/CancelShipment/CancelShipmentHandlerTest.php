@@ -7,6 +7,7 @@ namespace Fulfilment\Tests\Shipping\Application\Command\CancelShipment;
 use Fulfilment\Shipping\Application\Command\CancelShipment\CancelShipment;
 use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\ShipmentStatus;
+use Fulfilment\Shipping\Domain\Exception\ShipmentNotFoundException;
 use Fulfilment\Tests\Shipping\Support\Factory\ShipmentFactory;
 use PHPUnit\Framework\Attributes\Test;
 use Ramsey\Uuid\Uuid;
@@ -57,16 +58,15 @@ final class CancelShipmentHandlerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresWhenNotFound(): void
+    public function itFailsWhenNotFound(): void
     {
         // Given
         $orderId = Uuid::uuid7()->toString();
 
+        // Then
+        $this->expectException(ShipmentNotFoundException::class);
+
         // When
         $this->dispatch(new CancelShipment($orderId));
-
-        // Then
-        $result = $this->finder->ofOrderOrNull($orderId);
-        self::assertNull($result);
     }
 }

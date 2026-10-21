@@ -6,7 +6,6 @@ namespace Finance\Payment\Application\Policy;
 
 use Finance\Payment\Application\Command\CapturePayment\CapturePayment;
 use Finance\Payment\Application\Command\FailPayment\FailPayment;
-use Finance\Payment\Application\Finder\Payment\Exception\PaymentResultNotFoundException;
 use Finance\Payment\Application\Finder\Payment\PaymentFinderInterface;
 use Finance\Payment\Application\PSP\Exception\PaymentFatalFailureException;
 use Finance\Payment\Application\PSP\PaymentGatewayInterface;
@@ -37,11 +36,7 @@ final readonly class CapturePaymentOnOrderPrepared
     #[Subscribe(OrderPreparedIntegrationEvent::class)]
     public function __invoke(OrderPreparedIntegrationEvent $event): void
     {
-        try {
-            $payment = $this->paymentFinder->ofOrderId($event->orderId);
-        } catch (PaymentResultNotFoundException) {
-            return;
-        }
+        $payment = $this->paymentFinder->ofOrderId($event->orderId);
 
         $command = match ($this->paymentGateway->capture($payment->reference)) {
             PaymentGatewayStatus::CAPTURED => new CapturePayment($payment->id, $event->orderId),
