@@ -21,7 +21,7 @@ final readonly class CartProductAddedPublisher
     #[Subscribe(CartProductAdded::class)]
     public function __invoke(CartProductAdded $event, Message $message): void
     {
-        $this->publisher->publish(Cart::class, $event->id->toString(), new CartProductAddedIntegrationEvent(
+        $this->publisher->publish(new CartProductAddedIntegrationEvent(
             cartId: $event->id->toString(),
             productId: $event->productId,
             quantity: $event->quantity->value,

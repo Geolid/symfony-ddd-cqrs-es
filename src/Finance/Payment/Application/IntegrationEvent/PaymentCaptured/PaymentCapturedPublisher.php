@@ -21,7 +21,7 @@ final readonly class PaymentCapturedPublisher
     #[Subscribe(PaymentCaptured::class)]
     public function __invoke(PaymentCaptured $event, Message $message): void
     {
-        $this->publisher->publish(Payment::class, $event->id->toString(), new PaymentCapturedIntegrationEvent(
+        $this->publisher->publish(new PaymentCapturedIntegrationEvent(
             orderId: $event->orderId,
             capturedAt: $event->capturedAt,
         ), $message);

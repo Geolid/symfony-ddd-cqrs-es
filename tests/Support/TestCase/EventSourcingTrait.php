@@ -9,7 +9,6 @@ use Patchlevel\EventSourcing\Aggregate\AggregateRootMetadataAware;
 use Patchlevel\EventSourcing\Repository\RepositoryManager;
 use Patchlevel\EventSourcing\Store\Criteria\CriteriaBuilder;
 use Patchlevel\EventSourcing\Store\Store;
-use Shared\Infrastructure\EventStore\PatchlevelIntegrationEventPublisher;
 
 trait EventSourcingTrait
 {
@@ -77,7 +76,7 @@ trait EventSourcingTrait
      */
     protected function storedIntegrationEventOf(string $eventClass, AggregateRoot&AggregateRootMetadataAware $aggregate): object
     {
-        return $this->firstStoredEventIn($eventClass, PatchlevelIntegrationEventPublisher::streamNameOf($aggregate::class, $aggregate->aggregateRootId()->toString()));
+        return $this->firstStoredEventIn($eventClass, 'integration.'.$aggregate::metadata()->streamName($aggregate->aggregateRootId()->toString()));
     }
 
     /**

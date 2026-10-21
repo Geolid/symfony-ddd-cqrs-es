@@ -21,7 +21,7 @@ final readonly class IdentityRegisteredPublisher
     #[Subscribe(IdentityRegistered::class)]
     public function __invoke(IdentityRegistered $event, Message $message): void
     {
-        $this->publisher->publish(Identity::class, $event->id->toString(), new IdentityRegisteredIntegrationEvent(
+        $this->publisher->publish(new IdentityRegisteredIntegrationEvent(
             identityId: $event->id->toString(),
             fullName: $event->fullName->value,
             email: $event->email->value,

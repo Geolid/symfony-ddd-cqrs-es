@@ -10,7 +10,6 @@ use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
 use Shared\Application\Mapper\PostalAddressMapper;
 use Shopping\Checkout\Application\Mapper\CheckoutItemMapper;
-use Shopping\Checkout\Domain\CheckoutSession;
 use Shopping\Checkout\Domain\Event\CheckoutSessionCompleted;
 use Shopping\Checkout\Domain\ValueObject\CheckoutItem;
 
@@ -24,7 +23,7 @@ final readonly class CheckoutSessionCompletedPublisher
     #[Subscribe(CheckoutSessionCompleted::class)]
     public function __invoke(CheckoutSessionCompleted $event, Message $message): void
     {
-        $this->publisher->publish(CheckoutSession::class, $event->id, new CheckoutSessionCompletedIntegrationEvent(
+        $this->publisher->publish(new CheckoutSessionCompletedIntegrationEvent(
             checkoutSessionId: $event->id,
             cartId: $event->cartId,
             customerId: $event->customerId,

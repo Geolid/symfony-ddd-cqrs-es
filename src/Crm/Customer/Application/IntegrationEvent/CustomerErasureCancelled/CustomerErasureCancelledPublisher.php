@@ -21,7 +21,7 @@ final readonly class CustomerErasureCancelledPublisher
     #[Subscribe(CustomerErasureCancelled::class)]
     public function __invoke(CustomerErasureCancelled $event, Message $message): void
     {
-        $this->publisher->publish(Customer::class, $event->id->toString(), new CustomerErasureCancelledIntegrationEvent(
+        $this->publisher->publish(new CustomerErasureCancelledIntegrationEvent(
             customerId: $event->id->toString(),
             cancelledAt: $event->cancelledAt,
         ), $message);

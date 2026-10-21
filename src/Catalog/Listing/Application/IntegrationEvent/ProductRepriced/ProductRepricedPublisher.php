@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Catalog\Listing\Application\IntegrationEvent\ProductRepriced;
 
 use Catalog\Listing\Domain\Event\ProductRepriced;
-use Catalog\Listing\Domain\Product;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Patchlevel\EventSourcing\Message\Message;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
@@ -21,7 +20,7 @@ final readonly class ProductRepricedPublisher
     #[Subscribe(ProductRepriced::class)]
     public function __invoke(ProductRepriced $event, Message $message): void
     {
-        $this->publisher->publish(Product::class, $event->id->toString(), new ProductRepricedIntegrationEvent(
+        $this->publisher->publish(new ProductRepricedIntegrationEvent(
             productId: $event->id->toString(),
             unitPriceInCents: $event->unitPrice->cents,
             repricedAt: $event->repricedAt,

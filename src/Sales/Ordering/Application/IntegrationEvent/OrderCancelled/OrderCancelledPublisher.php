@@ -8,7 +8,6 @@ use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Patchlevel\EventSourcing\Message\Message;
 use Sales\Ordering\Domain\Order\Event\OrderCancelled;
 use Sales\Ordering\Domain\Order\Exception\OrderNotFoundException;
-use Sales\Ordering\Domain\Order\Order;
 use Sales\Ordering\Domain\Order\Repository\OrderRepositoryInterface;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
 use Shared\Application\IntegrationEvent\Publisher;
@@ -30,7 +29,7 @@ final readonly class OrderCancelledPublisher
     {
         $order = $this->repository->load($event->id);
 
-        $this->publisher->publish(Order::class, $event->id->toString(), new OrderCancelledIntegrationEvent(
+        $this->publisher->publish(new OrderCancelledIntegrationEvent(
             orderId: $event->id->toString(),
             customerId: $order->customerId,
             cancelledAt: $event->cancelledAt,

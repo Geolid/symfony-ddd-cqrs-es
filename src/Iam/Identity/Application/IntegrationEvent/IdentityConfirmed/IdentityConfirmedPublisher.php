@@ -21,7 +21,7 @@ final readonly class IdentityConfirmedPublisher
     #[Subscribe(IdentityConfirmed::class)]
     public function __invoke(IdentityConfirmed $event, Message $message): void
     {
-        $this->publisher->publish(Identity::class, $event->id->toString(), new IdentityConfirmedIntegrationEvent(
+        $this->publisher->publish(new IdentityConfirmedIntegrationEvent(
             identityId: $event->id->toString(),
             confirmedAt: $event->confirmedAt,
         ), $message);

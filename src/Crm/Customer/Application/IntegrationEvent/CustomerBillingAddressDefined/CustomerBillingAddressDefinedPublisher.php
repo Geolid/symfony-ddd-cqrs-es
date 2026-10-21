@@ -22,7 +22,7 @@ final readonly class CustomerBillingAddressDefinedPublisher
     #[Subscribe(CustomerBillingAddressDefined::class)]
     public function __invoke(CustomerBillingAddressDefined $event, Message $message): void
     {
-        $this->publisher->publish(Customer::class, $event->id->toString(), new CustomerBillingAddressDefinedIntegrationEvent(
+        $this->publisher->publish(new CustomerBillingAddressDefinedIntegrationEvent(
             customerId: $event->id->toString(),
             postalAddress: PostalAddressMapper::toArray($event->postalAddress),
             definedAt: $event->definedAt,

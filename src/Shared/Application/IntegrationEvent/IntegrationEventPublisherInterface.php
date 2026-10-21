@@ -8,8 +8,5 @@ use Patchlevel\EventSourcing\Message\Message;
 
 interface IntegrationEventPublisherInterface
 {
-    /**
-     * @param class-string $aggregateClass
-     */
-    public function publish(string $aggregateClass, string $aggregateId, IntegrationEventInterface $event, Message $source): void;
+    public function publish(IntegrationEventInterface $event, Message $source): void;
 }
