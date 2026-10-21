@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Crm\Customer\Application\IntegrationEvent\CustomerBillingAddressDefined;
 
-use Crm\Customer\Domain\Customer\Customer;
 use Crm\Customer\Domain\Customer\Event\CustomerBillingAddressDefined;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Patchlevel\EventSourcing\Message\Message;

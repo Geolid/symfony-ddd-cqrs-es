@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace Crm\Customer\Application\IntegrationEvent\CustomerRegistered;
 
-use Crm\Customer\Domain\Customer\Customer;
 use Crm\Customer\Domain\Customer\Event\CustomerRegistered;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Patchlevel\EventSourcing\Message\Message;

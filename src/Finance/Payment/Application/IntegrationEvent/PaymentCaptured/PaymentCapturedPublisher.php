@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Finance\Payment\Application\IntegrationEvent\PaymentCaptured;
 
 use Finance\Payment\Domain\Event\PaymentCaptured;
-use Finance\Payment\Domain\Payment;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Patchlevel\EventSourcing\Message\Message;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;

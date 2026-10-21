@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Iam\Identity\Application\IntegrationEvent\IdentitySuspended;
 
 use Iam\Identity\Domain\Event\IdentitySuspended;
-use Iam\Identity\Domain\Identity;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Patchlevel\EventSourcing\Message\Message;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;

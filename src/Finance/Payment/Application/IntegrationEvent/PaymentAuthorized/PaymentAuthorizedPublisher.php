@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Finance\Payment\Application\IntegrationEvent\PaymentAuthorized;
 
 use Finance\Payment\Domain\Event\PaymentAuthorized;
-use Finance\Payment\Domain\Payment;
 use Patchlevel\EventSourcing\Attribute\Subscribe;
 use Patchlevel\EventSourcing\Message\Message;
 use Shared\Application\IntegrationEvent\IntegrationEventPublisherInterface;
