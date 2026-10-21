@@ -30,17 +30,31 @@ final class AbstractDbalFinderTest extends AbstractIntegrationTestCase
     public function itFinds(): void
     {
         // Given
-        $firstValue = faker()->unique()->word();
-        $secondValue = faker()->unique()->word();
-        $finder = new FakeDbalFinder($this->connection, $this->hydrator, [$firstValue, $secondValue]);
+        $value = faker()->unique()->word();
+        $otherValue = faker()->unique()->word();
+        $finder = new FakeDbalFinder($this->connection, $this->hydrator, [$otherValue, $value]);
 
         // When
-        $first = $finder->ofValue($firstValue);
-        $second = $finder->ofValue($secondValue);
+        $result = $finder->ofValue($value);
 
         // Then
-        self::assertSame($firstValue, $first?->string);
-        self::assertSame($secondValue, $second?->string);
+        self::assertSame($value, $result?->string);
+    }
+
+    #[Test]
+    public function itFiltersWithoutAlteringFinder(): void
+    {
+        // Given
+        $value = faker()->unique()->word();
+        $otherValue = faker()->unique()->word();
+        $finder = new FakeDbalFinder($this->connection, $this->hydrator, [$value, $otherValue]);
+        $finder->valued($value);
+
+        // When
+        $count = \count($finder);
+
+        // Then
+        self::assertSame(2, $count);
     }
 
     #[Test]
