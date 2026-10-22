@@ -9,6 +9,10 @@ use Support\TestCase\AbstractIntegrationTestCase;
 use Symfony\Bundle\FrameworkBundle\Console\Application;
 use Symfony\Component\Console\Tester\ApplicationTester;
 use Symfony\Component\HttpKernel\KernelInterface;
+use Symfony\Component\Lock\LockFactory;
+use Symfony\Component\Lock\LockInterface;
+use Symfony\Component\Lock\Store\FlockStore;
+use Symfony\Component\Lock\Store\SemaphoreStore;
 use Webmozart\Assert\Assert;
 
 abstract class AbstractCronTestCase extends AbstractIntegrationTestCase
@@ -40,5 +44,14 @@ abstract class AbstractCronTestCase extends AbstractIntegrationTestCase
     protected function tester(): ApplicationTester
     {
         return new ApplicationTester($this->application);
+    }
+
+    protected function lock(string $commandName): LockInterface
+    {
+        $store = SemaphoreStore::isSupported() ? new SemaphoreStore() : new FlockStore();
+        $lock = new LockFactory($store)->createLock($commandName);
+        $lock->acquire();
+
+        return $lock;
     }
 }

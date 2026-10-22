@@ -4,14 +4,16 @@ declare(strict_types=1);
 
 namespace Finance\Payment\Application\Reconciliation;
 
-use Finance\Payment\Application\PaymentStatus;
+use Finance\Payment\Application\Finder\Payment\Exception\PaymentResultNotFoundException;
+use Finance\Payment\Application\Reconciliation\Exception\UnsupportedPaymentStatusException;
 use Shared\Application\DrivingPort;
 
 #[DrivingPort]
 interface PaymentReconcilerInterface
 {
     /**
-     * @return bool whether the provider reported a transition, and it was applied
+     * @throws PaymentResultNotFoundException
+     * @throws UnsupportedPaymentStatusException
      */
-    public function reconcile(string $id, PaymentStatus $status, string $reference): bool;
+    public function reconcile(string $paymentId): void;
 }

@@ -11,6 +11,6 @@ final class UnsupportedShipmentStatusException extends \RuntimeException impleme
 {
     public static function forStatus(ShipmentStatus $status): self
     {
-        return new self(\sprintf('No reconciler supports shipment status "%s".', $status->value));
+        return new self(\sprintf('No reconciliation applies to shipment status "%s".', $status->value));
     }
 }

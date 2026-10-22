@@ -4,48 +4,130 @@ declare(strict_types=1);
 
 namespace Fulfilment\Tests\Shipping\Application\Reconciliation;
 
+use Fulfilment\Shipping\Application\Carrier\CarrierGatewayInterface;
+use Fulfilment\Shipping\Application\Carrier\CarrierGatewayStatus;
+use Fulfilment\Shipping\Application\Finder\Shipment\Exception\ShipmentResultNotFoundException;
+use Fulfilment\Shipping\Application\Finder\Shipment\ShipmentFinderInterface;
 use Fulfilment\Shipping\Application\Reconciliation\Exception\UnsupportedShipmentStatusException;
 use Fulfilment\Shipping\Application\Reconciliation\ShipmentReconciler;
-use Fulfilment\Shipping\Application\Reconciliation\ShipmentStatusReconcilerInterface;
 use Fulfilment\Shipping\Application\ShipmentStatus;
-use Fulfilment\Tests\Shipping\Support\Factory\TrackingNumberFactory;
+use Fulfilment\Tests\Shipping\Support\Double\CarrierGatewayStubTrait;
+use Fulfilment\Tests\Shipping\Support\Factory\ShipmentFactory;
+use Fulfilment\Tests\Shipping\Support\Factory\ShipmentIdFactory;
 use PHPUnit\Framework\Attributes\Test;
-use Ramsey\Uuid\Uuid;
+use Shared\Application\Command\CommandBusInterface;
 use Support\TestCase\AbstractIntegrationTestCase;
 
 final class ShipmentReconcilerTest extends AbstractIntegrationTestCase
 {
-    #[Test]
-    public function itDelegatesToSupportingReconciler(): void
+    use CarrierGatewayStubTrait;
+
+    private ShipmentFinderInterface $shipmentFinder;
+    private CommandBusInterface $commandBus;
+
+    protected function setUp(): void
     {
-        // Given
-        $unsupporting = $this->createMock(ShipmentStatusReconcilerInterface::class);
-        $unsupporting->method('supports')->willReturn(false);
-        $unsupporting->expects(self::never())->method('reconcile');
+        parent::setUp();
 
-        $matching = $this->createStub(ShipmentStatusReconcilerInterface::class);
-        $matching->method('supports')->willReturn(true);
-        $matching->method('reconcile')->willReturn(true);
-
-        $router = new ShipmentReconciler([$unsupporting, $matching]);
-
-        // When
-        $result = $router->reconcile(Uuid::uuid7()->toString(), ShipmentStatus::MANIFESTED, TrackingNumberFactory::new()->create()->value);
-
-        // Then
-        self::assertTrue($result);
+        $this->shipmentFinder = $this->service(ShipmentFinderInterface::class);
+        $this->commandBus = $this->service(CommandBusInterface::class);
     }
 
     #[Test]
-    public function itFailsWhenNoReconcilerSupportsStatus(): void
+    public function itDispatchesWhenCarrierDispatched(): void
     {
         // Given
-        $router = new ShipmentReconciler([]);
+        $shipment = ShipmentFactory::new()->prepared()->manifested()->create();
+        $this->store($shipment);
+        $reconciler = $this->reconcilerWith($this->carrierGatewayReturning(CarrierGatewayStatus::DISPATCHED));
+
+        // When
+        $reconciler->reconcile($shipment->id->toString());
+
+        // Then
+        $result = $this->shipmentFinder->ofId($shipment->id->toString());
+        self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
+    }
+
+    #[Test]
+    public function itDeliversWhenCarrierDelivered(): void
+    {
+        // Given
+        $shipment = ShipmentFactory::new()->prepared()->manifested()->dispatched()->create();
+        $this->store($shipment);
+        $reconciler = $this->reconcilerWith($this->carrierGatewayReturning(CarrierGatewayStatus::DELIVERED));
+
+        // When
+        $reconciler->reconcile($shipment->id->toString());
+
+        // Then
+        $result = $this->shipmentFinder->ofId($shipment->id->toString());
+        self::assertSame(ShipmentStatus::DELIVERED, $result->status);
+    }
+
+    #[Test]
+    public function itIgnoresWhenCarrierNotDispatched(): void
+    {
+        // Given
+        $shipment = ShipmentFactory::new()->prepared()->manifested()->create();
+        $this->store($shipment);
+        $reconciler = $this->reconcilerWith($this->carrierGatewayReturning(CarrierGatewayStatus::REQUESTED));
+
+        // When
+        $reconciler->reconcile($shipment->id->toString());
+
+        // Then
+        $result = $this->shipmentFinder->ofId($shipment->id->toString());
+        self::assertSame(ShipmentStatus::MANIFESTED, $result->status);
+    }
+
+    #[Test]
+    public function itIgnoresWhenCarrierNotDelivered(): void
+    {
+        // Given
+        $shipment = ShipmentFactory::new()->prepared()->manifested()->dispatched()->create();
+        $this->store($shipment);
+        $reconciler = $this->reconcilerWith($this->carrierGatewayReturning(CarrierGatewayStatus::DISPATCHED));
+
+        // When
+        $reconciler->reconcile($shipment->id->toString());
+
+        // Then
+        $result = $this->shipmentFinder->ofId($shipment->id->toString());
+        self::assertSame(ShipmentStatus::DISPATCHED, $result->status);
+    }
+
+    #[Test]
+    public function itFailsWhenStatusUnsupported(): void
+    {
+        // Given
+        $shipment = ShipmentFactory::new()->prepared()->create();
+        $this->store($shipment);
+        $reconciler = $this->reconcilerWith($this->carrierGatewayReturning(CarrierGatewayStatus::DISPATCHED));
 
         // Then
         $this->expectException(UnsupportedShipmentStatusException::class);
 
         // When
-        $router->reconcile(Uuid::uuid7()->toString(), ShipmentStatus::DISPATCHED, TrackingNumberFactory::new()->create()->value);
+        $reconciler->reconcile($shipment->id->toString());
+    }
+
+    #[Test]
+    public function itFailsWhenNotFound(): void
+    {
+        // Given
+        $unknownId = ShipmentIdFactory::new()->create()->toString();
+        $reconciler = $this->reconcilerWith($this->carrierGatewayReturning(CarrierGatewayStatus::DISPATCHED));
+
+        // Then
+        $this->expectException(ShipmentResultNotFoundException::class);
+
+        // When
+        $reconciler->reconcile($unknownId);
+    }
+
+    private function reconcilerWith(CarrierGatewayInterface $carrierGateway): ShipmentReconciler
+    {
+        return new ShipmentReconciler($this->shipmentFinder, $carrierGateway, $this->commandBus);
     }
 }
