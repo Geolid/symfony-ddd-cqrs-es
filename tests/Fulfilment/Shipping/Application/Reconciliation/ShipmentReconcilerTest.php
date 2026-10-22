@@ -34,7 +34,7 @@ final class ShipmentReconcilerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itDispatches(): void
+    public function itDispatchesWhenCarrierDispatched(): void
     {
         // Given
         $shipment = ShipmentFactory::new()->prepared()->manifested()->create();
@@ -50,7 +50,7 @@ final class ShipmentReconcilerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itDelivers(): void
+    public function itDeliversWhenCarrierDelivered(): void
     {
         // Given
         $shipment = ShipmentFactory::new()->prepared()->manifested()->dispatched()->create();
@@ -66,7 +66,7 @@ final class ShipmentReconcilerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresWhenStillManifested(): void
+    public function itIgnoresWhenCarrierNotDispatched(): void
     {
         // Given
         $shipment = ShipmentFactory::new()->prepared()->manifested()->create();
@@ -82,7 +82,7 @@ final class ShipmentReconcilerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itIgnoresWhenStillDispatched(): void
+    public function itIgnoresWhenCarrierNotDelivered(): void
     {
         // Given
         $shipment = ShipmentFactory::new()->prepared()->manifested()->dispatched()->create();

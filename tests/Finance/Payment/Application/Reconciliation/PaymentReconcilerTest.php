@@ -32,7 +32,7 @@ final class PaymentReconcilerTest extends AbstractIntegrationTestCase
     }
 
     #[Test]
-    public function itAuthorizes(): void
+    public function itAuthorizesWhenGatewayAuthorized(): void
     {
         // Given
         $payment = PaymentFactory::new()->create();
@@ -49,7 +49,7 @@ final class PaymentReconcilerTest extends AbstractIntegrationTestCase
 
     #[Test]
     #[DataProvider('provideNonAuthorizedStatuses')]
-    public function itAbandons(PaymentGatewayStatus $gatewayStatus): void
+    public function itAbandonsWhenGatewayNotAuthorized(PaymentGatewayStatus $gatewayStatus): void
     {
         // Given
         $payment = PaymentFactory::new()->create();
